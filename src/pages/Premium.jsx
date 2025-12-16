@@ -26,8 +26,8 @@ const FEATURES = [
 ];
 
 const PLANS = {
-  monthly: { price: 19.99, period: 'month', save: null },
-  yearly: { price: 119.99, period: 'year', save: '50%' },
+  monthly: { price: 14.99, period: 'month', save: null },
+  yearly: { price: 119.99, period: 'year', save: '33%' },
   lifetime: { price: 299.99, period: 'lifetime', save: 'Best Value' }
 };
 
