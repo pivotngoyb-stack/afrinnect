@@ -344,6 +344,15 @@ export default function Profile() {
         {/* Action Buttons (Own profile) */}
         {isOwnProfile && (
           <div className="space-y-3 mt-8">
+            {!profile?.verification_status?.photo_verified && (
+              <Link to={createPageUrl('VerifyPhoto')}>
+                <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
+                  <Shield size={18} className="mr-2" />
+                  Verify Your Photo
+                </Button>
+              </Link>
+            )}
+
             <Link to={createPageUrl('EditProfile')}>
               <Button className="w-full bg-purple-600 hover:bg-purple-700" size="lg">
                 <Edit2 size={18} className="mr-2" />

@@ -19,7 +19,15 @@ import AfricanPattern from '@/components/shared/AfricanPattern';
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
   'Tanzania', 'Uganda', 'DR Congo', 'Cameroon', 'Ivory Coast', 'Senegal',
-  'Zimbabwe', 'Rwanda', 'Angola', 'Mali', 'Burkina Faso', 'Niger', 'Guinea'
+  'Zimbabwe', 'Rwanda', 'Angola', 'Mali', 'Burkina Faso', 'Niger', 'Guinea',
+  'Algeria', 'Tunisia', 'Libya', 'Somalia', 'Eritrea', 'Djibouti'
+];
+
+const OTHER_COUNTRIES = [
+  'USA', 'United Kingdom', 'France', 'Canada', 'Germany', 'Brazil',
+  'Jamaica', 'Haiti', 'Trinidad', 'Netherlands', 'Belgium', 'Italy',
+  'Spain', 'Portugal', 'Australia', 'China', 'India', 'Japan', 'Mexico',
+  'Colombia', 'Other'
 ];
 
 const ALL_COUNTRIES = [
@@ -115,6 +123,8 @@ export default function Onboarding() {
         primary_photo: formData.photos[0],
         is_active: true,
         last_active: new Date().toISOString(),
+        daily_likes_count: 0,
+        daily_likes_reset_date: new Date().toISOString().split('T')[0],
         verification_status: {
           email_verified: true,
           phone_verified: false,
@@ -279,21 +289,54 @@ export default function Onboarding() {
       exit={{ opacity: 0, y: -20 }}
     >
       <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Heritage</h2>
-      <p className="text-gray-500 mb-6">Where are your roots?</p>
+      <p className="text-gray-500 mb-6">Share your background with us</p>
 
       <div className="space-y-6">
         <div>
-          <Label className="text-base">Country of Origin</Label>
-          <Select value={formData.country_of_origin} onValueChange={(v) => updateField('country_of_origin', v)}>
+          <Label className="text-base">I am...</Label>
+          <Select value={formData.ethnicity} onValueChange={(v) => updateField('ethnicity', v)}>
             <SelectTrigger className="mt-2 h-12">
-              <SelectValue placeholder="Select your heritage country" />
+              <SelectValue placeholder="Select your background" />
             </SelectTrigger>
             <SelectContent>
-              {AFRICAN_COUNTRIES.map(country => (
-                <SelectItem key={country} value={country}>{country}</SelectItem>
-              ))}
+              <SelectItem value="african">African (born in Africa)</SelectItem>
+              <SelectItem value="african_descent">Of African Descent (diaspora)</SelectItem>
+              <SelectItem value="non_african_interested">Interested in African culture/dating</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        <div>
+          <Label className="text-base">
+            {formData.ethnicity === 'non_african_interested' ? 'Your Country' : 'Heritage Country'}
+          </Label>
+          <Select value={formData.country_of_origin} onValueChange={(v) => updateField('country_of_origin', v)}>
+            <SelectTrigger className="mt-2 h-12">
+              <SelectValue placeholder="Select country" />
+            </SelectTrigger>
+            <SelectContent>
+              {formData.ethnicity === 'non_african_interested' ? (
+                <>
+                  <SelectItem value="divider" disabled className="font-semibold">── Other Countries ──</SelectItem>
+                  {OTHER_COUNTRIES.map(country => (
+                    <SelectItem key={country} value={country}>{country}</SelectItem>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <SelectItem value="divider" disabled className="font-semibold">── African Countries ──</SelectItem>
+                  {AFRICAN_COUNTRIES.map(country => (
+                    <SelectItem key={country} value={country}>{country}</SelectItem>
+                  ))}
+                </>
+              )}
+            </SelectContent>
+          </Select>
+          {formData.ethnicity === 'non_african_interested' && (
+            <p className="text-xs text-purple-600 mt-2">
+              Welcome! Ubuntu connects people worldwide who appreciate African culture ❤️
+            </p>
+          )}
         </div>
 
         <div>

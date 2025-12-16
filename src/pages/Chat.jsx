@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import ChatBubble from '@/components/messaging/ChatBubble';
 import VerificationBadge from '@/components/shared/VerificationBadge';
+import SafetyCheckSetup from '@/components/safety/SafetyCheckSetup';
 
 const ICE_BREAKERS = [
   "What's your favorite traditional dish from home?",
@@ -48,7 +49,9 @@ export default function Chat() {
   const [showIceBreakers, setShowIceBreakers] = useState(false);
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -104,13 +107,36 @@ export default function Chat() {
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: async ({ content, type = 'text' }) => {
+    mutationFn: async ({ content, type = 'text', mediaUrl = null }) => {
+      // AI moderation for first message
+      if (messages.length === 0 && type === 'text') {
+        const moderationResult = await base44.integrations.Core.InvokeLLM({
+          prompt: `Analyze this first message for safety. Flag if it contains: harassment, explicit content, requests for money, suspicious links, or inappropriate language.
+          
+          Message: "${content}"
+          
+          Return safe: true if appropriate, false if inappropriate.`,
+          response_json_schema: {
+            type: 'object',
+            properties: {
+              safe: { type: 'boolean' },
+              reason: { type: 'string' }
+            }
+          }
+        });
+
+        if (!moderationResult.safe) {
+          throw new Error('Message flagged: ' + moderationResult.reason);
+        }
+      }
+
       return base44.entities.Message.create({
         match_id: matchId,
         sender_id: myProfile.id,
         receiver_id: otherProfile.id,
         content,
         message_type: type,
+        media_url: mediaUrl,
         is_read: false
       });
     },
@@ -150,6 +176,24 @@ export default function Chat() {
 
   const handleSendIceBreaker = (question) => {
     sendMessageMutation.mutate({ content: question, type: 'ice_breaker' });
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      sendMessageMutation.mutate({ 
+        content: 'Sent an image', 
+        type: 'image',
+        mediaUrl: file_url 
+      });
+    } catch (error) {
+      console.error('Image upload failed:', error);
+    }
+    setIsUploadingImage(false);
   };
 
   const photo = otherProfile?.primary_photo || otherProfile?.photos?.[0] || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100';
@@ -202,6 +246,10 @@ export default function Chat() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem>
+              <SafetyCheckSetup myProfile={myProfile} matchProfile={otherProfile} />
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
               <Flag size={16} className="mr-2 text-amber-600" />
               Report User
@@ -292,6 +340,27 @@ export default function Chat() {
             className={showIceBreakers ? 'text-purple-600' : ''}
           >
             <Sparkles size={20} />
+          </Button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingImage}
+          >
+            {isUploadingImage ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-purple-600 border-t-transparent" />
+            ) : (
+              <Camera size={20} />
+            )}
           </Button>
           
           <Input

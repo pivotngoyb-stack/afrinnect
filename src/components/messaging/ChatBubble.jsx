@@ -1,6 +1,7 @@
 import React from 'react';
 import { format } from 'date-fns';
-import { Check, CheckCheck, Mic } from 'lucide-react';
+import { Check, CheckCheck, Mic, Image as ImageIcon } from 'lucide-react';
+import TranslateMessage from './TranslateMessage';
 
 export default function ChatBubble({ message, isOwn, senderPhoto }) {
   const formatTime = (date) => {
@@ -26,7 +27,16 @@ export default function ChatBubble({ message, isOwn, senderPhoto }) {
               : 'bg-gray-100 text-gray-800 rounded-bl-md'
           }`}
         >
-          {message.message_type === 'voice_note' ? (
+          {message.message_type === 'image' ? (
+            <div className="max-w-xs">
+              <img 
+                src={message.media_url} 
+                alt="Shared" 
+                className="rounded-lg w-full cursor-pointer hover:opacity-90 transition"
+                onClick={() => window.open(message.media_url, '_blank')}
+              />
+            </div>
+          ) : message.message_type === 'voice_note' ? (
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-full ${isOwn ? 'bg-white/20' : 'bg-purple-100'}`}>
                 <Mic size={18} className={isOwn ? 'text-white' : 'text-purple-600'} />
@@ -52,12 +62,17 @@ export default function ChatBubble({ message, isOwn, senderPhoto }) {
           )}
         </div>
         
-        <div className={`flex items-center gap-1 mt-1 px-1 ${isOwn ? 'justify-end' : ''}`}>
-          <span className="text-xs text-gray-400">{formatTime(message.created_date)}</span>
-          {isOwn && (
-            message.is_read 
-              ? <CheckCheck size={14} className="text-blue-500" />
-              : <Check size={14} className="text-gray-400" />
+        <div className={`flex items-center gap-1 mt-1 px-1 ${isOwn ? 'justify-end' : 'justify-between'}`}>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-gray-400">{formatTime(message.created_date)}</span>
+            {isOwn && (
+              message.is_read 
+                ? <CheckCheck size={14} className="text-blue-500" />
+                : <Check size={14} className="text-gray-400" />
+            )}
+          </div>
+          {!isOwn && message.message_type === 'text' && (
+            <TranslateMessage message={message.content} messageId={message.id} />
           )}
         </div>
       </div>

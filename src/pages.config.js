@@ -9,6 +9,7 @@ import Report from './pages/Report';
 import Settings from './pages/Settings';
 import Onboarding from './pages/Onboarding';
 import AdminDashboard from './pages/AdminDashboard';
+import VerifyPhoto from './pages/VerifyPhoto';
 import __Layout from './Layout.jsx';
 
 
@@ -24,6 +25,7 @@ export const PAGES = {
     "Settings": Settings,
     "Onboarding": Onboarding,
     "AdminDashboard": AdminDashboard,
+    "VerifyPhoto": VerifyPhoto,
 }
 
 export const pagesConfig = {

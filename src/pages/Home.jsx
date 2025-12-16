@@ -80,10 +80,40 @@ export default function Home() {
     return age;
   };
 
+  // Check daily like limit
+  const canLike = () => {
+    if (myProfile?.is_premium) return true;
+    
+    const today = new Date().toISOString().split('T')[0];
+    const resetDate = myProfile?.daily_likes_reset_date;
+    const likesUsed = myProfile?.daily_likes_count || 0;
+    
+    if (resetDate !== today) {
+      return true; // New day, reset
+    }
+    
+    return likesUsed < 10; // Free users get 10 likes per day
+  };
+
   // Like mutation
   const likeMutation = useMutation({
     mutationFn: async ({ likedId, isSuperLike = false }) => {
       if (!myProfile) return;
+
+      // Check daily limit
+      if (!canLike()) {
+        throw new Error('daily_limit_reached');
+      }
+      
+      // Update like count
+      const today = new Date().toISOString().split('T')[0];
+      const resetDate = myProfile.daily_likes_reset_date;
+      const shouldReset = resetDate !== today;
+      
+      await base44.entities.UserProfile.update(myProfile.id, {
+        daily_likes_count: shouldReset ? 1 : (myProfile.daily_likes_count || 0) + 1,
+        daily_likes_reset_date: today
+      });
       
       // Create like record
       await base44.entities.Like.create({
@@ -119,6 +149,11 @@ export default function Home() {
         // Show match animation/notification
       }
       setCurrentIndex(prev => prev + 1);
+    },
+    onError: (error) => {
+      if (error.message === 'daily_limit_reached') {
+        alert('Daily like limit reached! Upgrade to Premium for unlimited likes.');
+      }
     }
   });
 
