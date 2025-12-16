@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, Eye, Ban, Trash2, Send, Shield, Crown, CheckCircle, Download } from 'lucide-react';
+import { Search, Filter, Eye, Ban, Trash2, Send, Shield, Crown, CheckCircle, Download, Award, Star } from 'lucide-react';
 
 export default function UserManagement({ 
   profiles, 
@@ -15,7 +15,8 @@ export default function UserManagement({
   onBanUser,
   onDeleteUser,
   onMessageUser,
-  onToggleAdmin
+  onToggleAdmin,
+  onChangeTier
 }) {
   const [filterCountry, setFilterCountry] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -158,8 +159,14 @@ export default function UserManagement({
                         {profile.verification_status?.photo_verified && (
                           <CheckCircle size={16} className="text-green-500" />
                         )}
-                        {profile.is_premium && (
-                          <Crown size={16} className="text-amber-500" />
+                        {profile.subscription_tier === 'vip' && (
+                          <Star size={16} className="text-rose-500" />
+                        )}
+                        {profile.subscription_tier === 'elite' && (
+                          <Award size={16} className="text-amber-500" />
+                        )}
+                        {profile.subscription_tier === 'premium' && (
+                          <Crown size={16} className="text-purple-500" />
                         )}
                         {isUserAdmin && (
                           <Badge className="bg-red-600">Admin</Badge>
@@ -175,6 +182,22 @@ export default function UserManagement({
                     <Badge className={profile.is_active ? 'bg-green-600' : 'bg-red-600'}>
                       {profile.is_active ? 'Active' : 'Banned'}
                     </Badge>
+                    
+                    {/* Tier Selector */}
+                    <Select
+                      value={profile.subscription_tier || 'free'}
+                      onValueChange={(tier) => onChangeTier(profile.id, tier)}
+                    >
+                      <SelectTrigger className="w-28 h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="free">Free</SelectItem>
+                        <SelectItem value="premium">Premium</SelectItem>
+                        <SelectItem value="elite">Elite</SelectItem>
+                        <SelectItem value="vip">VIP</SelectItem>
+                      </SelectContent>
+                    </Select>
                     {user?.email !== 'pivotngoyb@gmail.com' && (
                       <Button
                         size="sm"

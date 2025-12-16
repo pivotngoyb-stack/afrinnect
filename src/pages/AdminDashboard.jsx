@@ -264,6 +264,65 @@ export default function AdminDashboard() {
     }
   });
 
+  // Change user tier mutation
+  const changeTierMutation = useMutation({
+    mutationFn: async ({ profileId, tier }) => {
+      // Update profile
+      await base44.entities.UserProfile.update(profileId, {
+        subscription_tier: tier,
+        is_premium: tier !== 'free',
+        premium_until: tier !== 'free' ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() : null
+      });
+
+      // Create or update subscription
+      const existingSubs = await base44.entities.Subscription.filter({ user_profile_id: profileId, status: 'active' });
+      
+      if (tier === 'free') {
+        // Cancel existing subscriptions
+        for (const sub of existingSubs) {
+          await base44.entities.Subscription.update(sub.id, { status: 'cancelled' });
+        }
+      } else {
+        // Create new subscription if none exists
+        if (existingSubs.length === 0) {
+          await base44.entities.Subscription.create({
+            user_profile_id: profileId,
+            plan_type: `${tier}_yearly`,
+            status: 'active',
+            start_date: new Date().toISOString(),
+            end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+            amount_paid: 0,
+            currency: 'USD',
+            payment_provider: 'manual',
+            boosts_remaining: tier === 'elite' || tier === 'vip' ? 999 : 5,
+            super_likes_remaining: 999,
+            auto_renew: false
+          });
+        } else {
+          // Update existing
+          await base44.entities.Subscription.update(existingSubs[0].id, {
+            plan_type: `${tier}_yearly`,
+            status: 'active'
+          });
+        }
+      }
+
+      // Log action
+      await base44.entities.AdminAuditLog.create({
+        admin_user_id: currentUser.id,
+        admin_email: currentUser.email,
+        action_type: 'tier_change',
+        target_user_id: profileId,
+        details: { new_tier: tier }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['admin-profiles']);
+      queryClient.invalidateQueries(['admin-subscriptions']);
+      queryClient.invalidateQueries(['admin-audit-logs']);
+    }
+  });
+
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async ({ profileIds, message }) => {
@@ -350,6 +409,7 @@ export default function AdminDashboard() {
             onDeleteUser={(user) => setActionDialog({ open: true, type: 'delete', user })}
             onMessageUser={(profile) => setMessageDialog({ open: true, type: 'single', profile })}
             onToggleAdmin={(userId, grantAdmin) => toggleAdminMutation.mutate({ userId, grantAdmin })}
+            onChangeTier={(profileId, tier) => changeTierMutation.mutate({ profileId, tier })}
           />
         );
       case 'moderation':
