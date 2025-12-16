@@ -114,7 +114,7 @@ export default function WhoLikesYou() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Who Likes You</h1>
-              {showBlurred && (
+              {showBlurred && likes.length > 0 && (
                 <p className="text-sm text-gray-600 mt-1">
                   {likes.length} {likes.length === 1 ? 'person' : 'people'} liked you
                 </p>
