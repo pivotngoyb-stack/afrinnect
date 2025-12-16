@@ -21,6 +21,9 @@ import LegalAcceptance from './pages/LegalAcceptance';
 import Notifications from './pages/Notifications';
 import PhoneVerification from './pages/PhoneVerification';
 import IDVerification from './pages/IDVerification';
+import SafetyCheckSetup from './pages/SafetyCheckSetup';
+import PanicButton from './pages/PanicButton';
+import BoostProfile from './pages/BoostProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -48,6 +51,9 @@ export const PAGES = {
     "Notifications": Notifications,
     "PhoneVerification": PhoneVerification,
     "IDVerification": IDVerification,
+    "SafetyCheckSetup": SafetyCheckSetup,
+    "PanicButton": PanicButton,
+    "BoostProfile": BoostProfile,
 }
 
 export const pagesConfig = {
