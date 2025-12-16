@@ -28,6 +28,10 @@ import FakeProfileScanner from '@/components/admin/FakeProfileScanner';
 import BroadcastMessages from '@/components/admin/BroadcastMessages';
 import FeatureFlags from '@/components/admin/FeatureFlags';
 import PricingManagement from '@/components/admin/PricingManagement';
+import VideoProfileManagement from '@/components/admin/VideoProfileManagement';
+import SuccessStoryModeration from '@/components/admin/SuccessStoryModeration';
+import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
+import DateFeedbackReview from '@/components/admin/DateFeedbackReview';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -355,6 +359,7 @@ export default function AdminDashboard() {
       case 'analytics':
         return (
           <div className="space-y-6">
+            <AnalyticsDashboard />
             <ModerationRules rules={moderationRules} currentUser={currentUser} />
             <FeatureFlags flags={featureFlags} />
           </div>
@@ -366,7 +371,14 @@ export default function AdminDashboard() {
       case 'support':
         return <SupportTickets tickets={supportTickets} currentUser={currentUser} />;
       case 'compliance':
-        return <PricingManagement plans={pricingPlans} />;
+        return (
+          <div className="space-y-6">
+            <PricingManagement plans={pricingPlans} />
+            <VideoProfileManagement />
+            <SuccessStoryModeration />
+            <DateFeedbackReview />
+          </div>
+        );
       case 'settings':
         return <AuditLogs logs={auditLogs} />;
       default:

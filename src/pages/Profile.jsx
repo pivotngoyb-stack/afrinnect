@@ -386,6 +386,27 @@ export default function Profile() {
               </Button>
             </Link>
 
+            <Link to={createPageUrl('ProfileOptimization')}>
+              <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" size="lg">
+                <Sparkles size={18} className="mr-2" />
+                Optimize My Profile
+              </Button>
+            </Link>
+
+            <Link to={createPageUrl('LanguageExchangeHub')}>
+              <Button className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700" size="lg">
+                <Languages size={18} className="mr-2" />
+                Language Exchange
+              </Button>
+            </Link>
+
+            <Link to={createPageUrl('BackgroundCheckRequest')}>
+              <Button className="w-full bg-blue-600 hover:bg-blue-700" size="lg">
+                <Shield size={18} className="mr-2" />
+                Request Background Check
+              </Button>
+            </Link>
+
             <Link to={createPageUrl('EditProfile')}>
               <Button className="w-full bg-purple-600 hover:bg-purple-700" size="lg">
                 <Edit2 size={18} className="mr-2" />
