@@ -19,6 +19,7 @@ import AdminOverview from '@/components/admin/AdminOverview';
 import UserManagement from '@/components/admin/UserManagement';
 import ModerationCenter from '@/components/admin/ModerationCenter';
 import RevenueAnalytics from '@/components/admin/RevenueAnalytics';
+import AuditLogs from '@/components/admin/AuditLogs';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -104,20 +105,36 @@ export default function AdminDashboard() {
     enabled: isAdmin
   });
 
+  // Fetch audit logs
+  const { data: auditLogs = [] } = useQuery({
+    queryKey: ['admin-audit-logs'],
+    queryFn: () => base44.entities.AdminAuditLog.list('-created_date', 500),
+    enabled: isAdmin
+  });
+
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId) => {
-      // Delete user profile first
       const userProfiles = await base44.entities.UserProfile.filter({ user_id: userId });
       for (const profile of userProfiles) {
         await base44.entities.UserProfile.delete(profile.id);
       }
-      // Note: User entity deletion might need backend support
+      
+      // Log action
+      await base44.entities.AdminAuditLog.create({
+        admin_user_id: currentUser.id,
+        admin_email: currentUser.email,
+        action_type: 'user_delete',
+        target_user_id: userId,
+        details: { profiles: userProfiles.map(p => p.id) }
+      });
+      
       return userId;
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-users']);
       queryClient.invalidateQueries(['admin-profiles']);
+      queryClient.invalidateQueries(['admin-audit-logs']);
       setActionDialog({ open: false, type: null, user: null });
     }
   });
@@ -129,9 +146,19 @@ export default function AdminDashboard() {
       for (const profile of userProfiles) {
         await base44.entities.UserProfile.update(profile.id, { is_active: false });
       }
+      
+      // Log action
+      await base44.entities.AdminAuditLog.create({
+        admin_user_id: currentUser.id,
+        admin_email: currentUser.email,
+        action_type: 'user_ban',
+        target_user_id: userId,
+        details: { profiles: userProfiles.map(p => p.id) }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-profiles']);
+      queryClient.invalidateQueries(['admin-audit-logs']);
       setActionDialog({ open: false, type: null, user: null });
     }
   });
@@ -232,7 +259,8 @@ export default function AdminDashboard() {
     totalEvents: events.length,
     activeUsers: activeUsersCount,
     bannedUsers: bannedUsersCount,
-    conversionRate: profiles.length > 0 ? ((premiumUsersCount / profiles.length) * 100).toFixed(1) : 0
+    conversionRate: profiles.length > 0 ? ((premiumUsersCount / profiles.length) * 100).toFixed(1) : 0,
+    auditLogs: auditLogs.length
   };
 
   const filteredProfiles = profiles.filter(p => 
@@ -307,11 +335,7 @@ export default function AdminDashboard() {
           </div>
         );
       case 'settings':
-        return (
-          <div className="text-center py-20 text-gray-400">
-            Admin Settings - Coming Soon
-          </div>
-        );
+        return <AuditLogs logs={auditLogs} />;
       default:
         return <AdminOverview stats={stats} />;
     }
