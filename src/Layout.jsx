@@ -63,9 +63,9 @@ function LayoutContent({ children, currentPageName }) {
 
   const navItems = [
     { name: 'Home', icon: Compass, label: t('home.title') },
+    { name: 'Stories', icon: Sparkles, label: 'Stories' },
     { name: 'Matches', icon: Heart, label: t('matches.title') },
     { name: 'Events', icon: Calendar, label: 'Events' },
-    { name: 'Notifications', icon: Bell, label: 'Alerts', badge: unreadNotifications },
     { name: 'Profile', icon: User, label: t('profile.editProfile').replace(' Profile', '').replace(' le Profil', '') }
   ];
 

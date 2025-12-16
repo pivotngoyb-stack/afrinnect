@@ -242,6 +242,12 @@ export default function Profile() {
             </div>
           )}
 
+          {profile?.badges && profile.badges.length > 0 && (
+            <div className="mt-3">
+              <ProfileBadges badges={profile.badges} />
+            </div>
+          )}
+
           {!isOwnProfile && (
             <Button onClick={handleShareProfile} variant="outline" size="sm" className="mt-3">
               <Share2 size={14} className="mr-2" />
@@ -281,6 +287,9 @@ export default function Profile() {
             </CardContent>
           </Card>
         )}
+
+        {/* Spotify/IG Section */}
+        <SpotifySection profile={profile} />
 
         {/* Bio */}
         {profile?.bio && (

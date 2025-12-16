@@ -16,6 +16,7 @@ import LikesLimitPaywall from '@/components/paywall/LikesLimitPaywall';
 import AdBanner from '@/components/ads/AdBanner';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import TutorialTooltip from '@/components/shared/TutorialTooltip';
+import MessageWithLikeModal from '@/components/home/MessageWithLikeModal';
 import confetti from 'canvas-confetti';
 
 export default function Home() {
@@ -29,6 +30,8 @@ export default function Home() {
   const [swipeHistory, setSwipeHistory] = useState([]);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showMatchCelebration, setShowMatchCelebration] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [pendingLikeProfile, setPendingLikeProfile] = useState(null);
   const queryClient = useQueryClient();
 
   // Fetch user's profile and redirect if needed
@@ -269,7 +272,7 @@ export default function Home() {
 
   // Like mutation
   const likeMutation = useMutation({
-    mutationFn: async ({ likedId, isSuperLike = false }) => {
+    mutationFn: async ({ likedId, isSuperLike = false, likeNote = null }) => {
       if (!myProfile) return;
 
       // Check daily limit
@@ -294,6 +297,28 @@ export default function Home() {
         is_super_like: isSuperLike,
         is_seen: false
       });
+
+      // If there's a note, create initial message
+      if (likeNote) {
+        // Check if match exists first
+        const existingMatch = await base44.entities.Match.filter({
+          $or: [
+            { user1_id: myProfile.id, user2_id: likedId },
+            { user1_id: likedId, user2_id: myProfile.id }
+          ]
+        });
+
+        if (existingMatch.length > 0) {
+          await base44.entities.Message.create({
+            match_id: existingMatch[0].id,
+            sender_id: myProfile.id,
+            receiver_id: likedId,
+            content: likeNote,
+            message_type: 'text',
+            like_note: likeNote
+          });
+        }
+      }
 
       // Check for mutual like (match)
       const mutualLikes = await base44.entities.Like.filter({
@@ -370,12 +395,20 @@ export default function Home() {
   });
 
   const handleLike = (profile) => {
+    // Show message modal
+    setPendingLikeProfile(profile);
+    setShowMessageModal(true);
+  };
+
+  const handleLikeWithMessage = (message) => {
     // Haptic feedback
     if (navigator.vibrate) {
       navigator.vibrate(50);
     }
-    setSwipeHistory([...swipeHistory, { profile, action: 'like', index: currentIndex }]);
-    likeMutation.mutate({ likedId: profile.id });
+    setSwipeHistory([...swipeHistory, { profile: pendingLikeProfile, action: 'like', index: currentIndex }]);
+    likeMutation.mutate({ likedId: pendingLikeProfile.id, likeNote: message });
+    setShowMessageModal(false);
+    setPendingLikeProfile(null);
   };
 
   const handleSuperLike = (profile) => {
@@ -470,10 +503,10 @@ export default function Home() {
                 isPremium={myProfile?.is_premium}
               />
 
-              {/* Daily Matches */}
-              <Link to={createPageUrl('DailyMatches')}>
-                <Button variant="outline" className="gap-1 border-amber-200 text-amber-600">
-                  <Sparkles size={18} />
+              {/* Communities */}
+              <Link to={createPageUrl('Communities')}>
+                <Button variant="outline" className="gap-1">
+                  <span className="text-lg">👥</span>
                 </Button>
               </Link>
 
@@ -650,6 +683,17 @@ export default function Home() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Message with Like Modal */}
+        <MessageWithLikeModal
+          profile={pendingLikeProfile}
+          open={showMessageModal}
+          onSend={handleLikeWithMessage}
+          onClose={() => {
+            setShowMessageModal(false);
+            setPendingLikeProfile(null);
+          }}
+        />
         </main>
         </div>
         );

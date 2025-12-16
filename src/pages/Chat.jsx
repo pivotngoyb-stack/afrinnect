@@ -16,6 +16,9 @@ import IceBreakerPrompts from '@/components/chat/IceBreakerPrompts';
 import { AnimatePresence } from 'framer-motion';
 import TypingIndicator from '@/components/shared/TypingIndicator';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
+import ReadReceipt from '@/components/chat/ReadReceipt';
+import QuestionGame from '@/components/chat/QuestionGame';
+import LocationShare from '@/components/chat/LocationShare';
 
 export default function Chat() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -32,6 +35,7 @@ export default function Chat() {
   const [showIceBreakers, setShowIceBreakers] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [showQuestionGame, setShowQuestionGame] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const queryClient = useQueryClient();

@@ -5,6 +5,7 @@ import { MapPin, Briefcase, GraduationCap, Heart, ChevronLeft, ChevronRight, Lan
 import { Badge } from "@/components/ui/badge";
 import VerificationBadge from '../shared/VerificationBadge';
 import CountryFlag from '../shared/CountryFlag';
+import ProfileBadges from './ProfileBadges';
 
 export default function ProfileCard({ profile, onLike, onPass, onSuperLike, showActions = true, expanded = false }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -181,6 +182,12 @@ export default function ProfileCard({ profile, onLike, onPass, onSuperLike, show
               <Heart size={12} className="mr-1" />
               {relationshipLabels[profile.relationship_goal]}
             </Badge>
+          )}
+          
+          {profile?.badges && profile.badges.length > 0 && (
+            <div className="mt-3">
+              <ProfileBadges badges={profile.badges} />
+            </div>
           )}
         </div>
       </div>
