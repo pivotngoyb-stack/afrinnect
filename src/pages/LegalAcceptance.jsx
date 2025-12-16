@@ -23,12 +23,12 @@ export default function LegalAcceptance() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
         
-        // Check if already accepted or if user has a profile (existing user)
+        // Check if already accepted
         const acceptances = await base44.entities.LegalAcceptance.filter({ user_id: currentUser.id });
-        const profiles = await base44.entities.UserProfile.filter({ user_id: currentUser.id });
         
-        if (acceptances.length > 0 || profiles.length > 0) {
-          // Either already accepted or existing user - let them through
+        if (acceptances.length > 0) {
+          // Already accepted - redirect to appropriate page
+          const profiles = await base44.entities.UserProfile.filter({ user_id: currentUser.id });
           window.location.href = profiles.length > 0 ? createPageUrl('Home') : createPageUrl('Onboarding');
         }
       } catch (e) {
