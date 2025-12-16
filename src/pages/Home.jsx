@@ -29,18 +29,29 @@ export default function Home() {
   useEffect(() => {
     const fetchMyProfile = async () => {
       try {
-        const user = await base44.auth.me();
-        if (user) {
-          // If admin, redirect to admin dashboard
-          if (user.email === 'pivotngoyb@gmail.com' || user.role === 'admin') {
-            window.location.href = createPageUrl('AdminDashboard');
-            return;
-          }
+        const isAuth = await base44.auth.isAuthenticated();
+        if (!isAuth) {
+          window.location.href = createPageUrl('Landing');
+          return;
+        }
 
-          const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-          if (profiles.length > 0) {
-            setMyProfile(profiles[0]);
-          }
+        const user = await base44.auth.me();
+        if (!user) {
+          window.location.href = createPageUrl('Landing');
+          return;
+        }
+
+        // If admin, redirect to admin dashboard
+        if (user.email === 'pivotngoyb@gmail.com' || user.role === 'admin') {
+          window.location.href = createPageUrl('AdminDashboard');
+          return;
+        }
+
+        const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+        if (profiles.length > 0) {
+          setMyProfile(profiles[0]);
+        } else {
+          window.location.href = createPageUrl('Landing');
         }
       } catch (e) {
         // Not logged in, redirect to landing
