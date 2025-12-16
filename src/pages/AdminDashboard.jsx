@@ -20,6 +20,13 @@ import UserManagement from '@/components/admin/UserManagement';
 import ModerationCenter from '@/components/admin/ModerationCenter';
 import RevenueAnalytics from '@/components/admin/RevenueAnalytics';
 import AuditLogs from '@/components/admin/AuditLogs';
+import VerificationQueue from '@/components/admin/VerificationQueue';
+import ModerationRules from '@/components/admin/ModerationRules';
+import EventManagement from '@/components/admin/EventManagement';
+import SupportTickets from '@/components/admin/SupportTickets';
+import BroadcastMessages from '@/components/admin/BroadcastMessages';
+import FeatureFlags from '@/components/admin/FeatureFlags';
+import PricingManagement from '@/components/admin/PricingManagement';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -109,6 +116,48 @@ export default function AdminDashboard() {
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['admin-audit-logs'],
     queryFn: () => base44.entities.AdminAuditLog.list('-created_date', 500),
+    enabled: isAdmin
+  });
+
+  // Fetch verification requests
+  const { data: verificationRequests = [] } = useQuery({
+    queryKey: ['admin-verifications'],
+    queryFn: () => base44.entities.VerificationRequest.filter({ status: 'pending' }, '-created_date', 100),
+    enabled: isAdmin
+  });
+
+  // Fetch moderation rules
+  const { data: moderationRules = [] } = useQuery({
+    queryKey: ['admin-moderation-rules'],
+    queryFn: () => base44.entities.ModerationRule.list('-created_date', 200),
+    enabled: isAdmin
+  });
+
+  // Fetch support tickets
+  const { data: supportTickets = [] } = useQuery({
+    queryKey: ['admin-support-tickets'],
+    queryFn: () => base44.entities.SupportTicket.filter({ status: { $in: ['open', 'in_progress'] } }, '-created_date', 200),
+    enabled: isAdmin
+  });
+
+  // Fetch broadcast messages
+  const { data: broadcastMessages = [] } = useQuery({
+    queryKey: ['admin-broadcasts'],
+    queryFn: () => base44.entities.BroadcastMessage.list('-created_date', 100),
+    enabled: isAdmin
+  });
+
+  // Fetch feature flags
+  const { data: featureFlags = [] } = useQuery({
+    queryKey: ['admin-feature-flags'],
+    queryFn: () => base44.entities.FeatureFlag.list('-created_date', 100),
+    enabled: isAdmin
+  });
+
+  // Fetch pricing plans
+  const { data: pricingPlans = [] } = useQuery({
+    queryKey: ['admin-pricing-plans'],
+    queryFn: () => base44.entities.PricingPlan.list('-created_date', 50),
     enabled: isAdmin
   });
 
@@ -299,41 +348,22 @@ export default function AdminDashboard() {
       case 'revenue':
         return <RevenueAnalytics subscriptions={subscriptions} profiles={profiles} />;
       case 'verification':
-        return (
-          <div className="text-center py-20 text-gray-400">
-            Verification Management - Coming Soon
-          </div>
-        );
+        return <VerificationQueue requests={verificationRequests} profiles={profiles} currentUser={currentUser} />;
       case 'analytics':
         return (
-          <div className="text-center py-20 text-gray-400">
-            Advanced Analytics - Coming Soon
+          <div className="space-y-6">
+            <ModerationRules rules={moderationRules} currentUser={currentUser} />
+            <FeatureFlags flags={featureFlags} />
           </div>
         );
       case 'events':
-        return (
-          <div className="text-center py-20 text-gray-400">
-            Event Management - Coming Soon
-          </div>
-        );
+        return <EventManagement events={events} />;
       case 'messaging':
-        return (
-          <div className="text-center py-20 text-gray-400">
-            Broadcast Messaging - Coming Soon
-          </div>
-        );
+        return <BroadcastMessages broadcasts={broadcastMessages} profiles={profiles} currentUser={currentUser} />;
       case 'support':
-        return (
-          <div className="text-center py-20 text-gray-400">
-            Support Tickets - Coming Soon
-          </div>
-        );
+        return <SupportTickets tickets={supportTickets} currentUser={currentUser} />;
       case 'compliance':
-        return (
-          <div className="text-center py-20 text-gray-400">
-            Compliance & GDPR - Coming Soon
-          </div>
-        );
+        return <PricingManagement plans={pricingPlans} />;
       case 'settings':
         return <AuditLogs logs={auditLogs} />;
       default:
