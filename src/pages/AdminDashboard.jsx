@@ -37,8 +37,10 @@ export default function AdminDashboard() {
       try {
         const user = await base44.auth.me();
         setCurrentUser(user);
-        setIsAdmin(user?.role === 'admin');
-        if (user?.role !== 'admin') {
+        // Allow super admin email or users with admin role
+        const isSuperAdmin = user?.email === 'pivotngoyb@gmail.com' || user?.role === 'admin';
+        setIsAdmin(isSuperAdmin);
+        if (!isSuperAdmin) {
           window.location.href = '/';
         }
       } catch (e) {
@@ -140,6 +142,20 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-subscriptions']);
+    }
+  });
+
+  // Grant/revoke admin access mutation
+  const toggleAdminMutation = useMutation({
+    mutationFn: async ({ userId, grantAdmin }) => {
+      // Note: This requires backend support to update User.role
+      // For now, we'll show the UI but actual implementation needs backend
+      await base44.entities.User.update(userId, {
+        role: grantAdmin ? 'admin' : 'user'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['admin-users']);
     }
   });
 
@@ -261,61 +277,82 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                  {filteredProfiles.map(profile => (
-                    <div key={profile.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition">
-                      <div className="flex items-center gap-4">
-                        <img
-                          src={profile.primary_photo || profile.photos?.[0] || 'https://via.placeholder.com/50'}
-                          alt={profile.display_name}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="font-semibold text-white">{profile.display_name}</p>
-                            {profile.verification_status?.photo_verified && (
-                              <CheckCircle size={16} className="text-green-400" />
-                            )}
-                            {profile.is_premium && (
-                              <Crown size={16} className="text-amber-400" />
-                            )}
+                  {filteredProfiles.map(profile => {
+                    const user = users.find(u => u.id === profile.user_id);
+                    const isUserAdmin = user?.role === 'admin' || user?.email === 'pivotngoyb@gmail.com';
+                    
+                    return (
+                      <div key={profile.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition">
+                        <div className="flex items-center gap-4">
+                          <img
+                            src={profile.primary_photo || profile.photos?.[0] || 'https://via.placeholder.com/50'}
+                            alt={profile.display_name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-white">{profile.display_name}</p>
+                              {profile.verification_status?.photo_verified && (
+                                <CheckCircle size={16} className="text-green-400" />
+                              )}
+                              {profile.is_premium && (
+                                <Crown size={16} className="text-amber-400" />
+                              )}
+                              {isUserAdmin && (
+                                <Badge className="bg-red-600">Admin</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-400">{user?.email}</p>
+                            <p className="text-xs text-gray-500">
+                              {profile.current_city}, {profile.current_country}
+                            </p>
                           </div>
-                          <p className="text-sm text-gray-400">{profile.user_id}</p>
-                          <p className="text-xs text-gray-500">
-                            {profile.current_city}, {profile.current_country}
-                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={profile.is_active ? 'bg-green-600' : 'bg-red-600'}>
+                            {profile.is_active ? 'Active' : 'Banned'}
+                          </Badge>
+                          {user?.email !== 'pivotngoyb@gmail.com' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-purple-500 text-purple-400 hover:bg-purple-500/20"
+                              onClick={() => toggleAdminMutation.mutate({ userId: user.id, grantAdmin: !isUserAdmin })}
+                            >
+                              <Shield size={16} className="mr-1" />
+                              {isUserAdmin ? 'Revoke' : 'Grant'}
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-amber-500 text-amber-400 hover:bg-amber-500/20"
+                            onClick={() => window.open(`/Profile?id=${profile.id}`, '_blank')}
+                          >
+                            <Eye size={16} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-red-500 text-red-400 hover:bg-red-500/20"
+                            onClick={() => setActionDialog({ open: true, type: 'ban', user: profile })}
+                            disabled={user?.email === 'pivotngoyb@gmail.com'}
+                          >
+                            <Ban size={16} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-red-600 text-red-500 hover:bg-red-600/20"
+                            onClick={() => setActionDialog({ open: true, type: 'delete', user: profile })}
+                            disabled={user?.email === 'pivotngoyb@gmail.com'}
+                          >
+                            <Trash2 size={16} />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={profile.is_active ? 'bg-green-600' : 'bg-red-600'}>
-                          {profile.is_active ? 'Active' : 'Banned'}
-                        </Badge>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-amber-500 text-amber-400 hover:bg-amber-500/20"
-                          onClick={() => window.open(`/Profile?id=${profile.id}`, '_blank')}
-                        >
-                          <Eye size={16} />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-red-500 text-red-400 hover:bg-red-500/20"
-                          onClick={() => setActionDialog({ open: true, type: 'ban', user: profile })}
-                        >
-                          <Ban size={16} />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-red-600 text-red-500 hover:bg-red-600/20"
-                          onClick={() => setActionDialog({ open: true, type: 'delete', user: profile })}
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
