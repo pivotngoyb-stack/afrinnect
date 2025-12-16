@@ -21,21 +21,21 @@ export default function Terms() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-white rounded-xl p-8 shadow-sm space-y-6">
           <div>
-            <h2 className="text-2xl font-bold mb-2">Ubuntu Terms of Service</h2>
+            <h2 className="text-2xl font-bold mb-2">Afrinnect Terms of Service</h2>
             <p className="text-sm text-gray-500">Last Updated: December 16, 2025</p>
           </div>
 
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">1. Acceptance of Terms</h3>
             <p className="text-gray-700">
-              By accessing and using Ubuntu, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using this service.
+              By accessing and using Afrinnect, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using this service.
             </p>
           </section>
 
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">2. Eligibility</h3>
             <p className="text-gray-700">
-              You must be at least 18 years old to use Ubuntu. By creating an account, you represent that you are of legal age to form a binding contract.
+              You must be at least 18 years old to use Afrinnect. By creating an account, you represent that you are of legal age to form a binding contract.
             </p>
           </section>
 
@@ -63,14 +63,14 @@ export default function Terms() {
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">5. Content Ownership</h3>
             <p className="text-gray-700">
-              You retain ownership of content you post. By posting, you grant Ubuntu a license to use, display, and distribute your content on the platform.
+              You retain ownership of content you post. By posting, you grant Afrinnect a license to use, display, and distribute your content on the platform.
             </p>
           </section>
 
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">6. Safety and Verification</h3>
             <p className="text-gray-700">
-              While we implement safety features including AI moderation and photo verification, Ubuntu is not responsible for the actions of users. Always exercise caution when meeting people in person.
+              While we implement safety features including AI moderation and photo verification, Afrinnect is not responsible for the actions of users. Always exercise caution when meeting people in person.
             </p>
           </section>
 
@@ -93,7 +93,7 @@ export default function Terms() {
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">9. Limitation of Liability</h3>
             <p className="text-gray-700">
-              Ubuntu is provided "as is" without warranties. We are not liable for damages arising from use of the service, interactions with other users, or technical issues.
+              Afrinnect is provided "as is" without warranties. We are not liable for damages arising from use of the service, interactions with other users, or technical issues.
             </p>
           </section>
 
@@ -107,7 +107,7 @@ export default function Terms() {
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">11. Contact</h3>
             <p className="text-gray-700">
-              For questions about these terms, contact us at legal@ubuntu-dating.com
+              For questions about these terms, contact us at legal@afrinnect.com
             </p>
           </section>
         </div>

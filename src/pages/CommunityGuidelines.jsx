@@ -21,8 +21,8 @@ export default function CommunityGuidelines() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-white rounded-xl p-8 shadow-sm space-y-6">
           <div>
-            <h2 className="text-2xl font-bold mb-2">Ubuntu Community Guidelines</h2>
-            <p className="text-gray-700">Ubuntu is a safe, respectful community celebrating African culture and meaningful connections.</p>
+            <h2 className="text-2xl font-bold mb-2">Afrinnect Community Guidelines</h2>
+            <p className="text-gray-700">Afrinnect is a safe, respectful community celebrating African culture and meaningful connections.</p>
           </div>
 
           <section className="space-y-4">
@@ -87,7 +87,7 @@ export default function CommunityGuidelines() {
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">🎯 Cultural Respect</h3>
             <p className="text-gray-700">
-              Ubuntu celebrates the African diaspora. Whether you're African, of African descent, or simply interested in the culture, show respect for:
+              Afrinnect celebrates the African diaspora. Whether you're African, of African descent, or simply interested in the culture, show respect for:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
               <li>Different cultures, traditions, and languages</li>
@@ -117,7 +117,7 @@ export default function CommunityGuidelines() {
 
           <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
             <p className="text-purple-900 font-medium">
-              Together, we build a community rooted in Ubuntu - "I am because we are." Let's create meaningful connections with respect, safety, and cultural pride.
+              Together, we build a community rooted in the African philosophy of Ubuntu - "I am because we are." Let's create meaningful connections with respect, safety, and cultural pride.
             </p>
           </div>
         </div>

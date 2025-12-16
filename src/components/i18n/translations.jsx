@@ -20,12 +20,12 @@ export const translations = {
     landing: {
       title: "Find Love Within",
       titleHighlight: "Your Culture",
-      subtitle: "Ubuntu connects the African diaspora worldwide for meaningful relationships rooted in shared heritage and values.",
+      subtitle: "Afrinnect connects the African diaspora worldwide for meaningful relationships rooted in shared heritage and values.",
       getStarted: "Get Started Free",
       login: "Log In",
       signInWith: "Sign in with Google • Facebook • Microsoft • or Email",
       joinThousands: "Join thousands finding love across 50+ countries",
-      whyChoose: "Why Choose Ubuntu?",
+      whyChoose: "Why Choose Afrinnect?",
       whySubtitle: "More than just a dating app - it's a cultural experience",
       howItWorks: "How It Works",
       stats: {
@@ -66,11 +66,11 @@ export const translations = {
       },
       cta: {
         title: "Ready to Find Your Match?",
-        subtitle: "Join Ubuntu today and start your journey to meaningful connection",
+        subtitle: "Join Afrinnect today and start your journey to meaningful connection",
         freeToJoin: "Free to join • No credit card required"
       },
       footer: {
-        tagline: "© 2025 Ubuntu. Connecting hearts across cultures.",
+        tagline: "© 2025 Afrinnect. Connecting hearts across cultures.",
         privacy: "Privacy Policy",
         terms: "Terms of Service",
         guidelines: "Community Guidelines"
@@ -78,7 +78,7 @@ export const translations = {
     },
     onboarding: {
       welcome: {
-        title: "Welcome to Ubuntu",
+        title: "Welcome to Afrinnect",
         subtitle: "Where African hearts connect worldwide",
         global: "Global Community",
         cultural: "Cultural Connection",
@@ -91,7 +91,7 @@ export const translations = {
         firstName: "First Name",
         firstNamePlaceholder: "Your first name",
         birthday: "Birthday",
-        ageRequirement: "You must be 18+ to use Ubuntu"
+        ageRequirement: "You must be 18+ to use Afrinnect"
       },
       gender: {
         iAm: "I am a...",
@@ -135,7 +135,7 @@ export const translations = {
         selectCurrentCountry: "Select your current country",
         europeUSA: "Europe & USA only",
         yourCity: "Your city",
-        welcome: "Welcome! Ubuntu connects people worldwide who appreciate African culture ❤️"
+        welcome: "Welcome! Afrinnect connects people worldwide who appreciate African culture ❤️"
       },
       goal: {
         title: "What are you looking for?",
@@ -282,12 +282,12 @@ export const translations = {
     landing: {
       title: "Trouvez l'Amour au Sein de",
       titleHighlight: "Votre Culture",
-      subtitle: "Ubuntu connecte la diaspora africaine dans le monde entier pour des relations significatives enracinées dans un patrimoine et des valeurs partagés.",
+      subtitle: "Afrinnect connecte la diaspora africaine dans le monde entier pour des relations significatives enracinées dans un patrimoine et des valeurs partagés.",
       getStarted: "Commencer Gratuitement",
       login: "Se Connecter",
       signInWith: "Connectez-vous avec Google • Facebook • Microsoft • ou Email",
       joinThousands: "Rejoignez des milliers de personnes trouvant l'amour dans plus de 50 pays",
-      whyChoose: "Pourquoi Choisir Ubuntu?",
+      whyChoose: "Pourquoi Choisir Afrinnect?",
       whySubtitle: "Plus qu'une simple application de rencontre - c'est une expérience culturelle",
       howItWorks: "Comment Ça Marche",
       stats: {
@@ -328,11 +328,11 @@ export const translations = {
       },
       cta: {
         title: "Prêt à Trouver Votre Match?",
-        subtitle: "Rejoignez Ubuntu aujourd'hui et commencez votre voyage vers une connexion significative",
+        subtitle: "Rejoignez Afrinnect aujourd'hui et commencez votre voyage vers une connexion significative",
         freeToJoin: "Gratuit à rejoindre • Aucune carte de crédit requise"
       },
       footer: {
-        tagline: "© 2025 Ubuntu. Connecter les cœurs à travers les cultures.",
+        tagline: "© 2025 Afrinnect. Connecter les cœurs à travers les cultures.",
         privacy: "Politique de Confidentialité",
         terms: "Conditions d'Utilisation",
         guidelines: "Directives de la Communauté"
@@ -340,7 +340,7 @@ export const translations = {
     },
     onboarding: {
       welcome: {
-        title: "Bienvenue sur Ubuntu",
+        title: "Bienvenue sur Afrinnect",
         subtitle: "Où les cœurs africains se connectent dans le monde entier",
         global: "Communauté Mondiale",
         cultural: "Connexion Culturelle",
@@ -353,7 +353,7 @@ export const translations = {
         firstName: "Prénom",
         firstNamePlaceholder: "Votre prénom",
         birthday: "Date de Naissance",
-        ageRequirement: "Vous devez avoir 18 ans ou plus pour utiliser Ubuntu"
+        ageRequirement: "Vous devez avoir 18 ans ou plus pour utiliser Afrinnect"
       },
       gender: {
         iAm: "Je suis...",
@@ -397,7 +397,7 @@ export const translations = {
         selectCurrentCountry: "Sélectionnez votre pays actuel",
         europeUSA: "Europe et USA uniquement",
         yourCity: "Votre ville",
-        welcome: "Bienvenue! Ubuntu connecte les gens du monde entier qui apprécient la culture africaine ❤️"
+        welcome: "Bienvenue! Afrinnect connecte les gens du monde entier qui apprécient la culture africaine ❤️"
       },
       goal: {
         title: "Que recherchez-vous?",

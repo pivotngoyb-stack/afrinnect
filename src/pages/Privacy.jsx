@@ -21,7 +21,7 @@ export default function Privacy() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-white rounded-xl p-8 shadow-sm space-y-6">
           <div>
-            <h2 className="text-2xl font-bold mb-2">Ubuntu Privacy Policy</h2>
+            <h2 className="text-2xl font-bold mb-2">Afrinnect Privacy Policy</h2>
             <p className="text-sm text-gray-500">Last Updated: December 16, 2025</p>
           </div>
 
@@ -88,7 +88,7 @@ export default function Privacy() {
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">7. Children's Privacy</h3>
             <p className="text-gray-700">
-              Ubuntu is only for users 18+. We do not knowingly collect information from minors. If we discover a minor's account, we immediately delete it.
+              Afrinnect is only for users 18+. We do not knowingly collect information from minors. If we discover a minor's account, we immediately delete it.
             </p>
           </section>
 
@@ -116,7 +116,7 @@ export default function Privacy() {
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">11. Contact Us</h3>
             <p className="text-gray-700">
-              Questions about privacy? Email privacy@ubuntu-dating.com
+              Questions about privacy? Email privacy@afrinnect.com
             </p>
           </section>
         </div>
