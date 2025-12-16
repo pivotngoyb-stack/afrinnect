@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import {
   Users, AlertTriangle, DollarSign, Eye, Shield, Crown, Ban, Trash2,
-  CheckCircle, XCircle, Search, Filter, BarChart3, MessageCircle
+  CheckCircle, XCircle, Search, Filter, BarChart3, MessageCircle, LogOut
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,10 +43,10 @@ export default function AdminDashboard() {
         const isSuperAdmin = user?.email === 'pivotngoyb@gmail.com' || user?.role === 'admin';
         setIsAdmin(isSuperAdmin);
         if (!isSuperAdmin) {
-          window.location.href = '/';
+          window.location.href = createPageUrl('Landing');
         }
       } catch (e) {
-        window.location.href = '/';
+        window.location.href = createPageUrl('Landing');
       }
     };
     checkAdmin();
@@ -197,8 +199,24 @@ export default function AdminDashboard() {
               <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
               <Badge className="bg-red-600">Super Admin</Badge>
             </div>
-            <div className="text-white text-sm">
-              {currentUser?.email}
+            <div className="flex items-center gap-4">
+              <div className="text-white text-sm">
+                {currentUser?.email}
+              </div>
+              <Link to={createPageUrl('CustomerView')}>
+                <Button variant="outline" className="gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20">
+                  <Eye size={18} />
+                  Customer View
+                </Button>
+              </Link>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="text-white hover:bg-white/10"
+                onClick={() => base44.auth.logout(createPageUrl('Landing'))}
+              >
+                <LogOut size={20} />
+              </Button>
             </div>
           </div>
         </div>
