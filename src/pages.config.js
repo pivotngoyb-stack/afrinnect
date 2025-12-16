@@ -27,6 +27,10 @@ import BoostProfile from './pages/BoostProfile';
 import WhoLikesYou from './pages/WhoLikesYou';
 import TravelMode from './pages/TravelMode';
 import Rewind from './pages/Rewind';
+import DailyMatches from './pages/DailyMatches';
+import SuccessStories from './pages/SuccessStories';
+import VideoChat from './pages/VideoChat';
+import VirtualGifts from './pages/VirtualGifts';
 import __Layout from './Layout.jsx';
 
 
@@ -60,6 +64,10 @@ export const PAGES = {
     "WhoLikesYou": WhoLikesYou,
     "TravelMode": TravelMode,
     "Rewind": Rewind,
+    "DailyMatches": DailyMatches,
+    "SuccessStories": SuccessStories,
+    "VideoChat": VideoChat,
+    "VirtualGifts": VirtualGifts,
 }
 
 export const pagesConfig = {

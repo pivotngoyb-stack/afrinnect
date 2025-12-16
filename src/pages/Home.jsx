@@ -336,6 +336,13 @@ export default function Home() {
                 isPremium={myProfile?.is_premium}
               />
 
+              {/* Daily Matches */}
+              <Link to={createPageUrl('DailyMatches')}>
+                <Button variant="outline" className="gap-1 border-amber-200 text-amber-600">
+                  <Sparkles size={18} />
+                </Button>
+              </Link>
+
               {/* Who Likes You Button */}
               <Link to={createPageUrl('WhoLikesYou')}>
                 <Button variant="outline" className="gap-1">
@@ -366,6 +373,12 @@ export default function Home() {
                   onLike={() => handleLike(currentProfile)}
                   onPass={handlePass}
                   onSuperLike={() => handleSuperLike(currentProfile)}
+                  matchScore={currentProfile.matchScore}
+                  matchReasons={[
+                    `${Math.round(currentProfile.matchScore * 0.3)}% cultural compatibility`,
+                    `${Math.round(currentProfile.matchScore * 0.3)}% values alignment`,
+                    `${Math.round(currentProfile.matchScore * 0.2)}% location match`
+                  ]}
                 />
               ) : (
                 <motion.div

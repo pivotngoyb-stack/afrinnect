@@ -379,6 +379,13 @@ export default function Profile() {
               </Link>
             )}
 
+            <Link to={createPageUrl('SuccessStories')}>
+              <Button className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700" size="lg">
+                <Heart size={18} className="mr-2" />
+                Success Stories
+              </Button>
+            </Link>
+
             <Link to={createPageUrl('EditProfile')}>
               <Button className="w-full bg-purple-600 hover:bg-purple-700" size="lg">
                 <Edit2 size={18} className="mr-2" />
