@@ -50,6 +50,19 @@ export default function Home() {
     fetchMyProfile();
   }, []);
 
+  // Calculate distance between two coordinates (Haversine formula)
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of Earth in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in km
+  };
+
   // Fetch profiles for discovery
   const { data: profiles = [], isLoading } = useQuery({
     queryKey: ['discovery-profiles', filters, discoveryMode],
@@ -69,11 +82,23 @@ export default function Home() {
         filterQuery.current_state = { $in: filters.states };
       }
 
-      const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 100);
+      const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 200);
 
       // Apply AI matching and comprehensive filters
       const filteredProfiles = allProfiles.filter(p => {
         if (myProfile && p.id === myProfile.id) return false;
+
+        // Distance filter (local mode)
+        if (discoveryMode === 'local' && myProfile?.location?.lat && p.location?.lat) {
+          const distance = calculateDistance(
+            myProfile.location.lat,
+            myProfile.location.lng,
+            p.location.lat,
+            p.location.lng
+          );
+          const maxDistance = filters.distance_km || 50; // Default 50km
+          if (distance > maxDistance) return false;
+        }
 
         // Age filter
         if (p.birth_date && filters.age_min && filters.age_max) {
@@ -104,20 +129,37 @@ export default function Home() {
         // Verification filter
         if (filters.verified_only && !p.verification_status?.photo_verified) return false;
 
+        // Hide incognito users unless they liked you
+        if (p.incognito_mode) return false;
+
         return true;
       });
 
-      // Calculate AI match scores for top profiles
+      // Calculate distance and AI match scores for top profiles
       const profilesWithScores = await Promise.all(
         filteredProfiles.slice(0, 50).map(async (p) => {
           const score = await calculateMatchScore(myProfile, p);
-          return { ...p, matchScore: score };
+          let distance = null;
+          if (myProfile?.location?.lat && p.location?.lat) {
+            distance = calculateDistance(
+              myProfile.location.lat,
+              myProfile.location.lng,
+              p.location.lat,
+              p.location.lng
+            );
+          }
+          return { ...p, matchScore: score, distance };
         })
       );
 
-      // Sort by match score
-      return profilesWithScores.sort((a, b) => b.matchScore - a.matchScore);
+      // Sort by distance (local mode) or match score (global mode)
+      if (discoveryMode === 'local') {
+        return profilesWithScores.sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
+      } else {
+        return profilesWithScores.sort((a, b) => b.matchScore - a.matchScore);
+      }
     },
+    enabled: !!myProfile
   });
 
   const calculateAge = (birthDate) => {
