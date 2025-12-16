@@ -61,6 +61,7 @@ export default function Layout({ children, currentPageName }) {
   const navItems = [
     { name: 'Home', icon: Compass, label: 'Discover' },
     { name: 'Matches', icon: Heart, label: 'Matches' },
+    { name: 'Events', icon: Calendar, label: 'Events' },
     { name: 'Notifications', icon: Bell, label: 'Alerts', badge: unreadNotifications },
     { name: 'Profile', icon: User, label: 'Profile' }
   ];

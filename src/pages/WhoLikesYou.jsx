@@ -1,0 +1,224 @@
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { motion } from 'framer-motion';
+import { Heart, Crown, Lock } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+
+export default function WhoLikesYou() {
+  const [myProfile, setMyProfile] = useState(null);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const user = await base44.auth.me();
+        const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+        if (profiles.length > 0) {
+          setMyProfile(profiles[0]);
+        }
+      } catch (e) {
+        window.location.href = createPageUrl('Landing');
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  const { data: likes = [], isLoading } = useQuery({
+    queryKey: ['who-likes-me', myProfile?.id],
+    queryFn: async () => {
+      const allLikes = await base44.entities.Like.filter({ liked_id: myProfile.id }, '-created_date', 100);
+      
+      // Get profiles of people who liked me
+      const profileIds = allLikes.map(like => like.liker_id);
+      const profiles = await Promise.all(
+        profileIds.map(id => base44.entities.UserProfile.filter({ id }).then(p => p[0]))
+      );
+
+      return allLikes.map((like, idx) => ({
+        ...like,
+        profile: profiles[idx]
+      })).filter(like => like.profile);
+    },
+    enabled: !!myProfile
+  });
+
+  const likeMutation = useMutation({
+    mutationFn: async (likerId) => {
+      // Create like back
+      await base44.entities.Like.create({
+        liker_id: myProfile.id,
+        liked_id: likerId,
+        is_super_like: false,
+        is_seen: false
+      });
+
+      // Check for match
+      const mutualLikes = await base44.entities.Like.filter({
+        liker_id: likerId,
+        liked_id: myProfile.id
+      });
+
+      if (mutualLikes.length > 0) {
+        // Create match
+        await base44.entities.Match.create({
+          user1_id: myProfile.id,
+          user2_id: likerId,
+          user1_liked: true,
+          user2_liked: true,
+          is_match: true,
+          matched_at: new Date().toISOString(),
+          status: 'active'
+        });
+
+        const likerProfiles = await base44.entities.UserProfile.filter({ id: likerId });
+        if (likerProfiles.length > 0) {
+          await base44.entities.Notification.create({
+            user_profile_id: likerId,
+            type: 'match',
+            title: "It's a Match! 💕",
+            message: `You and ${myProfile.display_name} liked each other!`,
+            from_profile_id: myProfile.id,
+            link_to: createPageUrl('Matches')
+          });
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['who-likes-me']);
+      alert("It's a Match! 💕");
+    }
+  });
+
+  const calculateAge = (birthDate) => {
+    if (!birthDate) return null;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  };
+
+  if (!myProfile?.is_premium) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md"
+        >
+          <Card className="text-center">
+            <CardContent className="p-8">
+              <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Lock size={40} className="text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">Premium Feature</h2>
+              <p className="text-gray-600 mb-6">
+                Upgrade to Premium to see who likes you and get unlimited matches!
+              </p>
+              <Link to={createPageUrl('PricingPlans')}>
+                <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700">
+                  <Crown size={20} className="mr-2" />
+                  Upgrade to Premium
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 pb-24">
+      <header className="bg-white border-b sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">Who Likes You</h1>
+            <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white">
+              <Crown size={14} className="mr-1" />
+              Premium
+            </Badge>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
+          </div>
+        ) : likes.length === 0 ? (
+          <div className="text-center py-20">
+            <Heart size={64} className="mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-600">No likes yet</p>
+            <p className="text-sm text-gray-500 mt-2">Keep swiping to find your match!</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {likes.map(({ profile, is_super_like }) => {
+              const age = calculateAge(profile.birth_date);
+
+              return (
+                <motion.div
+                  key={profile.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="relative">
+                      <img
+                        src={profile.primary_photo || profile.photos?.[0]}
+                        alt={profile.display_name}
+                        className="w-full h-64 object-cover"
+                      />
+                      {is_super_like && (
+                        <Badge className="absolute top-3 right-3 bg-blue-600">
+                          ⭐ Super Like
+                        </Badge>
+                      )}
+                    </div>
+                    <CardContent className="p-4">
+                      <h3 className="text-lg font-bold text-gray-900">
+                        {profile.display_name}{age && `, ${age}`}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-2">
+                        {profile.current_city}, {profile.current_country}
+                      </p>
+                      {profile.bio && (
+                        <p className="text-sm text-gray-700 mb-4 line-clamp-2">
+                          {profile.bio}
+                        </p>
+                      )}
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => likeMutation.mutate(profile.id)}
+                          disabled={likeMutation.isPending}
+                          className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                        >
+                          <Heart size={18} className="mr-2" />
+                          Like Back
+                        </Button>
+                        <Link to={createPageUrl(`Profile?id=${profile.id}`)} className="flex-1">
+                          <Button variant="outline" className="w-full">
+                            View Profile
+                          </Button>
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}

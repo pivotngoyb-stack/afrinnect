@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Grid3X3, Layers, Globe, MapPin, Sparkles, Crown } from 'lucide-react';
+import { Grid3X3, Layers, Globe, MapPin, Sparkles, Crown, Heart as HeartIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileCard from '@/components/profile/ProfileCard';
@@ -13,6 +13,7 @@ import FilterDrawer from '@/components/discovery/FilterDrawer';
 import Logo from '@/components/shared/Logo';
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import LikesLimitPaywall from '@/components/paywall/LikesLimitPaywall';
+import AdBanner from '@/components/ads/AdBanner';
 
 export default function Home() {
   const [viewMode, setViewMode] = useState('swipe');
@@ -334,12 +335,22 @@ export default function Home() {
                 onFiltersChange={setFilters}
                 isPremium={myProfile?.is_premium}
               />
-            </div>
-          </div>
-        </div>
-      </header>
+
+              {/* Who Likes You Button */}
+              <Link to={createPageUrl('WhoLikesYou')}>
+                <Button variant="outline" className="gap-1">
+                  <HeartIcon size={18} className="text-pink-600" />
+                </Button>
+              </Link>
+              </div>
+              </div>
+              </div>
+              </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 pb-24">
+        {/* Ad Banner */}
+        <AdBanner placement="discovery" userProfile={myProfile} />
+
         {isLoading ? (
           <div className="flex items-center justify-center h-[60vh]">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />

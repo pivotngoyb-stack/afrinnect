@@ -1,82 +1,87 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, Search, Filter, Globe, Video, Plus } from 'lucide-react';
-import { Input } from "@/components/ui/input";
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { Calendar, MapPin, Users, Globe, Filter, Search, Clock } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import EventCard from '@/components/events/EventCard';
-import AfricanPattern from '@/components/shared/AfricanPattern';
-
-const EVENT_TYPES = [
-  { value: 'all', label: 'All Events' },
-  { value: 'cultural_festival', label: 'Cultural Festivals' },
-  { value: 'meetup', label: 'Meetups' },
-  { value: 'speed_dating', label: 'Speed Dating' },
-  { value: 'networking', label: 'Networking' },
-  { value: 'concert', label: 'Concerts' },
-  { value: 'food_festival', label: 'Food Festivals' },
-];
+import { format } from 'date-fns';
 
 export default function Events() {
   const [myProfile, setMyProfile] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
-  const [viewMode, setViewMode] = useState('all'); // 'all', 'virtual', 'local'
+  const [eventType, setEventType] = useState('all');
+  const [location, setLocation] = useState('all');
+  const [timeFilter, setTimeFilter] = useState('upcoming');
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const fetchMyProfile = async () => {
+    const fetchProfile = async () => {
       try {
         const user = await base44.auth.me();
-        if (user) {
-          const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-          if (profiles.length > 0) {
-            setMyProfile(profiles[0]);
-          }
+        const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+        if (profiles.length > 0) {
+          setMyProfile(profiles[0]);
         }
       } catch (e) {
-        console.log('Not logged in');
+        window.location.href = createPageUrl('Landing');
       }
     };
-    fetchMyProfile();
+    fetchProfile();
   }, []);
 
-  // Fetch events
   const { data: events = [], isLoading } = useQuery({
-    queryKey: ['events', selectedType, viewMode],
+    queryKey: ['events', eventType, location, timeFilter],
     queryFn: async () => {
-      let filterQuery = {};
+      let query = {};
       
-      if (selectedType !== 'all') {
-        filterQuery.event_type = selectedType;
+      if (eventType !== 'all') {
+        query.event_type = eventType;
       }
       
-      if (viewMode === 'virtual') {
-        filterQuery.is_virtual = true;
+      if (location !== 'all' && myProfile) {
+        query.country = myProfile.current_country;
       }
+
+      const allEvents = await base44.entities.Event.filter(query, '-start_date', 100);
       
-      const allEvents = await base44.entities.Event.filter(filterQuery, 'start_date', 50);
-      
-      // Filter future events only
       const now = new Date();
-      return allEvents.filter(e => new Date(e.start_date) >= now);
-    }
+      return allEvents.filter(event => {
+        const eventDate = new Date(event.start_date);
+        if (timeFilter === 'upcoming') {
+          return eventDate >= now;
+        } else if (timeFilter === 'past') {
+          return eventDate < now;
+        }
+        return true;
+      });
+    },
+    enabled: !!myProfile
   });
 
-  // Join event mutation
   const joinEventMutation = useMutation({
-    mutationFn: async (event) => {
-      if (!myProfile) return;
-      const attendees = event.attendees || [];
-      if (!attendees.includes(myProfile.id)) {
-        await base44.entities.Event.update(event.id, {
-          attendees: [...attendees, myProfile.id]
-        });
-      }
+    mutationFn: async (eventId) => {
+      const event = events.find(e => e.id === eventId);
+      if (!event) return;
+
+      const updatedAttendees = [...(event.attendees || []), myProfile.id];
+      await base44.entities.Event.update(eventId, {
+        attendees: updatedAttendees
+      });
+
+      await base44.entities.Notification.create({
+        user_profile_id: myProfile.id,
+        type: 'admin_message',
+        title: 'Event Registered!',
+        message: `You're registered for ${event.title}`,
+        link_to: createPageUrl('Events')
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['events']);
@@ -84,163 +89,165 @@ export default function Events() {
   });
 
   const filteredEvents = events.filter(event => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      event.title?.toLowerCase().includes(query) ||
-      event.description?.toLowerCase().includes(query) ||
-      event.city?.toLowerCase().includes(query) ||
-      event.country?.toLowerCase().includes(query)
-    );
+    if (searchQuery) {
+      return event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+             event.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    }
+    return true;
   });
 
-  const featuredEvents = filteredEvents.filter(e => e.is_featured);
-  const upcomingEvents = filteredEvents.filter(e => !e.is_featured);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 relative">
-      <AfricanPattern className="text-amber-600" opacity={0.03} />
-
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 pb-24">
+      <header className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-700 to-amber-600 bg-clip-text text-transparent">
-                Events
-              </h1>
-              <Badge variant="outline" className="gap-1">
-                <Calendar size={14} />
-                {events.length} upcoming
-              </Badge>
-            </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Community Events</h1>
+          
+          {/* Search */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <Input
+              placeholder="Search events..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
 
-            {/* Search & Filters */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search events, cities..."
-                  className="pl-10 bg-white"
-                />
-              </div>
-              
-              <div className="flex gap-2">
-                <Select value={selectedType} onValueChange={setSelectedType}>
-                  <SelectTrigger className="w-[160px] bg-white">
-                    <SelectValue placeholder="Event Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {EVENT_TYPES.map(type => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          {/* Filters */}
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            <Tabs value={timeFilter} onValueChange={setTimeFilter}>
+              <TabsList>
+                <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+                <TabsTrigger value="past">Past</TabsTrigger>
+              </TabsList>
+            </Tabs>
 
-                <Tabs value={viewMode} onValueChange={setViewMode}>
-                  <TabsList className="bg-gray-100">
-                    <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
-                    <TabsTrigger value="local" className="gap-1 text-xs sm:text-sm">
-                      <MapPin size={14} />
-                      <span className="hidden sm:inline">Local</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="virtual" className="gap-1 text-xs sm:text-sm">
-                      <Video size={14} />
-                      <span className="hidden sm:inline">Virtual</span>
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-            </div>
+            <Select value={eventType} onValueChange={setEventType}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Event Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="cultural_festival">Cultural Festival</SelectItem>
+                <SelectItem value="meetup">Meetup</SelectItem>
+                <SelectItem value="speed_dating">Speed Dating</SelectItem>
+                <SelectItem value="networking">Networking</SelectItem>
+                <SelectItem value="concert">Concert</SelectItem>
+                <SelectItem value="food_festival">Food Festival</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={location} onValueChange={setLocation}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Location" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Locations</SelectItem>
+                <SelectItem value="local">Near Me</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 pb-24">
+      <main className="max-w-7xl mx-auto px-4 py-6">
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="bg-white rounded-2xl h-96 animate-pulse">
-                <div className="h-48 bg-gray-200 rounded-t-2xl" />
-                <div className="p-5 space-y-3">
-                  <div className="h-6 bg-gray-200 rounded w-3/4" />
-                  <div className="h-4 bg-gray-200 rounded w-1/2" />
-                  <div className="h-4 bg-gray-200 rounded w-2/3" />
-                </div>
-              </div>
-            ))}
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
+          </div>
+        ) : filteredEvents.length === 0 ? (
+          <div className="text-center py-20">
+            <Calendar size={64} className="mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-600">No events found</p>
           </div>
         ) : (
-          <>
-            {/* Featured Events */}
-            {featuredEvents.length > 0 && (
-              <section className="mb-8">
-                <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-amber-500 rounded-full" />
-                  Featured Events
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {featuredEvents.map(event => (
-                    <motion.div
-                      key={event.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                    >
-                      <EventCard
-                        event={event}
-                        onJoin={joinEventMutation.mutate}
-                        isAttending={event.attendees?.includes(myProfile?.id)}
-                      />
-                    </motion.div>
-                  ))}
-                </div>
-              </section>
-            )}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredEvents.map(event => {
+              const isAttending = event.attendees?.includes(myProfile?.id);
+              const isFull = event.max_attendees && event.attendees?.length >= event.max_attendees;
 
-            {/* All Events */}
-            <section>
-              <h2 className="text-lg font-bold text-gray-800 mb-4">
-                {selectedType === 'all' ? 'All Events' : EVENT_TYPES.find(t => t.value === selectedType)?.label}
-              </h2>
-              
-              {upcomingEvents.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <AnimatePresence>
-                    {upcomingEvents.map((event, idx) => (
-                      <motion.div
-                        key={event.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.05 }}
-                      >
-                        <EventCard
-                          event={event}
-                          onJoin={joinEventMutation.mutate}
-                          isAttending={event.attendees?.includes(myProfile?.id)}
-                        />
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
-              ) : (
+              return (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-16 bg-white rounded-2xl"
+                  key={event.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                 >
-                  <Calendar size={48} className="mx-auto text-gray-300 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No events found</h3>
-                  <p className="text-gray-500">
-                    {searchQuery ? 'Try a different search term' : 'Check back later for new events'}
-                  </p>
+                  <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                    {event.image_url && (
+                      <img
+                        src={event.image_url}
+                        alt={event.title}
+                        className="w-full h-48 object-cover"
+                      />
+                    )}
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <Badge className="bg-purple-100 text-purple-700">
+                          {event.event_type.replace('_', ' ')}
+                        </Badge>
+                        {event.is_featured && (
+                          <Badge className="bg-amber-500">Featured</Badge>
+                        )}
+                      </div>
+                      <CardTitle>{event.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        {event.description}
+                      </p>
+
+                      <div className="space-y-2 text-sm text-gray-700 mb-4">
+                        <div className="flex items-center gap-2">
+                          <Clock size={16} className="text-gray-400" />
+                          <span>{format(new Date(event.start_date), 'PPp')}</span>
+                        </div>
+                        
+                        {event.is_virtual ? (
+                          <div className="flex items-center gap-2">
+                            <Globe size={16} className="text-gray-400" />
+                            <span>Virtual Event</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <MapPin size={16} className="text-gray-400" />
+                            <span className="line-clamp-1">
+                              {event.location_name}, {event.city}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-2">
+                          <Users size={16} className="text-gray-400" />
+                          <span>
+                            {event.attendees?.length || 0}
+                            {event.max_attendees && ` / ${event.max_attendees}`} attending
+                          </span>
+                        </div>
+                      </div>
+
+                      {event.price > 0 && (
+                        <p className="text-lg font-bold text-purple-600 mb-4">
+                          ${event.price} {event.currency}
+                        </p>
+                      )}
+
+                      <Button
+                        onClick={() => joinEventMutation.mutate(event.id)}
+                        disabled={isAttending || isFull || joinEventMutation.isPending}
+                        className={`w-full ${
+                          isAttending
+                            ? 'bg-green-600 hover:bg-green-700'
+                            : 'bg-purple-600 hover:bg-purple-700'
+                        }`}
+                      >
+                        {isAttending ? '✓ Attending' : isFull ? 'Event Full' : 'Join Event'}
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </motion.div>
-              )}
-            </section>
-          </>
+              );
+            })}
+          </div>
         )}
       </main>
     </div>

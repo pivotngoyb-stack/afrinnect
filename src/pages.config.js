@@ -24,6 +24,7 @@ import IDVerification from './pages/IDVerification';
 import SafetyCheckSetup from './pages/SafetyCheckSetup';
 import PanicButton from './pages/PanicButton';
 import BoostProfile from './pages/BoostProfile';
+import WhoLikesYou from './pages/WhoLikesYou';
 import __Layout from './Layout.jsx';
 
 
@@ -54,6 +55,7 @@ export const PAGES = {
     "SafetyCheckSetup": SafetyCheckSetup,
     "PanicButton": PanicButton,
     "BoostProfile": BoostProfile,
+    "WhoLikesYou": WhoLikesYou,
 }
 
 export const pagesConfig = {
