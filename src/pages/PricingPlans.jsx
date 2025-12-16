@@ -42,11 +42,7 @@ const PRICING_TIERS = {
       { text: 'Unlimited likes', included: true, icon: Infinity },
       { text: 'See who liked you', included: true, icon: Eye },
       { text: 'Unlimited messaging', included: true, icon: MessageCircle },
-      { text: 'Advanced cultural filters', included: true, icon: Filter },
-      { text: 'Voice notes', included: true, icon: Sparkles },
-      { text: 'No ads', included: true, icon: Star },
-      { text: 'AI match suggestions', included: true, icon: Sparkles },
-      { text: 'Travel mode', included: true, icon: Globe },
+      { text: 'Advanced filters (country, state, religion)', included: true, icon: Filter },
       { text: '1 profile boost/month', included: true, icon: Zap }
     ],
     color: 'purple'
@@ -60,12 +56,9 @@ const PRICING_TIERS = {
     },
     features: [
       { text: 'Everything in Premium', included: true },
-      { text: 'Verified badge', included: true, icon: Verified },
+      { text: 'Elite verified badge', included: true, icon: Verified },
       { text: 'Profile priority ranking', included: true, icon: Award },
-      { text: 'Read receipts', included: true, icon: Check },
       { text: 'Unlimited profile boosts', included: true, icon: Zap },
-      { text: 'Message priority delivery', included: true, icon: MessageCircle },
-      { text: 'Cultural compatibility quizzes', included: true, icon: Heart },
       { text: 'Early access to events', included: true, icon: Users }
     ],
     color: 'amber'
@@ -79,12 +72,10 @@ const PRICING_TIERS = {
     },
     features: [
       { text: 'Everything in Elite', included: true },
-      { text: 'Human matchmaker assistance', included: true, icon: Users },
-      { text: 'Personalized profile optimization', included: true, icon: Star },
-      { text: 'Curated introductions', included: true, icon: Heart },
-      { text: 'Private concierge support', included: true, icon: Shield },
-      { text: 'Invitation-only events', included: true, icon: Crown },
-      { text: 'Relationship coaching access', included: true, icon: Award }
+      { text: 'VIP verified badge', included: true, icon: Crown },
+      { text: 'Priority customer support', included: true, icon: Shield },
+      { text: 'Exclusive VIP events access', included: true, icon: Users },
+      { text: 'Featured profile placement', included: true, icon: Star }
     ],
     color: 'rose'
   }
@@ -183,7 +174,7 @@ export default function PricingPlans() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8 pb-32">
+      <main className="max-w-7xl mx-auto px-4 py-8 pb-40">
         {/* Regional Pricing Banner */}
         {isAfricanCountry && (
           <motion.div
@@ -287,26 +278,28 @@ export default function PricingPlans() {
         </Card>
       </main>
 
-      {/* Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50">
+      {/* Bottom CTA - Fixed with safe area padding */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t shadow-lg p-4 pb-6 z-50 safe-area-inset-bottom">
         <div className="max-w-lg mx-auto">
           <Button
             onClick={() => subscribeMutation.mutate()}
-            disabled={subscribeMutation.isPending}
-            className="w-full py-6 text-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+            disabled={subscribeMutation.isPending || !myProfile}
+            className="w-full py-6 text-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-xl"
           >
             {subscribeMutation.isPending ? (
               'Processing...'
+            ) : !myProfile ? (
+              'Please log in to subscribe'
             ) : price ? (
               <>
-                Subscribe to {currentTier.name} - ${(price.total * regionalDiscount).toFixed(2)}
+                Subscribe - ${(price.total * regionalDiscount).toFixed(2)}
               </>
             ) : (
               `Subscribe to ${currentTier.name}`
             )}
           </Button>
           <p className="text-center text-xs text-gray-500 mt-2">
-            Cancel anytime • Secure payment • Terms apply
+            {myProfile ? 'Cancel anytime • No hidden fees' : 'Sign in required'}
           </p>
         </div>
       </div>
