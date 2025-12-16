@@ -105,46 +105,34 @@ export default function WhoLikesYou() {
     return age;
   };
 
-  if (!myProfile?.is_premium) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md"
-        >
-          <Card className="text-center">
-            <CardContent className="p-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Lock size={40} className="text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">Premium Feature</h2>
-              <p className="text-gray-600 mb-6">
-                Upgrade to Premium to see who likes you and get unlimited matches!
-              </p>
-              <Link to={createPageUrl('PricingPlans')}>
-                <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700">
-                  <Crown size={20} className="mr-2" />
-                  Upgrade to Premium
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-    );
-  }
+  const showBlurred = !myProfile?.is_premium;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 pb-24">
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Who Likes You</h1>
-            <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white">
-              <Crown size={14} className="mr-1" />
-              Premium
-            </Badge>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Who Likes You</h1>
+              {showBlurred && (
+                <p className="text-sm text-gray-600 mt-1">
+                  {likes.length} {likes.length === 1 ? 'person' : 'people'} liked you
+                </p>
+              )}
+            </div>
+            {myProfile?.is_premium ? (
+              <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white">
+                <Crown size={14} className="mr-1" />
+                Premium
+              </Badge>
+            ) : (
+              <Link to={createPageUrl('PricingPlans')}>
+                <Button className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700">
+                  <Crown size={16} className="mr-2" />
+                  Upgrade
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -171,46 +159,69 @@ export default function WhoLikesYou() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <Card className="overflow-hidden hover:shadow-lg transition-shadow relative">
                     <div className="relative">
                       <img
                         src={profile.primary_photo || profile.photos?.[0]}
                         alt={profile.display_name}
-                        className="w-full h-64 object-cover"
+                        className={`w-full h-64 object-cover ${showBlurred ? 'blur-2xl' : ''}`}
                       />
-                      {is_super_like && (
+                      {is_super_like && !showBlurred && (
                         <Badge className="absolute top-3 right-3 bg-blue-600">
                           ⭐ Super Like
                         </Badge>
                       )}
+                      {showBlurred && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                          <div className="text-center">
+                            <Lock size={48} className="text-white mx-auto mb-2" />
+                            <p className="text-white font-semibold">Upgrade to See</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <CardContent className="p-4">
-                      <h3 className="text-lg font-bold text-gray-900">
-                        {profile.display_name}{age && `, ${age}`}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-2">
-                        {profile.current_city}, {profile.current_country}
-                      </p>
-                      {profile.bio && (
-                        <p className="text-sm text-gray-700 mb-4 line-clamp-2">
-                          {profile.bio}
-                        </p>
+                      {showBlurred ? (
+                        <>
+                          <div className="h-6 bg-gray-200 rounded mb-2 blur-sm"></div>
+                          <div className="h-4 bg-gray-200 rounded w-3/4 mb-4 blur-sm"></div>
+                          <Link to={createPageUrl('PricingPlans')}>
+                            <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700">
+                              <Crown size={18} className="mr-2" />
+                              Upgrade to See Who Likes You
+                            </Button>
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          <h3 className="text-lg font-bold text-gray-900">
+                            {profile.display_name}{age && `, ${age}`}
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-2">
+                            {profile.current_city}, {profile.current_country}
+                          </p>
+                          {profile.bio && (
+                            <p className="text-sm text-gray-700 mb-4 line-clamp-2">
+                              {profile.bio}
+                            </p>
+                          )}
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => likeMutation.mutate(profile.id)}
+                              disabled={likeMutation.isPending}
+                              className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                            >
+                              <Heart size={18} className="mr-2" />
+                              Like Back
+                            </Button>
+                            <Link to={createPageUrl(`Profile?id=${profile.id}`)} className="flex-1">
+                              <Button variant="outline" className="w-full">
+                                View Profile
+                              </Button>
+                            </Link>
+                          </div>
+                        </>
                       )}
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => likeMutation.mutate(profile.id)}
-                          disabled={likeMutation.isPending}
-                          className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-                        >
-                          <Heart size={18} className="mr-2" />
-                          Like Back
-                        </Button>
-                        <Link to={createPageUrl(`Profile?id=${profile.id}`)} className="flex-1">
-                          <Button variant="outline" className="w-full">
-                            View Profile
-                          </Button>
-                        </Link>
-                      </div>
                     </CardContent>
                   </Card>
                 </motion.div>
