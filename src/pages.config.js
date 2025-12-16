@@ -36,6 +36,7 @@ import ProfileOptimization from './pages/ProfileOptimization';
 import DatePlanner from './pages/DatePlanner';
 import BackgroundCheckRequest from './pages/BackgroundCheckRequest';
 import LanguageExchangeHub from './pages/LanguageExchangeHub';
+import PhotoPerformance from './pages/PhotoPerformance';
 import __Layout from './Layout.jsx';
 
 
@@ -78,6 +79,7 @@ export const PAGES = {
     "DatePlanner": DatePlanner,
     "BackgroundCheckRequest": BackgroundCheckRequest,
     "LanguageExchangeHub": LanguageExchangeHub,
+    "PhotoPerformance": PhotoPerformance,
 }
 
 export const pagesConfig = {

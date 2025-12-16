@@ -22,7 +22,7 @@ import CountryFlag from '@/components/shared/CountryFlag';
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import StreakBadge from '@/components/shared/StreakBadge';
 import SocialProofBanner from '@/components/shared/SocialProofBanner';
-import { Share2 } from 'lucide-react';
+import { Share2, TrendingUp } from 'lucide-react';
 
 export default function Profile() {
   const urlParams = new URLSearchParams(window.location.search);
