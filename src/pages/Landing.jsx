@@ -55,7 +55,7 @@ export default function Landing() {
       {/* Navigation */}
       <nav className="relative z-10 bg-white/10 backdrop-blur-lg border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Logo showText size="large" />
+          <Logo size="default" />
           <div className="flex items-center gap-2">
             <LanguageSelector />
             <Button 
@@ -76,6 +76,11 @@ export default function Landing() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
+          {/* Large Logo Display */}
+          <div className="mb-8">
+            <Logo size="xlarge" />
+          </div>
+
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
             {t('landing.title')}<br />
             <span className="bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent">
@@ -257,7 +262,7 @@ export default function Landing() {
       {/* Footer */}
       <footer className="relative z-10 bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <Logo showText size="default" />
+          <Logo size="default" />
           <p className="text-gray-400 mt-4">
             {t('landing.footer.tagline')}
           </p>

@@ -78,8 +78,8 @@ export default function LegalAcceptance() {
         className="max-w-2xl w-full"
       >
         <div className="text-center mb-8">
-          <Logo showText size="large" />
-          <h1 className="text-3xl font-bold text-white mt-4 mb-2">Welcome to Ubuntu</h1>
+          <Logo size="large" />
+          <h1 className="text-3xl font-bold text-white mt-4 mb-2">Welcome to Afrinnect</h1>
           <p className="text-white/80">Before we begin, please review and accept our policies</p>
         </div>
 
