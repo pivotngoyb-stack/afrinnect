@@ -10,20 +10,44 @@ export default function ProfileCard({ profile, onLike, onPass, onSuperLike, show
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [showDetails, setShowDetails] = useState(expanded);
   const [viewLogged, setViewLogged] = useState(false);
+  const [viewerProfile, setViewerProfile] = useState(null);
+
+  useEffect(() => {
+    const getViewer = async () => {
+      try {
+        const user = await base44.auth.me();
+        if (!user) return;
+        const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+        if (profiles.length > 0) setViewerProfile(profiles[0]);
+      } catch (e) {}
+    };
+    getViewer();
+  }, []);
 
   useEffect(() => {
     const logProfileView = async () => {
-      if (!viewLogged && profile?.id) {
+      if (!viewLogged && profile?.id && viewerProfile) {
         try {
-          const user = await base44.auth.me();
-          const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-          if (profiles.length > 0 && profiles[0].id !== profile.id) {
+          if (viewerProfile.id !== profile.id) {
             await base44.entities.ProfileView.create({
-              viewer_profile_id: profiles[0].id,
+              viewer_profile_id: viewerProfile.id,
               viewed_profile_id: profile.id,
               view_date: new Date().toISOString(),
               view_source: 'discovery'
             });
+            
+            // Log photo view engagement
+            const currentPhoto = profile.photos?.[currentPhotoIndex];
+            if (currentPhoto) {
+              await base44.entities.PhotoEngagement.create({
+                profile_id: profile.id,
+                photo_url: currentPhoto,
+                viewer_profile_id: viewerProfile.id,
+                action: 'view',
+                photo_index: currentPhotoIndex
+              });
+            }
+            
             setViewLogged(true);
           }
         } catch (e) {
@@ -32,7 +56,7 @@ export default function ProfileCard({ profile, onLike, onPass, onSuperLike, show
       }
     };
     logProfileView();
-  }, [profile?.id, viewLogged]);
+  }, [profile?.id, viewLogged, viewerProfile, currentPhotoIndex]);
 
   const photos = profile?.photos?.length > 0 ? profile.photos : [profile?.primary_photo || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400'];
   
@@ -257,7 +281,20 @@ export default function ProfileCard({ profile, onLike, onPass, onSuperLike, show
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={onPass}
+            onClick={async () => {
+              if (viewerProfile && profile?.photos?.[currentPhotoIndex]) {
+                try {
+                  await base44.entities.PhotoEngagement.create({
+                    profile_id: profile.id,
+                    photo_url: profile.photos[currentPhotoIndex],
+                    viewer_profile_id: viewerProfile.id,
+                    action: 'pass',
+                    photo_index: currentPhotoIndex
+                  });
+                } catch (e) {}
+              }
+              if (onPass) onPass();
+            }}
             className="w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center border-2 border-gray-200 hover:border-gray-400 transition"
           >
             <span className="text-2xl">✕</span>
@@ -275,7 +312,20 @@ export default function ProfileCard({ profile, onLike, onPass, onSuperLike, show
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={onLike}
+            onClick={async () => {
+              if (viewerProfile && profile?.photos?.[currentPhotoIndex]) {
+                try {
+                  await base44.entities.PhotoEngagement.create({
+                    profile_id: profile.id,
+                    photo_url: profile.photos[currentPhotoIndex],
+                    viewer_profile_id: viewerProfile.id,
+                    action: 'like',
+                    photo_index: currentPhotoIndex
+                  });
+                } catch (e) {}
+              }
+              if (onLike) onLike();
+            }}
             className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg flex items-center justify-center"
           >
             <Heart className="text-white fill-white" size={28} />
