@@ -12,6 +12,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import VerifyPhoto from './pages/VerifyPhoto';
 import PricingPlans from './pages/PricingPlans';
 import Analytics from './pages/Analytics';
+import Landing from './pages/Landing';
+import CustomerView from './pages/CustomerView';
 import __Layout from './Layout.jsx';
 
 
@@ -30,6 +32,8 @@ export const PAGES = {
     "VerifyPhoto": VerifyPhoto,
     "PricingPlans": PricingPlans,
     "Analytics": Analytics,
+    "Landing": Landing,
+    "CustomerView": CustomerView,
 }
 
 export const pagesConfig = {

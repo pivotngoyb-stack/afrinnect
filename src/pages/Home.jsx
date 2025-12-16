@@ -24,19 +24,26 @@ export default function Home() {
   const [showLimitPaywall, setShowLimitPaywall] = useState(false);
   const queryClient = useQueryClient();
 
-  // Fetch user's profile
+  // Fetch user's profile and redirect if needed
   useEffect(() => {
     const fetchMyProfile = async () => {
       try {
         const user = await base44.auth.me();
         if (user) {
+          // If admin, redirect to admin dashboard
+          if (user.email === 'pivotngoyb@gmail.com') {
+            window.location.href = createPageUrl('AdminDashboard');
+            return;
+          }
+          
           const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
           if (profiles.length > 0) {
             setMyProfile(profiles[0]);
           }
         }
       } catch (e) {
-        console.log('Not logged in or no profile');
+        // Not logged in, redirect to landing
+        window.location.href = createPageUrl('Landing');
       }
     };
     fetchMyProfile();

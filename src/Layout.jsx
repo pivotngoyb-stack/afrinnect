@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { Home, Heart, Calendar, User, MessageCircle, Compass, Sparkles } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 
-const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings'];
+const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView'];
 
 export default function Layout({ children, currentPageName }) {
   const [unreadCount, setUnreadCount] = useState(0);
