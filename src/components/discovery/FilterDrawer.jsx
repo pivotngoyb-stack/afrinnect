@@ -51,6 +51,12 @@ const EDUCATION_LEVELS = [
   { value: 'doctorate', label: 'Doctorate' }
 ];
 
+const LANGUAGES = [
+  'English', 'French', 'Arabic', 'Swahili', 'Yoruba', 
+  'Igbo', 'Hausa', 'Amharic', 'Zulu', 'Portuguese', 'Spanish',
+  'Lingala', 'Wolof', 'Somali', 'Berber', 'Oromo'
+];
+
 export default function FilterDrawer({ filters, onFiltersChange, isPremium = false }) {
   const [localFilters, setLocalFilters] = useState(filters || {
     age_min: 18,
@@ -284,6 +290,101 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
                     </label>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Height Range */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700 mb-4 block">
+                Height: {localFilters.height_min || 140} - {localFilters.height_max || 220} cm
+              </Label>
+              <div className="pt-2 px-2">
+                <Slider
+                  min={140}
+                  max={220}
+                  step={5}
+                  value={[localFilters.height_min || 140, localFilters.height_max || 220]}
+                  onValueChange={([min, max]) => {
+                    updateFilter('height_min', min);
+                    updateFilter('height_max', max);
+                  }}
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            {/* Languages */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700 mb-3 block">
+                Languages Spoken
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {LANGUAGES.map(lang => (
+                  <Badge
+                    key={lang}
+                    variant={localFilters.languages?.includes(lang) ? "default" : "outline"}
+                    className={`cursor-pointer transition ${
+                      localFilters.languages?.includes(lang)
+                        ? 'bg-purple-600 text-white'
+                        : 'hover:bg-purple-50'
+                    }`}
+                    onClick={() => toggleArrayItem('languages', lang)}
+                  >
+                    {lang}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Lifestyle */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700 mb-3 block">Lifestyle</Label>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs text-gray-600 mb-2 block">Smoking</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {['never', 'sometimes', 'regularly'].map(option => (
+                      <Badge
+                        key={option}
+                        variant={localFilters.smoking?.includes(option) ? "default" : "outline"}
+                        className="cursor-pointer"
+                        onClick={() => toggleArrayItem('smoking', option)}
+                      >
+                        {option}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-600 mb-2 block">Drinking</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {['never', 'socially', 'regularly'].map(option => (
+                      <Badge
+                        key={option}
+                        variant={localFilters.drinking?.includes(option) ? "default" : "outline"}
+                        className="cursor-pointer"
+                        onClick={() => toggleArrayItem('drinking', option)}
+                      >
+                        {option}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-600 mb-2 block">Fitness</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {['never', 'sometimes', 'active', 'very_active'].map(option => (
+                      <Badge
+                        key={option}
+                        variant={localFilters.fitness?.includes(option) ? "default" : "outline"}
+                        className="cursor-pointer"
+                        onClick={() => toggleArrayItem('fitness', option)}
+                      >
+                        {option.replace('_', ' ')}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
