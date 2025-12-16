@@ -10,25 +10,7 @@ import Logo from '@/components/shared/Logo';
 import AfricanPattern from '@/components/shared/AfricanPattern';
 
 export default function Landing() {
-  useEffect(() => {
-    // Check if user is already logged in and redirect
-    const checkAuth = async () => {
-      try {
-        const user = await base44.auth.me();
-        if (user) {
-          // Check if admin
-          if (user.email === 'pivotngoyb@gmail.com') {
-            window.location.href = createPageUrl('AdminDashboard');
-          } else {
-            window.location.href = createPageUrl('Home');
-          }
-        }
-      } catch (e) {
-        // Not logged in, stay on landing
-      }
-    };
-    checkAuth();
-  }, []);
+  // Removed auto-redirect - let users explore the landing page
 
   const features = [
     {
