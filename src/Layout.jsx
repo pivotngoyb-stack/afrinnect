@@ -18,8 +18,10 @@ export default function Layout({ children, currentPageName }) {
         const user = await base44.auth.me();
         if (user) {
           const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+          
+          // Only enforce legal acceptance for NEW users without profiles
           if (profiles.length === 0 && currentPageName !== 'Onboarding' && currentPageName !== 'LegalAcceptance' && currentPageName !== 'Landing') {
-            // Check if legal acceptance done
+            // Check if legal acceptance done for new users
             const acceptances = await base44.entities.LegalAcceptance.filter({ user_id: user.id });
             if (acceptances.length === 0) {
               window.location.href = createPageUrl('LegalAcceptance');
@@ -27,6 +29,8 @@ export default function Layout({ children, currentPageName }) {
               window.location.href = createPageUrl('Onboarding');
             }
           }
+          
+          // Existing users with profiles can continue using the app
           if (profiles.length > 0) {
             setMyProfile(profiles[0]);
           }
