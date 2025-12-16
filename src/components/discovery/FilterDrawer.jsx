@@ -46,7 +46,8 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
     countries_of_origin: [],
     religions: [],
     relationship_goals: [],
-    education_levels: []
+    education_levels: [],
+    verified_only: false
   });
 
   const [isOpen, setIsOpen] = useState(false);
@@ -77,7 +78,8 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
       countries_of_origin: [],
       religions: [],
       relationship_goals: [],
-      education_levels: []
+      education_levels: [],
+      verified_only: false
     };
     setLocalFilters(defaultFilters);
     onFiltersChange(defaultFilters);
@@ -89,7 +91,8 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
     localFilters.relationship_goals?.length > 0,
     localFilters.education_levels?.length > 0,
     localFilters.age_min !== 18 || localFilters.age_max !== 50,
-    localFilters.distance_km !== 100
+    localFilters.distance_km !== 100,
+    localFilters.verified_only
   ].filter(Boolean).length;
 
   return (
@@ -241,6 +244,20 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
                     </label>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Verified Only */}
+            <div className="pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-semibold text-gray-700">Verified Profiles Only</Label>
+                  <p className="text-xs text-gray-500 mt-1">Show only photo-verified users</p>
+                </div>
+                <Checkbox
+                  checked={localFilters.verified_only}
+                  onCheckedChange={(checked) => updateFilter('verified_only', checked)}
+                />
               </div>
             </div>
           </div>

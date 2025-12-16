@@ -12,6 +12,7 @@ import ProfileMini from '@/components/profile/ProfileMini';
 import FilterDrawer from '@/components/discovery/FilterDrawer';
 import Logo from '@/components/shared/Logo';
 import AfricanPattern from '@/components/shared/AfricanPattern';
+import LikesLimitPaywall from '@/components/paywall/LikesLimitPaywall';
 
 export default function Home() {
   const [viewMode, setViewMode] = useState('swipe');
@@ -20,6 +21,7 @@ export default function Home() {
   const [filters, setFilters] = useState({});
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [myProfile, setMyProfile] = useState(null);
+  const [showLimitPaywall, setShowLimitPaywall] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch user's profile
@@ -55,16 +57,17 @@ export default function Home() {
       if (filters.countries_of_origin?.length > 0) {
         filterQuery.country_of_origin = { $in: filters.countries_of_origin };
       }
-      
+
       const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 50);
-      
-      // Filter out own profile and apply age filter
+
+      // Filter out own profile and apply age and verification filters
       return allProfiles.filter(p => {
         if (myProfile && p.id === myProfile.id) return false;
         if (p.birth_date && filters.age_min && filters.age_max) {
           const age = calculateAge(p.birth_date);
           if (age < filters.age_min || age > filters.age_max) return false;
         }
+        if (filters.verified_only && !p.verification_status?.photo_verified) return false;
         return true;
       });
     },
@@ -152,7 +155,7 @@ export default function Home() {
     },
     onError: (error) => {
       if (error.message === 'daily_limit_reached') {
-        alert('Daily like limit reached! Upgrade to Premium for unlimited likes.');
+        setShowLimitPaywall(true);
       }
     }
   });
@@ -320,7 +323,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             className="fixed bottom-20 left-4 right-4 md:left-auto md:right-6 md:max-w-sm z-30"
           >
-            <Link to={createPageUrl('Premium')}>
+            <Link to={createPageUrl('PricingPlans')}>
               <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl p-4 shadow-lg text-white flex items-center gap-3 hover:shadow-xl transition-shadow">
                 <div className="p-2 bg-white/20 rounded-xl">
                   <Crown size={24} />
@@ -333,7 +336,14 @@ export default function Home() {
             </Link>
           </motion.div>
         )}
-      </main>
-    </div>
-  );
-}
+
+        {/* Likes Limit Paywall */}
+        <AnimatePresence>
+          {showLimitPaywall && (
+            <LikesLimitPaywall onClose={() => setShowLimitPaywall(false)} />
+          )}
+        </AnimatePresence>
+        </main>
+        </div>
+        );
+        }

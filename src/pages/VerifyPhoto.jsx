@@ -52,35 +52,51 @@ export default function VerifyPhoto() {
     mutationFn: async () => {
       if (!selfieUrl || !myProfile) return;
 
-      // Use AI to compare selfie with profile photos
+      // Use AI to compare selfie with profile photos with detailed face analysis
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Compare this selfie with the profile photo and determine if they're the same person.
-        
-        Look for:
-        - Similar facial structure
-        - Same person characteristics
-        - Signs of photo manipulation
-        
-        Return a confidence score 0-100 and whether they match.`,
+        prompt: `You are a professional face verification AI. Carefully analyze both images and determine if they show the same person.
+
+CRITICAL ANALYSIS REQUIRED:
+1. FACIAL STRUCTURE: Compare bone structure, face shape, jawline, forehead, cheekbones
+2. FACIAL FEATURES: Eyes (shape, size, spacing), nose (shape, size), mouth, ears
+3. SKIN TONE: Consistency in skin color and texture
+4. AGE CONSISTENCY: Both photos should show similar age
+5. UNIQUE MARKERS: Moles, scars, birthmarks, facial hair patterns
+6. AUTHENTICITY: Check for signs of deepfakes, photo manipulation, or different people
+
+VERIFICATION STANDARDS:
+- Match ONLY if you're 80%+ confident it's the same person
+- Consider lighting and angle differences
+- Look for consistent unique facial characteristics
+- Flag if images show different people or manipulated photos
+
+Return:
+- is_match: true ONLY if 80%+ confident same person
+- confidence: Your confidence level 0-100
+- reason: Detailed explanation of why you made this determination`,
         file_urls: [selfieUrl, myProfile.primary_photo],
         response_json_schema: {
           type: 'object',
           properties: {
             is_match: { type: 'boolean' },
             confidence: { type: 'number' },
-            reason: { type: 'string' }
+            reason: { type: 'string' },
+            facial_structure_match: { type: 'boolean' },
+            features_match: { type: 'boolean' },
+            authenticity_check: { type: 'boolean' }
           }
         }
       });
 
-      // Update profile if verified
-      if (result.is_match && result.confidence > 70) {
+      // Update profile if verified (requires 80%+ confidence)
+      if (result.is_match && result.confidence >= 80 && result.facial_structure_match && result.features_match) {
         await base44.entities.UserProfile.update(myProfile.id, {
           verification_status: {
             ...myProfile.verification_status,
             photo_verified: true
           },
-          verification_selfie_url: selfieUrl
+          verification_selfie_url: selfieUrl,
+          ai_safety_score: result.confidence
         });
       }
 
