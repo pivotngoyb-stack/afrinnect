@@ -31,11 +31,11 @@ export default function Home() {
         const user = await base44.auth.me();
         if (user) {
           // If admin, redirect to admin dashboard
-          if (user.email === 'pivotngoyb@gmail.com') {
+          if (user.email === 'pivotngoyb@gmail.com' || user.role === 'admin') {
             window.location.href = createPageUrl('AdminDashboard');
             return;
           }
-          
+
           const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
           if (profiles.length > 0) {
             setMyProfile(profiles[0]);

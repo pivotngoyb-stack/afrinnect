@@ -160,10 +160,10 @@ export default function PricingPlans() {
   const currentTier = PRICING_TIERS[selectedTier];
   const price = currentTier?.prices?.[selectedBilling];
 
-  if (!currentTier) {
+  if (!currentTier || !currentTier.prices) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
+        <p className="text-red-600">Invalid tier selected. Please go back and try again.</p>
       </div>
     );
   }

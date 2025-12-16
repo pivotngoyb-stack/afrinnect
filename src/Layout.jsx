@@ -18,7 +18,7 @@ export default function Layout({ children, currentPageName }) {
         const user = await base44.auth.me();
         if (user) {
           const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-          if (profiles.length === 0 && currentPageName !== 'Onboarding' && currentPageName !== 'LegalAcceptance') {
+          if (profiles.length === 0 && currentPageName !== 'Onboarding' && currentPageName !== 'LegalAcceptance' && currentPageName !== 'Landing') {
             // Check if legal acceptance done
             const acceptances = await base44.entities.LegalAcceptance.filter({ user_id: user.id });
             if (acceptances.length === 0) {

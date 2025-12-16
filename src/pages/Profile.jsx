@@ -368,14 +368,12 @@ export default function Profile() {
               </Button>
             </Link>
 
-            {!profile?.is_premium && (
-              <Link to={createPageUrl('PricingPlans')}>
-                <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" size="lg">
-                  <Crown size={18} className="mr-2" />
-                  Upgrade to Premium
-                </Button>
-              </Link>
-            )}
+            <Link to={createPageUrl('PricingPlans')}>
+              <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" size="lg">
+                <Crown size={18} className="mr-2" />
+                {profile?.is_premium ? 'Manage Subscription' : 'Upgrade to Premium'}
+              </Button>
+            </Link>
 
             <Separator className="my-6" />
 

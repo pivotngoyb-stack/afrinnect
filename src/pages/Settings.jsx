@@ -247,6 +247,16 @@ export default function Settings() {
               </div>
               <ChevronRight size={20} className="text-gray-400" />
             </Link>
+            
+            <Separator />
+            
+            <Link to={createPageUrl('PricingPlans')} className="flex items-center justify-between py-2">
+              <div>
+                <span className="text-gray-700 block">Subscription & Pricing</span>
+                <span className="text-xs text-gray-500">Manage your plan</span>
+              </div>
+              <ChevronRight size={20} className="text-gray-400" />
+            </Link>
           </CardContent>
         </Card>
 
