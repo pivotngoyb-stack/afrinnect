@@ -1,0 +1,262 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, Briefcase, GraduationCap, Heart, ChevronLeft, ChevronRight, Languages, Book, Sparkles } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
+import VerificationBadge from '../shared/VerificationBadge';
+import CountryFlag from '../shared/CountryFlag';
+
+export default function ProfileCard({ profile, onLike, onPass, onSuperLike, showActions = true, expanded = false }) {
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [showDetails, setShowDetails] = useState(expanded);
+
+  const photos = profile?.photos?.length > 0 ? profile.photos : [profile?.primary_photo || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400'];
+  
+  const calculateAge = (birthDate) => {
+    if (!birthDate) return null;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  };
+
+  const age = calculateAge(profile?.birth_date);
+
+  const nextPhoto = (e) => {
+    e?.stopPropagation();
+    setCurrentPhotoIndex((prev) => (prev + 1) % photos.length);
+  };
+
+  const prevPhoto = (e) => {
+    e?.stopPropagation();
+    setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
+  };
+
+  const relationshipLabels = {
+    dating: 'Dating',
+    serious_relationship: 'Serious Relationship',
+    marriage: 'Marriage',
+    friendship: 'Friendship',
+    networking: 'Networking'
+  };
+
+  const religionLabels = {
+    christianity: 'Christian',
+    islam: 'Muslim',
+    traditional_african: 'Traditional African',
+    spiritual: 'Spiritual',
+    agnostic: 'Agnostic',
+    atheist: 'Atheist',
+    prefer_not_say: 'Prefer not to say'
+  };
+
+  return (
+    <motion.div 
+      className="relative w-full max-w-md mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+    >
+      {/* Photo Section */}
+      <div 
+        className="relative aspect-[3/4] overflow-hidden cursor-pointer"
+        onClick={() => setShowDetails(!showDetails)}
+      >
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={currentPhotoIndex}
+            src={photos[currentPhotoIndex]}
+            alt={profile?.display_name}
+            className="w-full h-full object-cover"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          />
+        </AnimatePresence>
+
+        {/* Photo Navigation */}
+        {photos.length > 1 && (
+          <>
+            <div className="absolute top-4 left-0 right-0 flex justify-center gap-1 px-4">
+              {photos.map((_, idx) => (
+                <div 
+                  key={idx}
+                  className={`h-1 flex-1 rounded-full transition-all ${
+                    idx === currentPhotoIndex ? 'bg-white' : 'bg-white/40'
+                  }`}
+                />
+              ))}
+            </div>
+            <button 
+              onClick={prevPhoto}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-black/20 rounded-full backdrop-blur-sm hover:bg-black/40 transition"
+            >
+              <ChevronLeft className="text-white" />
+            </button>
+            <button 
+              onClick={nextPhoto}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-black/20 rounded-full backdrop-blur-sm hover:bg-black/40 transition"
+            >
+              <ChevronRight className="text-white" />
+            </button>
+          </>
+        )}
+
+        {/* Gradient Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+        {/* Profile Info Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+          <div className="flex items-center gap-2 mb-2">
+            <h2 className="text-3xl font-bold">{profile?.display_name}</h2>
+            {age && <span className="text-2xl font-light">{age}</span>}
+            <VerificationBadge verification={profile?.verification_status} />
+          </div>
+
+          <div className="flex items-center gap-2 text-white/90 mb-2">
+            <CountryFlag country={profile?.country_of_origin} size="small" />
+            {profile?.tribe_ethnicity && (
+              <span className="text-sm">• {profile.tribe_ethnicity}</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 text-white/80 text-sm">
+            <MapPin size={14} />
+            <span>{profile?.current_city}, {profile?.current_country}</span>
+          </div>
+
+          {profile?.relationship_goal && (
+            <Badge className="mt-3 bg-purple-600/80 text-white border-0">
+              <Heart size={12} className="mr-1" />
+              {relationshipLabels[profile.relationship_goal]}
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      {/* Expanded Details */}
+      <AnimatePresence>
+        {showDetails && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="p-6 space-y-4">
+              {/* Bio */}
+              {profile?.bio && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">About</h3>
+                  <p className="text-gray-700">{profile.bio}</p>
+                </div>
+              )}
+
+              {/* Quick Info */}
+              <div className="grid grid-cols-2 gap-3">
+                {profile?.profession && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Briefcase size={16} className="text-purple-600" />
+                    <span className="text-sm">{profile.profession}</span>
+                  </div>
+                )}
+                {profile?.education && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <GraduationCap size={16} className="text-purple-600" />
+                    <span className="text-sm capitalize">{profile.education?.replace('_', ' ')}</span>
+                  </div>
+                )}
+                {profile?.religion && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Book size={16} className="text-purple-600" />
+                    <span className="text-sm">{religionLabels[profile.religion]}</span>
+                  </div>
+                )}
+                {profile?.languages?.length > 0 && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Languages size={16} className="text-purple-600" />
+                    <span className="text-sm">{profile.languages.slice(0, 2).join(', ')}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Cultural Values */}
+              {profile?.cultural_values?.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Values</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.cultural_values.map((value, idx) => (
+                      <Badge key={idx} variant="outline" className="border-amber-300 text-amber-700 bg-amber-50">
+                        {value}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Interests */}
+              {profile?.interests?.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Interests</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.interests.map((interest, idx) => (
+                      <Badge key={idx} variant="secondary" className="bg-purple-100 text-purple-700">
+                        {interest}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Prompts */}
+              {profile?.prompts?.length > 0 && (
+                <div className="space-y-3">
+                  {profile.prompts.map((prompt, idx) => (
+                    <div key={idx} className="bg-gradient-to-br from-purple-50 to-amber-50 rounded-xl p-4">
+                      <p className="text-sm font-medium text-purple-700 mb-1">{prompt.question}</p>
+                      <p className="text-gray-700">{prompt.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Action Buttons */}
+      {showActions && (
+        <div className="flex items-center justify-center gap-4 p-6 pt-2 bg-gradient-to-t from-gray-50">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={onPass}
+            className="w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center border-2 border-gray-200 hover:border-gray-400 transition"
+          >
+            <span className="text-2xl">✕</span>
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={onSuperLike}
+            className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg flex items-center justify-center"
+          >
+            <Sparkles className="text-white" size={22} />
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={onLike}
+            className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg flex items-center justify-center"
+          >
+            <Heart className="text-white fill-white" size={28} />
+          </motion.button>
+        </div>
+      )}
+    </motion.div>
+  );
+}

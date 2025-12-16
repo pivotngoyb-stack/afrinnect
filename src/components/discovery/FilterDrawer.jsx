@@ -1,0 +1,260 @@
+import React, { useState } from 'react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { SlidersHorizontal, X, RotateCcw } from 'lucide-react';
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+const AFRICAN_COUNTRIES = [
+  'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
+  'Tanzania', 'Uganda', 'DR Congo', 'Cameroon', 'Ivory Coast', 'Senegal',
+  'Zimbabwe', 'Rwanda', 'Angola', 'Mali', 'Burkina Faso', 'Niger', 'Guinea'
+];
+
+const RELIGIONS = [
+  { value: 'christianity', label: 'Christianity' },
+  { value: 'islam', label: 'Islam' },
+  { value: 'traditional_african', label: 'Traditional African' },
+  { value: 'spiritual', label: 'Spiritual' },
+  { value: 'agnostic', label: 'Agnostic' },
+  { value: 'prefer_not_say', label: 'Any' }
+];
+
+const RELATIONSHIP_GOALS = [
+  { value: 'dating', label: 'Dating' },
+  { value: 'serious_relationship', label: 'Serious Relationship' },
+  { value: 'marriage', label: 'Marriage' },
+  { value: 'friendship', label: 'Friendship' }
+];
+
+const EDUCATION_LEVELS = [
+  { value: 'high_school', label: 'High School' },
+  { value: 'some_college', label: 'Some College' },
+  { value: 'bachelors', label: "Bachelor's Degree" },
+  { value: 'masters', label: "Master's Degree" },
+  { value: 'doctorate', label: 'Doctorate' }
+];
+
+export default function FilterDrawer({ filters, onFiltersChange, isPremium = false }) {
+  const [localFilters, setLocalFilters] = useState(filters || {
+    age_min: 18,
+    age_max: 50,
+    distance_km: 100,
+    countries_of_origin: [],
+    religions: [],
+    relationship_goals: [],
+    education_levels: []
+  });
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const updateFilter = (key, value) => {
+    setLocalFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const toggleArrayItem = (key, item) => {
+    setLocalFilters(prev => ({
+      ...prev,
+      [key]: prev[key]?.includes(item)
+        ? prev[key].filter(i => i !== item)
+        : [...(prev[key] || []), item]
+    }));
+  };
+
+  const applyFilters = () => {
+    onFiltersChange(localFilters);
+    setIsOpen(false);
+  };
+
+  const resetFilters = () => {
+    const defaultFilters = {
+      age_min: 18,
+      age_max: 50,
+      distance_km: 100,
+      countries_of_origin: [],
+      religions: [],
+      relationship_goals: [],
+      education_levels: []
+    };
+    setLocalFilters(defaultFilters);
+    onFiltersChange(defaultFilters);
+  };
+
+  const activeFiltersCount = [
+    localFilters.countries_of_origin?.length > 0,
+    localFilters.religions?.length > 0,
+    localFilters.relationship_goals?.length > 0,
+    localFilters.education_levels?.length > 0,
+    localFilters.age_min !== 18 || localFilters.age_max !== 50,
+    localFilters.distance_km !== 100
+  ].filter(Boolean).length;
+
+  return (
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <Button variant="outline" className="relative gap-2">
+          <SlidersHorizontal size={18} />
+          <span className="hidden sm:inline">Filters</span>
+          {activeFiltersCount > 0 && (
+            <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-purple-600 text-white text-xs">
+              {activeFiltersCount}
+            </Badge>
+          )}
+        </Button>
+      </SheetTrigger>
+      <SheetContent className="w-full sm:max-w-md p-0">
+        <SheetHeader className="p-6 border-b">
+          <div className="flex items-center justify-between">
+            <SheetTitle className="text-xl font-bold">Filters</SheetTitle>
+            <Button variant="ghost" size="sm" onClick={resetFilters} className="text-gray-500">
+              <RotateCcw size={16} className="mr-1" />
+              Reset
+            </Button>
+          </div>
+        </SheetHeader>
+        
+        <ScrollArea className="h-[calc(100vh-180px)] px-6 py-4">
+          <div className="space-y-8">
+            {/* Age Range */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700 mb-4 block">
+                Age Range: {localFilters.age_min} - {localFilters.age_max}
+              </Label>
+              <div className="pt-2 px-2">
+                <Slider
+                  min={18}
+                  max={70}
+                  step={1}
+                  value={[localFilters.age_min, localFilters.age_max]}
+                  onValueChange={([min, max]) => {
+                    updateFilter('age_min', min);
+                    updateFilter('age_max', max);
+                  }}
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            {/* Distance */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700 mb-4 block">
+                Distance: {localFilters.distance_km === 500 ? 'Global' : `${localFilters.distance_km} km`}
+              </Label>
+              <div className="pt-2 px-2">
+                <Slider
+                  min={10}
+                  max={500}
+                  step={10}
+                  value={[localFilters.distance_km]}
+                  onValueChange={([val]) => updateFilter('distance_km', val)}
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            {/* Countries of Origin */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700 mb-3 block">
+                Heritage Country
+                {!isPremium && <span className="text-amber-600 text-xs ml-2">Premium</span>}
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {AFRICAN_COUNTRIES.map(country => (
+                  <Badge
+                    key={country}
+                    variant={localFilters.countries_of_origin?.includes(country) ? "default" : "outline"}
+                    className={`cursor-pointer transition ${
+                      localFilters.countries_of_origin?.includes(country)
+                        ? 'bg-purple-600 text-white'
+                        : 'hover:bg-purple-50'
+                    } ${!isPremium ? 'opacity-50 pointer-events-none' : ''}`}
+                    onClick={() => isPremium && toggleArrayItem('countries_of_origin', country)}
+                  >
+                    {country}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Relationship Goals */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700 mb-3 block">
+                Looking For
+              </Label>
+              <div className="space-y-2">
+                {RELATIONSHIP_GOALS.map(goal => (
+                  <div key={goal.value} className="flex items-center space-x-3">
+                    <Checkbox
+                      id={goal.value}
+                      checked={localFilters.relationship_goals?.includes(goal.value)}
+                      onCheckedChange={() => toggleArrayItem('relationship_goals', goal.value)}
+                    />
+                    <label htmlFor={goal.value} className="text-sm cursor-pointer">
+                      {goal.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Religion */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700 mb-3 block">
+                Religion
+              </Label>
+              <div className="space-y-2">
+                {RELIGIONS.map(religion => (
+                  <div key={religion.value} className="flex items-center space-x-3">
+                    <Checkbox
+                      id={religion.value}
+                      checked={localFilters.religions?.includes(religion.value)}
+                      onCheckedChange={() => toggleArrayItem('religions', religion.value)}
+                    />
+                    <label htmlFor={religion.value} className="text-sm cursor-pointer">
+                      {religion.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Education */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700 mb-3 block">
+                Education Level
+                {!isPremium && <span className="text-amber-600 text-xs ml-2">Premium</span>}
+              </Label>
+              <div className="space-y-2">
+                {EDUCATION_LEVELS.map(edu => (
+                  <div key={edu.value} className="flex items-center space-x-3">
+                    <Checkbox
+                      id={edu.value}
+                      checked={localFilters.education_levels?.includes(edu.value)}
+                      onCheckedChange={() => isPremium && toggleArrayItem('education_levels', edu.value)}
+                      disabled={!isPremium}
+                    />
+                    <label htmlFor={edu.value} className={`text-sm cursor-pointer ${!isPremium ? 'opacity-50' : ''}`}>
+                      {edu.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
+
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-white">
+          <Button 
+            onClick={applyFilters}
+            className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+          >
+            Apply Filters
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
