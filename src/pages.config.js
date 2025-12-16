@@ -8,6 +8,8 @@ import Premium from './pages/Premium';
 import Report from './pages/Report';
 import Settings from './pages/Settings';
 import Onboarding from './pages/Onboarding';
+import AdminDashboard from './pages/AdminDashboard';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -21,9 +23,11 @@ export const PAGES = {
     "Report": Report,
     "Settings": Settings,
     "Onboarding": Onboarding,
+    "AdminDashboard": AdminDashboard,
 }
 
 export const pagesConfig = {
     mainPage: "Home",
     Pages: PAGES,
+    Layout: __Layout,
 };
