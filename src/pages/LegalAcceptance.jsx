@@ -11,6 +11,7 @@ import Logo from '@/components/shared/Logo';
 
 export default function LegalAcceptance() {
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [accepted, setAccepted] = useState({
     terms: false,
     privacy: false,
@@ -30,15 +31,21 @@ export default function LegalAcceptance() {
           // Already accepted - redirect to appropriate page
           const profiles = await base44.entities.UserProfile.filter({ user_id: currentUser.id });
           window.location.href = profiles.length > 0 ? createPageUrl('Home') : createPageUrl('Onboarding');
+        } else {
+          // Not accepted yet - show the page
+          setIsLoading(false);
         }
       } catch (e) {
-        window.location.href = createPageUrl('Landing');
+        // Not logged in - trigger login and come back here
+        base44.auth.redirectToLogin(window.location.href);
       }
     };
     checkUser();
   }, []);
 
   const handleAccept = async () => {
+    if (!user) return;
+    
     if (!accepted.terms || !accepted.privacy || !accepted.guidelines) {
       alert('Please accept all agreements to continue');
       return;
@@ -54,6 +61,14 @@ export default function LegalAcceptance() {
 
     window.location.href = createPageUrl('Onboarding');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-amber-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-amber-900 flex items-center justify-center p-4">
@@ -149,8 +164,8 @@ export default function LegalAcceptance() {
 
             <Button
               onClick={handleAccept}
-              disabled={!accepted.terms || !accepted.privacy || !accepted.guidelines}
-              className="w-full py-6 text-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
+              disabled={!accepted.terms || !accepted.privacy || !accepted.guidelines || !user}
+              className="w-full py-6 text-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <CheckCircle size={20} className="mr-2" />
               I Accept - Continue
