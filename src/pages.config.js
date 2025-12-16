@@ -3,6 +3,11 @@ import Matches from './pages/Matches';
 import Chat from './pages/Chat';
 import Events from './pages/Events';
 import Profile from './pages/Profile';
+import EditProfile from './pages/EditProfile';
+import Premium from './pages/Premium';
+import Report from './pages/Report';
+import Settings from './pages/Settings';
+import Onboarding from './pages/Onboarding';
 
 
 export const PAGES = {
@@ -11,6 +16,11 @@ export const PAGES = {
     "Chat": Chat,
     "Events": Events,
     "Profile": Profile,
+    "EditProfile": EditProfile,
+    "Premium": Premium,
+    "Report": Report,
+    "Settings": Settings,
+    "Onboarding": Onboarding,
 }
 
 export const pagesConfig = {
