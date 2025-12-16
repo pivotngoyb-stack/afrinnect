@@ -187,8 +187,8 @@ export default function Matches() {
                           <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow">
                             <Heart size={14} className="text-white fill-white" />
                           </div>
-                          </div>
-                          </div>
+                        </div>
+                      </Link>
                     </motion.div>
                   ))}
                 </div>
