@@ -95,7 +95,7 @@ export default function Profile() {
   const completion = calculateProfileCompletion();
 
   const handleLogout = async () => {
-    await base44.auth.logout();
+    await base44.auth.logout(createPageUrl('Home'));
   };
 
   if (isLoading) {
