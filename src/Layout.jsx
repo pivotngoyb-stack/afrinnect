@@ -6,12 +6,14 @@ import { Home, Heart, Calendar, User, MessageCircle, Compass, Sparkles, Bell } f
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from '@tanstack/react-query';
 import ScreenshotAlertNotif from '@/components/notifications/ScreenshotAlertNotif';
+import { LanguageProvider, useLanguage } from '@/components/i18n/LanguageContext';
 
 const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories'];
 
-export default function Layout({ children, currentPageName }) {
+function LayoutContent({ children, currentPageName }) {
   const [myProfile, setMyProfile] = useState(null);
   const [hasProfile, setHasProfile] = useState(true);
+  const { t } = useLanguage();
   
   useEffect(() => {
     const checkProfile = async () => {
@@ -60,11 +62,11 @@ export default function Layout({ children, currentPageName }) {
   const showNav = !PAGES_WITHOUT_NAV.includes(currentPageName);
 
   const navItems = [
-    { name: 'Home', icon: Compass, label: 'Discover' },
-    { name: 'Matches', icon: Heart, label: 'Matches' },
+    { name: 'Home', icon: Compass, label: t('home.title') },
+    { name: 'Matches', icon: Heart, label: t('matches.title') },
     { name: 'Events', icon: Calendar, label: 'Events' },
     { name: 'Notifications', icon: Bell, label: 'Alerts', badge: unreadNotifications },
-    { name: 'Profile', icon: User, label: 'Profile' }
+    { name: 'Profile', icon: User, label: t('profile.editProfile').replace(' Profile', '').replace(' le Profil', '') }
   ];
 
   return (
@@ -145,7 +147,15 @@ export default function Layout({ children, currentPageName }) {
             })}
           </div>
         </nav>
-      )}
-    </div>
-  );
-}
+        )}
+        </div>
+        );
+        }
+
+        export default function Layout(props) {
+        return (
+        <LanguageProvider>
+        <LayoutContent {...props} />
+        </LanguageProvider>
+        );
+        }
