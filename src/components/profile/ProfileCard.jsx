@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Briefcase, GraduationCap, Heart, ChevronLeft, ChevronRight, Languages, Book, Sparkles } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,30 @@ import CountryFlag from '../shared/CountryFlag';
 export default function ProfileCard({ profile, onLike, onPass, onSuperLike, showActions = true, expanded = false }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [showDetails, setShowDetails] = useState(expanded);
+  const [viewLogged, setViewLogged] = useState(false);
+
+  useEffect(() => {
+    const logProfileView = async () => {
+      if (!viewLogged && profile?.id) {
+        try {
+          const user = await base44.auth.me();
+          const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+          if (profiles.length > 0 && profiles[0].id !== profile.id) {
+            await base44.entities.ProfileView.create({
+              viewer_profile_id: profiles[0].id,
+              viewed_profile_id: profile.id,
+              view_date: new Date().toISOString(),
+              view_source: 'discovery'
+            });
+            setViewLogged(true);
+          }
+        } catch (e) {
+          // Silent fail
+        }
+      }
+    };
+    logProfileView();
+  }, [profile?.id, viewLogged]);
 
   const photos = profile?.photos?.length > 0 ? profile.photos : [profile?.primary_photo || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400'];
   
