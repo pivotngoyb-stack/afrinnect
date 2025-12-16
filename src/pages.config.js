@@ -19,6 +19,8 @@ import Privacy from './pages/Privacy';
 import CommunityGuidelines from './pages/CommunityGuidelines';
 import LegalAcceptance from './pages/LegalAcceptance';
 import Notifications from './pages/Notifications';
+import PhoneVerification from './pages/PhoneVerification';
+import IDVerification from './pages/IDVerification';
 import __Layout from './Layout.jsx';
 
 
@@ -44,6 +46,8 @@ export const PAGES = {
     "CommunityGuidelines": CommunityGuidelines,
     "LegalAcceptance": LegalAcceptance,
     "Notifications": Notifications,
+    "PhoneVerification": PhoneVerification,
+    "IDVerification": IDVerification,
 }
 
 export const pagesConfig = {

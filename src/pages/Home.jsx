@@ -68,18 +68,54 @@ export default function Home() {
         filterQuery.current_state = { $in: filters.states };
       }
 
-      const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 50);
+      const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 100);
 
-      // Filter out own profile and apply age and verification filters
-      return allProfiles.filter(p => {
+      // Apply AI matching and comprehensive filters
+      const filteredProfiles = allProfiles.filter(p => {
         if (myProfile && p.id === myProfile.id) return false;
+
+        // Age filter
         if (p.birth_date && filters.age_min && filters.age_max) {
           const age = calculateAge(p.birth_date);
           if (age < filters.age_min || age > filters.age_max) return false;
         }
+
+        // Height filter
+        if (filters.height_min && p.height_cm && p.height_cm < filters.height_min) return false;
+        if (filters.height_max && p.height_cm && p.height_cm > filters.height_max) return false;
+
+        // Lifestyle filters
+        if (filters.smoking?.length > 0 && !filters.smoking.includes(p.lifestyle?.smoking)) return false;
+        if (filters.drinking?.length > 0 && !filters.drinking.includes(p.lifestyle?.drinking)) return false;
+        if (filters.fitness?.length > 0 && !filters.fitness.includes(p.lifestyle?.fitness)) return false;
+
+        // Languages filter
+        if (filters.languages?.length > 0) {
+          const hasMatchingLanguage = filters.languages.some(lang => p.languages?.includes(lang));
+          if (!hasMatchingLanguage) return false;
+        }
+
+        // Tribe/ethnicity filter
+        if (filters.tribe_ethnicity && !p.tribe_ethnicity?.toLowerCase().includes(filters.tribe_ethnicity.toLowerCase())) {
+          return false;
+        }
+
+        // Verification filter
         if (filters.verified_only && !p.verification_status?.photo_verified) return false;
+
         return true;
       });
+
+      // Calculate AI match scores for top profiles
+      const profilesWithScores = await Promise.all(
+        filteredProfiles.slice(0, 50).map(async (p) => {
+          const score = await calculateMatchScore(myProfile, p);
+          return { ...p, matchScore: score };
+        })
+      );
+
+      // Sort by match score
+      return profilesWithScores.sort((a, b) => b.matchScore - a.matchScore);
     },
   });
 
@@ -91,6 +127,43 @@ export default function Home() {
     const m = today.getMonth() - birth.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
     return age;
+  };
+
+  // AI-powered match score calculation
+  const calculateMatchScore = async (user1, user2) => {
+    if (!user1 || !user2) return 0;
+    
+    let score = 0;
+    
+    // Cultural compatibility (30 points)
+    if (user1.country_of_origin === user2.country_of_origin) score += 15;
+    if (user1.tribe_ethnicity === user2.tribe_ethnicity) score += 10;
+    if (user1.languages?.some(l => user2.languages?.includes(l))) score += 5;
+    
+    // Values alignment (30 points)
+    if (user1.religion === user2.religion) score += 10;
+    if (user1.relationship_goal === user2.relationship_goal) score += 15;
+    const sharedValues = user1.cultural_values?.filter(v => user2.cultural_values?.includes(v))?.length || 0;
+    score += Math.min(sharedValues * 2, 5);
+    
+    // Location proximity (20 points)
+    if (user1.current_country === user2.current_country) score += 10;
+    if (user1.current_city === user2.current_city) score += 10;
+    
+    // Preference match (20 points)
+    const user1Gender = user1.gender;
+    const user2Gender = user2.gender;
+    if (user1.looking_for?.includes(user2Gender)) score += 10;
+    if (user2.looking_for?.includes(user1Gender)) score += 10;
+    
+    // Lifestyle compatibility (bonus)
+    if (user1.lifestyle?.smoking === user2.lifestyle?.smoking) score += 3;
+    if (user1.lifestyle?.drinking === user2.lifestyle?.drinking) score += 3;
+    if (user1.lifestyle?.fitness === user2.lifestyle?.fitness) score += 2;
+    const sharedInterests = user1.interests?.filter(i => user2.interests?.includes(i))?.length || 0;
+    score += Math.min(sharedInterests * 2, 8);
+    
+    return Math.min(Math.round(score), 100);
   };
 
   // Check daily like limit

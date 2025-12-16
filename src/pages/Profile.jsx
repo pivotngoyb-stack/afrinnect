@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import {
   Settings, Edit2, Camera, Shield, Star, Crown, MapPin,
   Briefcase, GraduationCap, Book, Languages, Heart, ChevronRight,
-  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart
+  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -357,6 +357,24 @@ export default function Profile() {
                 <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
                   <Shield size={18} className="mr-2" />
                   Verify Your Photo
+                </Button>
+              </Link>
+            )}
+
+            {!profile?.verification_status?.phone_verified && (
+              <Link to={createPageUrl('PhoneVerification')}>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700" size="lg">
+                  <Shield size={18} className="mr-2" />
+                  Verify Your Phone
+                </Button>
+              </Link>
+            )}
+
+            {!profile?.verification_status?.id_verified && (
+              <Link to={createPageUrl('IDVerification')}>
+                <Button className="w-full bg-orange-600 hover:bg-orange-700" size="lg">
+                  <IdCard size={18} className="mr-2" />
+                  Verify Your Age (18+)
                 </Button>
               </Link>
             )}

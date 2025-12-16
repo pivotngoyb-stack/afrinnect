@@ -6,7 +6,7 @@ import { Home, Heart, Calendar, User, MessageCircle, Compass, Sparkles, Bell } f
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from '@tanstack/react-query';
 
-const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications'];
+const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto'];
 
 export default function Layout({ children, currentPageName }) {
   const [myProfile, setMyProfile] = useState(null);
