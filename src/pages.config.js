@@ -14,6 +14,10 @@ import PricingPlans from './pages/PricingPlans';
 import Analytics from './pages/Analytics';
 import Landing from './pages/Landing';
 import CustomerView from './pages/CustomerView';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
+import CommunityGuidelines from './pages/CommunityGuidelines';
+import LegalAcceptance from './pages/LegalAcceptance';
 import __Layout from './Layout.jsx';
 
 
@@ -34,6 +38,10 @@ export const PAGES = {
     "Analytics": Analytics,
     "Landing": Landing,
     "CustomerView": CustomerView,
+    "Terms": Terms,
+    "Privacy": Privacy,
+    "CommunityGuidelines": CommunityGuidelines,
+    "LegalAcceptance": LegalAcceptance,
 }
 
 export const pagesConfig = {
