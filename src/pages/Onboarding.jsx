@@ -23,29 +23,11 @@ const AFRICAN_COUNTRIES = [
   'Algeria', 'Tunisia', 'Libya', 'Somalia', 'Eritrea', 'Djibouti'
 ];
 
-const EUROPE_USA_COUNTRIES = [
-  'USA',
-  'United Kingdom',
-  'France',
-  'Germany',
-  'Italy',
-  'Spain',
-  'Netherlands',
-  'Belgium',
-  'Portugal',
-  'Sweden',
-  'Norway',
-  'Denmark',
-  'Finland',
-  'Switzerland',
-  'Austria',
-  'Ireland',
-  'Poland',
-  'Greece',
-  'Czech Republic',
-  'Hungary',
-  'Romania',
-  'Bulgaria'
+const OTHER_COUNTRIES = [
+  'USA', 'United Kingdom', 'France', 'Germany', 'Italy', 'Spain', 
+  'Netherlands', 'Belgium', 'Portugal', 'Sweden', 'Norway', 'Denmark',
+  'Finland', 'Switzerland', 'Austria', 'Ireland', 'Poland', 'Greece',
+  'Czech Republic', 'Hungary', 'Romania', 'Bulgaria'
 ];
 
 const ALL_COUNTRIES = [
@@ -74,7 +56,6 @@ export default function Onboarding() {
     relationship_goal: '',
     interests: []
   });
-  const [countrySearch, setCountrySearch] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
@@ -336,8 +317,8 @@ export default function Onboarding() {
             <SelectContent>
               {formData.ethnicity === 'non_african_interested' ? (
                 <>
-                  <SelectItem value="divider" disabled className="font-semibold">── Your Country ──</SelectItem>
-                  {EUROPE_USA_COUNTRIES.map(country => (
+                  <SelectItem value="divider" disabled className="font-semibold">── Europe & USA ──</SelectItem>
+                  {OTHER_COUNTRIES.map(country => (
                     <SelectItem key={country} value={country}>{country}</SelectItem>
                   ))}
                 </>
@@ -360,43 +341,33 @@ export default function Onboarding() {
 
         <div>
           <Label className="text-base">Where do you live now?</Label>
-          <div className="relative mt-2">
-            <Input
-              value={countrySearch || formData.current_country}
-              onChange={(e) => {
-                setCountrySearch(e.target.value);
-                const match = EUROPE_USA_COUNTRIES.find(c => 
-                  c.toLowerCase().startsWith(e.target.value.toLowerCase())
-                );
-                if (match && e.target.value.toLowerCase() === match.toLowerCase()) {
-                  updateField('current_country', match);
-                }
-              }}
-              placeholder="Type to search countries..."
-              className="h-12"
-            />
-            {countrySearch && (
-              <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-auto">
-                {EUROPE_USA_COUNTRIES
-                  .filter(country => 
-                    country.toLowerCase().includes(countrySearch.toLowerCase())
-                  )
-                  .map(country => (
-                    <button
-                      key={country}
-                      type="button"
-                      onClick={() => {
-                        updateField('current_country', country);
-                        setCountrySearch('');
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-purple-50 transition"
-                    >
-                      {country}
-                    </button>
-                  ))}
+          <Select value={formData.current_country} onValueChange={(v) => updateField('current_country', v)}>
+            <SelectTrigger className="mt-2 h-12">
+              <SelectValue placeholder="Select your current country" />
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px]">
+              <div className="sticky top-0 bg-white p-2 border-b">
+                <Input
+                  placeholder="Type to search..."
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => {
+                    const search = e.target.value.toLowerCase();
+                    const items = document.querySelectorAll('[data-country]');
+                    items.forEach(item => {
+                      const country = item.getAttribute('data-country').toLowerCase();
+                      item.style.display = country.includes(search) ? '' : 'none';
+                    });
+                  }}
+                  className="h-9"
+                />
               </div>
-            )}
-          </div>
+              {OTHER_COUNTRIES.map(country => (
+                <SelectItem key={country} value={country} data-country={country}>
+                  {country}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <p className="text-xs text-gray-400 mt-1">Europe & USA only</p>
         </div>
 
