@@ -11,6 +11,7 @@ import Onboarding from './pages/Onboarding';
 import AdminDashboard from './pages/AdminDashboard';
 import VerifyPhoto from './pages/VerifyPhoto';
 import PricingPlans from './pages/PricingPlans';
+import Analytics from './pages/Analytics';
 import __Layout from './Layout.jsx';
 
 
@@ -28,6 +29,7 @@ export const PAGES = {
     "AdminDashboard": AdminDashboard,
     "VerifyPhoto": VerifyPhoto,
     "PricingPlans": PricingPlans,
+    "Analytics": Analytics,
 }
 
 export const pagesConfig = {

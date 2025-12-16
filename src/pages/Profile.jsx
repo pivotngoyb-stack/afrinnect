@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import {
   Settings, Edit2, Camera, Shield, Star, Crown, MapPin,
   Briefcase, GraduationCap, Book, Languages, Heart, ChevronRight,
-  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles
+  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -344,6 +344,14 @@ export default function Profile() {
         {/* Action Buttons (Own profile) */}
         {isOwnProfile && (
           <div className="space-y-3 mt-8">
+            <Link to={createPageUrl('Analytics')}>
+              <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" size="lg">
+                <BarChart size={18} className="mr-2" />
+                View Analytics
+                {profile?.is_premium && <Badge className="ml-2 bg-amber-500 text-xs">Premium</Badge>}
+              </Button>
+            </Link>
+
             {!profile?.verification_status?.photo_verified && (
               <Link to={createPageUrl('VerifyPhoto')}>
                 <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
@@ -361,7 +369,7 @@ export default function Profile() {
             </Link>
 
             {!profile?.is_premium && (
-              <Link to={createPageUrl('Premium')}>
+              <Link to={createPageUrl('PricingPlans')}>
                 <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" size="lg">
                   <Crown size={18} className="mr-2" />
                   Upgrade to Premium
