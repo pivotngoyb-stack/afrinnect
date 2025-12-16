@@ -145,7 +145,7 @@ export default function Onboarding() {
       case 2: return formData.gender && formData.looking_for.length > 0;
       case 3: return formData.country_of_origin && formData.current_country && formData.current_city;
       case 4: return formData.relationship_goal;
-      case 5: return formData.photos.length >= 1;
+      case 5: return formData.photos.length >= 4;
       case 6: return formData.interests.length >= 3;
       default: return false;
     }
@@ -431,7 +431,7 @@ export default function Onboarding() {
       exit={{ opacity: 0, y: -20 }}
     >
       <h2 className="text-2xl font-bold text-gray-900 mb-2">Add your photos</h2>
-      <p className="text-gray-500 mb-8">Show your best self! Add at least 1 photo</p>
+      <p className="text-gray-500 mb-8">Show your best self! Add 4 photos ({formData.photos.length}/4)</p>
 
       <div className="grid grid-cols-3 gap-3">
         {formData.photos.map((photo, idx) => (
