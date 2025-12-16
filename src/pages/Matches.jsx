@@ -13,6 +13,8 @@ import Logo from '@/components/shared/Logo';
 import ConversationItem from '@/components/messaging/ConversationItem';
 import ProfileMini from '@/components/profile/ProfileMini';
 import ProfileCard from '@/components/profile/ProfileCard';
+import CountdownTimer from '@/components/shared/CountdownTimer';
+import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 
 export default function Matches() {
   const [myProfile, setMyProfile] = useState(null);
@@ -113,7 +115,27 @@ export default function Matches() {
     enabled: matchesData.length > 0
   });
 
-  const newMatches = matchedProfiles.filter(p => !messagesMap[p.match?.id]);
+  // Check for expired matches
+  useEffect(() => {
+    const checkExpiredMatches = async () => {
+      const now = new Date();
+      for (const match of matchesData) {
+        if (match.expires_at && new Date(match.expires_at) < now && !match.is_expired) {
+          await base44.entities.Match.update(match.id, {
+            is_expired: true,
+            status: 'expired'
+          });
+          queryClient.invalidateQueries(['matches']);
+        }
+      }
+    };
+    
+    checkExpiredMatches();
+    const interval = setInterval(checkExpiredMatches, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [matchesData, queryClient]);
+
+  const newMatches = matchedProfiles.filter(p => !messagesMap[p.match?.id] && !p.match?.is_expired);
   const conversations = matchedProfiles.filter(p => messagesMap[p.match?.id]);
 
   return (
@@ -167,31 +189,50 @@ export default function Matches() {
                   New Matches
                 </h3>
                 <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-                  {newMatches.map(profile => (
-                    <motion.div
-                      key={profile.id}
-                      initial={{ scale: 0.9, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="flex-shrink-0 w-32"
-                    >
-                      <Link to={createPageUrl(`Chat?matchId=${profile.match?.id}`)}>
-                        <div className="relative">
-                          <img
-                            src={profile.primary_photo || profile.photos?.[0] || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200'}
-                            alt={profile.display_name}
-                            className="w-32 h-40 object-cover rounded-2xl shadow-md hover:shadow-lg transition"
-                          />
-                          <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent rounded-b-2xl">
-                            <p className="text-white font-medium text-sm truncate">{profile.display_name}</p>
+                  {newMatches.map(profile => {
+                    const expiresAt = profile.match?.expires_at || new Date(Date.now() + 86400000).toISOString();
+                    return (
+                      <motion.div
+                        key={profile.id}
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="flex-shrink-0 w-32"
+                      >
+                        <Link to={createPageUrl(`Chat?matchId=${profile.match?.id}`)}>
+                          <div className="relative">
+                            <img
+                              src={profile.primary_photo || profile.photos?.[0] || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200'}
+                              alt={profile.display_name}
+                              className="w-32 h-40 object-cover rounded-2xl shadow-md hover:shadow-lg transition"
+                            />
+                            <div className="absolute top-2 left-2">
+                              <CountdownTimer
+                                expiresAt={expiresAt}
+                                onExpire={() => queryClient.invalidateQueries(['matches'])}
+                              />
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent rounded-b-2xl">
+                              <p className="text-white font-medium text-sm truncate">{profile.display_name}</p>
+                            </div>
+                            <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow">
+                              <Heart size={14} className="text-white fill-white" />
+                            </div>
                           </div>
-                          <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow">
-                            <Heart size={14} className="text-white fill-white" />
-                          </div>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  ))}
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
                 </div>
+              </div>
+            )}
+
+            {loadingMatches && (
+              <div className="flex gap-4 overflow-x-auto pb-4">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="flex-shrink-0 w-32">
+                    <LoadingSkeleton variant="grid" />
+                  </div>
+                ))}
               </div>
             )}
 

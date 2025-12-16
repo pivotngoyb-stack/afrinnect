@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import IceBreakerPrompts from '@/components/chat/IceBreakerPrompts';
 import { AnimatePresence } from 'framer-motion';
+import TypingIndicator from '@/components/shared/TypingIndicator';
+import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 
 export default function Chat() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -28,7 +30,10 @@ export default function Chat() {
   const [showReport, setShowReport] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [showIceBreakers, setShowIceBreakers] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
   const queryClient = useQueryClient();
 
   // Screenshot detection
@@ -248,10 +253,34 @@ export default function Chat() {
     }
   };
 
+  // Typing indicator handler
+  const handleTyping = () => {
+    if (!isTyping) {
+      setIsTyping(true);
+      // In real app, send typing status to other user via websocket
+    }
+    
+    clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+    }, 2000);
+  };
+
+  // Simulate other user typing (in real app, this would come from websocket)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (Math.random() > 0.95) {
+        setOtherUserTyping(true);
+        setTimeout(() => setOtherUserTyping(false), 3000);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   if (!otherProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
+        <LoadingSkeleton variant="chat" />
       </div>
     );
   }
@@ -325,9 +354,17 @@ export default function Chat() {
               </div>
             </div>
           );
-        })}
-        <div ref={messagesEndRef} />
-      </div>
+          })}
+
+          {/* Typing Indicator */}
+          <AnimatePresence>
+          {otherUserTyping && (
+          <TypingIndicator name={otherProfile.display_name} />
+          )}
+          </AnimatePresence>
+
+          <div ref={messagesEndRef} />
+          </div>
 
       {/* Input */}
       <div className="bg-white border-t p-4">
@@ -368,7 +405,10 @@ export default function Chat() {
           <Input
             placeholder="Type a message..."
             value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
+            onChange={(e) => {
+              setMessageText(e.target.value);
+              handleTyping();
+            }}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
             className="flex-1"
           />

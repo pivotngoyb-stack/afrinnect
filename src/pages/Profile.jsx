@@ -20,6 +20,9 @@ import { Label } from "@/components/ui/label";
 import VerificationBadge from '@/components/shared/VerificationBadge';
 import CountryFlag from '@/components/shared/CountryFlag';
 import AfricanPattern from '@/components/shared/AfricanPattern';
+import StreakBadge from '@/components/shared/StreakBadge';
+import SocialProofBanner from '@/components/shared/SocialProofBanner';
+import { Share2 } from 'lucide-react';
 
 export default function Profile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -27,6 +30,7 @@ export default function Profile() {
   
   const [myProfile, setMyProfile] = useState(null);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [socialProofData, setSocialProofData] = useState({ views: 0, likes: 0, percentile: 0 });
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -46,6 +50,46 @@ export default function Profile() {
     };
     fetchMyProfile();
   }, [profileId]);
+
+  // Fetch social proof data
+  useEffect(() => {
+    const fetchSocialProof = async () => {
+      if (!profile || !isOwnProfile) return;
+
+      const today = new Date().toISOString().split('T')[0];
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+
+      // Views today
+      const views = await base44.entities.ProfileView.filter({
+        viewed_profile_id: profile.id,
+        viewed_at: { $gte: today }
+      });
+
+      // Likes this week
+      const likes = await base44.entities.Like.filter({
+        liked_id: profile.id,
+        created_date: { $gte: weekAgo }
+      });
+
+      setSocialProofData({
+        views: views.length,
+        likes: likes.length,
+        percentile: profile.profile_performance_percentile || 50
+      });
+
+      // Send notification
+      if (views.length > 5) {
+        await base44.entities.Notification.create({
+          user_profile_id: profile.id,
+          type: 'profile_performance',
+          title: `${views.length} people viewed your profile today! 🔥`,
+          message: 'Keep your profile fresh to get even more matches!'
+        });
+      }
+    };
+
+    fetchSocialProof();
+  }, [profile, isOwnProfile]);
 
   // Fetch profile to view
   const { data: profile, isLoading } = useQuery({
@@ -96,6 +140,24 @@ export default function Profile() {
 
   const handleLogout = async () => {
     await base44.auth.logout(createPageUrl('Home'));
+  };
+
+  const handleShareProfile = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${profile.display_name}'s Profile`,
+          text: `Check out ${profile.display_name} on Afrinnect!`,
+          url: window.location.href
+        });
+      } catch (err) {
+        console.log('Share failed');
+      }
+    } else {
+      // Fallback: copy link
+      navigator.clipboard.writeText(window.location.href);
+      alert('Profile link copied!');
+    }
   };
 
   if (isLoading) {
@@ -173,7 +235,31 @@ export default function Profile() {
               Premium Member
             </Badge>
           )}
+
+          {isOwnProfile && profile?.login_streak >= 3 && (
+            <div className="mt-3">
+              <StreakBadge streak={profile.login_streak} />
+            </div>
+          )}
+
+          {!isOwnProfile && (
+            <Button onClick={handleShareProfile} variant="outline" size="sm" className="mt-3">
+              <Share2 size={14} className="mr-2" />
+              Share Profile
+            </Button>
+          )}
         </div>
+
+        {/* Social Proof Banner (Own profile only) */}
+        {isOwnProfile && (socialProofData.views > 0 || socialProofData.likes > 0) && (
+          <div className="mb-6">
+            <SocialProofBanner 
+              viewsToday={socialProofData.views}
+              likesThisWeek={socialProofData.likes}
+              percentile={socialProofData.percentile}
+            />
+          </div>
+        )}
 
         {/* Profile Completion (Own profile only) */}
         {isOwnProfile && completion < 100 && (
