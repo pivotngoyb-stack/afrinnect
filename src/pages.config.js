@@ -37,6 +37,9 @@ import DatePlanner from './pages/DatePlanner';
 import BackgroundCheckRequest from './pages/BackgroundCheckRequest';
 import LanguageExchangeHub from './pages/LanguageExchangeHub';
 import PhotoPerformance from './pages/PhotoPerformance';
+import Stories from './pages/Stories';
+import Communities from './pages/Communities';
+import VideoEvents from './pages/VideoEvents';
 import __Layout from './Layout.jsx';
 
 
@@ -80,6 +83,9 @@ export const PAGES = {
     "BackgroundCheckRequest": BackgroundCheckRequest,
     "LanguageExchangeHub": LanguageExchangeHub,
     "PhotoPerformance": PhotoPerformance,
+    "Stories": Stories,
+    "Communities": Communities,
+    "VideoEvents": VideoEvents,
 }
 
 export const pagesConfig = {
