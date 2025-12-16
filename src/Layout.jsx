@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { Home, Heart, Calendar, User, MessageCircle, Compass, Sparkles, Bell } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from '@tanstack/react-query';
+import ScreenshotAlertNotif from '@/components/notifications/ScreenshotAlertNotif';
 
 const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto'];
 
@@ -99,6 +100,9 @@ export default function Layout({ children, currentPageName }) {
       `}</style>
 
       {children}
+
+      {/* Screenshot Alert Notifications */}
+      {myProfile && <ScreenshotAlertNotif myProfileId={myProfile.id} />}
 
       {/* Bottom Navigation */}
       {showNav && (

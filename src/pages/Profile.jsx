@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import {
   Settings, Edit2, Camera, Shield, Star, Crown, MapPin,
   Briefcase, GraduationCap, Book, Languages, Heart, ChevronRight,
-  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard
+  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard, RotateCcw
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -392,6 +392,24 @@ export default function Profile() {
                 {profile?.is_premium ? 'Manage Subscription' : 'Upgrade to Premium'}
               </Button>
             </Link>
+
+            {profile?.is_premium && (
+              <>
+                <Link to={createPageUrl('TravelMode')}>
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" size="lg">
+                    <MapPin size={18} className="mr-2" />
+                    Travel Mode
+                  </Button>
+                </Link>
+
+                <Link to={createPageUrl('Rewind')}>
+                  <Button className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700" size="lg">
+                    <RotateCcw size={18} className="mr-2" />
+                    Rewind
+                  </Button>
+                </Link>
+              </>
+            )}
 
             <Separator className="my-6" />
 

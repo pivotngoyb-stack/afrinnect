@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Send, Mic, Image, Languages, AlertTriangle, MoreVertical, Flag } from 'lucide-react';
+import { ArrowLeft, Send, Mic, Image, Languages, AlertTriangle, MoreVertical, Flag, Sparkles } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +12,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import IceBreakerPrompts from '@/components/chat/IceBreakerPrompts';
+import { AnimatePresence } from 'framer-motion';
 
 export default function Chat() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -25,6 +27,7 @@ export default function Chat() {
   const [translateLang, setTranslateLang] = useState('en');
   const [showReport, setShowReport] = useState(false);
   const [reportReason, setReportReason] = useState('');
+  const [showIceBreakers, setShowIceBreakers] = useState(false);
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -329,6 +332,15 @@ export default function Chat() {
       {/* Input */}
       <div className="bg-white border-t p-4">
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowIceBreakers(true)}
+            title="Ice breakers"
+          >
+            <Sparkles size={20} className="text-purple-600" />
+          </Button>
+
           <input
             type="file"
             accept="image/*"
@@ -396,7 +408,17 @@ export default function Chat() {
             </Button>
           </div>
         </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
+        </Dialog>
+
+        {/* Ice Breaker Prompts */}
+        <AnimatePresence>
+        {showIceBreakers && (
+          <IceBreakerPrompts
+            onSelectQuestion={(q) => setMessageText(q)}
+            onClose={() => setShowIceBreakers(false)}
+          />
+        )}
+        </AnimatePresence>
+        </div>
+        );
+        }

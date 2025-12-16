@@ -25,6 +25,8 @@ import SafetyCheckSetup from './pages/SafetyCheckSetup';
 import PanicButton from './pages/PanicButton';
 import BoostProfile from './pages/BoostProfile';
 import WhoLikesYou from './pages/WhoLikesYou';
+import TravelMode from './pages/TravelMode';
+import Rewind from './pages/Rewind';
 import __Layout from './Layout.jsx';
 
 
@@ -56,6 +58,8 @@ export const PAGES = {
     "PanicButton": PanicButton,
     "BoostProfile": BoostProfile,
     "WhoLikesYou": WhoLikesYou,
+    "TravelMode": TravelMode,
+    "Rewind": Rewind,
 }
 
 export const pagesConfig = {
