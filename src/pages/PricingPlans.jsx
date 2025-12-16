@@ -174,7 +174,7 @@ export default function PricingPlans() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8 pb-40">
+      <main className="max-w-7xl mx-auto px-4 py-8 pb-48">
         {/* Regional Pricing Banner */}
         {isAfricanCountry && (
           <motion.div
@@ -279,7 +279,7 @@ export default function PricingPlans() {
       </main>
 
       {/* Bottom CTA - Fixed with safe area padding */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t shadow-lg p-4 pb-6 z-50 safe-area-inset-bottom">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t shadow-lg p-4 pb-24 z-50 safe-area-inset-bottom">
         <div className="max-w-lg mx-auto">
           <Button
             onClick={() => subscribeMutation.mutate()}
