@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Grid3X3, Layers, Globe, MapPin, Sparkles, Crown, Heart as HeartIcon } from 'lucide-react';
+import { Grid3X3, Layers, Globe, MapPin, Sparkles, Crown, Heart as HeartIcon, RotateCcw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileCard from '@/components/profile/ProfileCard';
@@ -14,6 +14,9 @@ import Logo from '@/components/shared/Logo';
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import LikesLimitPaywall from '@/components/paywall/LikesLimitPaywall';
 import AdBanner from '@/components/ads/AdBanner';
+import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
+import TutorialTooltip from '@/components/shared/TutorialTooltip';
+import confetti from 'canvas-confetti';
 
 export default function Home() {
   const [viewMode, setViewMode] = useState('swipe');
@@ -23,6 +26,9 @@ export default function Home() {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [myProfile, setMyProfile] = useState(null);
   const [showLimitPaywall, setShowLimitPaywall] = useState(false);
+  const [swipeHistory, setSwipeHistory] = useState([]);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showMatchCelebration, setShowMatchCelebration] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch user's profile and redirect if needed
@@ -49,7 +55,33 @@ export default function Home() {
 
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
         if (profiles.length > 0) {
-          setMyProfile(profiles[0]);
+          const profile = profiles[0];
+          setMyProfile(profile);
+          
+          // Check if tutorial should show
+          if (!profile.tutorial_completed) {
+            setShowTutorial(true);
+          }
+
+          // Update login streak
+          const today = new Date().toISOString().split('T')[0];
+          const lastLogin = profile.last_login_date;
+          const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+          
+          if (lastLogin !== today) {
+            let newStreak = profile.login_streak || 0;
+            if (lastLogin === yesterday) {
+              newStreak += 1; // Consecutive day
+            } else if (lastLogin !== today) {
+              newStreak = 1; // Reset streak
+            }
+            
+            await base44.entities.UserProfile.update(profile.id, {
+              login_streak: newStreak,
+              last_login_date: today,
+              last_active: new Date().toISOString()
+            });
+          }
         } else {
           window.location.href = createPageUrl('Landing');
         }
@@ -319,7 +351,14 @@ export default function Home() {
     },
     onSuccess: (data) => {
       if (data?.isMatch) {
-        // Show match animation/notification
+        // Celebrate match with confetti
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+        setShowMatchCelebration(true);
+        setTimeout(() => setShowMatchCelebration(false), 3000);
       }
       setCurrentIndex(prev => prev + 1);
     },
@@ -331,15 +370,57 @@ export default function Home() {
   });
 
   const handleLike = (profile) => {
+    // Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+    setSwipeHistory([...swipeHistory, { profile, action: 'like', index: currentIndex }]);
     likeMutation.mutate({ likedId: profile.id });
   };
 
   const handleSuperLike = (profile) => {
+    // Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate([50, 50, 50]);
+    }
+    setSwipeHistory([...swipeHistory, { profile, action: 'superlike', index: currentIndex }]);
     likeMutation.mutate({ likedId: profile.id, isSuperLike: true });
   };
 
   const handlePass = () => {
+    // Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(30);
+    }
+    setSwipeHistory([...swipeHistory, { profile: currentProfile, action: 'pass', index: currentIndex }]);
     setCurrentIndex(prev => prev + 1);
+  };
+
+  const handleRewind = () => {
+    if (swipeHistory.length === 0 || !myProfile?.is_premium) return;
+    
+    const lastAction = swipeHistory[swipeHistory.length - 1];
+    setCurrentIndex(lastAction.index);
+    setSwipeHistory(swipeHistory.slice(0, -1));
+    
+    if (navigator.vibrate) {
+      navigator.vibrate(100);
+    }
+  };
+
+  const tutorialSteps = [
+    { icon: '👋', title: 'Welcome to Afrinnect!', description: 'Swipe right to like, left to pass. Let\'s find your perfect match!' },
+    { icon: '⭐', title: 'Super Like', description: 'Tap the star to super like someone special. They\'ll know you\'re really interested!' },
+    { icon: '🔥', title: 'Daily Matches', description: 'Check your daily curated matches for the best compatibility!' },
+    { icon: '💎', title: 'Premium Features', description: 'Upgrade to see who likes you, get unlimited likes, and more!' }
+  ];
+
+  const completeTutorial = async () => {
+    if (myProfile) {
+      await base44.entities.UserProfile.update(myProfile.id, {
+        tutorial_completed: true
+      });
+    }
   };
 
   const currentProfile = profiles[currentIndex];
@@ -412,12 +493,23 @@ export default function Home() {
         <AdBanner placement="discovery" userProfile={myProfile} />
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-[60vh]">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
+          <div className="flex items-center justify-center min-h-[70vh]">
+            <LoadingSkeleton variant="card" />
           </div>
         ) : viewMode === 'swipe' ? (
           /* Swipe Mode */
-          <div className="flex items-center justify-center min-h-[70vh]">
+          <div className="flex items-center justify-center min-h-[70vh] relative">
+            {/* Rewind Button (Premium) */}
+            {myProfile?.is_premium && swipeHistory.length > 0 && (
+              <Button
+                onClick={handleRewind}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 rounded-full w-14 h-14 bg-amber-500 hover:bg-amber-600"
+                title="Rewind last swipe"
+              >
+                <RotateCcw size={24} />
+              </Button>
+            )}
+            
             <AnimatePresence mode="wait">
               {hasMoreProfiles && currentProfile ? (
                 <ProfileCard
@@ -534,6 +626,28 @@ export default function Home() {
         <AnimatePresence>
           {showLimitPaywall && (
             <LikesLimitPaywall onClose={() => setShowLimitPaywall(false)} />
+          )}
+        </AnimatePresence>
+
+        {/* Tutorial */}
+        {showTutorial && (
+          <TutorialTooltip steps={tutorialSteps} onComplete={completeTutorial} />
+        )}
+
+        {/* Match Celebration */}
+        <AnimatePresence>
+          {showMatchCelebration && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.5 }}
+              className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+            >
+              <div className="text-center">
+                <div className="text-8xl mb-4">💕</div>
+                <h2 className="text-4xl font-bold text-white drop-shadow-lg">It's a Match!</h2>
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
         </main>
