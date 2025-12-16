@@ -228,7 +228,7 @@ export const translations = {
       blockWarning: "You won't be able to message each other anymore."
     },
     premium: {
-      title: "Ubuntu Premium",
+      title: "Afrinnect Premium",
       subtitle: "Find your perfect match faster",
       premiumFeatures: "Premium Features",
       unlimitedLikes: "Unlimited Likes",
@@ -490,7 +490,7 @@ export const translations = {
       blockWarning: "Vous ne pourrez plus vous envoyer de messages."
     },
     premium: {
-      title: "Ubuntu Premium",
+      title: "Afrinnect Premium",
       subtitle: "Trouvez votre match parfait plus rapidement",
       premiumFeatures: "Fonctionnalités Premium",
       unlimitedLikes: "J'aime Illimités",
