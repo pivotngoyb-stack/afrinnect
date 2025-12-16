@@ -32,6 +32,9 @@ import VideoProfileManagement from '@/components/admin/VideoProfileManagement';
 import SuccessStoryModeration from '@/components/admin/SuccessStoryModeration';
 import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
 import DateFeedbackReview from '@/components/admin/DateFeedbackReview';
+import StoryManagement from '@/components/admin/StoryManagement';
+import CommunityManagement from '@/components/admin/CommunityManagement';
+import VideoEventManagement from '@/components/admin/VideoEventManagement';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -365,7 +368,12 @@ export default function AdminDashboard() {
           </div>
         );
       case 'events':
-        return <EventManagement events={events} />;
+        return (
+          <div className="space-y-6">
+            <EventManagement events={events} />
+            <VideoEventManagement />
+          </div>
+        );
       case 'messaging':
         return <BroadcastMessages broadcasts={broadcastMessages} profiles={profiles} currentUser={currentUser} />;
       case 'support':
@@ -373,6 +381,8 @@ export default function AdminDashboard() {
       case 'compliance':
         return (
           <div className="space-y-6">
+            <StoryManagement />
+            <CommunityManagement />
             <PricingManagement plans={pricingPlans} />
             <VideoProfileManagement />
             <SuccessStoryModeration />
