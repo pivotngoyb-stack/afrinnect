@@ -158,7 +158,15 @@ export default function PricingPlans() {
   });
 
   const currentTier = PRICING_TIERS[selectedTier];
-  const price = currentTier.prices?.[selectedBilling];
+  const price = currentTier?.prices?.[selectedBilling];
+
+  if (!currentTier) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 relative">
@@ -206,7 +214,7 @@ export default function PricingPlans() {
                   <Badge className="mb-3 bg-purple-600">{tier.subtitle}</Badge>
                 )}
                 <h3 className="text-2xl font-bold mb-2">{tier.name}</h3>
-                {tier.prices && (
+                {tier.prices && tier.prices[selectedBilling] && (
                   <div className="mb-4">
                     <span className="text-3xl font-bold text-purple-600">
                       ${(tier.prices[selectedBilling].total * regionalDiscount).toFixed(2)}
@@ -289,11 +297,12 @@ export default function PricingPlans() {
           >
             {subscribeMutation.isPending ? (
               'Processing...'
-            ) : (
+            ) : price ? (
               <>
-                Subscribe to {currentTier.name}
-                {price && ` - $${(price.total * regionalDiscount).toFixed(2)}`}
+                Subscribe to {currentTier.name} - ${(price.total * regionalDiscount).toFixed(2)}
               </>
+            ) : (
+              `Subscribe to ${currentTier.name}`
             )}
           </Button>
           <p className="text-center text-xs text-gray-500 mt-2">
