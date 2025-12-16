@@ -31,6 +31,11 @@ import DailyMatches from './pages/DailyMatches';
 import SuccessStories from './pages/SuccessStories';
 import VideoChat from './pages/VideoChat';
 import VirtualGifts from './pages/VirtualGifts';
+import IncognitoMode from './pages/IncognitoMode';
+import ProfileOptimization from './pages/ProfileOptimization';
+import DatePlanner from './pages/DatePlanner';
+import BackgroundCheckRequest from './pages/BackgroundCheckRequest';
+import LanguageExchangeHub from './pages/LanguageExchangeHub';
 import __Layout from './Layout.jsx';
 
 
@@ -68,6 +73,11 @@ export const PAGES = {
     "SuccessStories": SuccessStories,
     "VideoChat": VideoChat,
     "VirtualGifts": VirtualGifts,
+    "IncognitoMode": IncognitoMode,
+    "ProfileOptimization": ProfileOptimization,
+    "DatePlanner": DatePlanner,
+    "BackgroundCheckRequest": BackgroundCheckRequest,
+    "LanguageExchangeHub": LanguageExchangeHub,
 }
 
 export const pagesConfig = {
