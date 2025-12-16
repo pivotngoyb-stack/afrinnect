@@ -18,6 +18,7 @@ import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import CommunityGuidelines from './pages/CommunityGuidelines';
 import LegalAcceptance from './pages/LegalAcceptance';
+import Notifications from './pages/Notifications';
 import __Layout from './Layout.jsx';
 
 
@@ -42,6 +43,7 @@ export const PAGES = {
     "Privacy": Privacy,
     "CommunityGuidelines": CommunityGuidelines,
     "LegalAcceptance": LegalAcceptance,
+    "Notifications": Notifications,
 }
 
 export const pagesConfig = {

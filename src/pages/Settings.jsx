@@ -56,15 +56,29 @@ export default function Settings() {
   };
 
   const handleLogout = async () => {
-    await base44.auth.logout();
+    await base44.auth.logout(createPageUrl('Landing'));
   };
 
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {
+      const user = await base44.auth.me();
+      
+      // Log deletion
+      await base44.entities.DeletedAccount.create({
+        user_email: user.email,
+        user_id: user.id,
+        display_name: myProfile?.display_name || 'Unknown',
+        deletion_reason: 'User requested',
+        deleted_at: new Date().toISOString()
+      });
+      
+      // Delete profile
       if (myProfile) {
-        await base44.entities.UserProfile.update(myProfile.id, { is_active: false });
+        await base44.entities.UserProfile.delete(myProfile.id);
       }
-      await base44.auth.logout();
+      
+      // Logout
+      await base44.auth.logout(createPageUrl('Landing'));
     }
   });
 
@@ -275,24 +289,24 @@ export default function Settings() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <a href="#" className="flex items-center justify-between py-2">
+            <Link to={createPageUrl('Privacy')} className="flex items-center justify-between py-2">
               <span className="text-gray-700">Privacy Policy</span>
               <ChevronRight size={20} className="text-gray-400" />
-            </a>
+            </Link>
 
             <Separator />
 
-            <a href="#" className="flex items-center justify-between py-2">
+            <Link to={createPageUrl('Terms')} className="flex items-center justify-between py-2">
               <span className="text-gray-700">Terms of Service</span>
               <ChevronRight size={20} className="text-gray-400" />
-            </a>
+            </Link>
 
             <Separator />
 
-            <a href="#" className="flex items-center justify-between py-2">
+            <Link to={createPageUrl('CommunityGuidelines')} className="flex items-center justify-between py-2">
               <span className="text-gray-700">Community Guidelines</span>
               <ChevronRight size={20} className="text-gray-400" />
-            </a>
+            </Link>
           </CardContent>
         </Card>
 

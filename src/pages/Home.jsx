@@ -153,7 +153,40 @@ export default function Home() {
           matched_at: new Date().toISOString(),
           status: 'active'
         });
+
+        // Send notifications to both users
+        const likedProfiles = await base44.entities.UserProfile.filter({ id: likedId });
+        if (likedProfiles.length > 0) {
+          await base44.entities.Notification.create({
+            user_profile_id: likedId,
+            type: 'match',
+            title: "It's a Match! 💕",
+            message: `You and ${myProfile.display_name} liked each other!`,
+            from_profile_id: myProfile.id,
+            link_to: createPageUrl('Matches')
+          });
+
+          await base44.entities.Notification.create({
+            user_profile_id: myProfile.id,
+            type: 'match',
+            title: "It's a Match! 💕",
+            message: `You and ${likedProfiles[0].display_name} liked each other!`,
+            from_profile_id: likedId,
+            link_to: createPageUrl('Matches')
+          });
+        }
+
         return { isMatch: true };
+      } else {
+        // Send like notification
+        await base44.entities.Notification.create({
+          user_profile_id: likedId,
+          type: isSuperLike ? 'super_like' : 'like',
+          title: isSuperLike ? "You got a Super Like! ⭐" : "Someone likes you!",
+          message: `${myProfile.display_name} ${isSuperLike ? 'super liked' : 'liked'} your profile`,
+          from_profile_id: myProfile.id,
+          link_to: createPageUrl('Matches')
+        });
       }
       return { isMatch: false };
     },

@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
-import { Home, Heart, Calendar, User, MessageCircle, Compass, Sparkles } from 'lucide-react';
+import { Home, Heart, Calendar, User, MessageCircle, Compass, Sparkles, Bell } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from '@tanstack/react-query';
 
-const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView'];
+const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications'];
 
 export default function Layout({ children, currentPageName }) {
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [myProfile, setMyProfile] = useState(null);
   const [hasProfile, setHasProfile] = useState(true);
   
   useEffect(() => {
@@ -17,8 +18,17 @@ export default function Layout({ children, currentPageName }) {
         const user = await base44.auth.me();
         if (user) {
           const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-          if (profiles.length === 0 && currentPageName !== 'Onboarding') {
-            window.location.href = createPageUrl('Onboarding');
+          if (profiles.length === 0 && currentPageName !== 'Onboarding' && currentPageName !== 'LegalAcceptance') {
+            // Check if legal acceptance done
+            const acceptances = await base44.entities.LegalAcceptance.filter({ user_id: user.id });
+            if (acceptances.length === 0) {
+              window.location.href = createPageUrl('LegalAcceptance');
+            } else {
+              window.location.href = createPageUrl('Onboarding');
+            }
+          }
+          if (profiles.length > 0) {
+            setMyProfile(profiles[0]);
           }
           setHasProfile(profiles.length > 0);
         }
@@ -29,12 +39,23 @@ export default function Layout({ children, currentPageName }) {
     checkProfile();
   }, [currentPageName]);
 
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications-count', myProfile?.id],
+    queryFn: () => base44.entities.Notification.filter(
+      { user_profile_id: myProfile.id, is_read: false }
+    ),
+    enabled: !!myProfile,
+    refetchInterval: 30000 // Check every 30 seconds
+  });
+
+  const unreadNotifications = notifications.length;
+
   const showNav = !PAGES_WITHOUT_NAV.includes(currentPageName);
 
   const navItems = [
     { name: 'Home', icon: Compass, label: 'Discover' },
     { name: 'Matches', icon: Heart, label: 'Matches' },
-    { name: 'Events', icon: Calendar, label: 'Events' },
+    { name: 'Notifications', icon: Bell, label: 'Alerts', badge: unreadNotifications },
     { name: 'Profile', icon: User, label: 'Profile' }
   ];
 
@@ -96,9 +117,9 @@ export default function Layout({ children, currentPageName }) {
                       className={isActive ? 'fill-purple-100' : ''}
                       strokeWidth={isActive ? 2.5 : 2}
                     />
-                    {item.name === 'Matches' && unreadCount > 0 && (
+                    {item.badge > 0 && (
                       <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-purple-600 text-white text-xs">
-                        {unreadCount}
+                        {item.badge}
                       </Badge>
                     )}
                   </div>

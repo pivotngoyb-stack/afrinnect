@@ -61,7 +61,7 @@ export default function Landing() {
   ];
 
   const handleGetStarted = () => {
-    base44.auth.redirectToLogin(createPageUrl('Onboarding'));
+    base44.auth.redirectToLogin(createPageUrl('LegalAcceptance'));
   };
 
   return (
