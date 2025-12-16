@@ -24,6 +24,7 @@ import VerificationQueue from '@/components/admin/VerificationQueue';
 import ModerationRules from '@/components/admin/ModerationRules';
 import EventManagement from '@/components/admin/EventManagement';
 import SupportTickets from '@/components/admin/SupportTickets';
+import FakeProfileScanner from '@/components/admin/FakeProfileScanner';
 import BroadcastMessages from '@/components/admin/BroadcastMessages';
 import FeatureFlags from '@/components/admin/FeatureFlags';
 import PricingManagement from '@/components/admin/PricingManagement';
@@ -345,6 +346,8 @@ export default function AdminDashboard() {
         );
       case 'moderation':
         return <ModerationCenter reports={reports} onResolveReport={resolveReportMutation.mutate} />;
+      case 'fake-profiles':
+        return <FakeProfileScanner />;
       case 'revenue':
         return <RevenueAnalytics subscriptions={subscriptions} profiles={profiles} />;
       case 'verification':
