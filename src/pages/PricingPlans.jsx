@@ -140,6 +140,7 @@ export default function PricingPlans() {
       // Update profile
       await base44.entities.UserProfile.update(myProfile.id, {
         is_premium: true,
+        subscription_tier: selectedTier,
         premium_until: endDate.toISOString()
       });
     },

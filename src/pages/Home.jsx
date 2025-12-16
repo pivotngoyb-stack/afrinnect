@@ -257,7 +257,7 @@ export default function Home() {
 
   // Check daily like limit
   const canLike = () => {
-    if (myProfile?.is_premium) return true;
+    if (myProfile?.subscription_tier && myProfile.subscription_tier !== 'free') return true;
     
     const today = new Date().toISOString().split('T')[0];
     const resetDate = myProfile?.daily_likes_reset_date;
@@ -501,6 +501,7 @@ export default function Home() {
                 filters={filters} 
                 onFiltersChange={setFilters}
                 isPremium={myProfile?.is_premium}
+                userTier={myProfile?.subscription_tier || 'free'}
               />
 
               {/* Communities */}
@@ -635,7 +636,7 @@ export default function Home() {
         </AnimatePresence>
 
         {/* Premium Upsell Banner */}
-        {!myProfile?.is_premium && (
+        {(!myProfile?.subscription_tier || myProfile.subscription_tier === 'free') && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

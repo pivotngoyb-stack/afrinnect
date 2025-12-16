@@ -57,7 +57,7 @@ const LANGUAGES = [
   'Lingala', 'Wolof', 'Somali', 'Berber', 'Oromo'
 ];
 
-export default function FilterDrawer({ filters, onFiltersChange, isPremium = false }) {
+export default function FilterDrawer({ filters, onFiltersChange, isPremium = false, userTier = 'free' }) {
   const [localFilters, setLocalFilters] = useState(filters || {
     age_min: 18,
     age_max: 50,

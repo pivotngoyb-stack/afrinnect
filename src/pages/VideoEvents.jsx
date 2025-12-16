@@ -50,7 +50,8 @@ export default function VideoEvents() {
     const isJoined = event.participants?.includes(myProfile?.id);
     const isFull = event.participants?.length >= event.max_participants;
     const spotsLeft = event.max_participants - (event.participants?.length || 0);
-    const canJoin = !isJoined && !isFull && (!event.is_premium_only || myProfile?.is_premium);
+    const hasPremium = myProfile?.subscription_tier && myProfile.subscription_tier !== 'free';
+    const canJoin = !isJoined && !isFull && (!event.is_premium_only || hasPremium);
 
     return (
       <Card className="hover:shadow-lg transition">
@@ -100,7 +101,7 @@ export default function VideoEvents() {
             className="w-full"
             variant={isJoined ? 'outline' : 'default'}
           >
-            {isJoined ? 'Registered ✓' : isFull ? 'Event Full' : event.is_premium_only && !myProfile?.is_premium ? 'Premium Only' : 'Join Event'}
+            {isJoined ? 'Registered ✓' : isFull ? 'Event Full' : event.is_premium_only && !hasPremium ? 'Premium Only' : 'Join Event'}
           </Button>
         </CardContent>
       </Card>

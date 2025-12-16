@@ -120,7 +120,7 @@ export default function WhoLikesYou() {
                 </p>
               )}
             </div>
-            {myProfile?.is_premium ? (
+            {myProfile?.subscription_tier && myProfile.subscription_tier !== 'free' ? (
               <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white">
                 <Crown size={14} className="mr-1" />
                 Premium

@@ -35,6 +35,7 @@ import DateFeedbackReview from '@/components/admin/DateFeedbackReview';
 import StoryManagement from '@/components/admin/StoryManagement';
 import CommunityManagement from '@/components/admin/CommunityManagement';
 import VideoEventManagement from '@/components/admin/VideoEventManagement';
+import SubscriptionManagement from '@/components/admin/SubscriptionManagement';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -356,7 +357,12 @@ export default function AdminDashboard() {
       case 'fake-profiles':
         return <FakeProfileScanner />;
       case 'revenue':
-        return <RevenueAnalytics subscriptions={subscriptions} profiles={profiles} />;
+        return (
+          <div className="space-y-6">
+            <SubscriptionManagement />
+            <RevenueAnalytics subscriptions={subscriptions} profiles={profiles} />
+          </div>
+        );
       case 'verification':
         return <VerificationQueue requests={verificationRequests} profiles={profiles} currentUser={currentUser} />;
       case 'analytics':
