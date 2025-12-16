@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
   Users, AlertTriangle, DollarSign, Eye, Shield, Crown, Ban, Trash2,
-  CheckCircle, XCircle, Search, Filter, BarChart3, MessageCircle, LogOut, Send, UserCog
+  CheckCircle, XCircle, Search, Filter, BarChart3, MessageCircle, LogOut, Send, UserCog, Heart, TrendingUp
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,6 +94,20 @@ export default function AdminDashboard() {
   const { data: deletedAccounts = [] } = useQuery({
     queryKey: ['admin-deleted'],
     queryFn: () => base44.entities.DeletedAccount.list('-deleted_at', 100),
+    enabled: isAdmin
+  });
+
+  // Fetch matches for analytics
+  const { data: matches = [] } = useQuery({
+    queryKey: ['admin-matches'],
+    queryFn: () => base44.entities.Match.filter({ is_match: true }, '-matched_at', 500),
+    enabled: isAdmin
+  });
+
+  // Fetch all events
+  const { data: events = [] } = useQuery({
+    queryKey: ['admin-events'],
+    queryFn: () => base44.entities.Event.list('-created_date', 100),
     enabled: isAdmin
   });
 
@@ -194,6 +208,15 @@ export default function AdminDashboard() {
   });
 
   // Stats
+  const today = new Date();
+  const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const lastMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const newUsersThisWeek = profiles.filter(p => new Date(p.created_date) > lastWeek).length;
+  const newUsersThisMonth = profiles.filter(p => new Date(p.created_date) > lastMonth).length;
+  const matchesThisMonth = matches.filter(m => new Date(m.matched_at) > lastMonth).length;
+  const revenueThisMonth = subscriptions.filter(s => new Date(s.start_date) > lastMonth).reduce((sum, sub) => sum + (sub.amount_paid || 0), 0);
+
   const stats = {
     totalUsers: users.length,
     totalProfiles: profiles.length,
@@ -202,7 +225,16 @@ export default function AdminDashboard() {
     pendingReports: reports.length,
     activeSubscriptions: subscriptions.length,
     totalRevenue: subscriptions.reduce((sum, sub) => sum + (sub.amount_paid || 0), 0),
-    activeSafetyChecks: safetyChecks.length
+    activeSafetyChecks: safetyChecks.length,
+    totalMatches: matches.length,
+    newUsersThisWeek,
+    newUsersThisMonth,
+    matchesThisMonth,
+    revenueThisMonth,
+    totalEvents: events.length,
+    activeUsers: profiles.filter(p => p.is_active).length,
+    bannedUsers: profiles.filter(p => !p.is_active).length,
+    conversionRate: profiles.length > 0 ? ((stats.premiumUsers / profiles.length) * 100).toFixed(1) : 0
   };
 
   const filteredProfiles = profiles.filter(p => 
@@ -256,62 +288,290 @@ export default function AdminDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-white/10 backdrop-blur border-white/20">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+          <Card className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 backdrop-blur border-blue-400/30">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <Users size={20} className="text-blue-400" />
-                <BarChart3 size={16} className="text-green-400" />
+                <Badge className="bg-blue-500 text-xs">+{stats.newUsersThisWeek} this week</Badge>
               </div>
-              <p className="text-2xl font-bold text-white">{stats.totalUsers}</p>
-              <p className="text-sm text-gray-300">Total Users</p>
+              <p className="text-3xl font-bold text-white">{stats.totalProfiles}</p>
+              <p className="text-sm text-gray-300">Total Profiles</p>
+              <p className="text-xs text-gray-400 mt-1">{stats.activeUsers} active • {stats.bannedUsers} banned</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur border-white/20">
+          <Card className="bg-gradient-to-br from-amber-500/20 to-amber-600/20 backdrop-blur border-amber-400/30">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <Crown size={20} className="text-amber-400" />
-                <BarChart3 size={16} className="text-green-400" />
+                <Badge className="bg-amber-500 text-xs">{stats.conversionRate}%</Badge>
               </div>
-              <p className="text-2xl font-bold text-white">{stats.premiumUsers}</p>
+              <p className="text-3xl font-bold text-white">{stats.premiumUsers}</p>
               <p className="text-sm text-gray-300">Premium Users</p>
+              <p className="text-xs text-gray-400 mt-1">{stats.activeSubscriptions} active subs</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur border-white/20">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <AlertTriangle size={20} className="text-red-400" />
-                <BarChart3 size={16} className="text-yellow-400" />
-              </div>
-              <p className="text-2xl font-bold text-white">{stats.pendingReports}</p>
-              <p className="text-sm text-gray-300">Pending Reports</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/10 backdrop-blur border-white/20">
+          <Card className="bg-gradient-to-br from-green-500/20 to-green-600/20 backdrop-blur border-green-400/30">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <DollarSign size={20} className="text-green-400" />
-                <BarChart3 size={16} className="text-green-400" />
+                <Badge className="bg-green-500 text-xs">${stats.revenueThisMonth.toFixed(0)} MTD</Badge>
               </div>
-              <p className="text-2xl font-bold text-white">${stats.totalRevenue.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-white">${stats.totalRevenue.toFixed(0)}</p>
               <p className="text-sm text-gray-300">Total Revenue</p>
+              <p className="text-xs text-gray-400 mt-1">All-time earnings</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-pink-500/20 to-pink-600/20 backdrop-blur border-pink-400/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <Heart size={20} className="text-pink-400" />
+                <Badge className="bg-pink-500 text-xs">+{stats.matchesThisMonth} MTD</Badge>
+              </div>
+              <p className="text-3xl font-bold text-white">{stats.totalMatches}</p>
+              <p className="text-sm text-gray-300">Total Matches</p>
+              <p className="text-xs text-gray-400 mt-1">Successful connections</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-red-500/20 to-red-600/20 backdrop-blur border-red-400/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <AlertTriangle size={20} className="text-red-400" />
+                {stats.pendingReports > 0 && <Badge className="bg-red-500 text-xs animate-pulse">Action Needed</Badge>}
+              </div>
+              <p className="text-3xl font-bold text-white">{stats.pendingReports}</p>
+              <p className="text-sm text-gray-300">Pending Reports</p>
+              <p className="text-xs text-gray-400 mt-1">{stats.activeSafetyChecks} safety checks</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Growth Metrics */}
+        <div className="grid md:grid-cols-3 gap-4 mb-6">
+          <Card className="bg-white/10 backdrop-blur border-white/20">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-blue-500/20 rounded-lg">
+                  <Users size={20} className="text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400">New Users This Month</p>
+                  <p className="text-2xl font-bold text-white">{stats.newUsersThisMonth}</p>
+                </div>
+              </div>
+              <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-full bg-blue-500" style={{ width: `${(stats.newUsersThisMonth / stats.totalProfiles) * 100}%` }} />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 backdrop-blur border-white/20">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-green-500/20 rounded-lg">
+                  <CheckCircle size={20} className="text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400">Verified Users</p>
+                  <p className="text-2xl font-bold text-white">{stats.verifiedUsers}</p>
+                </div>
+              </div>
+              <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-full bg-green-500" style={{ width: `${(stats.verifiedUsers / stats.totalProfiles) * 100}%` }} />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 backdrop-blur border-white/20">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-purple-500/20 rounded-lg">
+                  <BarChart3 size={20} className="text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400">Total Events</p>
+                  <p className="text-2xl font-bold text-white">{stats.totalEvents}</p>
+                </div>
+              </div>
+              <Link to={createPageUrl('Events')}>
+                <Button size="sm" variant="outline" className="w-full mt-2 border-purple-500 text-purple-400 hover:bg-purple-500/20">
+                  Manage Events
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="users" className="space-y-4">
-          <TabsList className="bg-white/10 backdrop-blur border-white/20">
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList className="bg-white/10 backdrop-blur border-white/20 grid grid-cols-7 w-full">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users ({stats.totalProfiles})</TabsTrigger>
-            <TabsTrigger value="reports">Reports ({stats.pendingReports})</TabsTrigger>
-            <TabsTrigger value="subscriptions">Subscriptions ({stats.activeSubscriptions})</TabsTrigger>
-            <TabsTrigger value="safety">Safety ({stats.activeSafetyChecks})</TabsTrigger>
-            <TabsTrigger value="deleted">Deleted ({deletedAccounts.length})</TabsTrigger>
-            <TabsTrigger value="messaging">Messaging</TabsTrigger>
+            <TabsTrigger value="reports">
+              Reports {stats.pendingReports > 0 && <Badge className="ml-1 bg-red-500">{stats.pendingReports}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="subscriptions">Revenue</TabsTrigger>
+            <TabsTrigger value="safety">Safety</TabsTrigger>
+            <TabsTrigger value="deleted">Deleted</TabsTrigger>
+            <TabsTrigger value="messaging">Broadcast</TabsTrigger>
           </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <Card className="bg-white/10 backdrop-blur border-white/20">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <TrendingUp size={20} className="text-green-400" />
+                    Platform Growth
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Total Users</span>
+                    <span className="text-2xl font-bold text-white">{stats.totalProfiles}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">New This Week</span>
+                    <span className="text-xl font-bold text-blue-400">+{stats.newUsersThisWeek}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">New This Month</span>
+                    <span className="text-xl font-bold text-blue-400">+{stats.newUsersThisMonth}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Active Users</span>
+                    <span className="text-xl font-bold text-green-400">{stats.activeUsers}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/10 backdrop-blur border-white/20">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Heart size={20} className="text-pink-400" />
+                    Match Statistics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Total Matches</span>
+                    <span className="text-2xl font-bold text-white">{stats.totalMatches}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Matches This Month</span>
+                    <span className="text-xl font-bold text-pink-400">+{stats.matchesThisMonth}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Match Success Rate</span>
+                    <span className="text-xl font-bold text-green-400">
+                      {stats.totalProfiles > 0 ? ((stats.totalMatches / stats.totalProfiles) * 100).toFixed(1) : 0}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Verified Users</span>
+                    <span className="text-xl font-bold text-green-400">{stats.verifiedUsers}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/10 backdrop-blur border-white/20">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <DollarSign size={20} className="text-green-400" />
+                    Revenue Analytics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Total Revenue</span>
+                    <span className="text-2xl font-bold text-white">${stats.totalRevenue.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">This Month</span>
+                    <span className="text-xl font-bold text-green-400">${stats.revenueThisMonth.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Conversion Rate</span>
+                    <span className="text-xl font-bold text-amber-400">{stats.conversionRate}%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Active Subscriptions</span>
+                    <span className="text-xl font-bold text-green-400">{stats.activeSubscriptions}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/10 backdrop-blur border-white/20">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Shield size={20} className="text-blue-400" />
+                    Safety & Moderation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Pending Reports</span>
+                    <span className={`text-2xl font-bold ${stats.pendingReports > 0 ? 'text-red-400' : 'text-white'}`}>
+                      {stats.pendingReports}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Active Safety Checks</span>
+                    <span className="text-xl font-bold text-yellow-400">{stats.activeSafetyChecks}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Banned Users</span>
+                    <span className="text-xl font-bold text-red-400">{stats.bannedUsers}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Deleted Accounts</span>
+                    <span className="text-xl font-bold text-gray-400">{deletedAccounts.length}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Actions */}
+            <Card className="bg-white/10 backdrop-blur border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-4 gap-3">
+                  <Button
+                    onClick={() => setMessageDialog({ open: true, type: 'all', profile: null })}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    <Send size={18} className="mr-2" />
+                    Broadcast Message
+                  </Button>
+                  <Link to={createPageUrl('CustomerView')}>
+                    <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">
+                      <Eye size={18} className="mr-2" />
+                      Preview App
+                    </Button>
+                  </Link>
+                  <Link to={createPageUrl('Events')}>
+                    <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">
+                      <BarChart3 size={18} className="mr-2" />
+                      Manage Events
+                    </Button>
+                  </Link>
+                  <Link to={createPageUrl('PricingPlans')}>
+                    <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">
+                      <Crown size={18} className="mr-2" />
+                      View Pricing
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Users Tab */}
           <TabsContent value="users" className="space-y-4">
