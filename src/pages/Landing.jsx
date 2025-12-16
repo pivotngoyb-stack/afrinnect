@@ -8,38 +8,40 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Logo from '@/components/shared/Logo';
 import AfricanPattern from '@/components/shared/AfricanPattern';
+import { useLanguage } from '@/components/i18n/LanguageContext';
+import LanguageSelector from '@/components/i18n/LanguageSelector';
 
 export default function Landing() {
-  // Removed auto-redirect - let users explore the landing page
+  const { t } = useLanguage();
 
   const features = [
     {
       icon: Heart,
-      title: "Cultural Connection",
-      description: "Connect with people who share your heritage and values"
+      title: t('landing.features.cultural.title'),
+      description: t('landing.features.cultural.desc')
     },
     {
       icon: Shield,
-      title: "Safety First",
-      description: "AI moderation, photo verification, and panic button for your protection"
+      title: t('landing.features.safety.title'),
+      description: t('landing.features.safety.desc')
     },
     {
       icon: Globe,
-      title: "Global Reach",
-      description: "Meet the African diaspora worldwide or stay local"
+      title: t('landing.features.global.title'),
+      description: t('landing.features.global.desc')
     },
     {
       icon: Sparkles,
-      title: "Smart Matching",
-      description: "AI-powered compatibility based on culture and values"
+      title: t('landing.features.smart.title'),
+      description: t('landing.features.smart.desc')
     }
   ];
 
   const stats = [
-    { number: "10K+", label: "Active Members" },
-    { number: "50+", label: "Countries" },
-    { number: "85%", label: "Match Rate" },
-    { number: "4.9★", label: "User Rating" }
+    { number: "10K+", label: t('landing.stats.members') },
+    { number: "50+", label: t('landing.stats.countries') },
+    { number: "85%", label: t('landing.stats.matchRate') },
+    { number: "4.9★", label: t('landing.stats.rating') }
   ];
 
   const handleGetStarted = () => {
@@ -54,13 +56,16 @@ export default function Landing() {
       <nav className="relative z-10 bg-white/10 backdrop-blur-lg border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <Logo showText size="large" />
-          <Button 
-            onClick={handleGetStarted}
-            variant="ghost" 
-            className="text-white hover:bg-white/20"
-          >
-            Log In
-          </Button>
+          <div className="flex items-center gap-2">
+            <LanguageSelector />
+            <Button 
+              onClick={handleGetStarted}
+              variant="ghost" 
+              className="text-white hover:bg-white/20"
+            >
+              {t('landing.login')}
+            </Button>
+          </div>
         </div>
       </nav>
 
@@ -72,13 +77,13 @@ export default function Landing() {
           transition={{ duration: 0.8 }}
         >
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-            Find Love Within<br />
+            {t('landing.title')}<br />
             <span className="bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent">
-              Your Culture
+              {t('landing.titleHighlight')}
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
-            Ubuntu connects the African diaspora worldwide for meaningful relationships rooted in shared heritage and values.
+            {t('landing.subtitle')}
           </p>
           <div className="flex flex-col items-center gap-4">
             <Button 
@@ -86,14 +91,14 @@ export default function Landing() {
               size="lg" 
               className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-12 py-6 text-lg rounded-full shadow-2xl"
             >
-              Get Started Free
+              {t('landing.getStarted')}
               <ArrowRight size={24} className="ml-2" />
             </Button>
             <p className="text-white/80 text-sm">
-              🔐 Sign in with Google • Facebook • Microsoft • or Email
+              🔐 {t('landing.signInWith')}
             </p>
             <p className="text-white/70 text-xs">
-              Join thousands finding love across 50+ countries
+              {t('landing.joinThousands')}
             </p>
           </div>
         </motion.div>
@@ -121,10 +126,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Why Choose Ubuntu?
+              {t('landing.whyChoose')}
             </h2>
             <p className="text-xl text-gray-600">
-              More than just a dating app - it's a cultural experience
+              {t('landing.whySubtitle')}
             </p>
           </div>
 
@@ -161,16 +166,16 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              How It Works
+              {t('landing.howItWorks')}
             </h2>
           </div>
 
           <div className="space-y-12">
             {[
-              { step: "1", title: "Create Your Profile", desc: "Share your story, culture, and what you're looking for" },
-              { step: "2", title: "Get Verified", desc: "Complete photo verification for trust and safety" },
-              { step: "3", title: "Discover & Connect", desc: "Browse profiles and make meaningful connections" },
-              { step: "4", title: "Meet & Date", desc: "Use safety features like check-ins for secure meetings" }
+              { step: "1", title: t('landing.steps.step1.title'), desc: t('landing.steps.step1.desc') },
+              { step: "2", title: t('landing.steps.step2.title'), desc: t('landing.steps.step2.desc') },
+              { step: "3", title: t('landing.steps.step3.title'), desc: t('landing.steps.step3.desc') },
+              { step: "4", title: t('landing.steps.step4.title'), desc: t('landing.steps.step4.desc') }
             ].map((item, idx) => (
               <motion.div
                 key={idx}
@@ -198,10 +203,10 @@ export default function Landing() {
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white px-6 py-2 rounded-full mb-6">
             <Crown size={20} />
-            <span className="font-semibold">Premium Features</span>
+            <span className="font-semibold">{t('landing.premium.subtitle')}</span>
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Unlock Your Full Potential
+            {t('landing.premium.title')}
           </h2>
           <div className="grid md:grid-cols-3 gap-6 mb-10">
             {[
@@ -218,20 +223,20 @@ export default function Landing() {
               </div>
             ))}
           </div>
-          <p className="text-xl text-gray-600 mb-2">Starting at just $9.99/month</p>
-          <p className="text-sm text-gray-500">Special pricing for Africa: 50% off</p>
-        </div>
-      </section>
+          <p className="text-xl text-gray-600 mb-2">{t('landing.premium.price')}</p>
+          <p className="text-sm text-gray-500">{t('landing.premium.africaPrice')}</p>
+          </div>
+          </section>
 
       {/* CTA Section */}
       <section className="relative z-10 bg-gradient-to-r from-purple-900 to-amber-900 py-20">
         <AfricanPattern className="text-white" opacity={0.05} />
         <div className="relative max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to Find Your Match?
+            {t('landing.cta.title')}
           </h2>
           <p className="text-xl text-white/90 mb-8">
-            Join Ubuntu today and start your journey to meaningful connection
+            {t('landing.cta.subtitle')}
           </p>
           <div className="flex flex-col items-center gap-4">
             <Button 
@@ -239,27 +244,27 @@ export default function Landing() {
               size="lg" 
               className="bg-white text-purple-900 hover:bg-gray-100 px-12 py-6 text-lg rounded-full shadow-2xl"
             >
-              Get Started Free
+              {t('landing.getStarted')}
               <ArrowRight size={24} className="ml-2" />
             </Button>
             <p className="text-white/80 text-sm">
-              Free to join • No credit card required
+              {t('landing.cta.freeToJoin')}
             </p>
           </div>
         </div>
-      </section>
+        </section>
 
       {/* Footer */}
       <footer className="relative z-10 bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <Logo showText size="default" />
           <p className="text-gray-400 mt-4">
-            © 2025 Ubuntu. Connecting hearts across cultures.
+            {t('landing.footer.tagline')}
           </p>
           <div className="flex justify-center gap-6 mt-6 text-sm text-gray-400">
-            <Link to={createPageUrl('Privacy')} className="hover:text-white">Privacy Policy</Link>
-            <Link to={createPageUrl('Terms')} className="hover:text-white">Terms of Service</Link>
-            <Link to={createPageUrl('CommunityGuidelines')} className="hover:text-white">Community Guidelines</Link>
+            <Link to={createPageUrl('Privacy')} className="hover:text-white">{t('landing.footer.privacy')}</Link>
+            <Link to={createPageUrl('Terms')} className="hover:text-white">{t('landing.footer.terms')}</Link>
+            <Link to={createPageUrl('CommunityGuidelines')} className="hover:text-white">{t('landing.footer.guidelines')}</Link>
           </div>
         </div>
       </footer>
