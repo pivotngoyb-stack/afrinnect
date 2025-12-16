@@ -217,10 +217,14 @@ export default function AdminDashboard() {
   const matchesThisMonth = matches.filter(m => new Date(m.matched_at) > lastMonth).length;
   const revenueThisMonth = subscriptions.filter(s => new Date(s.start_date) > lastMonth).reduce((sum, sub) => sum + (sub.amount_paid || 0), 0);
 
+  const premiumUsersCount = profiles.filter(p => p.is_premium).length;
+  const activeUsersCount = profiles.filter(p => p.is_active).length;
+  const bannedUsersCount = profiles.filter(p => !p.is_active).length;
+
   const stats = {
     totalUsers: users.length,
     totalProfiles: profiles.length,
-    premiumUsers: profiles.filter(p => p.is_premium).length,
+    premiumUsers: premiumUsersCount,
     verifiedUsers: profiles.filter(p => p.verification_status?.photo_verified).length,
     pendingReports: reports.length,
     activeSubscriptions: subscriptions.length,
@@ -232,9 +236,9 @@ export default function AdminDashboard() {
     matchesThisMonth,
     revenueThisMonth,
     totalEvents: events.length,
-    activeUsers: profiles.filter(p => p.is_active).length,
-    bannedUsers: profiles.filter(p => !p.is_active).length,
-    conversionRate: profiles.length > 0 ? ((stats.premiumUsers / profiles.length) * 100).toFixed(1) : 0
+    activeUsers: activeUsersCount,
+    bannedUsers: bannedUsersCount,
+    conversionRate: profiles.length > 0 ? ((premiumUsersCount / profiles.length) * 100).toFixed(1) : 0
   };
 
   const filteredProfiles = profiles.filter(p => 
