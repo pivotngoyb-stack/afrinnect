@@ -5,7 +5,7 @@ import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight, ArrowLeft, Camera, Loader2, Check, Heart,
-  Globe, Users, Shield, Sparkles
+  Globe, Users, Shield, Sparkles, MapPin
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,9 +54,11 @@ export default function Onboarding() {
     current_country: '',
     current_city: '',
     relationship_goal: '',
-    interests: []
+    interests: [],
+    location: { lat: null, lng: null }
   });
   const [isUploading, setIsUploading] = useState(false);
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -138,12 +140,37 @@ export default function Onboarding() {
     }
   });
 
+  const getLocation = () => {
+    setGettingLocation(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setFormData(prev => ({
+            ...prev,
+            location: {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            }
+          }));
+          setGettingLocation(false);
+        },
+        (error) => {
+          alert('Please enable location access to continue. We need your location to find matches near you.');
+          setGettingLocation(false);
+        }
+      );
+    } else {
+      alert('Geolocation is not supported by your browser');
+      setGettingLocation(false);
+    }
+  };
+
   const canProceed = () => {
     switch (step) {
       case 0: return true; // Welcome
       case 1: return formData.display_name && formData.birth_date;
       case 2: return formData.gender && formData.looking_for.length > 0;
-      case 3: return formData.country_of_origin && formData.current_country && formData.current_city;
+      case 3: return formData.country_of_origin && formData.current_country && formData.current_city && formData.location.lat && formData.location.lng;
       case 4: return formData.relationship_goal;
       case 5: return formData.photos.length >= 4;
       case 6: return formData.interests.length >= 3;
@@ -379,6 +406,34 @@ export default function Onboarding() {
             placeholder="Your city"
             className="mt-2 h-12"
           />
+        </div>
+
+        <div className={`p-4 rounded-xl border-2 ${formData.location.lat ? 'border-green-500 bg-green-50' : 'border-red-300 bg-red-50'}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Globe size={24} className={formData.location.lat ? 'text-green-600' : 'text-red-600'} />
+              <div>
+                <p className="font-semibold text-sm">
+                  {formData.location.lat ? '✓ Location Enabled' : '⚠️ Location Required'}
+                </p>
+                <p className="text-xs text-gray-600">
+                  {formData.location.lat 
+                    ? 'We can now find matches near you' 
+                    : 'Tap to enable your location'}
+                </p>
+              </div>
+            </div>
+            {!formData.location.lat && (
+              <Button 
+                type="button"
+                onClick={getLocation}
+                disabled={gettingLocation}
+                className="bg-purple-600"
+              >
+                {gettingLocation ? 'Getting...' : 'Enable'}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </motion.div>,
