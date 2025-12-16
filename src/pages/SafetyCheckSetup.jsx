@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation } from '@tantml:react-query';
+import { useMutation } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { Shield, MapPin, Phone, User, Clock, AlertTriangle } from 'lucide-react';
