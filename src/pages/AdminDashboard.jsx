@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
   Users, AlertTriangle, DollarSign, Eye, Shield, Crown, Ban, Trash2,
-  CheckCircle, XCircle, Search, Filter, BarChart3, MessageCircle, LogOut
+  CheckCircle, XCircle, Search, Filter, BarChart3, MessageCircle, LogOut, Send, UserCog
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import AfricanPattern from '@/components/shared/AfricanPattern';
 
 export default function AdminDashboard() {
@@ -32,6 +33,8 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [actionDialog, setActionDialog] = useState({ open: false, type: null, user: null });
+  const [messageDialog, setMessageDialog] = useState({ open: false, type: 'single', profile: null });
+  const [messageText, setMessageText] = useState('');
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -84,6 +87,13 @@ export default function AdminDashboard() {
   const { data: safetyChecks = [] } = useQuery({
     queryKey: ['admin-safety-checks'],
     queryFn: () => base44.entities.SafetyCheck.filter({ status: { $in: ['active', 'alert_triggered'] } }, '-created_date', 50),
+    enabled: isAdmin
+  });
+
+  // Fetch deleted accounts
+  const { data: deletedAccounts = [] } = useQuery({
+    queryKey: ['admin-deleted'],
+    queryFn: () => base44.entities.DeletedAccount.list('-deleted_at', 100),
     enabled: isAdmin
   });
 
@@ -158,6 +168,28 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-users']);
+    }
+  });
+
+  // Send message mutation
+  const sendMessageMutation = useMutation({
+    mutationFn: async ({ profileIds, message }) => {
+      const notifications = profileIds.map(profileId => ({
+        user_profile_id: profileId,
+        type: 'admin_message',
+        title: 'Message from Admin',
+        message: message,
+        is_admin: true
+      }));
+      
+      for (const notif of notifications) {
+        await base44.entities.Notification.create(notif);
+      }
+    },
+    onSuccess: () => {
+      setMessageDialog({ open: false, type: 'single', profile: null });
+      setMessageText('');
+      alert('Message sent successfully!');
     }
   });
 
@@ -277,6 +309,8 @@ export default function AdminDashboard() {
             <TabsTrigger value="reports">Reports ({stats.pendingReports})</TabsTrigger>
             <TabsTrigger value="subscriptions">Subscriptions ({stats.activeSubscriptions})</TabsTrigger>
             <TabsTrigger value="safety">Safety ({stats.activeSafetyChecks})</TabsTrigger>
+            <TabsTrigger value="deleted">Deleted ({deletedAccounts.length})</TabsTrigger>
+            <TabsTrigger value="messaging">Messaging</TabsTrigger>
           </TabsList>
 
           {/* Users Tab */}
@@ -341,6 +375,14 @@ export default function AdminDashboard() {
                               {isUserAdmin ? 'Revoke' : 'Grant'}
                             </Button>
                           )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-blue-500 text-blue-400 hover:bg-blue-500/20"
+                            onClick={() => setMessageDialog({ open: true, type: 'single', profile })}
+                          >
+                            <Send size={16} />
+                          </Button>
                           <Button
                             size="sm"
                             variant="outline"
@@ -470,6 +512,66 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
+          {/* Deleted Accounts Tab */}
+          <TabsContent value="deleted" className="space-y-4">
+            <Card className="bg-white/10 backdrop-blur border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white">Deleted Accounts</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                  {deletedAccounts.map(account => (
+                    <div key={account.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                      <div>
+                        <p className="font-semibold text-white">{account.display_name}</p>
+                        <p className="text-sm text-gray-400">{account.user_email}</p>
+                        <p className="text-xs text-gray-500">
+                          Deleted: {new Date(account.deleted_at).toLocaleString()}
+                        </p>
+                        {account.deletion_reason && (
+                          <p className="text-xs text-gray-500">Reason: {account.deletion_reason}</p>
+                        )}
+                      </div>
+                      <Badge className="bg-red-600">Deleted</Badge>
+                    </div>
+                  ))}
+                  {deletedAccounts.length === 0 && (
+                    <p className="text-center text-gray-400 py-8">No deleted accounts</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Messaging Tab */}
+          <TabsContent value="messaging" className="space-y-4">
+            <Card className="bg-white/10 backdrop-blur border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white">Broadcast Messages</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Button
+                    onClick={() => setMessageDialog({ open: true, type: 'all', profile: null })}
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  >
+                    <Send size={18} className="mr-2" />
+                    Send Message to All Users
+                  </Button>
+                  
+                  <div className="bg-white/5 rounded-lg p-6">
+                    <h3 className="text-white font-semibold mb-4">Quick Actions</h3>
+                    <div className="space-y-2">
+                      <p className="text-gray-300 text-sm">• Send announcements to all users</p>
+                      <p className="text-gray-300 text-sm">• Direct message individual users from the Users tab</p>
+                      <p className="text-gray-300 text-sm">• Messages appear in user notifications</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Safety Tab */}
           <TabsContent value="safety" className="space-y-4">
             <Card className="bg-white/10 backdrop-blur border-white/20">
@@ -534,6 +636,48 @@ export default function AdminDashboard() {
               }}
             >
               Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Message Dialog */}
+      <AlertDialog open={messageDialog.open} onOpenChange={(open) => setMessageDialog({ ...messageDialog, open })}>
+        <AlertDialogContent className="bg-gray-900 border-white/20">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              {messageDialog.type === 'all' ? 'Send Message to All Users' : `Message ${messageDialog.profile?.display_name}`}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              {messageDialog.type === 'all' 
+                ? 'This message will be sent to all active users on the platform.'
+                : 'Send a direct message to this user.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="p-4">
+            <textarea
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              placeholder="Type your message..."
+              className="w-full h-32 bg-white/10 text-white border border-white/20 rounded-lg p-3 resize-none"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white/10 text-white border-white/20">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-blue-600 hover:bg-blue-700"
+              disabled={!messageText.trim()}
+              onClick={() => {
+                if (messageDialog.type === 'all') {
+                  const allProfileIds = profiles.filter(p => p.is_active).map(p => p.id);
+                  sendMessageMutation.mutate({ profileIds: allProfileIds, message: messageText });
+                } else {
+                  sendMessageMutation.mutate({ profileIds: [messageDialog.profile.id], message: messageText });
+                }
+              }}
+            >
+              <Send size={16} className="mr-2" />
+              Send Message
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
