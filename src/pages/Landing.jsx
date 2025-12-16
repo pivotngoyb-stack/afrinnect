@@ -98,17 +98,22 @@ export default function Landing() {
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
             Ubuntu connects the African diaspora worldwide for meaningful relationships rooted in shared heritage and values.
           </p>
-          <Button 
-            onClick={handleGetStarted}
-            size="lg" 
-            className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-12 py-6 text-lg rounded-full shadow-2xl"
-          >
-            Get Started Free
-            <ArrowRight size={24} className="ml-2" />
-          </Button>
-          <p className="text-white/70 text-sm mt-4">
-            Join thousands finding love across 50+ countries
-          </p>
+          <div className="flex flex-col items-center gap-4">
+            <Button 
+              onClick={handleGetStarted}
+              size="lg" 
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-12 py-6 text-lg rounded-full shadow-2xl"
+            >
+              Get Started Free
+              <ArrowRight size={24} className="ml-2" />
+            </Button>
+            <p className="text-white/80 text-sm">
+              🔐 Sign in with Google • Facebook • Microsoft • or Email
+            </p>
+            <p className="text-white/70 text-xs">
+              Join thousands finding love across 50+ countries
+            </p>
+          </div>
         </motion.div>
 
         {/* Stats */}
@@ -246,14 +251,19 @@ export default function Landing() {
           <p className="text-xl text-white/90 mb-8">
             Join Ubuntu today and start your journey to meaningful connection
           </p>
-          <Button 
-            onClick={handleGetStarted}
-            size="lg" 
-            className="bg-white text-purple-900 hover:bg-gray-100 px-12 py-6 text-lg rounded-full shadow-2xl"
-          >
-            Get Started Free
-            <ArrowRight size={24} className="ml-2" />
-          </Button>
+          <div className="flex flex-col items-center gap-4">
+            <Button 
+              onClick={handleGetStarted}
+              size="lg" 
+              className="bg-white text-purple-900 hover:bg-gray-100 px-12 py-6 text-lg rounded-full shadow-2xl"
+            >
+              Get Started Free
+              <ArrowRight size={24} className="ml-2" />
+            </Button>
+            <p className="text-white/80 text-sm">
+              Free to join • No credit card required
+            </p>
+          </div>
         </div>
       </section>
 
@@ -265,9 +275,9 @@ export default function Landing() {
             © 2025 Ubuntu. Connecting hearts across cultures.
           </p>
           <div className="flex justify-center gap-6 mt-6 text-sm text-gray-400">
-            <a href="#" className="hover:text-white">Privacy Policy</a>
-            <a href="#" className="hover:text-white">Terms of Service</a>
-            <a href="#" className="hover:text-white">Contact</a>
+            <Link to={createPageUrl('Privacy')} className="hover:text-white">Privacy Policy</Link>
+            <Link to={createPageUrl('Terms')} className="hover:text-white">Terms of Service</Link>
+            <Link to={createPageUrl('CommunityGuidelines')} className="hover:text-white">Community Guidelines</Link>
           </div>
         </div>
       </footer>
