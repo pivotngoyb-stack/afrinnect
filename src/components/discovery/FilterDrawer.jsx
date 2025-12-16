@@ -14,6 +14,19 @@ const AFRICAN_COUNTRIES = [
   'Zimbabwe', 'Rwanda', 'Angola', 'Mali', 'Burkina Faso', 'Niger', 'Guinea'
 ];
 
+const US_STATES = [
+  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado',
+  'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho',
+  'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana',
+  'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota',
+  'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada',
+  'New Hampshire', 'New Jersey', 'New Mexico', 'New York',
+  'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon',
+  'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
+  'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',
+  'West Virginia', 'Wisconsin', 'Wyoming'
+];
+
 const RELIGIONS = [
   { value: 'christianity', label: 'Christianity' },
   { value: 'islam', label: 'Islam' },
@@ -44,6 +57,7 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
     age_max: 50,
     distance_km: 100,
     countries_of_origin: [],
+    states: [],
     religions: [],
     relationship_goals: [],
     education_levels: [],
@@ -76,6 +90,7 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
       age_max: 50,
       distance_km: 100,
       countries_of_origin: [],
+      states: [],
       religions: [],
       relationship_goals: [],
       education_levels: [],
@@ -87,6 +102,7 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
 
   const activeFiltersCount = [
     localFilters.countries_of_origin?.length > 0,
+    localFilters.states?.length > 0,
     localFilters.religions?.length > 0,
     localFilters.relationship_goals?.length > 0,
     localFilters.education_levels?.length > 0,
@@ -177,6 +193,30 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
                     onClick={() => isPremium && toggleArrayItem('countries_of_origin', country)}
                   >
                     {country}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* US States */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700 mb-3 block">
+                US State
+                {!isPremium && <span className="text-amber-600 text-xs ml-2">Premium</span>}
+              </Label>
+              <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
+                {US_STATES.map(state => (
+                  <Badge
+                    key={state}
+                    variant={localFilters.states?.includes(state) ? "default" : "outline"}
+                    className={`cursor-pointer transition ${
+                      localFilters.states?.includes(state)
+                        ? 'bg-blue-600 text-white'
+                        : 'hover:bg-blue-50'
+                    } ${!isPremium ? 'opacity-50 pointer-events-none' : ''}`}
+                    onClick={() => isPremium && toggleArrayItem('states', state)}
+                  >
+                    {state}
                   </Badge>
                 ))}
               </div>

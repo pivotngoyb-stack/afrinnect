@@ -31,6 +31,19 @@ const ALL_COUNTRIES = [
   'Italy', 'Spain', 'Portugal', 'Australia', 'Other'
 ];
 
+const US_STATES = [
+  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado',
+  'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho',
+  'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana',
+  'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota',
+  'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada',
+  'New Hampshire', 'New Jersey', 'New Mexico', 'New York',
+  'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon',
+  'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
+  'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',
+  'West Virginia', 'Wisconsin', 'Wyoming'
+];
+
 const LANGUAGES = [
   'English', 'French', 'Swahili', 'Arabic', 'Yoruba', 'Hausa', 'Igbo',
   'Amharic', 'Zulu', 'Portuguese', 'Lingala', 'Wolof', 'Twi', 'Shona',
@@ -72,7 +85,9 @@ export default function EditProfile() {
     photos: [],
     country_of_origin: '',
     current_country: '',
+    current_state: '',
     current_city: '',
+    preferred_language: 'en',
     tribe_ethnicity: '',
     languages: [],
     religion: '',
@@ -444,6 +459,22 @@ export default function EditProfile() {
                   </Select>
                 </div>
 
+                {formData.current_country === 'USA' && (
+                  <div>
+                    <Label>State</Label>
+                    <Select value={formData.current_state} onValueChange={(v) => updateField('current_state', v)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {US_STATES.map(state => (
+                          <SelectItem key={state} value={state}>{state}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 <div>
                   <Label>City</Label>
                   <Input
@@ -451,6 +482,19 @@ export default function EditProfile() {
                     onChange={(e) => updateField('current_city', e.target.value)}
                     placeholder="Your city"
                   />
+                </div>
+
+                <div>
+                  <Label>App Language</Label>
+                  <Select value={formData.preferred_language} onValueChange={(v) => updateField('preferred_language', v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">🇬🇧 English</SelectItem>
+                      <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardContent>
             </Card>

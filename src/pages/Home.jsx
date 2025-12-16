@@ -64,6 +64,9 @@ export default function Home() {
       if (filters.countries_of_origin?.length > 0) {
         filterQuery.country_of_origin = { $in: filters.countries_of_origin };
       }
+      if (filters.states?.length > 0) {
+        filterQuery.current_state = { $in: filters.states };
+      }
 
       const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 50);
 
