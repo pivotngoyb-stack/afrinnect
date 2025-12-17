@@ -146,8 +146,14 @@ export default function Home() {
             p.location.lat,
             p.location.lng
           );
-          const maxDistance = combinedFilters.distance_km || 50; // Default 50km
+          const maxDistance = combinedFilters.distance_km || 100; // Default 100km
           if (distance > maxDistance) return false;
+        }
+
+        // In global mode, prioritize same country if no location
+        if (discoveryMode === 'global' && !myProfile?.location?.lat) {
+          // Still show matches, but same country preferred in sorting
+          return true;
         }
 
         // Age filter

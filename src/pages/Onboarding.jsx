@@ -23,11 +23,33 @@ const AFRICAN_COUNTRIES = [
   'Algeria', 'Tunisia', 'Libya', 'Somalia', 'Eritrea', 'Djibouti'
 ];
 
-const OTHER_COUNTRIES = [
-  'USA', 'United Kingdom', 'France', 'Germany', 'Italy', 'Spain', 
-  'Netherlands', 'Belgium', 'Portugal', 'Sweden', 'Norway', 'Denmark',
-  'Finland', 'Switzerland', 'Austria', 'Ireland', 'Poland', 'Greece',
-  'Czech Republic', 'Hungary', 'Romania', 'Bulgaria'
+const RESIDENCE_COUNTRIES = [
+  // Africa
+  'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
+  'Tanzania', 'Uganda', 'DR Congo', 'Cameroon', 'Ivory Coast', 'Senegal',
+  'Zimbabwe', 'Rwanda', 'Angola', 'Mali', 'Burkina Faso', 'Niger', 'Guinea',
+  'Algeria', 'Tunisia', 'Libya', 'Somalia', 'Eritrea', 'Djibouti', 'Botswana',
+  'Namibia', 'Zambia', 'Malawi', 'Mozambique', 'Madagascar', 'Mauritius',
+  // North America
+  'USA', 'Canada', 'Mexico', 'Jamaica', 'Haiti', 'Dominican Republic', 'Trinidad and Tobago',
+  'Bahamas', 'Barbados', 'Cuba', 'Puerto Rico',
+  // South America
+  'Brazil', 'Argentina', 'Colombia', 'Venezuela', 'Peru', 'Chile', 'Ecuador',
+  'Bolivia', 'Paraguay', 'Uruguay', 'Guyana', 'Suriname',
+  // Europe
+  'United Kingdom', 'France', 'Germany', 'Italy', 'Spain', 'Netherlands',
+  'Belgium', 'Portugal', 'Sweden', 'Norway', 'Denmark', 'Finland', 'Switzerland',
+  'Austria', 'Ireland', 'Poland', 'Greece', 'Czech Republic', 'Hungary',
+  'Romania', 'Bulgaria', 'Russia', 'Ukraine', 'Turkey',
+  // Middle East
+  'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Oman', 'Jordan',
+  'Lebanon', 'Israel', 'Palestine',
+  // Asia
+  'China', 'Japan', 'South Korea', 'India', 'Pakistan', 'Bangladesh',
+  'Thailand', 'Vietnam', 'Malaysia', 'Singapore', 'Indonesia', 'Philippines',
+  // Oceania
+  'Australia', 'New Zealand', 'Fiji', 'Papua New Guinea',
+  'Other'
 ];
 
 const ALL_COUNTRIES = [
@@ -359,8 +381,8 @@ export default function Onboarding() {
             <SelectContent>
               {formData.ethnicity === 'non_african_interested' ? (
                 <>
-                  <SelectItem value="divider" disabled className="font-semibold">── Europe & USA ──</SelectItem>
-                  {OTHER_COUNTRIES.map(country => (
+                  <SelectItem value="divider" disabled className="font-semibold">── All Countries ──</SelectItem>
+                  {RESIDENCE_COUNTRIES.map(country => (
                     <SelectItem key={country} value={country}>{country}</SelectItem>
                   ))}
                 </>
@@ -403,14 +425,14 @@ export default function Onboarding() {
                   className="h-9"
                 />
               </div>
-              {OTHER_COUNTRIES.map(country => (
+              {RESIDENCE_COUNTRIES.map(country => (
                 <SelectItem key={country} value={country} data-country={country}>
                   {country}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <p className="text-xs text-gray-400 mt-1">Europe & USA only</p>
+          <p className="text-xs text-gray-400 mt-1">Search to find your country</p>
         </div>
 
         <div>
