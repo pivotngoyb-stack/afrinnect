@@ -94,7 +94,8 @@ export default function Onboarding() {
           window.location.href = createPageUrl('Home');
         }
       } catch (e) {
-        base44.auth.redirectToLogin();
+        // Not logged in - stay on loading, will be handled by Base44
+        console.log('User not authenticated');
       }
     };
     checkUser();

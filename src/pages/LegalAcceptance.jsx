@@ -36,8 +36,8 @@ export default function LegalAcceptance() {
           setIsLoading(false);
         }
       } catch (e) {
-        // Not logged in - trigger login and come back here
-        base44.auth.redirectToLogin(window.location.href);
+        // Not logged in - stay on loading, will be redirected by Base44 auth
+        setIsLoading(true);
       }
     };
     checkUser();
@@ -101,7 +101,7 @@ export default function LegalAcceptance() {
                     </label>
                   </div>
                   <p className="text-sm text-white/70 mb-2">
-                    Our rules for using Ubuntu, including account responsibilities and prohibited conduct.
+                    Our rules for using Afrinnect, including account responsibilities and prohibited conduct.
                   </p>
                   <Link to={createPageUrl('Terms')} target="_blank">
                     <Button variant="link" className="text-amber-400 p-0 h-auto">
