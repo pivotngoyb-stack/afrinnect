@@ -9,7 +9,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import Logo from '@/components/shared/Logo';
 import ConversationItem from '@/components/messaging/ConversationItem';
 import ProfileMini from '@/components/profile/ProfileMini';
 import ProfileCard from '@/components/profile/ProfileCard';
@@ -33,7 +32,7 @@ export default function Matches() {
           }
         }
       } catch (e) {
-        console.log('Not logged in');
+        console.error('Error fetching profile:', e);
       }
     };
     fetchMyProfile();
@@ -73,7 +72,7 @@ export default function Matches() {
     enabled: matchesData.length > 0
   });
 
-  // Fetch likes received (who liked me)
+  // Fetch likes received
   const { data: likesReceived = [], isLoading: loadingLikes } = useQuery({
     queryKey: ['likes-received', myProfile?.id],
     queryFn: async () => {
@@ -115,26 +114,6 @@ export default function Matches() {
     },
     enabled: matchesData.length > 0
   });
-
-  // Check for expired matches
-  useEffect(() => {
-    const checkExpiredMatches = async () => {
-      const now = new Date();
-      for (const match of matchesData) {
-        if (match.expires_at && new Date(match.expires_at) < now && !match.is_expired) {
-          await base44.entities.Match.update(match.id, {
-            is_expired: true,
-            status: 'expired'
-          });
-          queryClient.invalidateQueries(['matches']);
-        }
-      }
-    };
-    
-    checkExpiredMatches();
-    const interval = setInterval(checkExpiredMatches, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, [matchesData, queryClient]);
 
   const newMatches = matchedProfiles.filter(p => !messagesMap[p.match?.id] && !p.match?.is_expired);
   const conversations = matchedProfiles.filter(p => messagesMap[p.match?.id]);
@@ -289,7 +268,7 @@ export default function Matches() {
                   ))}
                 </div>
 
-                <Link to={createPageUrl('Premium')}>
+                <Link to={createPageUrl('PricingPlans')}>
                   <Button className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700">
                     <Crown size={18} className="mr-2" />
                     Upgrade to Premium
