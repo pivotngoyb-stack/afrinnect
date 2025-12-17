@@ -9,10 +9,24 @@ import { SlidersHorizontal, X, RotateCcw } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { base44 } from '@/api/base44Client';
 
-const AFRICAN_COUNTRIES = [
+const ALL_COUNTRIES = [
+  // Africa
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
   'Tanzania', 'Uganda', 'DR Congo', 'Cameroon', 'Ivory Coast', 'Senegal',
-  'Zimbabwe', 'Rwanda', 'Angola', 'Mali', 'Burkina Faso', 'Niger', 'Guinea'
+  'Zimbabwe', 'Rwanda', 'Angola', 'Mali', 'Burkina Faso', 'Niger', 'Guinea',
+  'Algeria', 'Tunisia', 'Libya', 'Botswana', 'Namibia', 'Zambia', 'Malawi',
+  // Americas
+  'USA', 'Canada', 'Brazil', 'Mexico', 'Jamaica', 'Haiti', 'Colombia', 'Argentina',
+  'Dominican Republic', 'Trinidad and Tobago', 'Venezuela', 'Peru', 'Chile', 'Ecuador',
+  // Europe
+  'United Kingdom', 'France', 'Germany', 'Italy', 'Spain', 'Netherlands', 'Belgium',
+  'Portugal', 'Sweden', 'Switzerland', 'Ireland', 'Poland', 'Norway', 'Denmark', 'Austria',
+  // Middle East
+  'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Turkey', 'Lebanon', 'Jordan', 'Oman',
+  // Asia
+  'India', 'China', 'Japan', 'South Korea', 'Singapore', 'Malaysia', 'Thailand', 'Philippines',
+  // Oceania
+  'Australia', 'New Zealand'
 ];
 
 const US_STATES = [
@@ -201,8 +215,8 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
                 Heritage Country
                 {!isPremium && <span className="text-amber-600 text-xs ml-2">Premium</span>}
               </Label>
-              <div className="flex flex-wrap gap-2">
-                {AFRICAN_COUNTRIES.map(country => (
+              <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto">
+                {ALL_COUNTRIES.map(country => (
                   <Badge
                     key={country}
                     variant={localFilters.countries_of_origin?.includes(country) ? "default" : "outline"}
