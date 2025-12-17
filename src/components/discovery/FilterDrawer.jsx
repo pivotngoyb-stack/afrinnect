@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { SlidersHorizontal, X, RotateCcw } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { base44 } from '@/api/base44Client';
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
@@ -85,8 +86,22 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
     }));
   };
 
-  const applyFilters = () => {
+  const applyFilters = async () => {
     onFiltersChange(localFilters);
+    
+    // Save filters to user profile
+    try {
+      const user = await base44.auth.me();
+      const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+      if (profiles.length > 0) {
+        await base44.entities.UserProfile.update(profiles[0].id, {
+          filters: localFilters
+        });
+      }
+    } catch (e) {
+      console.log('Failed to save filters');
+    }
+    
     setIsOpen(false);
   };
 
