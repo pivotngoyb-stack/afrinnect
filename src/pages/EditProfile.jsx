@@ -116,11 +116,23 @@ export default function EditProfile() {
         
         const profiles = await base44.entities.UserProfile.filter({ user_id: currentUser.id });
         if (profiles.length > 0) {
-          setProfile(profiles[0]);
-          setFormData({ ...formData, ...profiles[0] });
+          const profileData = profiles[0];
+          setProfile(profileData);
+          setFormData(prev => ({
+            ...prev,
+            ...profileData,
+            lifestyle: profileData.lifestyle || prev.lifestyle,
+            photos: profileData.photos || [],
+            languages: profileData.languages || [],
+            cultural_values: profileData.cultural_values || [],
+            interests: profileData.interests || [],
+            prompts: profileData.prompts || [],
+            looking_for: profileData.looking_for || []
+          }));
         }
       } catch (e) {
-        console.log('Not logged in');
+        console.error('Error fetching profile:', e);
+        window.location.href = createPageUrl('Landing');
       }
     };
     fetchProfile();
@@ -240,6 +252,14 @@ export default function EditProfile() {
       window.location.href = createPageUrl('Profile');
     }
   });
+
+  if (!user || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
