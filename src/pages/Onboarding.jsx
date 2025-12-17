@@ -119,7 +119,7 @@ export default function Onboarding() {
 
   const createProfileMutation = useMutation({
     mutationFn: async () => {
-      return base44.entities.UserProfile.create({
+      const profile = await base44.entities.UserProfile.create({
         ...formData,
         user_id: user.id,
         primary_photo: formData.photos[0],
@@ -134,6 +134,21 @@ export default function Onboarding() {
           id_verified: false
         }
       });
+
+      // Check for referral code
+      const urlParams = new URLSearchParams(window.location.search);
+      const refCode = urlParams.get('ref');
+      if (refCode) {
+        const referrals = await base44.entities.Referral.filter({ referral_code: refCode });
+        if (referrals.length > 0) {
+          await base44.entities.Referral.update(referrals[0].id, {
+            referred_id: profile.id,
+            status: 'pending'
+          });
+        }
+      }
+
+      return profile;
     },
     onSuccess: () => {
       window.location.href = createPageUrl('Home');
@@ -191,7 +206,7 @@ export default function Onboarding() {
     >
       <Logo size="large" />
       <h1 className="text-3xl font-bold text-gray-900 mt-8 mb-4">
-        Welcome to Ubuntu
+        Welcome to Afrinnect
       </h1>
       <p className="text-gray-500 text-lg mb-8">
         Where African hearts connect worldwide
@@ -252,7 +267,7 @@ export default function Onboarding() {
             onChange={(e) => updateField('birth_date', e.target.value)}
             className="mt-2 h-12 text-lg"
           />
-          <p className="text-xs text-gray-400 mt-2">You must be 18+ to use Ubuntu</p>
+          <p className="text-xs text-gray-400 mt-2">You must be 18+ to use Afrinnect</p>
         </div>
       </div>
     </motion.div>,
@@ -361,7 +376,7 @@ export default function Onboarding() {
           </Select>
           {formData.ethnicity === 'non_african_interested' && (
             <p className="text-xs text-purple-600 mt-2">
-              Welcome! Ubuntu connects people worldwide who appreciate African culture ❤️
+              Welcome! Afrinnect connects people worldwide who appreciate African culture ❤️
             </p>
           )}
         </div>
