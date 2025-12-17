@@ -22,7 +22,7 @@ import CountryFlag from '@/components/shared/CountryFlag';
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import StreakBadge from '@/components/shared/StreakBadge';
 import SocialProofBanner from '@/components/shared/SocialProofBanner';
-import { Share2, TrendingUp } from 'lucide-react';
+import { Share2 } from 'lucide-react';
 
 export default function Profile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -492,6 +492,13 @@ export default function Profile() {
               <Button className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700" size="lg">
                 <Languages size={18} className="mr-2" />
                 Language Exchange
+              </Button>
+            </Link>
+
+            <Link to={createPageUrl('SafetyCheckMonitor')}>
+              <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
+                <Shield size={18} className="mr-2" />
+                Safety Check Monitor
               </Button>
             </Link>
 

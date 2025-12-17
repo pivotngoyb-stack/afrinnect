@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Send, Mic, Image, Languages, AlertTriangle, MoreVertical, Flag, Sparkles } from 'lucide-react';
+import { ArrowLeft, Send, Mic, Image, Languages, AlertTriangle, MoreVertical, Flag, Sparkles, Shield } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,9 +16,7 @@ import IceBreakerPrompts from '@/components/chat/IceBreakerPrompts';
 import { AnimatePresence } from 'framer-motion';
 import TypingIndicator from '@/components/shared/TypingIndicator';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
-import ReadReceipt from '@/components/chat/ReadReceipt';
-import QuestionGame from '@/components/chat/QuestionGame';
-import LocationShare from '@/components/chat/LocationShare';
+import SafetyCheckSetup from '@/components/safety/SafetyCheckSetup';
 
 export default function Chat() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -315,6 +313,12 @@ export default function Chat() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
+            <DropdownMenuItem asChild>
+              <Link to={createPageUrl(`SafetyCheckSetup?matchId=${matchId}`)}>
+                <Shield size={16} className="mr-2" />
+                Set Up Safety Check
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setShowReport(true)}>
               <Flag size={16} className="mr-2" />
               Report

@@ -66,7 +66,7 @@ export default function SafetyCheckSetup() {
       // Send notification to emergency contact
       await base44.integrations.Core.SendEmail({
         to: formData.emergency_contact_phone + '@sms.gateway.com', // SMS gateway
-        subject: 'Ubuntu Safety Check Active',
+        subject: 'Afrinnect Safety Check Active',
         body: `${myProfile.display_name} has activated a safety check for a meetup. Location: ${formData.date_location}. Check-in time: ${formData.check_in_time}`
       });
     },

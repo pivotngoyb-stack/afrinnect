@@ -45,7 +45,10 @@ export default function Landing() {
   ];
 
   const handleGetStarted = () => {
-    base44.auth.redirectToLogin(window.location.origin + createPageUrl('LegalAcceptance'));
+    const urlParams = new URLSearchParams(window.location.search);
+    const ref = urlParams.get('ref');
+    const nextUrl = ref ? createPageUrl('Onboarding') + `?ref=${ref}` : createPageUrl('LegalAcceptance');
+    base44.auth.redirectToLogin(window.location.origin + nextUrl);
   };
 
   return (

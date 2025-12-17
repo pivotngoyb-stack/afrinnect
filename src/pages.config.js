@@ -44,6 +44,7 @@ import ReferralRewards from './pages/ReferralRewards';
 import SuccessStoryContest from './pages/SuccessStoryContest';
 import CompatibilityQuiz from './pages/CompatibilityQuiz';
 import WeddingMarketplace from './pages/WeddingMarketplace';
+import SafetyCheckMonitor from './pages/SafetyCheckMonitor';
 import __Layout from './Layout.jsx';
 
 
@@ -94,6 +95,7 @@ export const PAGES = {
     "SuccessStoryContest": SuccessStoryContest,
     "CompatibilityQuiz": CompatibilityQuiz,
     "WeddingMarketplace": WeddingMarketplace,
+    "SafetyCheckMonitor": SafetyCheckMonitor,
 }
 
 export const pagesConfig = {
