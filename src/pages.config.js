@@ -40,6 +40,10 @@ import PhotoPerformance from './pages/PhotoPerformance';
 import Stories from './pages/Stories';
 import Communities from './pages/Communities';
 import VideoEvents from './pages/VideoEvents';
+import ReferralRewards from './pages/ReferralRewards';
+import SuccessStoryContest from './pages/SuccessStoryContest';
+import CompatibilityQuiz from './pages/CompatibilityQuiz';
+import WeddingMarketplace from './pages/WeddingMarketplace';
 import __Layout from './Layout.jsx';
 
 
@@ -86,6 +90,10 @@ export const PAGES = {
     "Stories": Stories,
     "Communities": Communities,
     "VideoEvents": VideoEvents,
+    "ReferralRewards": ReferralRewards,
+    "SuccessStoryContest": SuccessStoryContest,
+    "CompatibilityQuiz": CompatibilityQuiz,
+    "WeddingMarketplace": WeddingMarketplace,
 }
 
 export const pagesConfig = {
