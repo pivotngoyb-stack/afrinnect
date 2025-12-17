@@ -64,6 +64,52 @@ export default function ModerationCenter({ reports, onResolveReport }) {
       related_report_id: report.id
     });
 
+    // Update user's violation tracking
+    const reportedProfile = await base44.entities.UserProfile.filter({ id: report.reported_id });
+    if (reportedProfile.length > 0) {
+      const profile = reportedProfile[0];
+      const violationCount = (profile.violation_count || 0) + 1;
+      const warningCount = action === 'warning' ? (profile.warning_count || 0) + 1 : (profile.warning_count || 0);
+      
+      let updateData = {
+        violation_count: violationCount,
+        warning_count: warningCount
+      };
+
+      // Auto-escalation logic
+      if (action === 'warning' && warningCount >= 2 && !profile.is_suspended) {
+        // 2nd warning = 7 day suspension
+        updateData.is_suspended = true;
+        updateData.suspension_expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+        updateData.suspension_reason = 'Automatic suspension after 2 warnings';
+        
+        await base44.entities.Notification.create({
+          user_profile_id: report.reported_id,
+          type: 'suspension',
+          title: 'Account Suspended',
+          message: 'Your account has been suspended for 7 days due to multiple violations.'
+        });
+      } else if (action === 'temporary_ban' || (action === 'warning' && violationCount >= 3)) {
+        // 3rd violation or temp ban = permanent ban
+        updateData.is_banned = true;
+        updateData.is_active = false;
+        updateData.ban_reason = moderatorNotes || 'Multiple community guideline violations';
+        
+        await base44.entities.Notification.create({
+          user_profile_id: report.reported_id,
+          type: 'ban',
+          title: 'Account Permanently Banned',
+          message: 'Your account has been permanently banned due to serious or repeated violations.'
+        });
+      } else if (action === 'permanent_ban') {
+        updateData.is_banned = true;
+        updateData.is_active = false;
+        updateData.ban_reason = moderatorNotes || report.report_type;
+      }
+
+      await base44.entities.UserProfile.update(report.reported_id, updateData);
+    }
+
     setModeratorNotes('');
     setSelectedReport(null);
   };

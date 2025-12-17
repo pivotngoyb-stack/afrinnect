@@ -86,7 +86,7 @@ export default function Report() {
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Report Submitted</h2>
           <p className="text-gray-500 mb-6">
-            Thank you for helping keep Ubuntu safe. Our team will review your report within 24 hours.
+            Thank you for helping keep Afrinnect safe. Our team will review your report within 24 hours.
           </p>
           <Link to={createPageUrl('Home')}>
             <Button className="bg-purple-600 hover:bg-purple-700">
