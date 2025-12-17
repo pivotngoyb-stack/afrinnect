@@ -78,7 +78,7 @@ export default function Terms() {
             <h3 className="text-xl font-semibold">7. Subscriptions and Payments</h3>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
               <li>Premium subscriptions automatically renew unless canceled</li>
-              <li>Refunds are available within 14 days of purchase</li>
+              <li>No refund policy - all sales are final</li>
               <li>Prices may change with 30 days notice</li>
             </ul>
           </section>
