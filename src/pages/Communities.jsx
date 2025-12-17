@@ -23,8 +23,15 @@ export default function Communities() {
   }, []);
 
   const { data: communities = [] } = useQuery({
-    queryKey: ['communities'],
-    queryFn: () => base44.entities.Community.list('-created_date', 50)
+    queryKey: ['communities', myProfile?.id],
+    queryFn: async () => {
+      const allCommunities = await base44.entities.Community.list('-created_date', 50);
+      
+      // No filters for communities since they're interest-based
+      // But we could add filters if needed in the future
+      return allCommunities;
+    },
+    enabled: !!myProfile
   });
 
   const joinMutation = useMutation({

@@ -111,21 +111,25 @@ export default function Home() {
 
   // Fetch profiles for discovery
   const { data: profiles = [], isLoading } = useQuery({
-    queryKey: ['discovery-profiles', filters, discoveryMode],
+    queryKey: ['discovery-profiles', filters, discoveryMode, myProfile?.filters],
     queryFn: async () => {
+      // Merge manual filters with saved filters from profile
+      const savedFilters = myProfile?.filters || {};
+      const combinedFilters = { ...savedFilters, ...filters };
+      
       let filterQuery = { is_active: true };
       
-      if (filters.relationship_goals?.length > 0) {
-        filterQuery.relationship_goal = { $in: filters.relationship_goals };
+      if (combinedFilters.relationship_goals?.length > 0) {
+        filterQuery.relationship_goal = { $in: combinedFilters.relationship_goals };
       }
-      if (filters.religions?.length > 0) {
-        filterQuery.religion = { $in: filters.religions };
+      if (combinedFilters.religions?.length > 0) {
+        filterQuery.religion = { $in: combinedFilters.religions };
       }
-      if (filters.countries_of_origin?.length > 0) {
-        filterQuery.country_of_origin = { $in: filters.countries_of_origin };
+      if (combinedFilters.countries_of_origin?.length > 0) {
+        filterQuery.country_of_origin = { $in: combinedFilters.countries_of_origin };
       }
-      if (filters.states?.length > 0) {
-        filterQuery.current_state = { $in: filters.states };
+      if (combinedFilters.states?.length > 0) {
+        filterQuery.current_state = { $in: combinedFilters.states };
       }
 
       const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 200);
@@ -142,38 +146,39 @@ export default function Home() {
             p.location.lat,
             p.location.lng
           );
-          const maxDistance = filters.distance_km || 50; // Default 50km
+          const maxDistance = combinedFilters.distance_km || 50; // Default 50km
           if (distance > maxDistance) return false;
         }
 
         // Age filter
-        if (p.birth_date && filters.age_min && filters.age_max) {
+        if (p.birth_date && (combinedFilters.age_min || combinedFilters.age_max)) {
           const age = calculateAge(p.birth_date);
-          if (age < filters.age_min || age > filters.age_max) return false;
+          if (combinedFilters.age_min && age < combinedFilters.age_min) return false;
+          if (combinedFilters.age_max && age > combinedFilters.age_max) return false;
         }
 
         // Height filter
-        if (filters.height_min && p.height_cm && p.height_cm < filters.height_min) return false;
-        if (filters.height_max && p.height_cm && p.height_cm > filters.height_max) return false;
+        if (combinedFilters.height_min && p.height_cm && p.height_cm < combinedFilters.height_min) return false;
+        if (combinedFilters.height_max && p.height_cm && p.height_cm > combinedFilters.height_max) return false;
 
         // Lifestyle filters
-        if (filters.smoking?.length > 0 && !filters.smoking.includes(p.lifestyle?.smoking)) return false;
-        if (filters.drinking?.length > 0 && !filters.drinking.includes(p.lifestyle?.drinking)) return false;
-        if (filters.fitness?.length > 0 && !filters.fitness.includes(p.lifestyle?.fitness)) return false;
+        if (combinedFilters.smoking?.length > 0 && !combinedFilters.smoking.includes(p.lifestyle?.smoking)) return false;
+        if (combinedFilters.drinking?.length > 0 && !combinedFilters.drinking.includes(p.lifestyle?.drinking)) return false;
+        if (combinedFilters.fitness?.length > 0 && !combinedFilters.fitness.includes(p.lifestyle?.fitness)) return false;
 
         // Languages filter
-        if (filters.languages?.length > 0) {
-          const hasMatchingLanguage = filters.languages.some(lang => p.languages?.includes(lang));
+        if (combinedFilters.languages?.length > 0) {
+          const hasMatchingLanguage = combinedFilters.languages.some(lang => p.languages?.includes(lang));
           if (!hasMatchingLanguage) return false;
         }
 
         // Tribe/ethnicity filter
-        if (filters.tribe_ethnicity && !p.tribe_ethnicity?.toLowerCase().includes(filters.tribe_ethnicity.toLowerCase())) {
+        if (combinedFilters.tribe_ethnicity && !p.tribe_ethnicity?.toLowerCase().includes(combinedFilters.tribe_ethnicity.toLowerCase())) {
           return false;
         }
 
         // Verification filter
-        if (filters.verified_only && !p.verification_status?.photo_verified) return false;
+        if (combinedFilters.verified_only && !p.verification_status?.photo_verified) return false;
 
         // Hide incognito users unless they liked you
         if (p.incognito_mode) return false;

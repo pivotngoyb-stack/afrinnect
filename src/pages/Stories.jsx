@@ -28,9 +28,9 @@ export default function Stories() {
     fetchProfile();
   }, []);
 
-  // Fetch all non-expired stories
+  // Fetch all non-expired stories with filters applied
   const { data: allStories = [] } = useQuery({
-    queryKey: ['stories'],
+    queryKey: ['stories', myProfile?.id],
     queryFn: async () => {
       const now = new Date().toISOString();
       const stories = await base44.entities.Story.filter({
@@ -44,11 +44,44 @@ export default function Stories() {
         profileIds.map(id => base44.entities.UserProfile.filter({ id }))
       );
       
-      return stories.map(story => ({
+      const storiesWithProfiles = stories.map(story => ({
         ...story,
         user_profile: profiles.find(p => p[0]?.id === story.user_profile_id)?.[0]
       }));
+      
+      // Apply user's saved filters
+      if (!myProfile?.filters) return storiesWithProfiles;
+      
+      const userFilters = myProfile.filters;
+      return storiesWithProfiles.filter(story => {
+        const profile = story.user_profile;
+        if (!profile || profile.id === myProfile.id) return true; // Show own stories
+        
+        // Apply filter checks
+        if (userFilters.relationship_goals?.length > 0 && !userFilters.relationship_goals.includes(profile.relationship_goal)) {
+          return false;
+        }
+        if (userFilters.religions?.length > 0 && !userFilters.religions.includes(profile.religion)) {
+          return false;
+        }
+        if (userFilters.countries_of_origin?.length > 0 && !userFilters.countries_of_origin.includes(profile.country_of_origin)) {
+          return false;
+        }
+        if (userFilters.states?.length > 0 && !userFilters.states.includes(profile.current_state)) {
+          return false;
+        }
+        
+        // Age filter
+        if (profile.birth_date && (userFilters.age_min || userFilters.age_max)) {
+          const age = Math.floor((Date.now() - new Date(profile.birth_date)) / (365.25 * 24 * 60 * 60 * 1000));
+          if (userFilters.age_min && age < userFilters.age_min) return false;
+          if (userFilters.age_max && age > userFilters.age_max) return false;
+        }
+        
+        return true;
+      });
     },
+    enabled: !!myProfile,
     refetchInterval: 30000
   });
 

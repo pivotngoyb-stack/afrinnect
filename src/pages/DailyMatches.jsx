@@ -40,9 +40,35 @@ export default function DailyMatches() {
       });
 
       if (matches.length === 0) {
-        // Generate new daily matches
-        const allProfiles = await base44.entities.UserProfile.filter({ is_active: true }, '-last_active', 100);
-        const filtered = allProfiles.filter(p => p.id !== myProfile.id);
+        // Generate new daily matches using user's filters
+        const userFilters = myProfile.filters || {};
+        let filterQuery = { is_active: true };
+        
+        // Apply saved filters
+        if (userFilters.relationship_goals?.length > 0) {
+          filterQuery.relationship_goal = { $in: userFilters.relationship_goals };
+        }
+        if (userFilters.religions?.length > 0) {
+          filterQuery.religion = { $in: userFilters.religions };
+        }
+        if (userFilters.countries_of_origin?.length > 0) {
+          filterQuery.country_of_origin = { $in: userFilters.countries_of_origin };
+        }
+        if (userFilters.states?.length > 0) {
+          filterQuery.current_state = { $in: userFilters.states };
+        }
+
+        const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 100);
+        let filtered = allProfiles.filter(p => p.id !== myProfile.id);
+        
+        // Apply additional filter criteria
+        if (userFilters.age_min || userFilters.age_max) {
+          filtered = filtered.filter(p => {
+            if (!p.birth_date) return false;
+            const age = Math.floor((Date.now() - new Date(p.birth_date)) / (365.25 * 24 * 60 * 60 * 1000));
+            return (!userFilters.age_min || age >= userFilters.age_min) && (!userFilters.age_max || age <= userFilters.age_max);
+          });
+        }
         
         // Calculate match scores
         const scored = filtered.slice(0, 5).map(profile => ({
