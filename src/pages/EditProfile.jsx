@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { motion } from 'framer-motion';
 import {
   ArrowLeft, Camera, Plus, X, Loader2, Sparkles, Save
 } from 'lucide-react';
@@ -15,7 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
@@ -74,6 +72,7 @@ const PROMPTS = [
 ];
 
 export default function EditProfile() {
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [formData, setFormData] = useState({
@@ -83,6 +82,7 @@ export default function EditProfile() {
     gender: '',
     looking_for: [],
     photos: [],
+    primary_photo: '',
     country_of_origin: '',
     current_country: '',
     current_state: '',
@@ -107,29 +107,54 @@ export default function EditProfile() {
   });
   const [isUploading, setIsUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const currentUser = await base44.auth.me();
+        if (!currentUser) {
+          window.location.href = createPageUrl('Landing');
+          return;
+        }
         setUser(currentUser);
         
         const profiles = await base44.entities.UserProfile.filter({ user_id: currentUser.id });
         if (profiles.length > 0) {
           const profileData = profiles[0];
           setProfile(profileData);
-          setFormData(prev => ({
-            ...prev,
-            ...profileData,
-            lifestyle: profileData.lifestyle || prev.lifestyle,
+          setFormData({
+            display_name: profileData.display_name || '',
+            bio: profileData.bio || '',
+            birth_date: profileData.birth_date || '',
+            gender: profileData.gender || '',
+            looking_for: profileData.looking_for || [],
             photos: profileData.photos || [],
+            primary_photo: profileData.primary_photo || '',
+            country_of_origin: profileData.country_of_origin || '',
+            current_country: profileData.current_country || '',
+            current_state: profileData.current_state || '',
+            current_city: profileData.current_city || '',
+            preferred_language: profileData.preferred_language || 'en',
+            tribe_ethnicity: profileData.tribe_ethnicity || '',
             languages: profileData.languages || [],
+            religion: profileData.religion || '',
+            education: profileData.education || '',
+            profession: profileData.profession || '',
+            relationship_goal: profileData.relationship_goal || '',
+            height_cm: profileData.height_cm || '',
+            lifestyle: {
+              smoking: profileData.lifestyle?.smoking || '',
+              drinking: profileData.lifestyle?.drinking || '',
+              fitness: profileData.lifestyle?.fitness || '',
+              children: profileData.lifestyle?.children || ''
+            },
             cultural_values: profileData.cultural_values || [],
             interests: profileData.interests || [],
-            prompts: profileData.prompts || [],
-            looking_for: profileData.looking_for || []
-          }));
+            prompts: profileData.prompts || []
+          });
         }
+        setLoading(false);
       } catch (e) {
         console.error('Error fetching profile:', e);
         window.location.href = createPageUrl('Landing');
@@ -166,22 +191,26 @@ export default function EditProfile() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       const newPhotos = [...(formData.photos || []), file_url];
-      updateField('photos', newPhotos);
-      if (!formData.primary_photo) {
-        updateField('primary_photo', file_url);
-      }
+      setFormData(prev => ({
+        ...prev,
+        photos: newPhotos,
+        primary_photo: prev.primary_photo || file_url
+      }));
     } catch (error) {
       console.error('Upload failed:', error);
+      alert('Photo upload failed. Please try again.');
     }
     setIsUploading(false);
   };
 
   const removePhoto = (index) => {
+    const photoToRemove = formData.photos[index];
     const newPhotos = formData.photos.filter((_, i) => i !== index);
-    updateField('photos', newPhotos);
-    if (formData.photos[index] === formData.primary_photo) {
-      updateField('primary_photo', newPhotos[0] || '');
-    }
+    setFormData(prev => ({
+      ...prev,
+      photos: newPhotos,
+      primary_photo: photoToRemove === prev.primary_photo ? (newPhotos[0] || '') : prev.primary_photo
+    }));
   };
 
   const setPrimaryPhoto = (url) => {
@@ -207,34 +236,10 @@ export default function EditProfile() {
     updateField('prompts', newPrompts);
   };
 
-  const generateBio = async () => {
-    try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Write a short, engaging dating profile bio (max 150 words) for someone who:
-        - Is from ${formData.country_of_origin}
-        - Works as ${formData.profession || 'a professional'}
-        - Values: ${formData.cultural_values?.join(', ') || 'family and culture'}
-        - Interests: ${formData.interests?.join(', ') || 'various activities'}
-        - Looking for: ${formData.relationship_goal || 'meaningful connection'}
-        
-        Make it warm, authentic, and highlight cultural pride. Use first person.`,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            bio: { type: 'string' }
-          }
-        }
-      });
-      if (result.bio) {
-        updateField('bio', result.bio);
-      }
-    } catch (error) {
-      console.error('Bio generation failed:', error);
-    }
-  };
-
   const saveMutation = useMutation({
     mutationFn: async () => {
+      if (!user) throw new Error('No user found');
+      
       const dataToSave = {
         ...formData,
         user_id: user.id,
@@ -243,20 +248,28 @@ export default function EditProfile() {
       };
       
       if (profile) {
-        return base44.entities.UserProfile.update(profile.id, dataToSave);
+        return await base44.entities.UserProfile.update(profile.id, dataToSave);
       } else {
-        return base44.entities.UserProfile.create(dataToSave);
+        return await base44.entities.UserProfile.create(dataToSave);
       }
     },
     onSuccess: () => {
+      queryClient.invalidateQueries(['profile']);
       window.location.href = createPageUrl('Profile');
+    },
+    onError: (error) => {
+      console.error('Save failed:', error);
+      alert('Failed to save profile. Please try again.');
     }
   });
 
-  if (!user) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent mx-auto mb-4" />
+          <p className="text-gray-600">Loading your profile...</p>
+        </div>
       </div>
     );
   }
@@ -264,7 +277,7 @@ export default function EditProfile() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b">
+      <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to={createPageUrl('Profile')}>
@@ -272,12 +285,12 @@ export default function EditProfile() {
                 <ArrowLeft size={24} />
               </Button>
             </Link>
-            <h1 className="text-lg font-bold">Edit Profile</h1>
+            <h1 className="text-lg font-bold text-gray-900">Edit Profile</h1>
           </div>
           <Button
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending}
-            className="bg-purple-600 hover:bg-purple-700"
+            className="bg-purple-600 hover:bg-purple-700 text-white"
           >
             {saveMutation.isPending ? (
               <Loader2 size={18} className="animate-spin mr-2" />
@@ -312,12 +325,14 @@ export default function EditProfile() {
                       <img src={photo} alt="" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
                         <button
+                          type="button"
                           onClick={() => setPrimaryPhoto(photo)}
                           className={`p-2 rounded-full ${photo === formData.primary_photo ? 'bg-amber-500' : 'bg-white/80'}`}
                         >
                           <Sparkles size={16} />
                         </button>
                         <button
+                          type="button"
                           onClick={() => removePhoto(idx)}
                           className="p-2 rounded-full bg-red-500 text-white"
                         >
@@ -350,7 +365,7 @@ export default function EditProfile() {
                     </label>
                   )}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Add up to 6 photos. First photo will be your main profile picture.</p>
+                <p className="text-xs text-gray-500 mt-2">Add up to 6 photos. Set your primary photo by clicking the star.</p>
               </CardContent>
             </Card>
 
@@ -363,28 +378,16 @@ export default function EditProfile() {
                 <div>
                   <Label>Display Name</Label>
                   <Input
-                    value={formData.display_name}
+                    value={formData.display_name || ''}
                     onChange={(e) => updateField('display_name', e.target.value)}
                     placeholder="Your name or nickname"
                   />
                 </div>
                 
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <Label>Bio</Label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={generateBio}
-                      className="text-purple-600 text-xs"
-                    >
-                      <Sparkles size={14} className="mr-1" />
-                      AI Generate
-                    </Button>
-                  </div>
+                  <Label>Bio</Label>
                   <Textarea
-                    value={formData.bio}
+                    value={formData.bio || ''}
                     onChange={(e) => updateField('bio', e.target.value)}
                     placeholder="Tell others about yourself..."
                     rows={4}
@@ -395,7 +398,7 @@ export default function EditProfile() {
                   <Label>Date of Birth</Label>
                   <Input
                     type="date"
-                    value={formData.birth_date}
+                    value={formData.birth_date || ''}
                     onChange={(e) => updateField('birth_date', e.target.value)}
                   />
                 </div>
@@ -403,7 +406,7 @@ export default function EditProfile() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>Gender</Label>
-                    <Select value={formData.gender} onValueChange={(v) => updateField('gender', v)}>
+                    <Select value={formData.gender || ''} onValueChange={(v) => updateField('gender', v)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
@@ -418,7 +421,7 @@ export default function EditProfile() {
 
                   <div>
                     <Label>Looking For</Label>
-                    <Select value={formData.relationship_goal} onValueChange={(v) => updateField('relationship_goal', v)}>
+                    <Select value={formData.relationship_goal || ''} onValueChange={(v) => updateField('relationship_goal', v)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
@@ -444,7 +447,7 @@ export default function EditProfile() {
               <CardContent className="space-y-4">
                 <div>
                   <Label>Country of Origin (Heritage)</Label>
-                  <Select value={formData.country_of_origin} onValueChange={(v) => updateField('country_of_origin', v)}>
+                  <Select value={formData.country_of_origin || ''} onValueChange={(v) => updateField('country_of_origin', v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select your heritage country" />
                     </SelectTrigger>
@@ -459,7 +462,7 @@ export default function EditProfile() {
                 <div>
                   <Label>Tribe / Ethnicity (Optional)</Label>
                   <Input
-                    value={formData.tribe_ethnicity}
+                    value={formData.tribe_ethnicity || ''}
                     onChange={(e) => updateField('tribe_ethnicity', e.target.value)}
                     placeholder="e.g., Yoruba, Zulu, Akan..."
                   />
@@ -467,7 +470,7 @@ export default function EditProfile() {
 
                 <div>
                   <Label>Current Country</Label>
-                  <Select value={formData.current_country} onValueChange={(v) => updateField('current_country', v)}>
+                  <Select value={formData.current_country || ''} onValueChange={(v) => updateField('current_country', v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Where do you live now?" />
                     </SelectTrigger>
@@ -482,7 +485,7 @@ export default function EditProfile() {
                 {formData.current_country === 'USA' && (
                   <div>
                     <Label>State</Label>
-                    <Select value={formData.current_state} onValueChange={(v) => updateField('current_state', v)}>
+                    <Select value={formData.current_state || ''} onValueChange={(v) => updateField('current_state', v)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select your state" />
                       </SelectTrigger>
@@ -498,23 +501,10 @@ export default function EditProfile() {
                 <div>
                   <Label>City</Label>
                   <Input
-                    value={formData.current_city}
+                    value={formData.current_city || ''}
                     onChange={(e) => updateField('current_city', e.target.value)}
                     placeholder="Your city"
                   />
-                </div>
-
-                <div>
-                  <Label>App Language</Label>
-                  <Select value={formData.preferred_language} onValueChange={(v) => updateField('preferred_language', v)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">🇬🇧 English</SelectItem>
-                      <SelectItem value="fr">🇫🇷 Français</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </CardContent>
             </Card>
@@ -527,7 +517,7 @@ export default function EditProfile() {
                 <div>
                   <Label>Profession</Label>
                   <Input
-                    value={formData.profession}
+                    value={formData.profession || ''}
                     onChange={(e) => updateField('profession', e.target.value)}
                     placeholder="What do you do?"
                   />
@@ -535,7 +525,7 @@ export default function EditProfile() {
 
                 <div>
                   <Label>Education Level</Label>
-                  <Select value={formData.education} onValueChange={(v) => updateField('education', v)}>
+                  <Select value={formData.education || ''} onValueChange={(v) => updateField('education', v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
@@ -552,7 +542,7 @@ export default function EditProfile() {
 
                 <div>
                   <Label>Religion</Label>
-                  <Select value={formData.religion} onValueChange={(v) => updateField('religion', v)}>
+                  <Select value={formData.religion || ''} onValueChange={(v) => updateField('religion', v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
@@ -572,8 +562,8 @@ export default function EditProfile() {
                   <Label>Height (cm)</Label>
                   <Input
                     type="number"
-                    value={formData.height_cm}
-                    onChange={(e) => updateField('height_cm', parseInt(e.target.value))}
+                    value={formData.height_cm || ''}
+                    onChange={(e) => updateField('height_cm', e.target.value ? parseInt(e.target.value) : '')}
                     placeholder="e.g., 175"
                   />
                 </div>
@@ -588,7 +578,7 @@ export default function EditProfile() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>Smoking</Label>
-                    <Select value={formData.lifestyle?.smoking} onValueChange={(v) => updateLifestyle('smoking', v)}>
+                    <Select value={formData.lifestyle?.smoking || ''} onValueChange={(v) => updateLifestyle('smoking', v)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
@@ -602,7 +592,7 @@ export default function EditProfile() {
 
                   <div>
                     <Label>Drinking</Label>
-                    <Select value={formData.lifestyle?.drinking} onValueChange={(v) => updateLifestyle('drinking', v)}>
+                    <Select value={formData.lifestyle?.drinking || ''} onValueChange={(v) => updateLifestyle('drinking', v)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
@@ -616,7 +606,7 @@ export default function EditProfile() {
 
                   <div>
                     <Label>Fitness</Label>
-                    <Select value={formData.lifestyle?.fitness} onValueChange={(v) => updateLifestyle('fitness', v)}>
+                    <Select value={formData.lifestyle?.fitness || ''} onValueChange={(v) => updateLifestyle('fitness', v)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
@@ -631,7 +621,7 @@ export default function EditProfile() {
 
                   <div>
                     <Label>Children</Label>
-                    <Select value={formData.lifestyle?.children} onValueChange={(v) => updateLifestyle('children', v)}>
+                    <Select value={formData.lifestyle?.children || ''} onValueChange={(v) => updateLifestyle('children', v)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
@@ -736,6 +726,7 @@ export default function EditProfile() {
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-sm font-medium text-purple-700">{prompt.question}</p>
                       <button
+                        type="button"
                         onClick={() => removePrompt(idx)}
                         className="text-gray-400 hover:text-red-500"
                       >
@@ -743,7 +734,7 @@ export default function EditProfile() {
                       </button>
                     </div>
                     <Textarea
-                      value={prompt.answer}
+                      value={prompt.answer || ''}
                       onChange={(e) => updatePromptAnswer(idx, e.target.value)}
                       placeholder="Your answer..."
                       rows={2}
@@ -759,6 +750,7 @@ export default function EditProfile() {
                       {PROMPTS.filter(p => !formData.prompts?.some(fp => fp.question === p)).map((prompt, idx) => (
                         <button
                           key={idx}
+                          type="button"
                           onClick={() => addPrompt(prompt)}
                           className="w-full text-left p-3 bg-white rounded-lg border border-gray-200 text-sm text-gray-700 hover:border-purple-300 hover:bg-purple-50 transition flex items-center justify-between"
                         >
