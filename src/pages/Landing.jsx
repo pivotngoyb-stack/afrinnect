@@ -83,9 +83,9 @@ export default function Landing() {
           <div className="mb-8">
             <div className="flex justify-center">
               <img 
-                src="https://nnbkoowhootvshzunwql.supabase.co/storage/v1/object/public/base44_projects/06ea2ba1-96c8-4a6e-bc24-2d5e66c67806/afrinnect-logo.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/f08d25426_ChatGPTImageDec16202511_09_07AM.png"
                 alt="Afrinnect"
-                className="h-32 md:h-40 w-auto"
+                className="h-40 md:h-56 w-auto"
               />
             </div>
           </div>
