@@ -3,7 +3,6 @@ import Matches from './pages/Matches';
 import Chat from './pages/Chat';
 import Events from './pages/Events';
 import Profile from './pages/Profile';
-import EditProfile from './pages/EditProfile';
 import Premium from './pages/Premium';
 import Report from './pages/Report';
 import Settings from './pages/Settings';
@@ -45,6 +44,7 @@ import SuccessStoryContest from './pages/SuccessStoryContest';
 import CompatibilityQuiz from './pages/CompatibilityQuiz';
 import WeddingMarketplace from './pages/WeddingMarketplace';
 import SafetyCheckMonitor from './pages/SafetyCheckMonitor';
+import EditProfile from './pages/EditProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -54,7 +54,6 @@ export const PAGES = {
     "Chat": Chat,
     "Events": Events,
     "Profile": Profile,
-    "EditProfile": EditProfile,
     "Premium": Premium,
     "Report": Report,
     "Settings": Settings,
@@ -96,6 +95,7 @@ export const PAGES = {
     "CompatibilityQuiz": CompatibilityQuiz,
     "WeddingMarketplace": WeddingMarketplace,
     "SafetyCheckMonitor": SafetyCheckMonitor,
+    "EditProfile": EditProfile,
 }
 
 export const pagesConfig = {
