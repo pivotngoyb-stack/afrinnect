@@ -119,15 +119,24 @@ export default function EditProfile() {
   };
 
   const handleSave = async () => {
-    if (!profile) return;
-    
     setSaving(true);
     try {
-      await base44.entities.UserProfile.update(profile.id, formData);
+      if (profile) {
+        await base44.entities.UserProfile.update(profile.id, formData);
+      } else {
+        const user = await base44.auth.me();
+        const newProfile = await base44.entities.UserProfile.create({
+          ...formData,
+          user_id: user.id,
+          is_active: true,
+          last_active: new Date().toISOString()
+        });
+        setProfile(newProfile);
+      }
       window.location.href = createPageUrl('Profile');
     } catch (error) {
       console.error('Save error:', error);
-      alert('Failed to save. Please try again.');
+      alert('Failed to save: ' + error.message);
       setSaving(false);
     }
   };
