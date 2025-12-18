@@ -54,7 +54,27 @@ export default function EditProfile() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [profile, setProfile] = useState(null);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    display_name: '',
+    bio: '',
+    birth_date: '',
+    gender: '',
+    photos: [],
+    primary_photo: '',
+    country_of_origin: '',
+    current_country: '',
+    current_city: '',
+    tribe_ethnicity: '',
+    languages: [],
+    religion: '',
+    education: '',
+    profession: '',
+    relationship_goal: '',
+    height_cm: '',
+    lifestyle: {},
+    cultural_values: [],
+    interests: []
+  });
   const [activeSection, setActiveSection] = useState('photos');
 
   useEffect(() => {
@@ -71,6 +91,8 @@ export default function EditProfile() {
 
       const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
       if (profiles.length === 0) {
+        // No profile found - this shouldn't happen but let's handle it
+        alert('No profile found. Redirecting to onboarding...');
         window.location.href = createPageUrl('Onboarding');
         return;
       }
@@ -98,9 +120,10 @@ export default function EditProfile() {
         cultural_values: p.cultural_values || [],
         interests: p.interests || []
       });
-      setLoading(false);
     } catch (error) {
       console.error('Load error:', error);
+      alert('Error loading profile: ' + error.message);
+    } finally {
       setLoading(false);
     }
   };
