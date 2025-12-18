@@ -44,6 +44,7 @@ import SuccessStoryContest from './pages/SuccessStoryContest';
 import CompatibilityQuiz from './pages/CompatibilityQuiz';
 import WeddingMarketplace from './pages/WeddingMarketplace';
 import SafetyCheckMonitor from './pages/SafetyCheckMonitor';
+import EditProfile from './pages/EditProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -94,6 +95,7 @@ export const PAGES = {
     "CompatibilityQuiz": CompatibilityQuiz,
     "WeddingMarketplace": WeddingMarketplace,
     "SafetyCheckMonitor": SafetyCheckMonitor,
+    "EditProfile": EditProfile,
 }
 
 export const pagesConfig = {
