@@ -215,6 +215,19 @@ export default function EditProfile() {
     );
   }
 
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-amber-50">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Profile not found</p>
+          <Button onClick={() => window.location.href = createPageUrl('Onboarding')}>
+            Go to Onboarding
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const completion = calculateCompletion();
 
   return (
