@@ -153,11 +153,13 @@ export default function EditProfile() {
             interests: profileData.interests || [],
             prompts: profileData.prompts || []
           });
+        } else {
+          // No profile exists, but don't redirect - let them create one
         }
         setLoading(false);
       } catch (e) {
         console.error('Error fetching profile:', e);
-        window.location.href = createPageUrl('Landing');
+        setLoading(false);
       }
     };
     fetchProfile();

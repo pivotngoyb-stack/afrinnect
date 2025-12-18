@@ -81,7 +81,13 @@ export default function Landing() {
         >
           {/* Large Logo Display */}
           <div className="mb-8">
-            <Logo size="xlarge" />
+            <div className="flex justify-center">
+              <img 
+                src="https://nnbkoowhootvshzunwql.supabase.co/storage/v1/object/public/base44_projects/06ea2ba1-96c8-4a6e-bc24-2d5e66c67806/afrinnect-logo.png"
+                alt="Afrinnect"
+                className="h-32 md:h-40 w-auto"
+              />
+            </div>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
