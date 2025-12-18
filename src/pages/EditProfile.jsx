@@ -70,31 +70,34 @@ export default function EditProfile() {
       }
 
       const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-      if (profiles.length > 0) {
-        const p = profiles[0];
-        setProfile(p);
-        setFormData({
-          display_name: p.display_name || '',
-          bio: p.bio || '',
-          birth_date: p.birth_date || '',
-          gender: p.gender || '',
-          photos: p.photos || [],
-          primary_photo: p.primary_photo || '',
-          country_of_origin: p.country_of_origin || '',
-          current_country: p.current_country || '',
-          current_city: p.current_city || '',
-          tribe_ethnicity: p.tribe_ethnicity || '',
-          languages: p.languages || [],
-          religion: p.religion || '',
-          education: p.education || '',
-          profession: p.profession || '',
-          relationship_goal: p.relationship_goal || '',
-          height_cm: p.height_cm || '',
-          lifestyle: p.lifestyle || {},
-          cultural_values: p.cultural_values || [],
-          interests: p.interests || []
-        });
+      if (profiles.length === 0) {
+        window.location.href = createPageUrl('Onboarding');
+        return;
       }
+      
+      const p = profiles[0];
+      setProfile(p);
+      setFormData({
+        display_name: p.display_name || '',
+        bio: p.bio || '',
+        birth_date: p.birth_date || '',
+        gender: p.gender || '',
+        photos: p.photos || [],
+        primary_photo: p.primary_photo || '',
+        country_of_origin: p.country_of_origin || '',
+        current_country: p.current_country || '',
+        current_city: p.current_city || '',
+        tribe_ethnicity: p.tribe_ethnicity || '',
+        languages: p.languages || [],
+        religion: p.religion || '',
+        education: p.education || '',
+        profession: p.profession || '',
+        relationship_goal: p.relationship_goal || '',
+        height_cm: p.height_cm || '',
+        lifestyle: p.lifestyle || {},
+        cultural_values: p.cultural_values || [],
+        interests: p.interests || []
+      });
       setLoading(false);
     } catch (error) {
       console.error('Load error:', error);
