@@ -47,6 +47,7 @@ import SafetyCheckMonitor from './pages/SafetyCheckMonitor';
 import EditProfile from './pages/EditProfile';
 import Support from './pages/Support';
 import SupportChat from './pages/SupportChat';
+import SubmitStory from './pages/SubmitStory';
 import __Layout from './Layout.jsx';
 
 
@@ -100,6 +101,7 @@ export const PAGES = {
     "EditProfile": EditProfile,
     "Support": Support,
     "SupportChat": SupportChat,
+    "SubmitStory": SubmitStory,
 }
 
 export const pagesConfig = {
