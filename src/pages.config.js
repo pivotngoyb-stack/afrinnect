@@ -46,6 +46,7 @@ import WeddingMarketplace from './pages/WeddingMarketplace';
 import SafetyCheckMonitor from './pages/SafetyCheckMonitor';
 import EditProfile from './pages/EditProfile';
 import Support from './pages/Support';
+import SupportChat from './pages/SupportChat';
 import __Layout from './Layout.jsx';
 
 
@@ -98,6 +99,7 @@ export const PAGES = {
     "SafetyCheckMonitor": SafetyCheckMonitor,
     "EditProfile": EditProfile,
     "Support": Support,
+    "SupportChat": SupportChat,
 }
 
 export const pagesConfig = {

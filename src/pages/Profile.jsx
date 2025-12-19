@@ -24,7 +24,7 @@ import StreakBadge from '@/components/shared/StreakBadge';
 import SocialProofBanner from '@/components/shared/SocialProofBanner';
 import SpotifySection from '@/components/profile/SpotifySection';
 import ProfileBadges from '@/components/profile/ProfileBadges';
-import { Share2 } from 'lucide-react';
+import { Share2, AlertTriangle } from 'lucide-react';
 
 export default function Profile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -251,10 +251,18 @@ export default function Profile() {
           )}
 
           {!isOwnProfile && (
-            <Button onClick={handleShareProfile} variant="outline" size="sm" className="mt-3">
-              <Share2 size={14} className="mr-2" />
-              Share Profile
-            </Button>
+            <div className="flex gap-2 mt-3">
+              <Button onClick={handleShareProfile} variant="outline" size="sm">
+                <Share2 size={14} className="mr-2" />
+                Share Profile
+              </Button>
+              <Link to={createPageUrl(`Report?userId=${profile.id}`)}>
+                <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">
+                  <AlertTriangle size={14} className="mr-2" />
+                  Report
+                </Button>
+              </Link>
+            </div>
           )}
         </div>
 

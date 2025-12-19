@@ -269,6 +269,21 @@ export default function Settings() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <Link to={createPageUrl('SupportChat')} className="flex items-center justify-between py-2 bg-purple-50 rounded-lg px-3 -mx-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-amber-600 flex items-center justify-center">
+                  <span className="text-white text-sm">✨</span>
+                </div>
+                <div>
+                  <span className="text-gray-900 font-medium block">Chat with Ubuntu AI</span>
+                  <span className="text-xs text-purple-600">Get instant help & advice</span>
+                </div>
+              </div>
+              <ChevronRight size={20} className="text-purple-600" />
+            </Link>
+
+            <Separator />
+
             <Link to={createPageUrl('Support')} className="flex items-center justify-between py-2">
               <span className="text-gray-700">Support Tickets</span>
               <ChevronRight size={20} className="text-gray-400" />
