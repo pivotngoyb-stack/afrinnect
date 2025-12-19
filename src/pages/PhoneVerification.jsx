@@ -52,9 +52,12 @@ export default function PhoneVerification() {
         attempts: 0
       });
 
-      // In production, integrate with SMS API (Twilio, etc.)
-      // For now, show code in console for testing
-      console.log('Verification code:', code);
+      // Send verification code via email
+      await base44.integrations.Core.SendEmail({
+        to: user.email,
+        subject: 'Afrinnect Phone Verification Code',
+        body: `Your verification code is: ${code}\n\nThis code will expire in 10 minutes.\n\nPhone: ${phoneNumber}\n\nIf you didn't request this, please ignore this email.`
+      });
       
       return code;
     },
@@ -166,9 +169,12 @@ export default function PhoneVerification() {
               </>
             ) : (
               <>
-                <div className="text-center py-4">
+                <div className="text-center py-4 bg-purple-50 rounded-lg p-4">
                   <p className="text-sm text-gray-600">
-                    We sent a 6-digit code to <strong>{phoneNumber}</strong>
+                    We sent a 6-digit code to your email <strong>({user?.email})</strong>
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    For phone: {phoneNumber}
                   </p>
                 </div>
                 <div>
