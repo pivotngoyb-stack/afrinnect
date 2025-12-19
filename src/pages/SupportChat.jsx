@@ -210,7 +210,7 @@ export default function SupportChat() {
       </main>
 
       {/* Input */}
-      <div className="sticky bottom-0 bg-white border-t p-4">
+      <div className="sticky bottom-0 bg-white border-t p-4 pb-24">
         <div className="max-w-4xl mx-auto flex gap-3">
           <Textarea
             value={input}

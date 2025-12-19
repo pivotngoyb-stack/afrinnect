@@ -17,6 +17,7 @@ import AdBanner from '@/components/ads/AdBanner';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import TutorialTooltip from '@/components/shared/TutorialTooltip';
 import MessageWithLikeModal from '@/components/home/MessageWithLikeModal';
+import UbuntuAIButton from '@/components/shared/UbuntuAIButton';
 import confetti from 'canvas-confetti';
 
 export default function Home() {
@@ -706,8 +707,11 @@ export default function Home() {
             setShowMessageModal(false);
             setPendingLikeProfile(null);
           }}
-        />
-        </main>
-        </div>
-        );
-        }
+          />
+          </main>
+
+          {/* Ubuntu AI Button */}
+          <UbuntuAIButton />
+          </div>
+          );
+          }
