@@ -22,6 +22,8 @@ import CountryFlag from '@/components/shared/CountryFlag';
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import StreakBadge from '@/components/shared/StreakBadge';
 import SocialProofBanner from '@/components/shared/SocialProofBanner';
+import SpotifySection from '@/components/profile/SpotifySection';
+import ProfileBadges from '@/components/profile/ProfileBadges';
 import { Share2 } from 'lucide-react';
 
 export default function Profile() {
