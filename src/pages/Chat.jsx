@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Send, Mic, Image, Languages, AlertTriangle, MoreVertical, Flag, Sparkles, Shield } from 'lucide-react';
+import { ArrowLeft, Send, Mic, Image, Languages, AlertTriangle, MoreVertical, Flag, Sparkles, Shield, Ban } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -319,12 +319,14 @@ export default function Chat() {
                 Set Up Safety Check
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setShowReport(true)}>
-              <Flag size={16} className="mr-2" />
-              Report
+            <DropdownMenuItem asChild>
+              <Link to={createPageUrl(`Report?userId=${otherProfile.id}`)}>
+                <Flag size={16} className="mr-2" />
+                Report User
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => blockMutation.mutate()} className="text-red-600">
-              <AlertTriangle size={16} className="mr-2" />
+              <Ban size={16} className="mr-2" />
               Block User
             </DropdownMenuItem>
           </DropdownMenuContent>
