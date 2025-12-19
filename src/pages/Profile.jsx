@@ -134,10 +134,6 @@ export default function Profile() {
     return Math.round((filled / fields.length) * 100);
   };
 
-  const photo = profile?.primary_photo || profile?.photos?.[0] || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400';
-  const age = calculateAge(profile?.birth_date);
-  const completion = calculateProfileCompletion();
-
   const handleLogout = async () => {
     await base44.auth.logout(createPageUrl('Home'));
   };
@@ -146,8 +142,8 @@ export default function Profile() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${profile.display_name}'s Profile`,
-          text: `Check out ${profile.display_name} on Afrinnect!`,
+          title: `${profile?.display_name}'s Profile`,
+          text: `Check out ${profile?.display_name} on Afrinnect!`,
           url: window.location.href
         });
       } catch (err) {
@@ -160,13 +156,17 @@ export default function Profile() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
       </div>
     );
   }
+
+  const photo = profile?.primary_photo || profile?.photos?.[0] || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400';
+  const age = calculateAge(profile?.birth_date);
+  const completion = calculateProfileCompletion();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 relative pb-24">
