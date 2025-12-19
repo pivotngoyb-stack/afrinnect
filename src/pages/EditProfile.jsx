@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import AfricanPattern from '@/components/shared/AfricanPattern';
+import PhotoReorderModal from '@/components/home/PhotoReorderModal';
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
@@ -53,6 +54,7 @@ export default function EditProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showPhotoReorder, setShowPhotoReorder] = useState(false);
   const [profile, setProfile] = useState(null);
   const [formData, setFormData] = useState({
     display_name: '',
@@ -119,6 +121,32 @@ export default function EditProfile() {
   };
 
   const handleSave = async () => {
+    // Validate required fields
+    if (!formData.display_name?.trim()) {
+      alert('Please enter your display name');
+      return;
+    }
+    if (!formData.gender) {
+      alert('Please select your gender');
+      return;
+    }
+    if (!formData.birth_date) {
+      alert('Please enter your date of birth');
+      return;
+    }
+    if (!formData.country_of_origin) {
+      alert('Please select your country of origin');
+      return;
+    }
+    if (!formData.current_country) {
+      alert('Please select your current country');
+      return;
+    }
+    if (!formData.photos || formData.photos.length === 0) {
+      alert('Please add at least one photo');
+      return;
+    }
+
     setSaving(true);
     try {
       if (profile) {
@@ -359,9 +387,32 @@ export default function EditProfile() {
                   ✨ Add at least 3 photos to stand out and get more matches
                 </p>
               )}
+              
+              {formData.photos?.length > 1 && (
+                <div className="text-center mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowPhotoReorder(true)}
+                    className="border-purple-300 text-purple-600 hover:bg-purple-50"
+                  >
+                    Reorder Photos
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Photo Reorder Modal */}
+        <PhotoReorderModal
+          photos={formData.photos || []}
+          primaryPhoto={formData.primary_photo}
+          open={showPhotoReorder}
+          onClose={() => setShowPhotoReorder(false)}
+          onSave={(photos, primary) => {
+            setFormData({ ...formData, photos, primary_photo: primary });
+          }}
+        />
 
         {/* Basic Info */}
         <motion.div

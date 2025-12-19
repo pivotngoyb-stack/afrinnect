@@ -333,6 +333,25 @@ export default function Chat() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-center py-12">
+            <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+              <Sparkles size={32} className="text-purple-600" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-800 mb-2">Start a Conversation!</h3>
+            <p className="text-gray-500 text-sm mb-4">
+              Say hello to {otherProfile.display_name}
+            </p>
+            <Button
+              onClick={() => setShowIceBreakers(true)}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              <Sparkles size={16} className="mr-2" />
+              Try an Ice Breaker
+            </Button>
+          </div>
+        )}
+        
         {messages.map(msg => {
           const isMine = msg.sender_id === myProfile?.id;
           return (
@@ -341,13 +360,18 @@ export default function Chat() {
                 {msg.message_type === 'voice_note' ? (
                   <audio controls src={msg.media_url} className="w-full" />
                 ) : msg.message_type === 'image' ? (
-                  <img src={msg.media_url} alt="Shared" className="rounded-lg" />
+                  <img src={msg.media_url} alt="Shared" className="rounded-lg max-w-full" />
                 ) : (
-                  <p className="text-sm">{msg.content}</p>
+                  <p className="text-sm break-words">{msg.content}</p>
                 )}
-                <p className="text-xs opacity-70 mt-1">
-                  {new Date(msg.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-xs opacity-70">
+                    {new Date(msg.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                  {isMine && msg.is_read && (
+                    <span className="text-xs opacity-70">✓✓</span>
+                  )}
+                </div>
                 {!isMine && (
                   <Button
                     variant="ghost"
@@ -362,17 +386,17 @@ export default function Chat() {
               </div>
             </div>
           );
-          })}
+        })}
 
-          {/* Typing Indicator */}
-          <AnimatePresence>
+        {/* Typing Indicator */}
+        <AnimatePresence>
           {otherUserTyping && (
-          <TypingIndicator name={otherProfile.display_name} />
+            <TypingIndicator name={otherProfile.display_name} />
           )}
-          </AnimatePresence>
+        </AnimatePresence>
 
-          <div ref={messagesEndRef} />
-          </div>
+        <div ref={messagesEndRef} />
+      </div>
 
       {/* Input */}
       <div className="bg-white border-t p-4">
