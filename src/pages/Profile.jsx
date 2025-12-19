@@ -51,6 +51,18 @@ export default function Profile() {
     fetchMyProfile();
   }, [profileId]);
 
+  // Fetch profile to view
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['profile', profileId || myProfile?.id],
+    queryFn: async () => {
+      const id = profileId || myProfile?.id;
+      if (!id) return null;
+      const profiles = await base44.entities.UserProfile.filter({ id });
+      return profiles[0];
+    },
+    enabled: !!profileId || !!myProfile
+  });
+
   // Fetch social proof data
   useEffect(() => {
     const fetchSocialProof = async () => {
@@ -62,7 +74,7 @@ export default function Profile() {
       // Views today
       const views = await base44.entities.ProfileView.filter({
         viewed_profile_id: profile.id,
-        viewed_at: { $gte: today }
+        created_date: { $gte: today }
       });
 
       // Likes this week
@@ -90,18 +102,6 @@ export default function Profile() {
 
     fetchSocialProof();
   }, [profile, isOwnProfile]);
-
-  // Fetch profile to view
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ['profile', profileId || myProfile?.id],
-    queryFn: async () => {
-      const id = profileId || myProfile?.id;
-      if (!id) return null;
-      const profiles = await base44.entities.UserProfile.filter({ id });
-      return profiles[0];
-    },
-    enabled: !!profileId || !!myProfile
-  });
 
   const calculateAge = (birthDate) => {
     if (!birthDate) return null;
