@@ -76,6 +76,26 @@ export default function Analytics() {
     enabled: !!myProfile
   });
 
+  // Fetch who liked me with profiles (Premium)
+  const { data: whoLikedMe = [] } = useQuery({
+    queryKey: ['who-liked-me', myProfile?.id],
+    queryFn: async () => {
+      const likes = await base44.entities.Like.filter({ liked_id: myProfile.id }, '-created_date', 20);
+      const profileIds = likes.map(l => l.liker_id);
+      if (profileIds.length === 0) return [];
+      
+      const profiles = await Promise.all(
+        profileIds.map(id => base44.entities.UserProfile.filter({ id }))
+      );
+      
+      return likes.map((like, idx) => ({
+        ...like,
+        profile: profiles[idx]?.[0]
+      })).filter(l => l.profile);
+    },
+    enabled: !!myProfile && isPremium
+  });
+
   // Calculate stats
   const calculateStats = () => {
     const now = new Date();
@@ -88,15 +108,38 @@ export default function Analytics() {
 
     // Profile views over time
     const viewsByDay = {};
+    const likesByDay = {};
+    const matchesByDay = {};
+    
+    for (let i = daysAgo - 1; i >= 0; i--) {
+      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const dayKey = date.toLocaleDateString();
+      viewsByDay[dayKey] = 0;
+      likesByDay[dayKey] = 0;
+      matchesByDay[dayKey] = 0;
+    }
+
     recentViews.forEach(view => {
       const day = new Date(view.created_date).toLocaleDateString();
-      viewsByDay[day] = (viewsByDay[day] || 0) + 1;
+      if (viewsByDay[day] !== undefined) viewsByDay[day]++;
     });
 
-    const viewsChartData = Object.entries(viewsByDay).map(([date, count]) => ({
+    recentLikes.forEach(like => {
+      const day = new Date(like.created_date).toLocaleDateString();
+      if (likesByDay[day] !== undefined) likesByDay[day]++;
+    });
+
+    recentMatches.forEach(match => {
+      const day = new Date(match.created_date).toLocaleDateString();
+      if (matchesByDay[day] !== undefined) matchesByDay[day]++;
+    });
+
+    const engagementChartData = Object.keys(viewsByDay).map(date => ({
       date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      views: count
-    })).slice(-7);
+      views: viewsByDay[date],
+      likes: likesByDay[date],
+      matches: matchesByDay[date]
+    }));
 
     // Message response rate
     const sentMessages = messages.filter(m => m.sender_id === myProfile.id);
@@ -105,12 +148,31 @@ export default function Analytics() {
     const conversationsReplied = new Set(receivedMessages.map(m => m.match_id)).size;
     const responseRate = conversationsStarted > 0 ? Math.round((conversationsReplied / conversationsStarted) * 100) : 0;
 
+    // View sources breakdown
+    const viewSources = {};
+    recentViews.forEach(view => {
+      const source = view.view_source || 'discovery';
+      viewSources[source] = (viewSources[source] || 0) + 1;
+    });
+
+    const viewSourceData = Object.entries(viewSources).map(([name, value]) => ({
+      name: name.replace('_', ' '),
+      value
+    }));
+
+    // Engagement rate calculation
+    const engagementRate = recentViews.length > 0 
+      ? Math.round((recentLikes.length / recentViews.length) * 100) 
+      : 0;
+
     return {
       totalViews: recentViews.length,
       totalLikes: recentLikes.length,
       totalMatches: recentMatches.length,
       responseRate,
-      viewsChartData,
+      engagementRate,
+      engagementChartData,
+      viewSourceData,
       recentViews: recentViews.slice(0, 10)
     };
   };
@@ -248,30 +310,127 @@ export default function Analytics() {
           </Card>
         </div>
 
-        {/* Views Chart */}
+        {/* Engagement Rate */}
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-bold text-lg">Engagement Rate</h3>
+                <p className="text-sm text-gray-500">Views to likes conversion</p>
+              </div>
+              <div className="text-3xl font-bold text-purple-600">
+                {stats?.engagementRate || 0}%
+              </div>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className="bg-gradient-to-r from-purple-600 to-pink-600 h-3 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(stats?.engagementRate || 0, 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              {stats?.engagementRate >= 20 ? '🔥 Great engagement!' : stats?.engagementRate >= 10 ? '👍 Good job!' : '💡 Tip: Update your photos for better engagement'}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Engagement Trends Chart */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Eye size={20} className="text-purple-600" />
-              Profile Views Over Time
+              <TrendingUp size={20} className="text-purple-600" />
+              Engagement Trends
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {stats?.viewsChartData?.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={stats.viewsChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="views" stroke="#7c3aed" strokeWidth={2} />
+            {stats?.engagementChartData?.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={stats.engagementChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="date" stroke="#888" fontSize={12} />
+                  <YAxis stroke="#888" fontSize={12} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="views" 
+                    stroke="#7c3aed" 
+                    strokeWidth={2} 
+                    name="Profile Views"
+                    dot={{ fill: '#7c3aed', r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="likes" 
+                    stroke="#ec4899" 
+                    strokeWidth={2} 
+                    name="Likes Received"
+                    dot={{ fill: '#ec4899', r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="matches" 
+                    stroke="#f59e0b" 
+                    strokeWidth={2} 
+                    name="New Matches"
+                    dot={{ fill: '#f59e0b', r: 4 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-center text-gray-500 py-8">No views data yet</p>
+              <p className="text-center text-gray-500 py-8">No engagement data yet. Keep swiping!</p>
             )}
           </CardContent>
         </Card>
+
+        {/* View Sources Pie Chart */}
+        {stats?.viewSourceData?.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Eye size={20} className="text-purple-600" />
+                How People Found You
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={stats.viewSourceData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {stats.viewSourceData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="space-y-2">
+                  {stats.viewSourceData.map((source, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <div 
+                        className="w-4 h-4 rounded"
+                        style={{ backgroundColor: COLORS[idx % COLORS.length] }}
+                      />
+                      <span className="text-sm capitalize">{source.name}</span>
+                      <span className="text-sm text-gray-500">({source.value})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Who Viewed Your Profile */}
         {isPremium ? (
@@ -297,6 +456,9 @@ export default function Analytics() {
                             {new Date(view.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
+                        <Badge variant="outline" className="text-xs">
+                          {view.view_source || 'discovery'}
+                        </Badge>
                       </div>
                     </Link>
                   ))}
@@ -312,6 +474,69 @@ export default function Analytics() {
               <Lock size={48} className="mx-auto mb-4 text-gray-400" />
               <h4 className="font-bold mb-2">See Who Viewed Your Profile</h4>
               <p className="text-sm text-gray-500 mb-4">Upgrade to Premium to unlock</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Who Liked You (Premium) */}
+        {isPremium ? (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Heart size={20} className="text-pink-600" />
+                Who Liked You
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {whoLikedMe?.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {whoLikedMe.map((like) => (
+                    <Link key={like.id} to={createPageUrl(`Profile?id=${like.liker_id}`)}>
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        className="relative rounded-xl overflow-hidden shadow-lg cursor-pointer group"
+                      >
+                        <div className="aspect-[3/4] relative">
+                          <img
+                            src={like.profile?.primary_photo || like.profile?.photos?.[0]}
+                            alt={like.profile?.display_name}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                          <div className="absolute bottom-2 left-2 right-2">
+                            <p className="text-white font-bold text-sm">
+                              {like.profile?.display_name}
+                            </p>
+                            <p className="text-white/80 text-xs">
+                              {new Date(like.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </p>
+                          </div>
+                          {like.is_super_like && (
+                            <Badge className="absolute top-2 right-2 bg-amber-500 text-white border-0">
+                              ⭐ Super
+                            </Badge>
+                          )}
+                        </div>
+                      </motion.div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-gray-500 py-8">No likes yet</p>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="mb-6 border-pink-200">
+            <CardContent className="p-8 text-center">
+              <Heart size={48} className="mx-auto mb-4 text-pink-400" />
+              <h4 className="font-bold mb-2">See Who Likes You</h4>
+              <p className="text-sm text-gray-500 mb-4">Upgrade to Premium to see everyone who likes you</p>
+              <Link to={createPageUrl('PricingPlans')}>
+                <Button className="bg-gradient-to-r from-pink-600 to-purple-700">
+                  Upgrade to Premium
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         )}
