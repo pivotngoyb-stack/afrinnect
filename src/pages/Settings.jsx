@@ -269,24 +269,24 @@ export default function Settings() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <a href="#" className="flex items-center justify-between py-2">
-              <span className="text-gray-700">Help Center</span>
+            <Link to={createPageUrl('Support')} className="flex items-center justify-between py-2">
+              <span className="text-gray-700">Support Tickets</span>
               <ChevronRight size={20} className="text-gray-400" />
-            </a>
+            </Link>
 
             <Separator />
 
-            <a href="#" className="flex items-center justify-between py-2">
+            <a href="mailto:support@afrinnect.com" className="flex items-center justify-between py-2">
               <span className="text-gray-700">Contact Us</span>
               <ChevronRight size={20} className="text-gray-400" />
             </a>
 
             <Separator />
 
-            <a href="#" className="flex items-center justify-between py-2">
+            <Link to={createPageUrl('CommunityGuidelines')} className="flex items-center justify-between py-2">
               <span className="text-gray-700">Safety Tips</span>
               <ChevronRight size={20} className="text-gray-400" />
-            </a>
+            </Link>
           </CardContent>
         </Card>
 
