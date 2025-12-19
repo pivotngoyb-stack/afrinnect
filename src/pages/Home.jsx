@@ -120,6 +120,43 @@ export default function Home() {
     return R * c; // Distance in km
   };
 
+  // AI-powered match score calculation
+  const calculateMatchScore = async (user1, user2) => {
+    if (!user1 || !user2) return 0;
+    
+    let score = 0;
+    
+    // Cultural compatibility (30 points)
+    if (user1.country_of_origin === user2.country_of_origin) score += 15;
+    if (user1.tribe_ethnicity === user2.tribe_ethnicity) score += 10;
+    if (user1.languages?.some(l => user2.languages?.includes(l))) score += 5;
+    
+    // Values alignment (30 points)
+    if (user1.religion === user2.religion) score += 10;
+    if (user1.relationship_goal === user2.relationship_goal) score += 15;
+    const sharedValues = user1.cultural_values?.filter(v => user2.cultural_values?.includes(v))?.length || 0;
+    score += Math.min(sharedValues * 2, 5);
+    
+    // Location proximity (20 points)
+    if (user1.current_country === user2.current_country) score += 10;
+    if (user1.current_city === user2.current_city) score += 10;
+    
+    // Preference match (20 points)
+    const user1Gender = user1.gender;
+    const user2Gender = user2.gender;
+    if (user1.looking_for?.includes(user2Gender)) score += 10;
+    if (user2.looking_for?.includes(user1Gender)) score += 10;
+    
+    // Lifestyle compatibility (bonus)
+    if (user1.lifestyle?.smoking === user2.lifestyle?.smoking) score += 3;
+    if (user1.lifestyle?.drinking === user2.lifestyle?.drinking) score += 3;
+    if (user1.lifestyle?.fitness === user2.lifestyle?.fitness) score += 2;
+    const sharedInterests = user1.interests?.filter(i => user2.interests?.includes(i))?.length || 0;
+    score += Math.min(sharedInterests * 2, 8);
+    
+    return Math.min(Math.round(score), 100);
+  };
+
   // Fetch profiles for discovery
   const { data: profiles = [], isLoading } = useQuery({
     queryKey: ['discovery-profiles', filters, discoveryMode, myProfile?.filters],
@@ -229,43 +266,6 @@ export default function Home() {
     },
     enabled: !!myProfile
   });
-
-  // AI-powered match score calculation
-  const calculateMatchScore = async (user1, user2) => {
-    if (!user1 || !user2) return 0;
-    
-    let score = 0;
-    
-    // Cultural compatibility (30 points)
-    if (user1.country_of_origin === user2.country_of_origin) score += 15;
-    if (user1.tribe_ethnicity === user2.tribe_ethnicity) score += 10;
-    if (user1.languages?.some(l => user2.languages?.includes(l))) score += 5;
-    
-    // Values alignment (30 points)
-    if (user1.religion === user2.religion) score += 10;
-    if (user1.relationship_goal === user2.relationship_goal) score += 15;
-    const sharedValues = user1.cultural_values?.filter(v => user2.cultural_values?.includes(v))?.length || 0;
-    score += Math.min(sharedValues * 2, 5);
-    
-    // Location proximity (20 points)
-    if (user1.current_country === user2.current_country) score += 10;
-    if (user1.current_city === user2.current_city) score += 10;
-    
-    // Preference match (20 points)
-    const user1Gender = user1.gender;
-    const user2Gender = user2.gender;
-    if (user1.looking_for?.includes(user2Gender)) score += 10;
-    if (user2.looking_for?.includes(user1Gender)) score += 10;
-    
-    // Lifestyle compatibility (bonus)
-    if (user1.lifestyle?.smoking === user2.lifestyle?.smoking) score += 3;
-    if (user1.lifestyle?.drinking === user2.lifestyle?.drinking) score += 3;
-    if (user1.lifestyle?.fitness === user2.lifestyle?.fitness) score += 2;
-    const sharedInterests = user1.interests?.filter(i => user2.interests?.includes(i))?.length || 0;
-    score += Math.min(sharedInterests * 2, 8);
-    
-    return Math.min(Math.round(score), 100);
-  };
 
   // Check daily like limit
   const canLike = () => {
