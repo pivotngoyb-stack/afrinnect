@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Send, Mic, Image, Languages, AlertTriangle, MoreVertical, Flag, Sparkles, Shield, Ban } from 'lucide-react';
+import { ArrowLeft, Send, Mic, Image, Languages, AlertTriangle, MoreVertical, Flag, Sparkles, Shield, Ban, Video, Gift } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,6 +34,9 @@ export default function Chat() {
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [showQuestionGame, setShowQuestionGame] = useState(false);
+  const [showVirtualGifts, setShowVirtualGifts] = useState(false);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [upgradeFeature, setUpgradeFeature] = useState('');
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const queryClient = useQueryClient();
@@ -243,6 +246,27 @@ export default function Chat() {
     }
   });
 
+  const handleVideoCall = () => {
+    const tier = myProfile?.subscription_tier;
+    if (tier === 'elite' || tier === 'vip') {
+      // Open video call
+      window.location.href = createPageUrl(`VideoChat?matchId=${matchId}`);
+    } else {
+      setUpgradeFeature('Video Calls');
+      setShowUpgradePrompt(true);
+    }
+  };
+
+  const handleVirtualGifts = () => {
+    const tier = myProfile?.subscription_tier;
+    if (tier === 'elite' || tier === 'vip') {
+      setShowVirtualGifts(true);
+    } else {
+      setUpgradeFeature('Virtual Gifts');
+      setShowUpgradePrompt(true);
+    }
+  };
+
   const handleSend = () => {
     if (!messageText.trim()) return;
     sendMessageMutation.mutate({ content: messageText });
@@ -306,13 +330,32 @@ export default function Chat() {
             <p className="text-xs text-gray-500">Active now</p>
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreVertical size={20} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleVideoCall}
+            className="text-purple-600 hover:bg-purple-50"
+            title="Video Call (Elite/VIP)"
+          >
+            <Video size={20} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleVirtualGifts}
+            className="text-pink-600 hover:bg-pink-50"
+            title="Send Gift (Elite/VIP)"
+          >
+            <Gift size={20} />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical size={20} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
             <DropdownMenuItem asChild>
               <Link to={createPageUrl(`SafetyCheckSetup?matchId=${matchId}`)}>
                 <Shield size={16} className="mr-2" />
@@ -493,6 +536,59 @@ export default function Chat() {
           />
         )}
         </AnimatePresence>
+
+        {/* Virtual Gifts Modal */}
+        {showVirtualGifts && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowVirtualGifts(false)}>
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-xl font-bold mb-4">Send a Virtual Gift 🎁</h2>
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                {['🌹', '💎', '🍫', '🎂', '💐', '🎁', '⭐', '💝', '👑'].map((gift, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      sendMessageMutation.mutate({ content: `Sent you a gift ${gift}`, type: 'text' });
+                      setShowVirtualGifts(false);
+                    }}
+                    className="p-6 text-4xl bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl hover:scale-110 transition"
+                  >
+                    {gift}
+                  </button>
+                ))}
+              </div>
+              <Button variant="outline" onClick={() => setShowVirtualGifts(false)} className="w-full">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Upgrade Prompt Modal */}
+        {showUpgradePrompt && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowUpgradePrompt(false)}>
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+              <div className="text-center">
+                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-100 to-amber-100 flex items-center justify-center">
+                  <Sparkles size={40} className="text-purple-600" />
+                </div>
+                <h2 className="text-2xl font-bold mb-2">{upgradeFeature} are Exclusive!</h2>
+                <p className="text-gray-600 mb-6">
+                  Upgrade to Elite or VIP to unlock {upgradeFeature.toLowerCase()} and connect in new ways!
+                </p>
+                <div className="space-y-3">
+                  <Link to={createPageUrl('PricingPlans')}>
+                    <Button className="w-full bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700">
+                      Upgrade Now
+                    </Button>
+                  </Link>
+                  <Button variant="outline" onClick={() => setShowUpgradePrompt(false)} className="w-full">
+                    Maybe Later
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         </div>
         );
         }
