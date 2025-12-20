@@ -373,8 +373,9 @@ export default function Chat() {
               Block User
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
-      </header>
+          </DropdownMenu>
+          </div>
+          </header>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
