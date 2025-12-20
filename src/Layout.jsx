@@ -13,6 +13,7 @@ const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Repo
 function LayoutContent({ children, currentPageName }) {
   const [myProfile, setMyProfile] = useState(null);
   const [hasProfile, setHasProfile] = useState(true);
+  const [locationBlocked, setLocationBlocked] = useState(false);
   const { t } = useLanguage();
   
   useEffect(() => {
@@ -37,7 +38,18 @@ function LayoutContent({ children, currentPageName }) {
           }
           
           if (profiles.length > 0) {
-            setMyProfile(profiles[0]);
+            const profile = profiles[0];
+            
+            // Location check - only US and Canada allowed
+            const allowedCountries = ['United States', 'Canada', 'USA', 'US'];
+            const userCountry = profile.current_country;
+            
+            if (userCountry && !allowedCountries.includes(userCountry)) {
+              setLocationBlocked(true);
+              return;
+            }
+            
+            setMyProfile(profile);
           }
           setHasProfile(profiles.length > 0);
         }
