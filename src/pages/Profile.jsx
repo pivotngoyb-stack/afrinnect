@@ -449,14 +449,52 @@ export default function Profile() {
         {/* Action Buttons (Own profile) */}
         {isOwnProfile && (
           <div className="space-y-3 mt-8">
-            <Link to={createPageUrl('Analytics')}>
-              <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" size="lg">
-                <BarChart size={18} className="mr-2" />
-                View Analytics
-                {profile?.is_premium && <Badge className="ml-2 bg-amber-500 text-xs">Premium</Badge>}
-              </Button>
-            </Link>
+            {/* Premium+ Features */}
+            {profile?.is_premium && (
+              <>
+                <Link to={createPageUrl('Analytics')}>
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" size="lg">
+                    <BarChart size={18} className="mr-2" />
+                    View Analytics
+                    <Badge className="ml-2 bg-amber-500 text-xs">Premium</Badge>
+                  </Button>
+                </Link>
 
+                <Link to={createPageUrl('ProfileOptimization')}>
+                  <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" size="lg">
+                    <Sparkles size={18} className="mr-2" />
+                    Optimize My Profile
+                    <Badge className="ml-2 bg-amber-500 text-xs">Premium</Badge>
+                  </Button>
+                </Link>
+
+                <Link to={createPageUrl('BackgroundCheckRequest')}>
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700" size="lg">
+                    <Shield size={18} className="mr-2" />
+                    Request Background Check
+                    <Badge className="ml-2 bg-amber-500 text-xs">Premium</Badge>
+                  </Button>
+                </Link>
+
+                <Link to={createPageUrl('TravelMode')}>
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" size="lg">
+                    <MapPin size={18} className="mr-2" />
+                    Travel Mode
+                    <Badge className="ml-2 bg-amber-500 text-xs">Premium</Badge>
+                  </Button>
+                </Link>
+
+                <Link to={createPageUrl('Rewind')}>
+                  <Button className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700" size="lg">
+                    <RotateCcw size={18} className="mr-2" />
+                    Rewind
+                    <Badge className="ml-2 bg-amber-500 text-xs">Premium</Badge>
+                  </Button>
+                </Link>
+              </>
+            )}
+
+            {/* Free Tier Features */}
             {!profile?.verification_status?.photo_verified && (
               <Link to={createPageUrl('VerifyPhoto')}>
                 <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
@@ -491,13 +529,6 @@ export default function Profile() {
               </Button>
             </Link>
 
-            <Link to={createPageUrl('ProfileOptimization')}>
-              <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" size="lg">
-                <Sparkles size={18} className="mr-2" />
-                Optimize My Profile
-              </Button>
-            </Link>
-
             <Link to={createPageUrl('LanguageExchangeHub')}>
               <Button className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700" size="lg">
                 <Languages size={18} className="mr-2" />
@@ -509,13 +540,6 @@ export default function Profile() {
               <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
                 <Shield size={18} className="mr-2" />
                 Safety Check Monitor
-              </Button>
-            </Link>
-
-            <Link to={createPageUrl('BackgroundCheckRequest')}>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700" size="lg">
-                <Shield size={18} className="mr-2" />
-                Request Background Check
               </Button>
             </Link>
 
@@ -532,24 +556,6 @@ export default function Profile() {
                 {profile?.is_premium ? 'Manage Subscription' : 'Upgrade to Premium'}
               </Button>
             </Link>
-
-            {profile?.is_premium && (
-              <>
-                <Link to={createPageUrl('TravelMode')}>
-                  <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" size="lg">
-                    <MapPin size={18} className="mr-2" />
-                    Travel Mode
-                  </Button>
-                </Link>
-
-                <Link to={createPageUrl('Rewind')}>
-                  <Button className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700" size="lg">
-                    <RotateCcw size={18} className="mr-2" />
-                    Rewind
-                  </Button>
-                </Link>
-              </>
-            )}
 
             <Separator className="my-6" />
 
