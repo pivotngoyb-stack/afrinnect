@@ -49,13 +49,15 @@ const PRICING_TIERS = {
   },
   elite: {
     name: 'Elite',
-    subtitle: 'For Serious Relationships',
+    subtitle: 'Video Calls & Virtual Gifts',
     prices: {
-      monthly: { amount: 29.99, period: 'month', total: 29.99 },
-      quarterly: { amount: 26.66, period: 'month', total: 79.99, save: '11%' }
+      monthly: { amount: 19.99, period: 'month', total: 19.99 },
+      quarterly: { amount: 16.66, period: 'month', total: 49.99, save: '17%' }
     },
     features: [
       { text: 'Everything in Premium', included: true },
+      { text: 'Video calls', included: true, icon: MessageCircle },
+      { text: 'Virtual gifts', included: true, icon: Heart },
       { text: 'Elite verified badge', included: true, icon: Verified },
       { text: 'Profile priority ranking', included: true, icon: Award },
       { text: 'Unlimited profile boosts', included: true, icon: Zap },
