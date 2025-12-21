@@ -202,10 +202,20 @@ export default function Onboarding() {
     }
   };
 
+  const calculateAge = (birthDate) => {
+    if (!birthDate) return 0;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  };
+
   const canProceed = () => {
     switch (step) {
       case 0: return true; // Welcome
-      case 1: return formData.display_name && formData.birth_date;
+      case 1: return formData.display_name && formData.birth_date && calculateAge(formData.birth_date) >= 18;
       case 2: return formData.gender && formData.looking_for.length > 0;
       case 3: return formData.country_of_origin && formData.current_country && formData.current_city && formData.location.lat && formData.location.lng;
       case 4: return formData.relationship_goal;
