@@ -87,6 +87,14 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
   });
 
   const [isOpen, setIsOpen] = useState(false);
+  const debouncedFilters = useDebounce(localFilters, 500);
+
+  // Apply debounced filters automatically
+  React.useEffect(() => {
+    if (JSON.stringify(debouncedFilters) !== JSON.stringify(filters)) {
+      onFiltersChange(debouncedFilters);
+    }
+  }, [debouncedFilters]);
 
   const updateFilter = (key, value) => {
     setLocalFilters(prev => ({ ...prev, [key]: value }));
