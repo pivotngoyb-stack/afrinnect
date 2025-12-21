@@ -7,8 +7,19 @@ import { DollarSign, TrendingUp, Users, CreditCard, RefreshCw, Crown } from 'luc
 export default function RevenueAnalytics({ subscriptions, profiles }) {
   const activeSubscriptions = subscriptions.filter(s => s.status === 'active');
   const totalRevenue = subscriptions.reduce((sum, sub) => sum + (sub.amount_paid || 0), 0);
+  
+  // Calculate accurate MRR
   const mrr = activeSubscriptions.reduce((sum, sub) => {
-    const monthlyAmount = sub.plan_type.includes('yearly') ? sub.amount_paid / 12 : sub.amount_paid;
+    let monthlyAmount = 0;
+    if (sub.plan_type.includes('yearly')) {
+      monthlyAmount = (sub.amount_paid || 0) / 12;
+    } else if (sub.plan_type.includes('quarterly')) {
+      monthlyAmount = (sub.amount_paid || 0) / 3;
+    } else if (sub.plan_type.includes('6months')) {
+      monthlyAmount = (sub.amount_paid || 0) / 6;
+    } else {
+      monthlyAmount = sub.amount_paid || 0;
+    }
     return sum + monthlyAmount;
   }, 0);
 
@@ -19,12 +30,13 @@ export default function RevenueAnalytics({ subscriptions, profiles }) {
   };
 
   const revenueByTier = {
-    premium: subscriptionsByTier.premium.reduce((sum, s) => sum + (s.amount_paid || 0), 0),
-    elite: subscriptionsByTier.elite.reduce((sum, s) => sum + (s.amount_paid || 0), 0),
-    vip: subscriptionsByTier.vip.reduce((sum, s) => sum + (s.amount_paid || 0), 0)
+    premium: subscriptions.filter(s => s.plan_type.includes('premium')).reduce((sum, s) => sum + (s.amount_paid || 0), 0),
+    elite: subscriptions.filter(s => s.plan_type.includes('elite')).reduce((sum, s) => sum + (s.amount_paid || 0), 0),
+    vip: subscriptions.filter(s => s.plan_type.includes('vip')).reduce((sum, s) => sum + (s.amount_paid || 0), 0)
   };
 
   const arpu = profiles.length > 0 ? totalRevenue / profiles.length : 0;
+  const arppu = activeSubscriptions.length > 0 ? totalRevenue / activeSubscriptions.length : 0;
   const conversionRate = profiles.length > 0 ? (activeSubscriptions.length / profiles.length) * 100 : 0;
 
   return (
@@ -66,8 +78,8 @@ export default function RevenueAnalytics({ subscriptions, profiles }) {
                 <Users size={24} className="text-white" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">ARPU</p>
-                <p className="text-3xl font-bold text-purple-700">${arpu.toFixed(2)}</p>
+                <p className="text-sm text-gray-600">ARPU / ARPPU</p>
+                <p className="text-3xl font-bold text-purple-700">${arpu.toFixed(2)} / ${arppu.toFixed(2)}</p>
               </div>
             </div>
           </CardContent>
@@ -102,7 +114,7 @@ export default function RevenueAnalytics({ subscriptions, profiles }) {
               ${revenueByTier.premium.toFixed(2)}
             </p>
             <p className="text-sm text-gray-600">
-              {((revenueByTier.premium / totalRevenue) * 100).toFixed(1)}% of total revenue
+              {totalRevenue > 0 ? ((revenueByTier.premium / totalRevenue) * 100).toFixed(1) : 0}% of total revenue
             </p>
             <div className="mt-4 space-y-2">
               <div className="flex justify-between text-sm">
@@ -133,7 +145,7 @@ export default function RevenueAnalytics({ subscriptions, profiles }) {
               ${revenueByTier.elite.toFixed(2)}
             </p>
             <p className="text-sm text-gray-600">
-              {((revenueByTier.elite / totalRevenue) * 100).toFixed(1)}% of total revenue
+              {totalRevenue > 0 ? ((revenueByTier.elite / totalRevenue) * 100).toFixed(1) : 0}% of total revenue
             </p>
             <div className="mt-4 space-y-2">
               <div className="flex justify-between text-sm">
@@ -164,7 +176,7 @@ export default function RevenueAnalytics({ subscriptions, profiles }) {
               ${revenueByTier.vip.toFixed(2)}
             </p>
             <p className="text-sm text-gray-600">
-              {((revenueByTier.vip / totalRevenue) * 100).toFixed(1)}% of total revenue
+              {totalRevenue > 0 ? ((revenueByTier.vip / totalRevenue) * 100).toFixed(1) : 0}% of total revenue
             </p>
             <div className="mt-4 space-y-2">
               <div className="flex justify-between text-sm">

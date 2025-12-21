@@ -345,39 +345,100 @@ export default function AdminDashboard() {
     }
   });
 
-  // Stats
+  // Stats - All numbers calculated accurately
   const today = new Date();
   const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
   const lastMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
 
+  // User metrics
   const newUsersThisWeek = profiles.filter(p => new Date(p.created_date) > lastWeek).length;
   const newUsersThisMonth = profiles.filter(p => new Date(p.created_date) > lastMonth).length;
-  const matchesThisMonth = matches.filter(m => new Date(m.matched_at) > lastMonth).length;
-  const revenueThisMonth = subscriptions.filter(s => new Date(s.start_date) > lastMonth).reduce((sum, sub) => sum + (sub.amount_paid || 0), 0);
-
-  const premiumUsersCount = profiles.filter(p => p.is_premium).length;
   const activeUsersCount = profiles.filter(p => p.is_active).length;
   const bannedUsersCount = profiles.filter(p => !p.is_active).length;
+  const verifiedUsersCount = profiles.filter(p => p.verification_status?.photo_verified).length;
+  
+  // Subscription metrics
+  const freeUsers = profiles.filter(p => !p.subscription_tier || p.subscription_tier === 'free').length;
+  const premiumUsers = profiles.filter(p => p.subscription_tier === 'premium').length;
+  const eliteUsers = profiles.filter(p => p.subscription_tier === 'elite').length;
+  const vipUsers = profiles.filter(p => p.subscription_tier === 'vip').length;
+  const totalPaidUsers = premiumUsers + eliteUsers + vipUsers;
+  
+  // Revenue metrics
+  const totalRevenue = subscriptions.reduce((sum, sub) => sum + (sub.amount_paid || 0), 0);
+  const revenueThisMonth = subscriptions.filter(s => new Date(s.start_date) > lastMonth).reduce((sum, sub) => sum + (sub.amount_paid || 0), 0);
+  const activeSubscriptions = subscriptions.filter(s => s.status === 'active').length;
+  
+  // Match metrics
+  const totalMatches = matches.filter(m => m.is_match).length;
+  const matchesThisMonth = matches.filter(m => m.is_match && new Date(m.matched_at) > lastMonth).length;
+  const matchesThisWeek = matches.filter(m => m.is_match && new Date(m.matched_at) > lastWeek).length;
+  
+  // Engagement metrics
+  const usersWithMatches = [...new Set(matches.filter(m => m.is_match).flatMap(m => [m.user1_id, m.user2_id]))].length;
+  const matchRate = profiles.length > 0 ? ((usersWithMatches / profiles.length) * 100).toFixed(1) : 0;
+  
+  // Safety metrics
+  const pendingReports = reports.filter(r => r.status === 'pending').length;
+  const resolvedReports = reports.filter(r => r.status === 'resolved').length;
+  const activeSafetyChecks = safetyChecks.filter(s => s.status === 'active').length;
+  
+  // Support metrics
+  const openTickets = supportTickets.filter(t => t.status === 'open').length;
+  const urgentTickets = supportTickets.filter(t => t.priority === 'urgent').length;
 
   const stats = {
+    // Core metrics
     totalUsers: users.length,
     totalProfiles: profiles.length,
-    premiumUsers: premiumUsersCount,
-    verifiedUsers: profiles.filter(p => p.verification_status?.photo_verified).length,
-    pendingReports: reports.length,
-    activeSubscriptions: subscriptions.length,
-    totalRevenue: subscriptions.reduce((sum, sub) => sum + (sub.amount_paid || 0), 0),
-    activeSafetyChecks: safetyChecks.length,
-    totalMatches: matches.length,
-    newUsersThisWeek,
-    newUsersThisMonth,
-    matchesThisMonth,
-    revenueThisMonth,
-    totalEvents: events.length,
     activeUsers: activeUsersCount,
     bannedUsers: bannedUsersCount,
-    conversionRate: profiles.length > 0 ? ((premiumUsersCount / profiles.length) * 100).toFixed(1) : 0,
-    auditLogs: auditLogs.length
+    verifiedUsers: verifiedUsersCount,
+    
+    // Subscription breakdown
+    freeUsers,
+    premiumUsers,
+    eliteUsers,
+    vipUsers,
+    totalPaidUsers,
+    conversionRate: profiles.length > 0 ? ((totalPaidUsers / profiles.length) * 100).toFixed(1) : 0,
+    
+    // Revenue
+    totalRevenue,
+    revenueThisMonth,
+    activeSubscriptions,
+    
+    // Matches
+    totalMatches,
+    matchesThisMonth,
+    matchesThisWeek,
+    matchRate,
+    usersWithMatches,
+    
+    // Growth
+    newUsersThisWeek,
+    newUsersThisMonth,
+    growthRate: profiles.length > 0 ? ((newUsersThisMonth / profiles.length) * 100).toFixed(1) : 0,
+    
+    // Safety & Moderation
+    totalReports: reports.length,
+    pendingReports,
+    resolvedReports,
+    activeSafetyChecks,
+    
+    // Support
+    totalTickets: supportTickets.length,
+    openTickets,
+    urgentTickets,
+    
+    // Events & Content
+    totalEvents: events.length,
+    upcomingEvents: events.filter(e => new Date(e.start_date) > new Date()).length,
+    
+    // System
+    auditLogs: auditLogs.length,
+    featureFlags: featureFlags.length,
+    moderationRules: moderationRules.length
   };
 
   const filteredProfiles = profiles.filter(p => 

@@ -7,43 +7,43 @@ export default function AdminOverview({ stats }) {
   const kpiCards = [
     {
       title: 'Total Users',
-      value: stats.totalProfiles,
-      change: `+${stats.newUsersThisWeek} this week`,
+      value: stats.totalProfiles || 0,
+      change: `+${stats.newUsersThisWeek || 0} this week`,
       icon: Users,
       color: 'blue',
-      subtext: `${stats.activeUsers} active`
+      subtext: `${stats.activeUsers || 0} active • ${stats.bannedUsers || 0} banned`
     },
     {
-      title: 'Premium Users',
-      value: stats.premiumUsers,
+      title: 'Paid Subscribers',
+      value: stats.totalPaidUsers || 0,
       change: `${stats.conversionRate}% conversion`,
       icon: Crown,
       color: 'amber',
-      subtext: `${stats.activeSubscriptions} subscriptions`
+      subtext: `Premium: ${stats.premiumUsers || 0} • Elite: ${stats.eliteUsers || 0} • VIP: ${stats.vipUsers || 0}`
     },
     {
       title: 'Total Revenue',
-      value: `$${stats.totalRevenue.toFixed(0)}`,
-      change: `$${stats.revenueThisMonth.toFixed(0)} MTD`,
+      value: `$${(stats.totalRevenue || 0).toFixed(0)}`,
+      change: `$${(stats.revenueThisMonth || 0).toFixed(0)} MTD`,
       icon: DollarSign,
       color: 'green',
-      subtext: 'Lifetime earnings'
+      subtext: `${stats.activeSubscriptions || 0} active subscriptions`
     },
     {
       title: 'Total Matches',
-      value: stats.totalMatches,
-      change: `+${stats.matchesThisMonth} this month`,
+      value: stats.totalMatches || 0,
+      change: `+${stats.matchesThisMonth || 0} this month`,
       icon: Heart,
       color: 'pink',
-      subtext: 'Successful connections'
+      subtext: `${stats.matchRate}% match rate • ${stats.usersWithMatches || 0} users matched`
     }
   ];
 
   const healthMetrics = [
-    { label: 'Active Users', value: stats.activeUsers, total: stats.totalProfiles, status: 'good' },
-    { label: 'Verified Users', value: stats.verifiedUsers, total: stats.totalProfiles, status: 'good' },
-    { label: 'Pending Reports', value: stats.pendingReports, total: stats.totalProfiles, status: stats.pendingReports > 10 ? 'warning' : 'good' },
-    { label: 'Banned Users', value: stats.bannedUsers, total: stats.totalProfiles, status: stats.bannedUsers > 100 ? 'warning' : 'good' }
+    { label: 'Active Users', value: stats.activeUsers || 0, total: stats.totalProfiles || 1, status: 'good' },
+    { label: 'Verified Users', value: stats.verifiedUsers || 0, total: stats.totalProfiles || 1, status: 'good' },
+    { label: 'Pending Reports', value: stats.pendingReports || 0, total: Math.max(stats.totalReports || 10, 10), status: (stats.pendingReports || 0) > 10 ? 'warning' : 'good' },
+    { label: 'Open Support Tickets', value: stats.openTickets || 0, total: Math.max(stats.totalTickets || 10, 10), status: (stats.urgentTickets || 0) > 5 ? 'warning' : 'good' }
   ];
 
   return (
@@ -85,17 +85,19 @@ export default function AdminOverview({ stats }) {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">New This Week</span>
-                <span className="text-xl font-bold text-blue-600">+{stats.newUsersThisWeek}</span>
+                <span className="text-xl font-bold text-blue-600">+{stats.newUsersThisWeek || 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">New This Month</span>
-                <span className="text-xl font-bold text-blue-600">+{stats.newUsersThisMonth}</span>
+                <span className="text-xl font-bold text-blue-600">+{stats.newUsersThisMonth || 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Growth Rate</span>
-                <span className="text-xl font-bold text-green-600">
-                  {stats.totalProfiles > 0 ? ((stats.newUsersThisMonth / stats.totalProfiles) * 100).toFixed(1) : 0}%
-                </span>
+                <span className="text-xl font-bold text-green-600">{stats.growthRate || 0}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Matches This Week</span>
+                <span className="text-xl font-bold text-pink-600">+{stats.matchesThisWeek || 0}</span>
               </div>
             </div>
           </CardContent>
@@ -142,21 +144,21 @@ export default function AdminOverview({ stats }) {
           <div className="grid md:grid-cols-4 gap-6">
             <div>
               <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
-              <p className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</p>
+              <p className="text-2xl font-bold">${(stats.totalRevenue || 0).toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">This Month</p>
-              <p className="text-2xl font-bold text-green-600">${stats.revenueThisMonth.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-green-600">${(stats.revenueThisMonth || 0).toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">ARPU</p>
               <p className="text-2xl font-bold">
-                ${stats.totalProfiles > 0 ? (stats.totalRevenue / stats.totalProfiles).toFixed(2) : '0.00'}
+                ${(stats.totalProfiles || 0) > 0 ? ((stats.totalRevenue || 0) / stats.totalProfiles).toFixed(2) : '0.00'}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Conversion Rate</p>
-              <p className="text-2xl font-bold text-amber-600">{stats.conversionRate}%</p>
+              <p className="text-2xl font-bold text-amber-600">{stats.conversionRate || 0}%</p>
             </div>
           </div>
         </CardContent>
