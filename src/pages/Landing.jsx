@@ -14,32 +14,6 @@ import LanguageSelector from '@/components/i18n/LanguageSelector';
 export default function Landing() {
   const { t } = useLanguage();
 
-  // Redirect authenticated users away from landing
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const isAuth = await base44.auth.isAuthenticated();
-        if (isAuth) {
-          const user = await base44.auth.me();
-          if (user) {
-            // Check if they have a profile
-            const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-            if (profiles.length > 0) {
-              // Has profile, go to home
-              window.location.href = createPageUrl('Home');
-            } else {
-              // No profile, go to onboarding
-              window.location.href = createPageUrl('Onboarding');
-            }
-          }
-        }
-      } catch (e) {
-        // Not logged in, stay on landing
-      }
-    };
-    checkAuth();
-  }, []);
-
   const features = [
     {
       icon: Heart,
