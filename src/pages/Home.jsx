@@ -265,12 +265,25 @@ export default function Home() {
         })
       );
 
-      // Sort by distance (local mode) or match score (global mode)
+      // Feature profiles based on tier (VIP > Elite > Premium)
+      const featuredProfiles = profilesWithScores.filter(p => 
+        p.subscription_tier === 'vip' || p.subscription_tier === 'elite'
+      );
+      const regularProfiles = profilesWithScores.filter(p =>
+        p.subscription_tier !== 'vip' && p.subscription_tier !== 'elite'
+      );
+      
+      // Sort both groups
       if (discoveryMode === 'local') {
-        return profilesWithScores.sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
+        featuredProfiles.sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
+        regularProfiles.sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
       } else {
-        return profilesWithScores.sort((a, b) => b.matchScore - a.matchScore);
+        featuredProfiles.sort((a, b) => b.matchScore - a.matchScore);
+        regularProfiles.sort((a, b) => b.matchScore - a.matchScore);
       }
+      
+      // Featured profiles appear first
+      return [...featuredProfiles, ...regularProfiles];
     },
     enabled: !!myProfile,
     staleTime: 30000, // Cache for 30 seconds
