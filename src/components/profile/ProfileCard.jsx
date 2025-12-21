@@ -7,7 +7,7 @@ import VerificationBadge from '../shared/VerificationBadge';
 import CountryFlag from '../shared/CountryFlag';
 import ProfileBadges from './ProfileBadges';
 
-export default function ProfileCard({ profile, onLike, onPass, onSuperLike, showActions = true, expanded = false }) {
+const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, onSuperLike, showActions = true, expanded = false }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [showDetails, setShowDetails] = useState(expanded);
   const [viewLogged, setViewLogged] = useState(false);
@@ -119,6 +119,7 @@ export default function ProfileCard({ profile, onLike, onPass, onSuperLike, show
             src={photos[currentPhotoIndex]}
             alt={profile?.display_name}
             className="w-full h-full object-cover"
+            loading="lazy"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
