@@ -167,8 +167,13 @@ export default function Home() {
       // Merge manual filters with saved filters from profile
       const savedFilters = myProfile?.filters || {};
       const combinedFilters = { ...savedFilters, ...filters };
-      
+
       let filterQuery = { is_active: true };
+
+      // CRITICAL: Only show USA and Canada users
+      filterQuery.current_country = { 
+        $in: ['USA', 'United States', 'Canada', 'United States of America', 'US'] 
+      };
       
       if (combinedFilters.relationship_goals?.length > 0) {
         filterQuery.relationship_goal = { $in: combinedFilters.relationship_goals };

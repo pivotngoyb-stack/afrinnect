@@ -178,19 +178,44 @@ export default function Onboarding() {
     }
   });
 
-  const getLocation = () => {
+  const getLocation = async () => {
     setGettingLocation(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setFormData(prev => ({
-            ...prev,
-            location: {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          
+          // Reverse geocode to get country
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+            );
+            const data = await response.json();
+            const country = data.address?.country || '';
+            
+            // Check if USA or Canada
+            const isUSorCanada = 
+              country.toLowerCase().includes('united states') ||
+              country.toLowerCase().includes('usa') ||
+              country.toLowerCase().includes('canada');
+            
+            if (!isUSorCanada) {
+              alert('⚠️ Afrinnect is currently only available in the United States and Canada. We\'re working to expand to more countries soon!\n\nYour location: ' + country);
+              setGettingLocation(false);
+              return;
             }
-          }));
-          setGettingLocation(false);
+            
+            // Location is valid, save it
+            setFormData(prev => ({
+              ...prev,
+              location: { lat, lng }
+            }));
+            setGettingLocation(false);
+          } catch (error) {
+            alert('Unable to verify your location. Please try again.');
+            setGettingLocation(false);
+          }
         },
         (error) => {
           alert('Please enable location access to continue. We need your location to find matches near you.');
