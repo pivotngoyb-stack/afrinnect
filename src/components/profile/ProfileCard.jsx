@@ -7,6 +7,7 @@ import VerificationBadge from '../shared/VerificationBadge';
 import CountryFlag from '../shared/CountryFlag';
 import ProfileBadges from './ProfileBadges';
 import OptimizedImage from '../shared/OptimizedImage';
+import ProfileTierDecoration from './ProfileTierDecoration';
 
 const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, onSuperLike, showActions = true, expanded = false }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -103,12 +104,13 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
   };
 
   return (
-    <motion.div 
-      className="relative w-full max-w-md mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden"
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-    >
+    <ProfileTierDecoration tier={profile?.subscription_tier}>
+      <motion.div 
+        className="relative w-full max-w-md mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+      >
       {/* Photo Section */}
       <div 
         className="relative aspect-[3/4] overflow-hidden cursor-pointer"
@@ -345,7 +347,8 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
           </motion.button>
         </div>
       )}
-    </motion.div>
+      </motion.div>
+    </ProfileTierDecoration>
   );
 });
 
