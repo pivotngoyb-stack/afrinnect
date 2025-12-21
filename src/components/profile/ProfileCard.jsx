@@ -341,4 +341,6 @@ export default function ProfileCard({ profile, onLike, onPass, onSuperLike, show
       )}
     </motion.div>
   );
-}
+});
+
+export default ProfileCard;

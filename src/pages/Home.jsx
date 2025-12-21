@@ -181,7 +181,7 @@ export default function Home() {
         filterQuery.current_state = { $in: combinedFilters.states };
       }
 
-      const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 200);
+      const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 50); // Reduced from 200 to 50
 
       // Apply AI matching and comprehensive filters
       const filteredProfiles = allProfiles.filter(p => {
@@ -241,9 +241,9 @@ export default function Home() {
         return true;
       });
 
-      // Calculate distance and AI match scores for top profiles
+      // Calculate distance and AI match scores for top profiles - optimized
       const profilesWithScores = await Promise.all(
-        filteredProfiles.slice(0, 50).map(async (p) => {
+        filteredProfiles.slice(0, 30).map(async (p) => { // Reduced from 50 to 30
           const score = await calculateMatchScore(myProfile, p);
           let distance = null;
           if (myProfile?.location?.lat && p.location?.lat) {
@@ -265,8 +265,10 @@ export default function Home() {
         return profilesWithScores.sort((a, b) => b.matchScore - a.matchScore);
       }
     },
-    enabled: !!myProfile
-  });
+    enabled: !!myProfile,
+    staleTime: 30000, // Cache for 30 seconds
+    cacheTime: 300000 // Keep in cache for 5 minutes
+    });
 
   // Check daily like limit
   const canLike = () => {

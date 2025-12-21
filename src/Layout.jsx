@@ -63,10 +63,13 @@ function LayoutContent({ children, currentPageName }) {
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications-count', myProfile?.id],
     queryFn: () => base44.entities.Notification.filter(
-      { user_profile_id: myProfile.id, is_read: false }
+      { user_profile_id: myProfile.id, is_read: false },
+      '-created_date',
+      20 // Limit to 20 notifications
     ),
     enabled: !!myProfile,
-    refetchInterval: 30000 // Check every 30 seconds
+    refetchInterval: 60000, // Reduced to 60 seconds
+    staleTime: 30000 // Cache for 30 seconds
   });
 
   const unreadNotifications = notifications.length;

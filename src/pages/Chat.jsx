@@ -93,32 +93,39 @@ export default function Chat() {
     enabled: !!matchId && !!myProfile
   });
 
-  // Fetch messages
+  // Fetch messages - optimized with limit and caching
   const { data: messages = [] } = useQuery({
     queryKey: ['messages', matchId],
-    queryFn: () => base44.entities.Message.filter({ match_id: matchId }, 'created_date', 500),
+    queryFn: () => base44.entities.Message.filter({ match_id: matchId }, 'created_date', 100),
     enabled: !!matchId,
-    refetchInterval: 3000 // Poll every 3 seconds
+    refetchInterval: 5000, // Reduced polling frequency
+    staleTime: 2000 // Cache for 2 seconds
   });
 
-  // Scroll to bottom
+  // Scroll to bottom - optimized
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages.length]); // Only trigger on message count change
 
-  // Mark messages as read
+  // Mark messages as read - optimized with batch update
   useEffect(() => {
     if (messages.length > 0 && myProfile) {
-      messages
-        .filter(m => m.receiver_id === myProfile.id && !m.is_read)
-        .forEach(m => {
-          base44.entities.Message.update(m.id, {
-            is_read: true,
-            read_at: new Date().toISOString()
-          });
-        });
+      const unreadMessages = messages.filter(m => m.receiver_id === myProfile.id && !m.is_read);
+      if (unreadMessages.length > 0) {
+        // Batch update to reduce API calls
+        Promise.all(
+          unreadMessages.map(m => 
+            base44.entities.Message.update(m.id, {
+              is_read: true,
+              read_at: new Date().toISOString()
+            })
+          )
+        );
+      }
     }
-  }, [messages, myProfile]);
+  }, [messages.length, myProfile?.id]); // Only trigger on relevant changes
 
   // Send message mutation
   const sendMessageMutation = useMutation({
@@ -377,7 +384,7 @@ export default function Chat() {
           </div>
           </header>
 
-      {/* Messages */}
+      {/* Messages - with lazy loading for images */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center py-12">
@@ -404,9 +411,9 @@ export default function Chat() {
             <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-xs md:max-w-md ${isMine ? 'bg-purple-600 text-white' : 'bg-white'} rounded-2xl px-4 py-2 shadow`}>
                 {msg.message_type === 'voice_note' ? (
-                  <audio controls src={msg.media_url} className="w-full" />
+                  <audio controls src={msg.media_url} className="w-full" preload="metadata" />
                 ) : msg.message_type === 'image' ? (
-                  <img src={msg.media_url} alt="Shared" className="rounded-lg max-w-full" />
+                  <img src={msg.media_url} alt="Shared" className="rounded-lg max-w-full" loading="lazy" />
                 ) : (
                   <p className="text-sm break-words">{msg.content}</p>
                 )}

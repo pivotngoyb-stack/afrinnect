@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import VerificationBadge from '../shared/VerificationBadge';
 import CountryFlag from '../shared/CountryFlag';
 
-export default function ProfileMini({ profile, onClick }) {
+const ProfileMini = React.memo(function ProfileMini({ profile, onClick }) {
   const calculateAge = (birthDate) => {
     if (!birthDate) return null;
     const today = new Date();
