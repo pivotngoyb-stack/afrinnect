@@ -19,8 +19,11 @@ import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import SafetyCheckSetup from '@/components/safety/SafetyCheckSetup';
 import VirtualList from '@/components/shared/VirtualList';
 import OptimizedImage from '@/components/shared/OptimizedImage';
+import { usePerformanceMonitor } from '@/components/shared/usePerformanceMonitor';
 
 export default function Chat() {
+  usePerformanceMonitor('Chat');
+  
   const urlParams = new URLSearchParams(window.location.search);
   const matchId = urlParams.get('matchId');
   

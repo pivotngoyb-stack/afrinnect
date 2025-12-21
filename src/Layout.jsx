@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from '@tanstack/react-query';
 import ScreenshotAlertNotif from '@/components/notifications/ScreenshotAlertNotif';
 import { LanguageProvider, useLanguage } from '@/components/i18n/LanguageContext';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
 
 const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories'];
 
@@ -196,9 +197,20 @@ function LayoutContent({ children, currentPageName }) {
         }
 
         export default function Layout(props) {
-        return (
-        <LanguageProvider>
-        <LayoutContent {...props} />
-        </LanguageProvider>
-        );
+          // Register service worker for PWA
+          useEffect(() => {
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.register('/service-worker.js').catch((error) => {
+                console.log('Service worker registration failed:', error);
+              });
+            }
+          }, []);
+
+          return (
+            <ErrorBoundary>
+              <LanguageProvider>
+                <LayoutContent {...props} />
+              </LanguageProvider>
+            </ErrorBoundary>
+          );
         }

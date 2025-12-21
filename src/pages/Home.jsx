@@ -19,8 +19,11 @@ import TutorialTooltip from '@/components/shared/TutorialTooltip';
 import MessageWithLikeModal from '@/components/home/MessageWithLikeModal';
 import UbuntuAIButton from '@/components/shared/UbuntuAIButton';
 import confetti from 'canvas-confetti';
+import { usePerformanceMonitor } from '@/components/shared/usePerformanceMonitor';
 
 export default function Home() {
+  usePerformanceMonitor('Home');
+  
   const [viewMode, setViewMode] = useState('swipe');
   const [discoveryMode, setDiscoveryMode] = useState('global');
   const [currentIndex, setCurrentIndex] = useState(0);
