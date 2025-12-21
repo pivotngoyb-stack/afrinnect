@@ -126,6 +126,9 @@ export default function PricingPlans() {
       const purchaseDate = new Date().toISOString();
       const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
+      // Get user for receipt
+      const user = await base44.auth.me();
+
       // Create subscription
       await base44.entities.Subscription.create({
         user_profile_id: myProfile.id,
@@ -150,8 +153,23 @@ export default function PricingPlans() {
         premium_until: endDate.toISOString()
       });
 
-      // Get user for receipt
-      const user = await base44.auth.me();
+      // Create receipt record
+      await base44.entities.Receipt.create({
+        transaction_id: transactionId,
+        user_profile_id: myProfile.id,
+        plan_name: tier.name,
+        billing_period: selectedBilling,
+        amount_paid: finalPrice,
+        currency: 'USD',
+        regional_discount: isAfricanCountry,
+        payment_provider: 'manual',
+        customer_email: user.email,
+        customer_name: myProfile.display_name,
+        purchase_date: purchaseDate,
+        subscription_start_date: purchaseDate,
+        subscription_end_date: endDate.toISOString(),
+        receipt_sent: false
+      });
 
       // Send receipt email
       const receiptHTML = `
@@ -232,6 +250,12 @@ export default function PricingPlans() {
         subject: `Receipt for Your ${tier.name} Subscription - Afrinnect`,
         body: receiptHTML
       });
+
+      // Mark receipt as sent
+      const receipts = await base44.entities.Receipt.filter({ transaction_id: transactionId });
+      if (receipts.length > 0) {
+        await base44.entities.Receipt.update(receipts[0].id, { receipt_sent: true });
+      }
     },
     onSuccess: () => {
       window.location.href = createPageUrl('Home');

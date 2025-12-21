@@ -36,6 +36,7 @@ import StoryManagement from '@/components/admin/StoryManagement';
 import CommunityManagement from '@/components/admin/CommunityManagement';
 import VideoEventManagement from '@/components/admin/VideoEventManagement';
 import SubscriptionManagement from '@/components/admin/SubscriptionManagement';
+import ReceiptsManagement from '@/components/admin/ReceiptsManagement';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -481,6 +482,7 @@ export default function AdminDashboard() {
         return (
           <div className="space-y-6">
             <SubscriptionManagement />
+            <ReceiptsManagement />
             <RevenueAnalytics subscriptions={subscriptions} profiles={profiles} />
           </div>
         );
