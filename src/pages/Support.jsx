@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import PrioritySupportBadge from '@/components/shared/PrioritySupportBadge';
 
 const CATEGORIES = [
   { value: 'technical', label: 'Technical Issue', description: 'App crashes, bugs, or errors' },
@@ -69,15 +70,27 @@ export default function Support() {
   });
 
   const createTicketMutation = useMutation({
-    mutationFn: (data) => base44.entities.SupportTicket.create({
-      user_id: user.id,
-      user_email: user.email,
-      category: data.category,
-      subject: data.subject,
-      description: data.description,
-      status: 'open',
-      priority: data.category === 'billing' || data.category === 'safety' ? 'high' : 'medium'
-    }),
+    mutationFn: (data) => {
+      const tier = myProfile?.subscription_tier || 'free';
+      
+      // Set priority based on tier
+      const priorityMap = {
+        vip: 'urgent',
+        elite: 'high',
+        premium: 'high',
+        free: data.category === 'billing' || data.category === 'safety' ? 'high' : 'medium'
+      };
+      
+      return base44.entities.SupportTicket.create({
+        user_id: user.id,
+        user_email: user.email,
+        category: data.category,
+        subject: data.subject,
+        description: data.description,
+        status: 'open',
+        priority: priorityMap[tier] || 'medium'
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
       setShowNewTicket(false);
@@ -114,7 +127,10 @@ export default function Support() {
                 <ArrowLeft size={24} />
               </Button>
             </Link>
-            <h1 className="text-lg font-bold">Support</h1>
+            <div>
+              <h1 className="text-lg font-bold">Support</h1>
+              <PrioritySupportBadge userTier={myProfile?.subscription_tier} />
+            </div>
           </div>
           <Button onClick={() => setShowNewTicket(true)} size="sm" className="bg-purple-600 hover:bg-purple-700">
             <Plus size={16} className="mr-1" />
@@ -263,7 +279,10 @@ export default function Support() {
           <DialogHeader>
             <DialogTitle>Create Support Ticket</DialogTitle>
             <DialogDescription>
-              Tell us what you need help with and we'll get back to you within 24 hours
+              {myProfile?.subscription_tier && myProfile.subscription_tier !== 'free' 
+                ? '⚡ Your ticket will be prioritized! We typically respond within 2-6 hours.'
+                : 'Tell us what you need help with and we\'ll get back to you within 24 hours'
+              }
             </DialogDescription>
           </DialogHeader>
 
