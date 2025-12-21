@@ -135,6 +135,15 @@ export default function Chat() {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async ({ content, type = 'text', mediaUrl = null }) => {
+      // Check message limit for free users (3 messages per match)
+      const tier = myProfile?.subscription_tier || 'free';
+      if (tier === 'free') {
+        const myMessages = messages.filter(m => m.sender_id === myProfile.id);
+        if (myMessages.length >= 3) {
+          throw new Error('upgrade_required');
+        }
+      }
+
       // First message filtering
       if (messages.length === 0) {
         const aiCheck = await base44.integrations.Core.InvokeLLM({
@@ -180,7 +189,12 @@ export default function Chat() {
       setMessageText('');
     },
     onError: (error) => {
-      alert(error.message);
+      if (error.message === 'upgrade_required') {
+        setUpgradeFeature('Unlimited Messaging');
+        setShowUpgradePrompt(true);
+      } else {
+        alert(error.message);
+      }
     }
   });
 
@@ -426,8 +440,10 @@ export default function Chat() {
                   <p className="text-xs opacity-70">
                     {new Date(msg.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
-                  {isMine && msg.is_read && (
-                    <span className="text-xs opacity-70">✓✓</span>
+                  {isMine && (
+                    <span className="text-xs opacity-70">
+                      {msg.is_read ? '✓✓' : '✓'}
+                    </span>
                   )}
                 </div>
                 {!isMine && (

@@ -433,7 +433,45 @@ export default function Home() {
     setPendingLikeProfile(null);
   };
 
-  const handleSuperLike = (profile) => {
+  const handleSuperLike = async (profile) => {
+    const tier = myProfile?.subscription_tier || 'free';
+    
+    // Check super like limits by tier
+    const today = new Date().toISOString().split('T')[0];
+    const superLikesToday = await base44.entities.Like.filter({
+      liker_id: myProfile.id,
+      is_super_like: true,
+      created_date: { $gte: `${today}T00:00:00.000Z` }
+    });
+    
+    // Free: 1 per week, Premium: 5 per day, Elite/VIP: unlimited
+    const limits = {
+      free: { count: 1, period: 'week' },
+      premium: { count: 5, period: 'day' },
+      elite: { count: 999, period: 'day' },
+      vip: { count: 999, period: 'day' }
+    };
+    
+    const limit = limits[tier] || limits.free;
+    
+    if (tier === 'free') {
+      // Check weekly limit
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const superLikesThisWeek = await base44.entities.Like.filter({
+        liker_id: myProfile.id,
+        is_super_like: true,
+        created_date: { $gte: weekAgo }
+      });
+      
+      if (superLikesThisWeek.length >= 1) {
+        alert('Free users get 1 Super Like per week. Upgrade to Premium for more!');
+        return;
+      }
+    } else if (tier === 'premium' && superLikesToday.length >= 5) {
+      alert('Premium users get 5 Super Likes per day. Upgrade to Elite for unlimited!');
+      return;
+    }
+    
     // Haptic feedback
     if (navigator.vibrate) {
       navigator.vibrate([50, 50, 50]);
@@ -451,10 +489,23 @@ export default function Home() {
     setCurrentIndex(prev => prev + 1);
   };
 
-  const handleRewind = () => {
+  const handleRewind = async () => {
     if (swipeHistory.length === 0 || !myProfile?.is_premium) return;
     
     const lastAction = swipeHistory[swipeHistory.length - 1];
+    
+    // If last action was a like, delete it
+    if (lastAction.action === 'like' || lastAction.action === 'superlike') {
+      const existingLikes = await base44.entities.Like.filter({
+        liker_id: myProfile.id,
+        liked_id: lastAction.profile.id
+      });
+      
+      for (const like of existingLikes) {
+        await base44.entities.Like.delete(like.id);
+      }
+    }
+    
     setCurrentIndex(lastAction.index);
     setSwipeHistory(swipeHistory.slice(0, -1));
     

@@ -233,8 +233,14 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
                       localFilters.countries_of_origin?.includes(country)
                         ? 'bg-purple-600 text-white'
                         : 'hover:bg-purple-50'
-                    } ${!isPremium ? 'opacity-50 pointer-events-none' : ''}`}
-                    onClick={() => isPremium && toggleArrayItem('countries_of_origin', country)}
+                    } ${!isPremium ? 'opacity-50' : ''}`}
+                    onClick={() => {
+                      if (!isPremium) {
+                        alert('Upgrade to Premium to filter by heritage country');
+                        return;
+                      }
+                      toggleArrayItem('countries_of_origin', country);
+                    }}
                   >
                     {country}
                   </Badge>
@@ -257,8 +263,14 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
                       localFilters.states?.includes(state)
                         ? 'bg-blue-600 text-white'
                         : 'hover:bg-blue-50'
-                    } ${!isPremium ? 'opacity-50 pointer-events-none' : ''}`}
-                    onClick={() => isPremium && toggleArrayItem('states', state)}
+                    } ${!isPremium ? 'opacity-50' : ''}`}
+                    onClick={() => {
+                      if (!isPremium) {
+                        alert('Upgrade to Premium to filter by US state');
+                        return;
+                      }
+                      toggleArrayItem('states', state);
+                    }}
                   >
                     {state}
                   </Badge>

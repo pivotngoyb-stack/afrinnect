@@ -31,7 +31,16 @@ export default function VirtualGifts() {
       try {
         const user = await base44.auth.me();
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-        if (profiles.length > 0) setMyProfile(profiles[0]);
+        if (profiles.length > 0) {
+          const profile = profiles[0];
+          setMyProfile(profile);
+          
+          // Restrict to Elite and VIP only
+          const tier = profile.subscription_tier || 'free';
+          if (tier !== 'elite' && tier !== 'vip') {
+            window.location.href = createPageUrl('PricingPlans');
+          }
+        }
       } catch (e) {}
     };
     fetchProfile();

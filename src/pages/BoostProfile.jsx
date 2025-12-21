@@ -54,6 +54,24 @@ export default function BoostProfile() {
 
   const activateBoostMutation = useMutation({
     mutationFn: async (boostType) => {
+      const tier = myProfile?.subscription_tier || 'free';
+      
+      // Check boost limits by tier
+      const today = new Date().toISOString().split('T')[0];
+      const thisMonth = today.substring(0, 7); // YYYY-MM
+      
+      const existingBoosts = await base44.entities.ProfileBoost.filter({
+        user_profile_id: myProfile.id,
+        started_at: { $gte: `${thisMonth}-01T00:00:00.000Z` }
+      });
+      
+      // Premium: 1 boost per month, Elite/VIP: unlimited
+      if (tier === 'premium' && existingBoosts.length >= 1) {
+        throw new Error('Premium users get 1 boost per month. Upgrade to Elite for unlimited boosts!');
+      } else if (tier === 'free' && existingBoosts.length >= 0) {
+        throw new Error('Boosts require Premium or higher subscription');
+      }
+      
       const now = new Date();
       const expiresAt = new Date(now);
       
@@ -90,6 +108,9 @@ export default function BoostProfile() {
     onSuccess: () => {
       alert('Profile boost activated! Your profile is now more visible.');
       window.location.href = createPageUrl('Profile');
+    },
+    onError: (error) => {
+      alert(error.message);
     }
   });
 
