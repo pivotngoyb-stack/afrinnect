@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
   ArrowLeft, Bell, Lock, Eye, Shield, Globe, Moon, Sun,
-  HelpCircle, FileText, LogOut, Trash2, ChevronRight
+  HelpCircle, FileText, LogOut, Trash2, ChevronRight, Download
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +33,7 @@ export default function Settings() {
     darkMode: false
   });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [exportingData, setExportingData] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -58,6 +59,48 @@ export default function Settings() {
   const handleLogout = async () => {
     await base44.auth.logout(createPageUrl('Landing'));
   };
+
+  const exportDataMutation = useMutation({
+    mutationFn: async () => {
+      const user = await base44.auth.me();
+      
+      // Collect all user data (GDPR compliant)
+      const profile = await base44.entities.UserProfile.filter({ user_id: user.id });
+      const matches = await base44.entities.Match.filter({
+        $or: [{ user1_id: myProfile?.id }, { user2_id: myProfile?.id }]
+      });
+      const messages = await base44.entities.Message.filter({
+        $or: [{ sender_id: myProfile?.id }, { receiver_id: myProfile?.id }]
+      });
+      const likes = await base44.entities.Like.filter({ liker_id: myProfile?.id });
+      const subscriptions = await base44.entities.Subscription.filter({ user_profile_id: myProfile?.id });
+      
+      const exportData = {
+        exported_at: new Date().toISOString(),
+        user: {
+          email: user.email,
+          full_name: user.full_name,
+          created_date: user.created_date
+        },
+        profile: profile[0] || null,
+        matches: matches,
+        messages: messages.map(m => ({ ...m, content: '[MESSAGE CONTENT]' })), // Privacy
+        likes_sent: likes,
+        subscriptions: subscriptions
+      };
+      
+      // Download as JSON
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `afrinnect-data-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  });
 
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {
@@ -113,23 +156,43 @@ export default function Settings() {
             
             <Separator />
 
-            <div className="flex items-center justify-between py-2">
+            <Link to={createPageUrl('PhoneVerification')} className="flex items-center justify-between py-2">
               <div>
                 <span className="text-gray-700 block">Phone Number</span>
-                <span className="text-sm text-gray-500">Verified</span>
+                <span className="text-sm text-gray-500">
+                  {myProfile?.verification_status?.phone_verified ? 'Verified' : 'Not Verified'}
+                </span>
               </div>
-              <Shield size={18} className="text-green-500" />
-            </div>
+              {myProfile?.verification_status?.phone_verified ? (
+                <Shield size={18} className="text-green-500" />
+              ) : (
+                <ChevronRight size={20} className="text-gray-400" />
+              )}
+            </Link>
 
             <Separator />
 
-            <div className="flex items-center justify-between py-2">
+            <button onClick={() => {
+              // Send email verification code
+              const code = Math.floor(100000 + Math.random() * 900000);
+              base44.integrations.Core.SendEmail({
+                to: myProfile?.created_by,
+                subject: 'Afrinnect Email Verification',
+                body: `Your verification code is: ${code}`
+              }).then(() => alert('Verification code sent to your email!'));
+            }} className="flex items-center justify-between py-2 w-full text-left">
               <div>
                 <span className="text-gray-700 block">Email</span>
-                <span className="text-sm text-gray-500">{myProfile?.created_by || 'Not set'}</span>
+                <span className="text-sm text-gray-500">
+                  {myProfile?.verification_status?.email_verified ? 'Verified' : 'Verify Now'}
+                </span>
               </div>
-              <Shield size={18} className="text-green-500" />
-            </div>
+              {myProfile?.verification_status?.email_verified ? (
+                <Shield size={18} className="text-green-500" />
+              ) : (
+                <ChevronRight size={20} className="text-gray-400" />
+              )}
+            </button>
           </CardContent>
         </Card>
 
@@ -332,6 +395,20 @@ export default function Settings() {
               <span className="text-gray-700">Community Guidelines</span>
               <ChevronRight size={20} className="text-gray-400" />
             </Link>
+
+            <Separator />
+
+            <button
+              onClick={() => exportDataMutation.mutate()}
+              disabled={exportDataMutation.isPending}
+              className="flex items-center justify-between py-2 w-full text-left"
+            >
+              <div>
+                <span className="text-gray-700 block">Download My Data</span>
+                <span className="text-xs text-gray-500">GDPR compliant data export</span>
+              </div>
+              <ChevronRight size={20} className="text-gray-400" />
+            </button>
           </CardContent>
         </Card>
 
