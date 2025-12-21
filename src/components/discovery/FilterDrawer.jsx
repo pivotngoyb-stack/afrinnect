@@ -73,6 +73,23 @@ const LANGUAGES = [
   'Lingala', 'Wolof', 'Somali', 'Berber', 'Oromo'
 ];
 
+const CULTURAL_VALUES = [
+  'Family-Oriented', 'Community-Focused', 'Respect for Elders', 'Spirituality', 
+  'Hospitality', 'Resilience', 'Tradition', 'Innovation', 'Generosity',
+  'Polygamy', 'Monogamy', 'Prefer Not Say'
+];
+
+const INTERESTS = [
+  'Music', 'Dance', 'Art', 'Cuisine', 'Travel', 'Sports', 'Reading', 
+  'Movies', 'Nature', 'Technology', 'Fashion', 'History', 'Politics',
+  'Volunteering', 'Photography', 'Gaming', 'Fitness', 'Writing', 'Animals'
+];
+
+const PREFERRED_LANGUAGES = [
+  { value: 'en', label: 'English' },
+  { value: 'fr', label: 'French' }
+];
+
 export default function FilterDrawer({ filters, onFiltersChange, isPremium = false, userTier = 'free' }) {
   const [localFilters, setLocalFilters] = useState(filters || {
     age_min: 18,
@@ -83,6 +100,9 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
     religions: [],
     relationship_goals: [],
     education_levels: [],
+    cultural_values: [],
+    interests: [],
+    preferred_language: '',
     verified_only: false
   });
 
@@ -138,6 +158,9 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
       religions: [],
       relationship_goals: [],
       education_levels: [],
+      cultural_values: [],
+      interests: [],
+      preferred_language: '',
       verified_only: false
     };
     setLocalFilters(defaultFilters);
@@ -150,6 +173,9 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
     localFilters.religions?.length > 0,
     localFilters.relationship_goals?.length > 0,
     localFilters.education_levels?.length > 0,
+    localFilters.cultural_values?.length > 0,
+    localFilters.interests?.length > 0,
+    localFilters.preferred_language !== '',
     localFilters.age_min !== 18 || localFilters.age_max !== 50,
     localFilters.distance_km !== 100,
     localFilters.verified_only
@@ -435,6 +461,96 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
                     ))}
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Cultural Values */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700 mb-3 block">
+                Cultural Values
+                {!isPremium && <span className="text-amber-600 text-xs ml-2">Premium</span>}
+              </Label>
+              <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto">
+                {CULTURAL_VALUES.map(value => (
+                  <Badge
+                    key={value}
+                    variant={localFilters.cultural_values?.includes(value) ? "default" : "outline"}
+                    className={`cursor-pointer transition ${
+                      localFilters.cultural_values?.includes(value)
+                        ? 'bg-purple-600 text-white'
+                        : 'hover:bg-purple-50'
+                    } ${!isPremium ? 'opacity-50' : ''}`}
+                    onClick={() => {
+                      if (!isPremium) {
+                        alert('Upgrade to Premium to filter by cultural values');
+                        return;
+                      }
+                      toggleArrayItem('cultural_values', value);
+                    }}
+                  >
+                    {value}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Interests */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700 mb-3 block">
+                Interests
+                {!isPremium && <span className="text-amber-600 text-xs ml-2">Premium</span>}
+              </Label>
+              <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto">
+                {INTERESTS.map(interest => (
+                  <Badge
+                    key={interest}
+                    variant={localFilters.interests?.includes(interest) ? "default" : "outline"}
+                    className={`cursor-pointer transition ${
+                      localFilters.interests?.includes(interest)
+                        ? 'bg-purple-600 text-white'
+                        : 'hover:bg-purple-50'
+                    } ${!isPremium ? 'opacity-50' : ''}`}
+                    onClick={() => {
+                      if (!isPremium) {
+                        alert('Upgrade to Premium to filter by interests');
+                        return;
+                      }
+                      toggleArrayItem('interests', interest);
+                    }}
+                  >
+                    {interest}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Preferred Language */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700 mb-3 block">
+                Preferred Language
+                {!isPremium && <span className="text-amber-600 text-xs ml-2">Premium</span>}
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {PREFERRED_LANGUAGES.map(lang => (
+                  <Badge
+                    key={lang.value}
+                    variant={localFilters.preferred_language === lang.value ? "default" : "outline"}
+                    className={`cursor-pointer transition ${
+                      localFilters.preferred_language === lang.value
+                        ? 'bg-purple-600 text-white'
+                        : 'hover:bg-purple-50'
+                    } ${!isPremium ? 'opacity-50' : ''}`}
+                    onClick={() => {
+                      if (!isPremium) {
+                        alert('Upgrade to Premium to filter by preferred language');
+                        return;
+                      }
+                      updateFilter('preferred_language', localFilters.preferred_language === lang.value ? '' : lang.value);
+                    }}
+                  >
+                    {lang.label}
+                  </Badge>
+                ))}
               </div>
             </div>
 

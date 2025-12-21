@@ -123,39 +123,43 @@ export default function Home() {
     return R * c; // Distance in km
   };
 
-  // AI-powered match score calculation
+  // Enhanced AI-powered match score calculation with personalization
   const calculateMatchScore = async (user1, user2) => {
     if (!user1 || !user2) return 0;
     
     let score = 0;
     
-    // Cultural compatibility (30 points)
-    if (user1.country_of_origin === user2.country_of_origin) score += 15;
-    if (user1.tribe_ethnicity === user2.tribe_ethnicity) score += 10;
-    if (user1.languages?.some(l => user2.languages?.includes(l))) score += 5;
+    // Cultural compatibility (25 points)
+    if (user1.country_of_origin === user2.country_of_origin) score += 10;
+    if (user1.tribe_ethnicity === user2.tribe_ethnicity) score += 8;
+    if (user1.languages?.some(l => user2.languages?.includes(l))) score += 7;
     
-    // Values alignment (30 points)
+    // Cultural values alignment (20 points) - ENHANCED
+    const sharedCulturalValues = user1.cultural_values?.filter(v => user2.cultural_values?.includes(v))?.length || 0;
+    score += Math.min(sharedCulturalValues * 4, 20);
+    
+    // Relationship goals & religion (20 points)
     if (user1.religion === user2.religion) score += 10;
-    if (user1.relationship_goal === user2.relationship_goal) score += 15;
-    const sharedValues = user1.cultural_values?.filter(v => user2.cultural_values?.includes(v))?.length || 0;
-    score += Math.min(sharedValues * 2, 5);
+    if (user1.relationship_goal === user2.relationship_goal) score += 10;
     
-    // Location proximity (20 points)
-    if (user1.current_country === user2.current_country) score += 10;
-    if (user1.current_city === user2.current_city) score += 10;
+    // Interests alignment (15 points) - ENHANCED
+    const sharedInterests = user1.interests?.filter(i => user2.interests?.includes(i))?.length || 0;
+    score += Math.min(sharedInterests * 3, 15);
     
-    // Preference match (20 points)
+    // Location proximity (10 points)
+    if (user1.current_country === user2.current_country) score += 5;
+    if (user1.current_city === user2.current_city) score += 5;
+    
+    // Preference match (10 points)
     const user1Gender = user1.gender;
     const user2Gender = user2.gender;
-    if (user1.looking_for?.includes(user2Gender)) score += 10;
-    if (user2.looking_for?.includes(user1Gender)) score += 10;
+    if (user1.looking_for?.includes(user2Gender)) score += 5;
+    if (user2.looking_for?.includes(user1Gender)) score += 5;
     
     // Lifestyle compatibility (bonus)
     if (user1.lifestyle?.smoking === user2.lifestyle?.smoking) score += 3;
     if (user1.lifestyle?.drinking === user2.lifestyle?.drinking) score += 3;
-    if (user1.lifestyle?.fitness === user2.lifestyle?.fitness) score += 2;
-    const sharedInterests = user1.interests?.filter(i => user2.interests?.includes(i))?.length || 0;
-    score += Math.min(sharedInterests * 2, 8);
+    if (user1.lifestyle?.fitness === user2.lifestyle?.fitness) score += 4;
     
     return Math.min(Math.round(score), 100);
   };
@@ -241,6 +245,23 @@ export default function Home() {
 
         // Verification filter
         if (combinedFilters.verified_only && !p.verification_status?.photo_verified) return false;
+
+        // Cultural values filter - ENHANCED
+        if (combinedFilters.cultural_values?.length > 0) {
+          const hasMatchingValue = combinedFilters.cultural_values.some(value => p.cultural_values?.includes(value));
+          if (!hasMatchingValue) return false;
+        }
+
+        // Interests filter - ENHANCED
+        if (combinedFilters.interests?.length > 0) {
+          const hasMatchingInterest = combinedFilters.interests.some(interest => p.interests?.includes(interest));
+          if (!hasMatchingInterest) return false;
+        }
+
+        // Preferred language filter - ENHANCED
+        if (combinedFilters.preferred_language && p.preferred_language !== combinedFilters.preferred_language) {
+          return false;
+        }
 
         // Hide incognito users unless they liked you
         if (p.incognito_mode) return false;
