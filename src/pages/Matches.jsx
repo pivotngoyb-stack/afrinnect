@@ -16,7 +16,6 @@ import CountdownTimer from '@/components/shared/CountdownTimer';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 
 export default function Matches() {
-  usePerformanceMonitor('Matches');
   
   const [myProfile, setMyProfile] = useState(null);
   const [selectedProfile, setSelectedProfile] = useState(null);
