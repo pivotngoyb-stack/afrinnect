@@ -90,11 +90,10 @@ export default function Home() {
             });
           }
         } else {
-          window.location.href = createPageUrl('Landing');
+          window.location.href = createPageUrl('Onboarding');
         }
       } catch (e) {
-        // Not logged in, redirect to landing
-        window.location.href = createPageUrl('Landing');
+        // Not logged in - do nothing, let them see landing
       }
     };
     fetchMyProfile();
