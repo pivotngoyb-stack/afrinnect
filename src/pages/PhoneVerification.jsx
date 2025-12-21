@@ -52,17 +52,22 @@ export default function PhoneVerification() {
         attempts: 0
       });
 
-      // Send verification code via email
+      // Send verification code via email (SMS not configured yet)
       await base44.integrations.Core.SendEmail({
+        from_name: 'Afrinnect Verification',
         to: user.email,
-        subject: 'Afrinnect Phone Verification Code',
-        body: `Your verification code is: ${code}\n\nThis code will expire in 10 minutes.\n\nPhone: ${phoneNumber}\n\nIf you didn't request this, please ignore this email.`
+        subject: '🔐 Afrinnect Verification Code',
+        body: `Hi ${user.full_name || 'there'},\n\nYour verification code is: ${code}\n\nThis code will expire in 10 minutes.\n\nPhone number being verified: ${phoneNumber}\n\nIf you didn't request this, please ignore this email.\n\nBest regards,\nAfrinnect Team`
       });
       
       return code;
     },
     onSuccess: () => {
       setCodeSent(true);
+    },
+    onError: (error) => {
+      alert('Failed to send verification code. Please try again.');
+      console.error(error);
     }
   });
 
@@ -136,7 +141,8 @@ export default function PhoneVerification() {
         <div className="text-center mb-8">
           <Logo />
           <h1 className="text-2xl font-bold text-gray-900 mt-4">Verify Your Phone</h1>
-          <p className="text-gray-600 mt-2">We need to verify your phone number for account security</p>
+          <p className="text-gray-600 mt-2">Enter your phone number - we'll send a verification code to your email</p>
+          <p className="text-xs text-purple-600 mt-1">📧 Code will be sent to: {user?.email}</p>
         </div>
 
         <Card>
@@ -171,10 +177,13 @@ export default function PhoneVerification() {
               <>
                 <div className="text-center py-4 bg-purple-50 rounded-lg p-4">
                   <p className="text-sm text-gray-600">
-                    We sent a 6-digit code to your email <strong>({user?.email})</strong>
+                    ✅ Code sent to your email <strong>{user?.email}</strong>
                   </p>
                   <p className="text-xs text-gray-500 mt-2">
-                    For phone: {phoneNumber}
+                    Phone number: {phoneNumber}
+                  </p>
+                  <p className="text-xs text-purple-600 mt-1">
+                    Check your inbox (and spam folder)
                   </p>
                 </div>
                 <div>
