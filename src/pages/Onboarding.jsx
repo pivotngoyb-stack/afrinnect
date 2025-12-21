@@ -24,33 +24,31 @@ const AFRICAN_COUNTRIES = [
 ];
 
 const RESIDENCE_COUNTRIES = [
-  // Africa
-  'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
-  'Tanzania', 'Uganda', 'DR Congo', 'Cameroon', 'Ivory Coast', 'Senegal',
-  'Zimbabwe', 'Rwanda', 'Angola', 'Mali', 'Burkina Faso', 'Niger', 'Guinea',
-  'Algeria', 'Tunisia', 'Libya', 'Somalia', 'Eritrea', 'Djibouti', 'Botswana',
-  'Namibia', 'Zambia', 'Malawi', 'Mozambique', 'Madagascar', 'Mauritius',
-  // North America
-  'USA', 'Canada', 'Mexico', 'Jamaica', 'Haiti', 'Dominican Republic', 'Trinidad and Tobago',
-  'Bahamas', 'Barbados', 'Cuba', 'Puerto Rico',
-  // South America
-  'Brazil', 'Argentina', 'Colombia', 'Venezuela', 'Peru', 'Chile', 'Ecuador',
-  'Bolivia', 'Paraguay', 'Uruguay', 'Guyana', 'Suriname',
-  // Europe
-  'United Kingdom', 'France', 'Germany', 'Italy', 'Spain', 'Netherlands',
-  'Belgium', 'Portugal', 'Sweden', 'Norway', 'Denmark', 'Finland', 'Switzerland',
-  'Austria', 'Ireland', 'Poland', 'Greece', 'Czech Republic', 'Hungary',
-  'Romania', 'Bulgaria', 'Russia', 'Ukraine', 'Turkey',
-  // Middle East
-  'UAE', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Oman', 'Jordan',
-  'Lebanon', 'Israel', 'Palestine',
-  // Asia
-  'China', 'Japan', 'South Korea', 'India', 'Pakistan', 'Bangladesh',
-  'Thailand', 'Vietnam', 'Malaysia', 'Singapore', 'Indonesia', 'Philippines',
-  // Oceania
-  'Australia', 'New Zealand', 'Fiji', 'Papua New Guinea',
+  'Afghanistan', 'Albania', 'Andorra', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
+  'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Brazil', 'Brunei', 'Bulgaria',
+  'Cambodia', 'Canada', 'Chile', 'China', 'Colombia', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czech Republic',
+  'Denmark', 'Dominica', 'Dominican Republic',
+  'Ecuador', 'El Salvador', 'Estonia',
+  'Fiji', 'Finland', 'France',
+  'Georgia', 'Germany', 'Greece', 'Grenada', 'Guatemala', 'Guyana',
+  'Haiti', 'Honduras', 'Hungary',
+  'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy',
+  'Jamaica', 'Japan', 'Jordan',
+  'Kazakhstan', 'Kiribati', 'Kosovo', 'Kuwait', 'Kyrgyzstan',
+  'Laos', 'Latvia', 'Lebanon', 'Liechtenstein', 'Lithuania', 'Luxembourg',
+  'Malaysia', 'Maldives', 'Malta', 'Marshall Islands', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Myanmar',
+  'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'North Korea', 'North Macedonia', 'Norway',
+  'Oman',
+  'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Puerto Rico',
+  'Qatar',
+  'Romania', 'Russia', 'Rwanda',
+  'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Saudi Arabia', 'Serbia', 'Seychelles', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'South Korea', 'Spain', 'Sri Lanka', 'Suriname', 'Sweden', 'Switzerland', 'Syria',
+  'Taiwan', 'Tajikistan', 'Thailand', 'Timor-Leste', 'Tonga', 'Trinidad and Tobago', 'Turkey', 'Turkmenistan', 'Tuvalu',
+  'UAE', 'Ukraine', 'United Kingdom', 'United States', 'Uruguay', 'USA', 'Uzbekistan',
+  'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam',
+  'Yemen',
   'Other'
-];
+].sort();
 
 const ALL_COUNTRIES = [
   ...AFRICAN_COUNTRIES,
@@ -186,36 +184,12 @@ export default function Onboarding() {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           
-          // Reverse geocode to get country
-          try {
-            const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-            );
-            const data = await response.json();
-            const country = data.address?.country || '';
-            
-            // Check if USA or Canada
-            const isUSorCanada = 
-              country.toLowerCase().includes('united states') ||
-              country.toLowerCase().includes('usa') ||
-              country.toLowerCase().includes('canada');
-            
-            if (!isUSorCanada) {
-              alert('⚠️ Afrinnect is currently only available in the United States and Canada. We\'re working to expand to more countries soon!\n\nYour location: ' + country);
-              setGettingLocation(false);
-              return;
-            }
-            
-            // Location is valid, save it
-            setFormData(prev => ({
-              ...prev,
-              location: { lat, lng }
-            }));
-            setGettingLocation(false);
-          } catch (error) {
-            alert('Unable to verify your location. Please try again.');
-            setGettingLocation(false);
-          }
+          // Save location without restrictions
+          setFormData(prev => ({
+            ...prev,
+            location: { lat, lng }
+          }));
+          setGettingLocation(false);
         },
         (error) => {
           alert('Please enable location access to continue. We need your location to find matches near you.');
