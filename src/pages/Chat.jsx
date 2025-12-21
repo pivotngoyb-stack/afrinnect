@@ -17,6 +17,8 @@ import { AnimatePresence } from 'framer-motion';
 import TypingIndicator from '@/components/shared/TypingIndicator';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import SafetyCheckSetup from '@/components/safety/SafetyCheckSetup';
+import VirtualList from '@/components/shared/VirtualList';
+import OptimizedImage from '@/components/shared/OptimizedImage';
 
 export default function Chat() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -384,8 +386,8 @@ export default function Chat() {
           </div>
           </header>
 
-      {/* Messages - with lazy loading for images */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Messages - optimized rendering */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4" id="messages-container">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center py-12">
             <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mb-4">
@@ -413,7 +415,7 @@ export default function Chat() {
                 {msg.message_type === 'voice_note' ? (
                   <audio controls src={msg.media_url} className="w-full" preload="metadata" />
                 ) : msg.message_type === 'image' ? (
-                  <img src={msg.media_url} alt="Shared" className="rounded-lg max-w-full" loading="lazy" />
+                  <OptimizedImage src={msg.media_url} alt="Shared" className="rounded-lg max-w-full" />
                 ) : (
                   <p className="text-sm break-words">{msg.content}</p>
                 )}

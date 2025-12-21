@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useDebounce } from '@/components/shared/useDebounce';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";

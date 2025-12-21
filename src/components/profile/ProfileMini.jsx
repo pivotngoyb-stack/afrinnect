@@ -3,6 +3,7 @@ import { MapPin, Heart } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import VerificationBadge from '../shared/VerificationBadge';
 import CountryFlag from '../shared/CountryFlag';
+import OptimizedImage from '../shared/OptimizedImage';
 
 const ProfileMini = React.memo(function ProfileMini({ profile, onClick }) {
   const calculateAge = (birthDate) => {
@@ -32,11 +33,10 @@ const ProfileMini = React.memo(function ProfileMini({ profile, onClick }) {
       className="relative bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 group"
     >
       <div className="relative aspect-[3/4]">
-        <img
+        <OptimizedImage
           src={photo}
           alt={profile?.display_name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
+          className="group-hover:scale-105 transition-transform duration-500"
         />
         
         {/* Gradient Overlay */}

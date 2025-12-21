@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import VerificationBadge from '../shared/VerificationBadge';
 import CountryFlag from '../shared/CountryFlag';
 import ProfileBadges from './ProfileBadges';
+import OptimizedImage from '../shared/OptimizedImage';
 
 const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, onSuperLike, showActions = true, expanded = false }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -114,17 +115,21 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
         onClick={() => setShowDetails(!showDetails)}
       >
         <AnimatePresence mode="wait">
-          <motion.img
+          <motion.div
             key={currentPhotoIndex}
-            src={photos[currentPhotoIndex]}
-            alt={profile?.display_name}
-            className="w-full h-full object-cover"
-            loading="lazy"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-          />
+            className="w-full h-full"
+          >
+            <OptimizedImage
+              src={photos[currentPhotoIndex]}
+              alt={profile?.display_name}
+              className="w-full h-full"
+              priority={currentPhotoIndex === 0}
+            />
+          </motion.div>
         </AnimatePresence>
 
         {/* Photo Navigation */}
