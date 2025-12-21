@@ -14,7 +14,6 @@ const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Repo
 function LayoutContent({ children, currentPageName }) {
   const [myProfile, setMyProfile] = useState(null);
   const [hasProfile, setHasProfile] = useState(true);
-  const [locationBlocked, setLocationBlocked] = useState(false);
   const { t } = useLanguage();
   
   useEffect(() => {
@@ -74,34 +73,6 @@ function LayoutContent({ children, currentPageName }) {
     { name: 'Events', icon: Calendar, label: 'Events' },
     { name: 'Profile', icon: User, label: t('profile.editProfile').replace(' Profile', '').replace(' le Profil', '') }
   ];
-
-  // Location blocked screen
-  if (locationBlocked) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-amber-900 flex items-center justify-center p-4">
-        <div className="max-w-md bg-white rounded-3xl p-8 text-center shadow-2xl">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 flex items-center justify-center">
-            <span className="text-4xl">🌍</span>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-3">
-            Service Not Available
-          </h1>
-          <p className="text-gray-600 mb-6">
-            Afrinnect is currently only available in the United States and Canada. We're working to expand to more countries soon!
-          </p>
-          <p className="text-sm text-gray-500">
-            Check back later or contact support for more information.
-          </p>
-          <button
-            onClick={() => base44.auth.logout()}
-            className="mt-6 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-          >
-            Sign Out
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
