@@ -623,7 +623,7 @@ export default function Home() {
           </div>
         ) : viewMode === 'swipe' ? (
           /* Swipe Mode */
-          <div className="flex items-center justify-center min-h-[70vh] relative">
+          <div className="flex items-center justify-center min-h-[60vh] sm:min-h-[70vh] relative">
             {/* Rewind Button (Premium) */}
             {myProfile?.is_premium && swipeHistory.length > 0 && (
               <Button
