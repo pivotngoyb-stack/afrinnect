@@ -19,11 +19,21 @@ export default function VideoChat() {
       try {
         const user = await base44.auth.me();
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-        if (profiles.length > 0) setMyProfile(profiles[0]);
+        if (profiles.length > 0) {
+          const profile = profiles[0];
+          setMyProfile(profile);
+          
+          // Restrict video calls to Elite and VIP only
+          const tier = profile.subscription_tier;
+          if (tier !== 'elite' && tier !== 'vip') {
+            alert('Video calls are only available for Elite and VIP members');
+            navigate(createPageUrl(`Chat?matchId=${matchId}`));
+          }
+        }
       } catch (e) {}
     };
     fetchProfile();
-  }, []);
+  }, [matchId, navigate]);
 
   const handleEndCall = async () => {
     // Log video call
