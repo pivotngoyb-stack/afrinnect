@@ -40,21 +40,6 @@ function LayoutContent({ children, currentPageName }) {
           
           if (profiles.length > 0) {
             const profile = profiles[0];
-            
-            // Location check - only US and Canada allowed
-            const userCountry = (profile.current_country || '').toLowerCase();
-            const isUSorCanada = userCountry.includes('united states') || 
-                                 userCountry.includes('usa') || 
-                                 userCountry.includes('us') ||
-                                 userCountry.includes('canada') ||
-                                 userCountry === 'united states' ||
-                                 userCountry === 'canada';
-
-            if (profile.current_country && !isUSorCanada) {
-              setLocationBlocked(true);
-              return;
-            }
-            
             setMyProfile(profile);
           }
           setHasProfile(profiles.length > 0);
