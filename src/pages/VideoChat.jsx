@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Video, VideoOff, Mic, MicOff, Phone, PhoneOff } from 'lucide-react';
+import { PhoneOff } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 export default function VideoChat() {
   const [myProfile, setMyProfile] = useState(null);
-  const [isVideoOn, setIsVideoOn] = useState(true);
-  const [isAudioOn, setIsAudioOn] = useState(true);
+  const [callStartTime, setCallStartTime] = useState(null);
+  const jitsiContainerRef = useRef(null);
+  const jitsiApiRef = useRef(null);
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const matchId = urlParams.get('matchId');
@@ -35,79 +35,114 @@ export default function VideoChat() {
     fetchProfile();
   }, [matchId, navigate]);
 
-  const handleEndCall = async () => {
-    // Log video call
-    await base44.entities.VideoCall.create({
+  useEffect(() => {
+    if (!myProfile || !matchId) return;
+
+    // Load Jitsi Meet External API script
+    const script = document.createElement('script');
+    script.src = 'https://meet.jit.si/external_api.js';
+    script.async = true;
+    script.onload = () => {
+      initializeJitsi();
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup Jitsi
+      if (jitsiApiRef.current) {
+        jitsiApiRef.current.dispose();
+      }
+      document.body.removeChild(script);
+    };
+  }, [myProfile, matchId]);
+
+  const initializeJitsi = () => {
+    if (!window.JitsiMeetExternalAPI || !jitsiContainerRef.current) return;
+
+    const domain = 'meet.jit.si';
+    const options = {
+      roomName: `afrinnect-${matchId}`,
+      width: '100%',
+      height: '100%',
+      parentNode: jitsiContainerRef.current,
+      userInfo: {
+        displayName: myProfile?.display_name || 'User'
+      },
+      configOverwrite: {
+        startWithAudioMuted: false,
+        startWithVideoMuted: false,
+        prejoinPageEnabled: false
+      },
+      interfaceConfigOverwrite: {
+        TOOLBAR_BUTTONS: [
+          'microphone', 'camera', 'hangup', 'settings', 
+          'videoquality', 'filmstrip', 'tileview'
+        ],
+        SHOW_JITSI_WATERMARK: false,
+        SHOW_WATERMARK_FOR_GUESTS: false
+      }
+    };
+
+    jitsiApiRef.current = new window.JitsiMeetExternalAPI(domain, options);
+    setCallStartTime(new Date());
+
+    // Log video call start
+    base44.entities.VideoCall.create({
       match_id: matchId,
-      initiator_id: myProfile?.id,
-      receiver_id: 'other',
-      status: 'ended',
-      ended_at: new Date().toISOString()
+      caller_profile_id: myProfile?.id,
+      receiver_profile_id: 'other', // This should be set from match data
+      status: 'connected',
+      start_time: new Date().toISOString()
     });
+
+    // Handle when user leaves
+    jitsiApiRef.current.addListener('readyToClose', () => {
+      handleEndCall();
+    });
+  };
+
+  const handleEndCall = async () => {
+    const endTime = new Date();
+    const durationSeconds = callStartTime 
+      ? Math.floor((endTime - callStartTime) / 1000) 
+      : 0;
+
+    // Log video call end
+    try {
+      await base44.entities.VideoCall.create({
+        match_id: matchId,
+        caller_profile_id: myProfile?.id,
+        receiver_profile_id: 'other',
+        status: 'ended',
+        end_time: endTime.toISOString(),
+        duration_seconds: durationSeconds
+      });
+    } catch (e) {}
+
+    if (jitsiApiRef.current) {
+      jitsiApiRef.current.dispose();
+    }
+    
     navigate(createPageUrl(`Chat?matchId=${matchId}`));
   };
 
   return (
     <div className="fixed inset-0 bg-gray-900">
-      {/* Video Container */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-full h-full bg-gray-800 relative">
-          <div className="absolute inset-0 flex items-center justify-center text-white">
-            <div className="text-center">
-              <Video size={64} className="mx-auto mb-4 text-purple-400" />
-              <p className="text-lg">Video chat in progress...</p>
-              <p className="text-sm text-gray-400 mt-2">
-                This is a demo. Real video chat requires WebRTC integration.
-              </p>
-            </div>
-          </div>
+      {/* Jitsi Container */}
+      <div 
+        ref={jitsiContainerRef} 
+        className="w-full h-full"
+      />
 
-          {/* Local video preview */}
-          <div className="absolute top-4 right-4 w-32 h-40 bg-gray-700 rounded-lg overflow-hidden border-2 border-white">
-            <div className="w-full h-full flex items-center justify-center text-white text-xs">
-              You
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
-        <div className="flex items-center gap-4 bg-white/10 backdrop-blur-lg rounded-full px-6 py-4">
-          <Button
-            size="icon"
-            variant="ghost"
-            className={`rounded-full ${!isAudioOn ? 'bg-red-600' : 'bg-white/20'} hover:bg-white/30`}
-            onClick={() => setIsAudioOn(!isAudioOn)}
-          >
-            {isAudioOn ? (
-              <Mic size={20} className="text-white" />
-            ) : (
-              <MicOff size={20} className="text-white" />
-            )}
-          </Button>
-
-          <Button
-            size="icon"
-            className="rounded-full w-16 h-16 bg-red-600 hover:bg-red-700"
-            onClick={handleEndCall}
-          >
-            <PhoneOff size={24} className="text-white" />
-          </Button>
-
-          <Button
-            size="icon"
-            variant="ghost"
-            className={`rounded-full ${!isVideoOn ? 'bg-red-600' : 'bg-white/20'} hover:bg-white/30`}
-            onClick={() => setIsVideoOn(!isVideoOn)}
-          >
-            {isVideoOn ? (
-              <Video size={20} className="text-white" />
-            ) : (
-              <VideoOff size={20} className="text-white" />
-            )}
-          </Button>
-        </div>
+      {/* End Call Button Overlay */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50">
+        <Button
+          size="icon"
+          className="rounded-full w-16 h-16 bg-red-600 hover:bg-red-700 shadow-2xl"
+          onClick={handleEndCall}
+        >
+          <PhoneOff size={24} className="text-white" />
+        </Button>
       </div>
     </div>
   );
