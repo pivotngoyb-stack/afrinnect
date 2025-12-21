@@ -245,6 +245,11 @@ export default function Home() {
         // Hide incognito users unless they liked you
         if (p.incognito_mode) return false;
 
+        // Filter by gender preference - only show genders you're interested in
+        if (myProfile?.looking_for?.length > 0 && !myProfile.looking_for.includes(p.gender)) {
+          return false;
+        }
+
         return true;
       });
 
