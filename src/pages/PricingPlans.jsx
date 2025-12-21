@@ -123,20 +123,24 @@ export default function PricingPlans() {
       else if (selectedBilling === '6months') endDate.setMonth(endDate.getMonth() + 6);
       else endDate.setMonth(endDate.getMonth() + 1);
 
+      const purchaseDate = new Date().toISOString();
+      const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
       // Create subscription
       await base44.entities.Subscription.create({
         user_profile_id: myProfile.id,
         plan_type: `${selectedTier}_${selectedBilling}`,
         status: 'active',
-        start_date: new Date().toISOString(),
+        start_date: purchaseDate,
         end_date: endDate.toISOString(),
         amount_paid: finalPrice,
         currency: 'USD',
         payment_provider: 'manual',
-        boosts_remaining: selectedTier === 'elite' ? 999 : 5,
-        super_likes_remaining: selectedTier === 'elite' ? 999 : 30,
+        boosts_remaining: selectedTier === 'elite' || selectedTier === 'vip' ? 999 : 5,
+        super_likes_remaining: 999,
         auto_renew: true,
-        regional_pricing: isAfricanCountry
+        regional_pricing: isAfricanCountry,
+        external_id: transactionId
       });
 
       // Update profile
@@ -144,6 +148,89 @@ export default function PricingPlans() {
         is_premium: true,
         subscription_tier: selectedTier,
         premium_until: endDate.toISOString()
+      });
+
+      // Get user for receipt
+      const user = await base44.auth.me();
+
+      // Send receipt email
+      const receiptHTML = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #f59e0b 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">Afrinnect</h1>
+            <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Payment Receipt</p>
+          </div>
+          
+          <div style="background: white; padding: 30px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h2 style="color: #1f2937; margin-top: 0;">Thank you for your purchase!</h2>
+            <p style="color: #6b7280; margin-bottom: 30px;">Your ${tier.name} subscription is now active.</p>
+            
+            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-weight: 500;">Transaction ID:</td>
+                  <td style="padding: 10px 0; color: #1f2937; text-align: right; font-family: monospace;">${transactionId}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-weight: 500;">Date:</td>
+                  <td style="padding: 10px 0; color: #1f2937; text-align: right;">${new Date(purchaseDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-weight: 500;">Customer:</td>
+                  <td style="padding: 10px 0; color: #1f2937; text-align: right;">${myProfile.display_name}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-weight: 500;">Email:</td>
+                  <td style="padding: 10px 0; color: #1f2937; text-align: right;">${user.email}</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="border-top: 2px solid #e5e7eb; padding-top: 20px; margin-bottom: 25px;">
+              <h3 style="color: #1f2937; margin-top: 0;">Subscription Details</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280;">Plan:</td>
+                  <td style="padding: 10px 0; color: #1f2937; text-align: right; font-weight: 600;">${tier.name} (${selectedBilling.replace('6months', '6 Months').replace(/^\w/, c => c.toUpperCase())})</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280;">Billing Period:</td>
+                  <td style="padding: 10px 0; color: #1f2937; text-align: right;">${new Date(purchaseDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}</td>
+                </tr>
+                ${isAfricanCountry ? `
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280;">Regional Discount:</td>
+                  <td style="padding: 10px 0; color: #10b981; text-align: right; font-weight: 600;">50% OFF</td>
+                </tr>
+                ` : ''}
+              </table>
+            </div>
+            
+            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-size: 18px; font-weight: 600;">Total Paid:</td>
+                  <td style="padding: 10px 0; color: #7c3aed; text-align: right; font-size: 24px; font-weight: bold;">$${finalPrice.toFixed(2)} USD</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 4px; margin-bottom: 25px;">
+              <p style="margin: 0; color: #1e40af; font-size: 14px;"><strong>Note:</strong> Your subscription will auto-renew on ${new Date(endDate).toLocaleDateString()}. You can manage your subscription in Settings.</p>
+            </div>
+            
+            <div style="text-align: center; padding-top: 20px; border-top: 2px solid #e5e7eb;">
+              <p style="color: #6b7280; margin: 0; font-size: 14px;">Questions? Contact us at support@afrinnect.com</p>
+              <p style="color: #9ca3af; margin: 10px 0 0 0; font-size: 12px;">© ${new Date().getFullYear()} Afrinnect. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      await base44.integrations.Core.SendEmail({
+        to: user.email,
+        subject: `Receipt for Your ${tier.name} Subscription - Afrinnect`,
+        body: receiptHTML
       });
     },
     onSuccess: () => {
