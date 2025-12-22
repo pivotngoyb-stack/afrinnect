@@ -280,6 +280,13 @@ export default function Landing() {
             <Link to={createPageUrl('Terms')} className="hover:text-white">{t('landing.footer.terms')}</Link>
             <Link to={createPageUrl('CommunityGuidelines')} className="hover:text-white">{t('landing.footer.guidelines')}</Link>
           </div>
+          {/* Copyright Notice */}
+          <div className="mt-8 pt-8 border-t border-gray-800">
+            <p className="text-sm text-gray-400">© 2025 Afrinnect. All rights reserved.</p>
+            <p className="text-xs text-gray-500 mt-2">
+              Afrinnect and the Afrinnect logo are trademarks of Afrinnect. Unauthorized use is prohibited.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
