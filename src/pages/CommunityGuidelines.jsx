@@ -120,6 +120,14 @@ export default function CommunityGuidelines() {
               Together, we build a community rooted in the African philosophy of Ubuntu - "I am because we are." Let's create meaningful connections with respect, safety, and cultural pride.
             </p>
           </div>
+
+          {/* Copyright Notice */}
+          <div className="pt-6 border-t text-center">
+            <p className="text-sm text-gray-600">© 2025 Afrinnect. All rights reserved.</p>
+            <p className="text-xs text-gray-500 mt-1">
+              These guidelines are proprietary to Afrinnect and protected by copyright.
+            </p>
+          </div>
         </div>
       </main>
     </div>

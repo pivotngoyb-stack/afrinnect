@@ -105,11 +105,29 @@ export default function Terms() {
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold">11. Contact</h3>
+            <h3 className="text-xl font-semibold">11. Intellectual Property</h3>
+            <p className="text-gray-700">
+              All content, features, and functionality of Afrinnect, including but not limited to text, graphics, logos, icons, images, audio clips, digital downloads, data compilations, and software, are the exclusive property of Afrinnect and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
+            </p>
+            <p className="text-gray-700">
+              The Afrinnect name, logo, and all related names, logos, product and service names, designs, and slogans are trademarks of Afrinnect. You must not use such marks without prior written permission.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h3 className="text-xl font-semibold">12. Contact</h3>
             <p className="text-gray-700">
               For questions about these terms, contact us at legal@afrinnect.com
             </p>
           </section>
+
+          {/* Copyright Notice */}
+          <div className="pt-6 border-t text-center">
+            <p className="text-sm text-gray-600">© 2025 Afrinnect. All rights reserved.</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Unauthorized reproduction or distribution of this copyrighted work is illegal.
+            </p>
+          </div>
         </div>
       </main>
     </div>

@@ -118,7 +118,7 @@ function LayoutContent({ children, currentPageName }) {
             {navItems.map(item => {
               const isActive = currentPageName === item.name;
               const Icon = item.icon;
-              
+
               return (
                 <Link
                   key={item.name}
@@ -150,6 +150,10 @@ function LayoutContent({ children, currentPageName }) {
                 </Link>
               );
             })}
+          </div>
+          {/* Copyright Footer */}
+          <div className="bg-gray-50 border-t border-gray-100 py-2 text-center">
+            <p className="text-xs text-gray-500">© 2025 Afrinnect. All rights reserved.</p>
           </div>
         </nav>
         )}

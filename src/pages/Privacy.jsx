@@ -119,6 +119,14 @@ export default function Privacy() {
               Questions about privacy? Email privacy@afrinnect.com
             </p>
           </section>
+
+          {/* Copyright Notice */}
+          <div className="pt-6 border-t text-center">
+            <p className="text-sm text-gray-600">© 2025 Afrinnect. All rights reserved.</p>
+            <p className="text-xs text-gray-500 mt-1">
+              This document and all content are protected by copyright law.
+            </p>
+          </div>
         </div>
       </main>
     </div>
