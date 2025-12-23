@@ -77,6 +77,8 @@ export default function EditProfile() {
     cultural_values: [],
     interests: []
   });
+  const [heightFeet, setHeightFeet] = useState('');
+  const [heightInches, setHeightInches] = useState('');
 
   useEffect(() => {
     loadProfile();
@@ -111,6 +113,15 @@ export default function EditProfile() {
           cultural_values: p.cultural_values || [],
           interests: p.interests || []
         });
+        
+        // Convert cm to feet and inches
+        if (p.height_cm) {
+          const totalInches = p.height_cm / 2.54;
+          const feet = Math.floor(totalInches / 12);
+          const inches = Math.round(totalInches % 12);
+          setHeightFeet(feet.toString());
+          setHeightInches(inches.toString());
+        }
       }
     } catch (error) {
       console.error('Load error:', error);
@@ -149,12 +160,21 @@ export default function EditProfile() {
 
     setSaving(true);
     try {
+      // Convert feet and inches to cm before saving
+      let dataToSave = { ...formData };
+      if (heightFeet || heightInches) {
+        const feet = parseInt(heightFeet) || 0;
+        const inches = parseInt(heightInches) || 0;
+        const totalInches = (feet * 12) + inches;
+        dataToSave.height_cm = Math.round(totalInches * 2.54);
+      }
+      
       if (profile) {
-        await base44.entities.UserProfile.update(profile.id, formData);
+        await base44.entities.UserProfile.update(profile.id, dataToSave);
       } else {
         const user = await base44.auth.me();
         const newProfile = await base44.entities.UserProfile.create({
-          ...formData,
+          ...dataToSave,
           user_id: user.id,
           is_active: true,
           last_active: new Date().toISOString()
@@ -666,14 +686,33 @@ export default function EditProfile() {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2">Height (cm)</Label>
-                  <Input
-                    type="number"
-                    value={formData.height_cm || ''}
-                    onChange={(e) => setFormData({ ...formData, height_cm: e.target.value })}
-                    placeholder="Your height"
-                    className="border-2 focus:border-purple-400 rounded-xl"
-                  />
+                  <Label className="text-sm font-semibold text-gray-700 mb-2">Height</Label>
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <Input
+                        type="number"
+                        value={heightFeet}
+                        onChange={(e) => setHeightFeet(e.target.value)}
+                        placeholder="Feet"
+                        min="0"
+                        max="8"
+                        className="border-2 focus:border-purple-400 rounded-xl"
+                      />
+                      <p className="text-xs text-gray-500 mt-1 text-center">Feet</p>
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        type="number"
+                        value={heightInches}
+                        onChange={(e) => setHeightInches(e.target.value)}
+                        placeholder="Inches"
+                        min="0"
+                        max="11"
+                        className="border-2 focus:border-purple-400 rounded-xl"
+                      />
+                      <p className="text-xs text-gray-500 mt-1 text-center">Inches</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
