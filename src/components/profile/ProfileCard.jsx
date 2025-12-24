@@ -106,14 +106,16 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
   return (
     <ProfileTierDecoration tier={profile?.subscription_tier}>
       <motion.div 
-        className="relative w-full max-w-sm sm:max-w-md mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-[90vw] sm:max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden"
+        style={{ maxHeight: '80vh' }}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
       >
       {/* Photo Section */}
       <div 
-        className="relative aspect-[3/4] overflow-hidden cursor-pointer"
+        className="relative aspect-[4/5] overflow-hidden cursor-pointer"
+        style={{ maxHeight: '60vh' }}
         onClick={() => setShowDetails(!showDetails)}
       >
         <AnimatePresence mode="wait">
@@ -128,7 +130,7 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
             <OptimizedImage
               src={photos[currentPhotoIndex]}
               alt={profile?.display_name}
-              className="w-full h-full"
+              className="w-full h-full object-cover object-[50%_35%]"
               priority={currentPhotoIndex === 0}
             />
           </motion.div>
@@ -166,34 +168,34 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
         <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
         {/* Profile Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-          <div className="flex items-center gap-2 mb-2">
-            <h2 className="text-3xl font-bold">{profile?.display_name}</h2>
-            {age && <span className="text-2xl font-light">{age}</span>}
+        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-2xl font-bold">{profile?.display_name}</h2>
+            {age && <span className="text-xl font-light">{age}</span>}
             <VerificationBadge verification={profile?.verification_status} />
           </div>
 
-          <div className="flex items-center gap-2 text-white/90 mb-2">
+          <div className="flex items-center gap-2 text-white/90 mb-1 text-sm">
             <CountryFlag country={profile?.country_of_origin} size="small" />
             {profile?.tribe_ethnicity && (
-              <span className="text-sm">• {profile.tribe_ethnicity}</span>
+              <span className="text-xs">• {profile.tribe_ethnicity}</span>
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-white/80 text-sm">
-            <MapPin size={14} />
+          <div className="flex items-center gap-1 text-white/80 text-xs">
+            <MapPin size={12} />
             <span>{profile?.current_city}, {profile?.current_country}</span>
           </div>
 
           {profile?.relationship_goal && (
-            <Badge className="mt-3 bg-purple-600/80 text-white border-0">
-              <Heart size={12} className="mr-1" />
+            <Badge className="mt-2 bg-purple-600/80 text-white border-0 text-xs">
+              <Heart size={10} className="mr-1" />
               {relationshipLabels[profile.relationship_goal]}
             </Badge>
           )}
           
           {profile?.badges && profile.badges.length > 0 && (
-            <div className="mt-3">
+            <div className="mt-2">
               <ProfileBadges badges={profile.badges} />
             </div>
           )}
@@ -292,7 +294,7 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
 
       {/* Action Buttons */}
       {showActions && (
-        <div className="flex items-center justify-center gap-4 p-6 pt-2 bg-gradient-to-t from-gray-50">
+        <div className="flex items-center justify-center gap-4 p-4 bg-gradient-to-t from-gray-50">
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -310,18 +312,18 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
               }
               if (onPass) onPass();
             }}
-            className="w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center border-2 border-gray-200 hover:border-gray-400 transition"
+            className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center border-2 border-gray-200 hover:border-gray-400 transition"
           >
-            <span className="text-2xl">✕</span>
+            <span className="text-xl">✕</span>
           </motion.button>
 
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={onSuperLike}
-            className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg flex items-center justify-center"
+            className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg flex items-center justify-center"
           >
-            <Sparkles className="text-white" size={22} />
+            <Sparkles className="text-white" size={18} />
           </motion.button>
 
           <motion.button
@@ -341,9 +343,9 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
               }
               if (onLike) onLike();
             }}
-            className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg flex items-center justify-center"
+            className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg flex items-center justify-center"
           >
-            <Heart className="text-white fill-white" size={28} />
+            <Heart className="text-white fill-white" size={24} />
           </motion.button>
         </div>
       )}
