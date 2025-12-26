@@ -18,6 +18,7 @@ import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminOverview from '@/components/admin/AdminOverview';
 import UserManagement from '@/components/admin/UserManagement';
 import ModerationCenter from '@/components/admin/ModerationCenter';
+import SafetyMonitorDashboard from '@/components/admin/SafetyMonitorDashboard';
 import RevenueAnalytics from '@/components/admin/RevenueAnalytics';
 import AuditLogs from '@/components/admin/AuditLogs';
 import VerificationQueue from '@/components/admin/VerificationQueue';

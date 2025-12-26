@@ -144,25 +144,36 @@ export default function Chat() {
         }
       }
 
-      // First message filtering
-      if (messages.length === 0) {
-        const aiCheck = await base44.integrations.Core.InvokeLLM({
-          prompt: `Analyze this first message for harassment, explicit content, or inappropriate language: "${content}". Return JSON with is_appropriate (boolean) and reason (string if inappropriate).`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              is_appropriate: { type: "boolean" },
-              reason: { type: "string" }
-            }
+      // AI Content Moderation - check all messages
+      const aiCheck = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze this message for harassment, threats, explicit sexual content, hate speech, scams, or requests for personal contact info (phone/address). Message: "${content}". Return JSON with is_safe (boolean), threat_level (0-10), and reason (string if unsafe).`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            is_safe: { type: "boolean" },
+            threat_level: { type: "number" },
+            reason: { type: "string" }
           }
-        });
-
-        if (!aiCheck.is_appropriate) {
-          throw new Error('Message blocked: ' + aiCheck.reason);
         }
+      });
+
+      // Block high-risk messages
+      if (!aiCheck.is_safe && aiCheck.threat_level >= 7) {
+        // Create moderation alert
+        await base44.entities.ModerationAction.create({
+          user_profile_id: myProfile.id,
+          action_type: 'message_blocked',
+          reason: aiCheck.reason,
+          severity: 'high',
+          action_taken: 'pending'
+        });
+        throw new Error('Message blocked for safety reasons. Our team will review this.');
       }
 
-      await base44.entities.Message.create({
+      // Flag medium-risk messages
+      const shouldFlag = !aiCheck.is_safe && aiCheck.threat_level >= 4;
+
+      const message = await base44.entities.Message.create({
         match_id: matchId,
         sender_id: myProfile.id,
         receiver_id: otherProfile.id,
@@ -171,8 +182,20 @@ export default function Chat() {
         media_url: mediaUrl,
         is_read: false,
         is_deleted: false,
-        is_flagged: false
+        is_flagged: shouldFlag
       });
+
+      // Log flagged message for admin review
+      if (shouldFlag) {
+        await base44.entities.ModerationAction.create({
+          user_profile_id: myProfile.id,
+          action_type: 'message_flagged',
+          reason: aiCheck.reason,
+          severity: aiCheck.threat_level >= 6 ? 'high' : 'medium',
+          action_taken: 'pending',
+          details: { messageId: message.id, content }
+        });
+      }
 
       // Send notification
       await base44.entities.Notification.create({
