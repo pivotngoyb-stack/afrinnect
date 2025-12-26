@@ -49,6 +49,7 @@ import VirtualGifts from './pages/VirtualGifts';
 import WeddingMarketplace from './pages/WeddingMarketplace';
 import WhoLikesYou from './pages/WhoLikesYou';
 import BlockedUsers from './pages/BlockedUsers';
+import VendorManagement from './pages/VendorManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -104,6 +105,7 @@ export const PAGES = {
     "WeddingMarketplace": WeddingMarketplace,
     "WhoLikesYou": WhoLikesYou,
     "BlockedUsers": BlockedUsers,
+    "VendorManagement": VendorManagement,
 }
 
 export const pagesConfig = {

@@ -41,6 +41,8 @@ import ReceiptsManagement from '@/components/admin/ReceiptsManagement';
 import AIInsightsDashboard from '@/components/admin/AIInsightsDashboard';
 import BackendOrchestrator from '@/components/admin/BackendOrchestrator';
 import ChurnAnalysis from '@/components/admin/ChurnAnalysis';
+import ABTestManager from '@/components/admin/ABTestManager';
+import RobustAnalyticsDashboard from '@/components/analytics/RobustAnalyticsDashboard';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -496,6 +498,8 @@ export default function AdminDashboard() {
       case 'analytics':
         return (
           <div className="space-y-6">
+            <RobustAnalyticsDashboard />
+            <ABTestManager />
             <AnalyticsDashboard />
             <ModerationRules rules={moderationRules} currentUser={currentUser} />
             <FeatureFlags flags={featureFlags} />
