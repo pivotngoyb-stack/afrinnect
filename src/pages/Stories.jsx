@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import StoryRing from '@/components/stories/StoryRing';
 import StoryViewer from '@/components/stories/StoryViewer';
+import { ListItemSkeleton } from '@/components/shared/SkeletonLoader';
 
 export default function Stories() {
   const [myProfile, setMyProfile] = useState(null);
@@ -159,6 +160,9 @@ export default function Stories() {
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Story Rings */}
+        {!myProfile ? (
+          <ListItemSkeleton count={3} />
+        ) : (
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
           {/* Own story */}
           <div className="relative">
@@ -185,6 +189,7 @@ export default function Stories() {
             );
           })}
         </div>
+        )}
 
         {/* Upload dialog */}
         {uploadingStory && (

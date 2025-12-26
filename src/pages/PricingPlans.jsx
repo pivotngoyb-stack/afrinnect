@@ -85,6 +85,7 @@ const PRICING_TIERS = {
 };
 
 export default function PricingPlans() {
+  const { trackEvent } = useConversionTracker();
   const [selectedTier, setSelectedTier] = useState('premium');
   const [selectedBilling, setSelectedBilling] = useState('yearly');
   const [myProfile, setMyProfile] = useState(null);
@@ -114,14 +115,15 @@ export default function PricingPlans() {
 
   const subscribeMutation = useMutation({
     mutationFn: async () => {
-      trackEvent(CONVERSION_EVENTS.PREMIUM_CLICK, {
-        tier: selectedTier,
-        billing: billingPeriod,
-        price: finalPrice
-      });
       const tier = PRICING_TIERS[selectedTier];
       const priceInfo = tier.prices[selectedBilling];
       const finalPrice = priceInfo.total * regionalDiscount;
+
+      trackEvent(CONVERSION_EVENTS.PREMIUM_CLICK, {
+        tier: selectedTier,
+        billing: selectedBilling,
+        price: finalPrice
+      });
 
       const endDate = new Date();
       if (selectedBilling === 'yearly') endDate.setFullYear(endDate.getFullYear() + 1);
@@ -262,6 +264,14 @@ export default function PricingPlans() {
       if (receipts.length > 0) {
         await base44.entities.Receipt.update(receipts[0].id, { receipt_sent: true });
       }
+
+      // Track revenue
+      trackRevenue(finalPrice, 'USD', `${selectedTier}_subscription`, myProfile.id);
+      trackEvent(CONVERSION_EVENTS.PREMIUM_PURCHASE, {
+        tier: selectedTier,
+        billing: selectedBilling,
+        amount: finalPrice
+      });
     },
     onSuccess: () => {
       window.location.href = createPageUrl('Home');

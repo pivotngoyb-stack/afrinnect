@@ -9,10 +9,12 @@ export default function ConversionFunnel() {
   const { data: funnelData } = useQuery({
     queryKey: ['conversion-funnel'],
     queryFn: async () => {
-      const analytics = await base44.entities.ProfileAnalytics.filter({});
+      const analytics = await base44.entities.ProfileAnalytics.filter({}, '-created_date', 5000);
       
       const events = analytics.reduce((acc, a) => {
-        acc[a.event_type] = (acc[a.event_type] || 0) + 1;
+        if (a.event_type) {
+          acc[a.event_type] = (acc[a.event_type] || 0) + 1;
+        }
         return acc;
       }, {});
 

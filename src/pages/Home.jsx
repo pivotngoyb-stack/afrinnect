@@ -173,7 +173,7 @@ export default function Home() {
   };
 
   // Fetch profiles for discovery
-  const { data: profiles = [], isLoading } = useQuery({
+  const { data: profiles = [], isLoading, refetch } = useQuery({
     queryKey: ['discovery-profiles', filters, discoveryMode, myProfile?.filters],
     queryFn: async () => {
       // Merge manual filters with saved filters from profile
@@ -588,6 +588,7 @@ export default function Home() {
   const hasMoreProfiles = currentIndex < profiles.length;
 
   return (
+    <PullToRefresh onRefresh={refetch}>
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 relative">
       <AfricanPattern className="text-purple-600" opacity={0.03} />
       
@@ -797,5 +798,6 @@ export default function Home() {
           {/* Ubuntu AI Button */}
           <UbuntuAIButton />
           </div>
+    </PullToRefresh>
           );
           }

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { ListItemSkeleton } from '@/components/shared/SkeletonLoader';
 
 export default function Communities() {
   const [myProfile, setMyProfile] = useState(null);
@@ -139,6 +140,9 @@ export default function Communities() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
+        {!myProfile ? (
+          <ListItemSkeleton count={6} />
+        ) : (
         <Tabs defaultValue="discover">
           <TabsList className="mb-6">
             <TabsTrigger value="discover">Discover</TabsTrigger>
@@ -187,6 +191,7 @@ export default function Communities() {
               Load More Communities
             </Button>
           </div>
+        )}
         )}
       </main>
     </div>
