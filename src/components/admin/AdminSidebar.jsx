@@ -29,11 +29,11 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
   ];
 
   return (
-    <div className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col h-screen sticky top-0">
+    <div className="w-64 bg-gradient-to-b from-gray-900 via-gray-900 to-black border-r border-white/10 flex flex-col h-screen sticky top-0 shadow-2xl">
       {/* Logo */}
-      <div className="p-6 border-b border-gray-800">
+      <div className="p-6 border-b border-white/10">
         <Logo showText size="default" />
-        <Badge className="mt-3 bg-red-600">Super Admin</Badge>
+        <Badge className="mt-3 bg-gradient-to-r from-red-600 to-red-700 shadow-lg">Super Admin</Badge>
       </div>
 
       {/* Navigation */}
@@ -46,18 +46,18 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
             <button
               key={item.id}
               onClick={() => onViewChange(item.id)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${
                 isActive
-                  ? 'bg-purple-600 text-white shadow-lg'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg shadow-purple-500/30 scale-105'
+                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
               }`}
             >
               <div className="flex items-center gap-3">
-                <Icon size={20} />
-                <span className="font-medium">{item.label}</span>
+                <Icon size={20} className={isActive ? 'animate-pulse' : ''} />
+                <span className={`font-medium ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
               </div>
               {item.badge !== undefined && (
-                <Badge className={item.alert ? 'bg-red-500 animate-pulse' : 'bg-gray-700'}>
+                <Badge className={item.alert ? 'bg-red-500 animate-pulse shadow-lg' : 'bg-white/10 border border-white/20'}>
                   {item.badge}
                 </Badge>
               )}
@@ -67,21 +67,21 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
       </nav>
 
       {/* Bottom Actions */}
-      <div className="p-4 border-t border-gray-800 space-y-2">
+      <div className="p-4 border-t border-white/10 space-y-2 bg-gradient-to-t from-black/20">
         <Link to={createPageUrl('CustomerView')}>
-          <Button variant="outline" className="w-full justify-start gap-2 border-gray-700 text-gray-300 hover:bg-gray-800">
+          <Button variant="outline" className="w-full justify-start gap-2 border-white/20 text-gray-300 hover:bg-white/5 hover:text-white transition-all">
             <Eye size={18} />
             Preview App
           </Button>
         </Link>
         
-        <div className="px-3 py-2 text-xs text-gray-500">
+        <div className="px-3 py-2 text-xs text-gray-500 truncate" title={userEmail}>
           {userEmail}
         </div>
         
         <Button
           variant="ghost"
-          className="w-full justify-start gap-2 text-gray-400 hover:bg-gray-800 hover:text-white"
+          className="w-full justify-start gap-2 text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all"
           onClick={onLogout}
         >
           <LogOut size={18} />

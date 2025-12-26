@@ -38,6 +38,8 @@ import CommunityManagement from '@/components/admin/CommunityManagement';
 import VideoEventManagement from '@/components/admin/VideoEventManagement';
 import SubscriptionManagement from '@/components/admin/SubscriptionManagement';
 import ReceiptsManagement from '@/components/admin/ReceiptsManagement';
+import AIInsightsDashboard from '@/components/admin/AIInsightsDashboard';
+import BackendOrchestrator from '@/components/admin/BackendOrchestrator';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -521,6 +523,10 @@ export default function AdminDashboard() {
         );
       case 'safety_monitor':
         return <SafetyMonitorDashboard />;
+      case 'ai-insights':
+        return <AIInsightsDashboard />;
+      case 'automation':
+        return <BackendOrchestrator />;
       case 'settings':
         return <AuditLogs logs={auditLogs} />;
       default:
@@ -529,7 +535,8 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">{/* Sidebar */}
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      {/* Sidebar */}
       <AdminSidebar
         currentView={currentView}
         onViewChange={setCurrentView}
@@ -539,7 +546,7 @@ export default function AdminDashboard() {
       />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto bg-gray-50">
         <div className="max-w-7xl mx-auto px-8 py-8">
         {/* Content */}
         {renderView()}
