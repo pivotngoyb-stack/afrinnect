@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import Logo from '@/components/shared/Logo';
 import AfricanPattern from '@/components/shared/AfricanPattern';
+import SafetyEducationModal from '@/components/safety/SafetyEducationModal';
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
@@ -64,6 +65,7 @@ const INTERESTS = [
 export default function Onboarding() {
   const [step, setStep] = useState(0);
   const [user, setUser] = useState(null);
+  const [showSafetyEducation, setShowSafetyEducation] = useState(false);
   const [formData, setFormData] = useState({
     display_name: '',
     birth_date: '',
