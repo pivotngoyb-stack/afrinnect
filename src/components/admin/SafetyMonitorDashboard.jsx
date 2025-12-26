@@ -10,6 +10,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import AIRecommendations from '@/components/admin/AIRecommendations';
+import AutomationStatus from '@/components/admin/AutomationStatus';
 
 export default function SafetyMonitorDashboard() {
   const [selectedCheck, setSelectedCheck] = useState(null);
@@ -109,12 +111,15 @@ export default function SafetyMonitorDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Safety Monitor</h2>
-          <p className="text-gray-600">Real-time safety check monitoring and alerts</p>
+          <p className="text-gray-600">Real-time safety check monitoring and AI-powered automation</p>
         </div>
         <Badge className={alerts.length > 0 ? 'bg-red-600 animate-pulse' : 'bg-green-600'}>
           {alerts.length} Active Alerts
         </Badge>
       </div>
+
+      {/* Automation Status */}
+      <AutomationStatus />
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -335,7 +340,21 @@ export default function SafetyMonitorDashboard() {
                       <p className="text-xs text-gray-500">{new Date(msg.created_date).toLocaleString()}</p>
                     </div>
                     <p className="text-sm bg-gray-50 p-3 rounded-lg mb-3">{msg.content}</p>
-                    <div className="flex gap-2">
+                    
+                    {/* AI Recommendation */}
+                    <AIRecommendations
+                      item={msg}
+                      type="message"
+                      onAction={(action) => {
+                        if (action === 'delete') {
+                          reviewMessageMutation.mutate({ messageId: msg.id, action: 'delete' });
+                        } else if (action === 'clear') {
+                          reviewMessageMutation.mutate({ messageId: msg.id, action: 'clear' });
+                        }
+                      }}
+                    />
+                    
+                    <div className="flex gap-2 mt-3">
                       <Button
                         onClick={() => reviewMessageMutation.mutate({ messageId: msg.id, action: 'delete' })}
                         variant="destructive"
