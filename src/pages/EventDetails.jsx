@@ -305,11 +305,14 @@ export default function EventDetails() {
         </Card>
 
         {/* Map for physical events */}
-        {!event.is_virtual && event.location_address && (
+        {!event.is_virtual && (event.location_address || event.location_name) && (
           <Card className="mb-6">
             <CardContent className="p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Location</h2>
-              <GoogleMapsLocation address={event.location_address} />
+              <GoogleMapsLocation 
+                showSearch={false}
+                height="400px"
+              />
             </CardContent>
           </Card>
         )}
