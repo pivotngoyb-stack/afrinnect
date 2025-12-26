@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfinitePagination } from '@/components/shared/useInfinitePagination';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 import { AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -28,65 +30,52 @@ export default function Stories() {
     fetchProfile();
   }, []);
 
-  // Fetch all non-expired stories with filters applied
-  const { data: allStories = [] } = useQuery({
-    queryKey: ['stories', myProfile?.id],
-    queryFn: async () => {
-      const now = new Date().toISOString();
-      const stories = await base44.entities.Story.filter({
-        is_expired: false,
-        expires_at: { $gte: now }
-      }, '-created_date', 100);
-      
-      // Fetch user profiles for each story
-      const profileIds = [...new Set(stories.map(s => s.user_profile_id))];
-      const profiles = await Promise.all(
-        profileIds.map(id => base44.entities.UserProfile.filter({ id }))
-      );
-      
-      const storiesWithProfiles = stories.map(story => ({
-        ...story,
-        user_profile: profiles.find(p => p[0]?.id === story.user_profile_id)?.[0]
-      }));
-      
-      // Apply user's saved filters
-      if (!myProfile?.filters) return storiesWithProfiles;
-      
-      const userFilters = myProfile.filters;
-      return storiesWithProfiles.filter(story => {
-        const profile = story.user_profile;
-        if (!profile || profile.id === myProfile.id) return true; // Show own stories
-        
-        // Apply filter checks
-        if (userFilters.relationship_goals?.length > 0 && !userFilters.relationship_goals.includes(profile.relationship_goal)) {
-          return false;
-        }
-        if (userFilters.religions?.length > 0 && !userFilters.religions.includes(profile.religion)) {
-          return false;
-        }
-        if (userFilters.countries_of_origin?.length > 0 && !userFilters.countries_of_origin.includes(profile.country_of_origin)) {
-          return false;
-        }
-        if (userFilters.states?.length > 0 && !userFilters.states.includes(profile.current_state)) {
-          return false;
-        }
-        
-        // Age filter
-        if (profile.birth_date && (userFilters.age_min || userFilters.age_max)) {
-          const age = Math.floor((Date.now() - new Date(profile.birth_date)) / (365.25 * 24 * 60 * 60 * 1000));
-          if (userFilters.age_min && age < userFilters.age_min) return false;
-          if (userFilters.age_max && age > userFilters.age_max) return false;
-        }
-        
-        return true;
-      });
-    },
+  // Server-side filtered stories with pagination
+  const buildStoryFilters = () => {
+    const now = new Date().toISOString();
+    return {
+      is_expired: false,
+      expires_at: { $gte: now }
+    };
+  };
+
+  const { 
+    items: allStories, 
+    loadMore, 
+    hasMore, 
+    isLoadingMore,
+    refetch 
+  } = useInfinitePagination('Story', buildStoryFilters(), {
+    pageSize: 30,
+    sortBy: '-created_date',
     enabled: !!myProfile,
-    refetchInterval: 30000
+    refetchInterval: 60000
   });
 
+  // Fetch profiles for stories (optimized)
+  const { data: storyProfiles = {} } = useQuery({
+    queryKey: ['story-profiles', allStories.length],
+    queryFn: async () => {
+      const profileIds = [...new Set(allStories.map(s => s.user_profile_id))];
+      const profiles = await Promise.all(
+        profileIds.map(id => base44.entities.UserProfile.filter({ id }).then(p => p[0]))
+      );
+      return profiles.reduce((acc, p) => {
+        if (p) acc[p.id] = p;
+        return acc;
+      }, {});
+    },
+    enabled: allStories.length > 0,
+    staleTime: 60000
+  });
+
+  const storiesWithProfiles = allStories.map(story => ({
+    ...story,
+    user_profile: storyProfiles[story.user_profile_id]
+  })).filter(s => s.user_profile); // Only include stories with loaded profiles
+
   // Group stories by user
-  const storyGroups = allStories.reduce((acc, story) => {
+  const storyGroups = storiesWithProfiles.reduce((acc, story) => {
     if (!acc[story.user_profile_id]) {
       acc[story.user_profile_id] = {
         profile: story.user_profile,
@@ -150,7 +139,8 @@ export default function Stories() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <PullToRefresh onRefresh={refetch}>
+      <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -253,7 +243,22 @@ export default function Stories() {
             />
           )}
         </AnimatePresence>
+
+        {isLoadingMore && (
+          <div className="flex justify-center py-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-600 border-t-transparent" />
+          </div>
+        )}
+
+        {hasMore && !isLoadingMore && (
+          <div className="text-center py-4">
+            <Button onClick={loadMore} variant="outline">
+              Load More Stories
+            </Button>
+          </div>
+        )}
       </main>
     </div>
+    </PullToRefresh>
   );
 }

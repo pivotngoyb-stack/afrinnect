@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfinitePagination } from '@/components/shared/useInfinitePagination';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 import { ArrowLeft, Users, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -22,15 +24,15 @@ export default function Communities() {
     fetchProfile();
   }, []);
 
-  const { data: communities = [] } = useQuery({
-    queryKey: ['communities', myProfile?.id],
-    queryFn: async () => {
-      const allCommunities = await base44.entities.Community.list('-created_date', 50);
-      
-      // No filters for communities since they're interest-based
-      // But we could add filters if needed in the future
-      return allCommunities;
-    },
+  const { 
+    items: communities, 
+    loadMore, 
+    hasMore, 
+    isLoadingMore,
+    refetch 
+  } = useInfinitePagination('Community', {}, {
+    pageSize: 20,
+    sortBy: '-created_date',
     enabled: !!myProfile
   });
 
@@ -118,7 +120,8 @@ export default function Communities() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <PullToRefresh onRefresh={refetch}>
+      <div className="min-h-screen bg-gray-50 pb-24">
       <header className="bg-white border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
@@ -171,7 +174,22 @@ export default function Communities() {
             )}
           </TabsContent>
         </Tabs>
+
+        {isLoadingMore && (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-purple-600 border-t-transparent" />
+          </div>
+        )}
+
+        {hasMore && !isLoadingMore && (
+          <div className="text-center py-4">
+            <Button onClick={loadMore} variant="outline">
+              Load More Communities
+            </Button>
+          </div>
+        )}
       </main>
     </div>
+    </PullToRefresh>
   );
 }

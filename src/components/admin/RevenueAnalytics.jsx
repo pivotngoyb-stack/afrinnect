@@ -41,6 +41,7 @@ export default function RevenueAnalytics({ subscriptions, profiles }) {
 
   return (
     <div className="space-y-6">
+      <RevenueWidget />
       {/* Key Metrics */}
       <div className="grid md:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">

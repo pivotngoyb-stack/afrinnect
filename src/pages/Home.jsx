@@ -20,9 +20,14 @@ import MessageWithLikeModal from '@/components/home/MessageWithLikeModal';
 import UbuntuAIButton from '@/components/shared/UbuntuAIButton';
 import confetti from 'canvas-confetti';
 import { usePerformanceMonitor } from '@/components/shared/usePerformanceMonitor';
+import EmptyState from '@/components/shared/EmptyState';
+import { useConversionTracker, CONVERSION_EVENTS } from '@/components/shared/ConversionTracker';
+import PullToRefresh from '@/components/shared/PullToRefresh';
+import LazyImage from '@/components/shared/LazyImage';
 
 export default function Home() {
   usePerformanceMonitor('Home');
+  const { trackEvent } = useConversionTracker();
   
   const [viewMode, setViewMode] = useState('swipe');
   const [discoveryMode, setDiscoveryMode] = useState('global');
@@ -388,6 +393,14 @@ export default function Home() {
       });
 
       if (mutualLikes.length > 0) {
+        // Track first match
+        if (!myProfile.has_matched_before) {
+          trackEvent(CONVERSION_EVENTS.FIRST_MATCH);
+          await base44.entities.UserProfile.update(myProfile.id, {
+            has_matched_before: true
+          });
+        }
+
         // Create match
         await base44.entities.Match.create({
           user1_id: myProfile.id,
@@ -672,26 +685,13 @@ export default function Home() {
                   ]}
                 />
               ) : (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center py-16 px-6"
-                >
-                  <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-100 to-amber-100 flex items-center justify-center">
-                    <Sparkles size={40} className="text-purple-600" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">That's everyone for now!</h2>
-                  <p className="text-gray-500 mb-6">
-                    Adjust your filters or check back later for new members
-                  </p>
-                  <Button 
-                    onClick={() => setFilters({})}
-                    variant="outline"
-                    className="border-purple-600 text-purple-600"
-                  >
-                    Reset Filters
-                  </Button>
-                </motion.div>
+                <EmptyState
+                  icon={Sparkles}
+                  title="That's everyone for now!"
+                  description="Adjust your filters or check back later for new members"
+                  actionLabel="Reset Filters"
+                  onAction={() => setFilters({})}
+                />
               )}
             </AnimatePresence>
           </div>

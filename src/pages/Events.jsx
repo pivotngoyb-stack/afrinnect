@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import EmptyState from '@/components/shared/EmptyState';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from 'date-fns';
@@ -178,10 +179,17 @@ export default function Events() {
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
           </div>
         ) : filteredEvents.length === 0 ? (
-          <div className="text-center py-20">
-            <Calendar size={64} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600">No events found</p>
-          </div>
+          <EmptyState
+            icon={Calendar}
+            title="No Events Found"
+            description="Try adjusting your filters or check back later for new events"
+            actionLabel="Reset Filters"
+            onAction={() => {
+              setEventType('all');
+              setLocation('all');
+              setSearchQuery('');
+            }}
+          />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEvents.map((event, idx) => {

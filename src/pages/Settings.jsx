@@ -25,13 +25,30 @@ import {
 
 export default function Settings() {
   const [myProfile, setMyProfile] = useState(null);
-  const [settings, setSettings] = useState({
-    notifications: true,
-    emailNotifications: true,
-    showDistance: true,
-    showLastActive: true,
-    darkMode: false
-  });
+  
+  // Load settings from localStorage
+  const loadSettings = () => {
+    try {
+      const saved = localStorage.getItem('app_settings');
+      return saved ? JSON.parse(saved) : {
+        notifications: true,
+        emailNotifications: true,
+        showDistance: true,
+        showLastActive: true,
+        darkMode: false
+      };
+    } catch {
+      return {
+        notifications: true,
+        emailNotifications: true,
+        showDistance: true,
+        showLastActive: true,
+        darkMode: false
+      };
+    }
+  };
+
+  const [settings, setSettings] = useState(loadSettings());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [exportingData, setExportingData] = useState(false);
 
@@ -53,8 +70,28 @@ export default function Settings() {
   }, []);
 
   const updateSetting = (key, value) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    const newSettings = { ...settings, [key]: value };
+    setSettings(newSettings);
+    
+    // Persist to localStorage
+    localStorage.setItem('app_settings', JSON.stringify(newSettings));
+    
+    // Apply dark mode
+    if (key === 'darkMode') {
+      if (value) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
   };
+
+  // Apply dark mode on mount
+  useEffect(() => {
+    if (settings.darkMode) {
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
 
   const handleLogout = async () => {
     await base44.auth.logout(createPageUrl('Landing'));

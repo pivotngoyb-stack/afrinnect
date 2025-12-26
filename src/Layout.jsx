@@ -6,6 +6,7 @@ import { Home, Heart, Calendar, User, MessageCircle, Compass, Sparkles, Bell } f
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from '@tanstack/react-query';
 import ScreenshotAlertNotif from '@/components/notifications/ScreenshotAlertNotif';
+import SubscriptionReminder from '@/components/monetization/SubscriptionReminder';
 import { LanguageProvider, useLanguage } from '@/components/i18n/LanguageContext';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { ErrorMonitorProvider } from '@/components/shared/ErrorMonitor';
@@ -114,6 +115,9 @@ function LayoutContent({ children, currentPageName }) {
 
       {/* Screenshot Alert Notifications */}
       {myProfile && <ScreenshotAlertNotif myProfileId={myProfile.id} />}
+
+      {/* Subscription Expiry Reminder */}
+      {myProfile && <SubscriptionReminder userProfile={myProfile} />}
 
       {/* Bottom Navigation */}
       {showNav && (

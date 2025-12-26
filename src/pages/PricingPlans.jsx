@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useConversionTracker, CONVERSION_EVENTS, trackRevenue } from '@/components/shared/ConversionTracker';
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AfricanPattern from '@/components/shared/AfricanPattern';
@@ -113,6 +114,11 @@ export default function PricingPlans() {
 
   const subscribeMutation = useMutation({
     mutationFn: async () => {
+      trackEvent(CONVERSION_EVENTS.PREMIUM_CLICK, {
+        tier: selectedTier,
+        billing: billingPeriod,
+        price: finalPrice
+      });
       const tier = PRICING_TIERS[selectedTier];
       const priceInfo = tier.prices[selectedBilling];
       const finalPrice = priceInfo.total * regionalDiscount;

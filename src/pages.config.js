@@ -48,6 +48,7 @@ import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import WeddingMarketplace from './pages/WeddingMarketplace';
 import WhoLikesYou from './pages/WhoLikesYou';
+import BlockedUsers from './pages/BlockedUsers';
 import __Layout from './Layout.jsx';
 
 
@@ -102,6 +103,7 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "WeddingMarketplace": WeddingMarketplace,
     "WhoLikesYou": WhoLikesYou,
+    "BlockedUsers": BlockedUsers,
 }
 
 export const pagesConfig = {

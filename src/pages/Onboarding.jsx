@@ -16,6 +16,7 @@ import { Progress } from "@/components/ui/progress";
 import Logo from '@/components/shared/Logo';
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import SafetyEducationModal from '@/components/safety/SafetyEducationModal';
+import { useConversionTracker, CONVERSION_EVENTS } from '@/components/shared/ConversionTracker';
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
@@ -63,6 +64,7 @@ const INTERESTS = [
 ];
 
 export default function Onboarding() {
+  const { trackEvent } = useConversionTracker();
   const [step, setStep] = useState(0);
   const [user, setUser] = useState(null);
   const [showSafetyEducation, setShowSafetyEducation] = useState(false);

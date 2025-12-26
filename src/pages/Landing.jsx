@@ -10,9 +10,15 @@ import Logo from '@/components/shared/Logo';
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import LanguageSelector from '@/components/i18n/LanguageSelector';
+import { useConversionTracker, CONVERSION_EVENTS } from '@/components/shared/ConversionTracker';
 
 export default function Landing() {
   const { t } = useLanguage();
+  const { trackEvent } = useConversionTracker();
+
+  useEffect(() => {
+    trackEvent(CONVERSION_EVENTS.LANDING_VIEW);
+  }, []);
 
   const features = [
     {
@@ -45,6 +51,7 @@ export default function Landing() {
   ];
 
   const handleGetStarted = () => {
+    trackEvent(CONVERSION_EVENTS.SIGNUP_START);
     const urlParams = new URLSearchParams(window.location.search);
     const ref = urlParams.get('ref');
     const nextUrl = ref ? createPageUrl('Onboarding') + `?ref=${ref}` : createPageUrl('LegalAcceptance');
