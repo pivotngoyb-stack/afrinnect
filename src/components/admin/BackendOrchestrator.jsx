@@ -59,6 +59,18 @@ export default function BackendOrchestrator() {
       status: 'idle',
       dependencies: [],
       priority: 'medium'
+    },
+    {
+      id: 'winback-email',
+      name: 'sendWinbackEmail',
+      title: 'Win-back Email Campaign',
+      schedule: '0 10 * * *', // Daily at 10am
+      enabled: true,
+      lastRun: null,
+      nextRun: null,
+      status: 'idle',
+      dependencies: [],
+      priority: 'low'
     }
   ]);
 
@@ -173,6 +185,7 @@ export default function BackendOrchestrator() {
     if (cron === '*/30 * * * *') return 'Every 30 minutes';
     if (cron === '*/5 * * * *') return 'Every 5 minutes';
     if (cron === '0 0 * * *') return 'Daily at midnight';
+    if (cron === '0 10 * * *') return 'Daily at 10am';
     return cron;
   };
 

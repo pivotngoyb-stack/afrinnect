@@ -24,6 +24,8 @@ import EmptyState from '@/components/shared/EmptyState';
 import { useConversionTracker, CONVERSION_EVENTS } from '@/components/shared/ConversionTracker';
 import PullToRefresh from '@/components/shared/PullToRefresh';
 import LazyImage from '@/components/shared/LazyImage';
+import { useUpgradePrompts, UpgradePromptBanner } from '@/components/monetization/UpgradePrompts';
+import { ProfileCardSkeleton } from '@/components/shared/SkeletonLoader';
 
 export default function Home() {
   usePerformanceMonitor('Home');
@@ -42,6 +44,7 @@ export default function Home() {
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [pendingLikeProfile, setPendingLikeProfile] = useState(null);
   const queryClient = useQueryClient();
+  const { prompt: upgradePrompt, dismissPrompt } = useUpgradePrompts(myProfile);
 
   // Fetch user's profile and redirect if needed
   useEffect(() => {
@@ -653,7 +656,7 @@ export default function Home() {
 
         {isLoading ? (
           <div className="flex items-center justify-center min-h-[70vh]">
-            <LoadingSkeleton variant="card" />
+            <ProfileCardSkeleton />
           </div>
         ) : viewMode === 'swipe' ? (
           /* Swipe Mode */
@@ -747,26 +750,8 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        {/* Premium Upsell Banner */}
-        {(!myProfile?.subscription_tier || myProfile.subscription_tier === 'free') && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="fixed bottom-20 left-4 right-4 md:left-auto md:right-6 md:max-w-sm z-30"
-          >
-            <Link to={createPageUrl('PricingPlans')}>
-              <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl p-4 shadow-lg text-white flex items-center gap-3 hover:shadow-xl transition-shadow">
-                <div className="p-2 bg-white/20 rounded-xl">
-                  <Crown size={24} />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-bold">Upgrade to Premium</h4>
-                  <p className="text-sm text-white/80">Unlimited likes & advanced filters</p>
-                </div>
-              </div>
-            </Link>
-          </motion.div>
-        )}
+        {/* Smart Upgrade Prompts */}
+        <UpgradePromptBanner prompt={upgradePrompt} onDismiss={dismissPrompt} />
 
         {/* Likes Limit Paywall */}
         <AnimatePresence>

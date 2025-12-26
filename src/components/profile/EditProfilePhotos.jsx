@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import LazyImage from '@/components/shared/LazyImage';
 import { useDebounce } from '@/components/shared/useDebounce';
+import { compressImage, validateImageFile } from '@/components/shared/ImageCompressor';
 
 export default function EditProfilePhotos({
   photos = [],

@@ -175,8 +175,10 @@ export default function Events() {
       <PullToRefresh onRefresh={refetch}>
       <main className="max-w-7xl mx-auto px-4 py-6">
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <EventCardSkeleton key={idx} />
+            ))}
           </div>
         ) : filteredEvents.length === 0 ? (
           <EmptyState

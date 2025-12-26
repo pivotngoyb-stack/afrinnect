@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DollarSign, TrendingUp, Users, CreditCard, RefreshCw, Crown } from 'lucide-react';
+import RevenueWidget from '@/components/monetization/RevenueWidget';
 
 export default function RevenueAnalytics({ subscriptions, profiles }) {
   const activeSubscriptions = subscriptions.filter(s => s.status === 'active');

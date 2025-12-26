@@ -20,6 +20,7 @@ import PhotoReorderModal from '@/components/home/PhotoReorderModal';
 import EditProfilePhotos from '@/components/profile/EditProfilePhotos';
 import EditProfileBasicInfo from '@/components/profile/EditProfileBasicInfo';
 import { useDebounce } from '@/components/shared/useDebounce';
+import { compressImage, validateImageFile } from '@/components/shared/ImageCompressor';
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
@@ -197,21 +198,13 @@ export default function EditProfile() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Photo must be less than 5MB');
-      return;
-    }
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
-      return;
-    }
-
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      // Validate and compress image
+      validateImageFile(file);
+      const compressed = await compressImage(file, 1200, 0.85);
+      
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: compressed });
       const newPhotos = [...(formData.photos || []), file_url];
       setFormData({
         ...formData,

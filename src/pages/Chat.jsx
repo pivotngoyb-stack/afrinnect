@@ -19,6 +19,7 @@ import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import { useOptimisticUpdate } from '@/components/shared/useOptimisticUpdate';
 import { sanitizeHTML, validateInput, rateLimiter } from '@/components/shared/InputSanitizer';
 import { useInfinitePagination } from '@/components/shared/useInfinitePagination';
+import { ChatSkeleton } from '@/components/shared/SkeletonLoader';
 import SafetyCheckSetup from '@/components/safety/SafetyCheckSetup';
 import VirtualList from '@/components/shared/VirtualList';
 import OptimizedImage from '@/components/shared/OptimizedImage';
@@ -174,6 +175,7 @@ export default function Chat() {
       if (tier === 'free') {
         const myMessages = messages.filter(m => m.sender_id === myProfile.id);
         if (myMessages.length >= 3) {
+          localStorage.setItem('message_limit_hit', 'true');
           throw new Error('upgrade_required');
         }
       }
@@ -399,8 +401,11 @@ export default function Chat() {
 
   if (!otherProfile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSkeleton variant="chat" />
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <header className="bg-white border-b px-4 py-3">
+          <div className="h-6 bg-gray-200 rounded animate-pulse w-32" />
+        </header>
+        <ChatSkeleton />
       </div>
     );
   }

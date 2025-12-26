@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Phone, ArrowLeft, CheckCircle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useRateLimit, RateLimitWarning } from '@/components/shared/RateLimitGuard';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Logo from '@/components/shared/Logo';
 
@@ -40,6 +41,9 @@ export default function PhoneVerification() {
 
   const sendCodeMutation = useMutation({
     mutationFn: async () => {
+      if (!checkLimit()) {
+        throw new Error('Too many attempts. Please wait before trying again.');
+      }
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
       

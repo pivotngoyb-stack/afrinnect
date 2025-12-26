@@ -133,6 +133,9 @@ export default function AdminOverview({ stats }) {
         </Card>
       </div>
 
+      {/* Conversion Funnel */}
+      <ConversionFunnel />
+
       {/* Revenue Breakdown */}
       <Card>
         <CardHeader>
