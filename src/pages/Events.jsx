@@ -281,16 +281,16 @@ export default function Events() {
               );
             })}
           </div>
-          
-          {isLoadingMore && (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-4 border-purple-600 border-t-transparent" />
-            </div>
-          )}
+        )}
+        
+        {isLoadingMore && (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-purple-600 border-t-transparent" />
+          </div>
+        )}
 
-          {!hasMore && events.length > 0 && (
-            <p className="text-center text-gray-500 py-8">No more events</p>
-          )}
+        {!hasMore && events.length > 0 && (
+          <p className="text-center text-gray-500 py-8">No more events</p>
         )}
       </main>
       </PullToRefresh>
