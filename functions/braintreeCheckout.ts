@@ -42,6 +42,7 @@ Deno.serve(async (req) => {
       }
 
       const profile = profiles[0];
+
       const today = new Date();
       let endDate;
 
@@ -143,6 +144,35 @@ Deno.serve(async (req) => {
         subscription: subscription
       });
     } else {
+      // Payment failed - notify user and log
+      const profiles = await base44.asServiceRole.entities.UserProfile.filter({ user_id: user.id });
+      
+      if (profiles.length > 0) {
+        await base44.asServiceRole.entities.Notification.create({
+          user_profile_id: profiles[0].id,
+          type: 'admin_message',
+          title: 'Payment Failed',
+          message: `Your payment could not be processed: ${result.message}. Please try again or contact support.`,
+          is_admin: true
+        });
+      }
+
+      // Send failure email
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: user.email,
+        subject: 'Payment Failed - Afrinnect',
+        body: `
+          Your payment could not be processed.
+          
+          Reason: ${result.message}
+          
+          Please try again or contact our support team if the issue persists.
+          
+          Thank you,
+          Afrinnect Team
+        `
+      });
+
       return Response.json({
         success: false,
         error: result.message

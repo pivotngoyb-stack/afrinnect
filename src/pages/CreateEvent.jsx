@@ -401,6 +401,21 @@ export default function CreateEvent() {
                     />
                   </div>
                 </div>
+                <div>
+                  <Label className="text-sm font-semibold mb-2">Pin Location on Map</Label>
+                  <div className="mt-2 border rounded-lg overflow-hidden">
+                    <GoogleMapsLocation
+                      onLocationSelect={(location) => {
+                        setFormData({
+                          ...formData,
+                          location_address: location.address,
+                          location: { lat: location.lat, lng: location.lng }
+                        });
+                      }}
+                      height="300px"
+                    />
+                  </div>
+                </div>
               </div>
             )}
           </CardContent>
