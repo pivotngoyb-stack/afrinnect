@@ -519,6 +519,8 @@ export default function AdminDashboard() {
             <DateFeedbackReview />
           </div>
         );
+      case 'safety_monitor':
+        return <SafetyMonitorDashboard />;
       case 'settings':
         return <AuditLogs logs={auditLogs} />;
       default:
