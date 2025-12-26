@@ -15,6 +15,7 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
     { id: 'users', label: 'Users', icon: Users, badge: stats?.totalProfiles },
     { id: 'verification', label: 'Verification', icon: Shield, badge: stats?.verifiedUsers },
     { id: 'moderation', label: 'Moderation', icon: AlertTriangle, badge: stats?.pendingReports, alert: stats?.pendingReports > 0 },
+    { id: 'safety_monitor', label: 'Safety Monitor', icon: Shield },
     { id: 'fake-profiles', label: 'Fake Profiles', icon: Shield },
     { id: 'revenue', label: 'Revenue', icon: DollarSign },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
