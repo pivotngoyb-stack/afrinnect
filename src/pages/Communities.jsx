@@ -107,13 +107,22 @@ export default function Communities() {
               <Users size={14} />
               <span>{community.members?.length || 0} members</span>
             </div>
-            <Button
-              onClick={() => isMember ? leaveMutation.mutate(community.id) : joinMutation.mutate(community.id)}
-              variant={isMember ? 'outline' : 'default'}
-              size="sm"
-            >
-              {isMember ? 'Leave' : 'Join'}
-            </Button>
+            <div className="flex gap-2">
+              {isMember && (
+                <Link to={createPageUrl(`CommunityChat?id=${community.id}`)}>
+                  <Button variant="outline" size="sm">
+                    Chat
+                  </Button>
+                </Link>
+              )}
+              <Button
+                onClick={() => isMember ? leaveMutation.mutate(community.id) : joinMutation.mutate(community.id)}
+                variant={isMember ? 'ghost' : 'default'}
+                size="sm"
+              >
+                {isMember ? 'Leave' : 'Join'}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
