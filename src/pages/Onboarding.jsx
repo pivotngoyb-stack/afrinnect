@@ -160,16 +160,29 @@ export default function Onboarding() {
         }
       });
 
+      // Send welcome email
+      try {
+        await base44.functions.invoke('sendWelcomeEmail', {
+          user_email: user.email,
+          user_name: formData.display_name
+        });
+      } catch (e) {
+        console.error('Welcome email failed:', e);
+      }
+
       // Check for referral code
       const urlParams = new URLSearchParams(window.location.search);
       const refCode = urlParams.get('ref');
       if (refCode) {
-        const referrals = await base44.entities.Referral.filter({ referral_code: refCode });
-        if (referrals.length > 0) {
-          await base44.entities.Referral.update(referrals[0].id, {
-            referred_id: profile.id,
-            status: 'pending'
+        try {
+          await base44.entities.Referral.create({
+            referrer_profile_id: refCode,
+            referred_profile_id: profile.id,
+            conversion_status: 'registered',
+            reward_earned: 0
           });
+        } catch (e) {
+          console.error('Referral tracking failed:', e);
         }
       }
 
