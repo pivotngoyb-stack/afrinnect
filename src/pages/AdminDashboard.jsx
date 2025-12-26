@@ -40,6 +40,7 @@ import SubscriptionManagement from '@/components/admin/SubscriptionManagement';
 import ReceiptsManagement from '@/components/admin/ReceiptsManagement';
 import AIInsightsDashboard from '@/components/admin/AIInsightsDashboard';
 import BackendOrchestrator from '@/components/admin/BackendOrchestrator';
+import ChurnAnalysis from '@/components/admin/ChurnAnalysis';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -484,9 +485,10 @@ export default function AdminDashboard() {
       case 'revenue':
         return (
           <div className="space-y-6">
+            <RevenueAnalytics subscriptions={subscriptions} profiles={profiles} />
+            <ChurnAnalysis />
             <SubscriptionManagement />
             <ReceiptsManagement />
-            <RevenueAnalytics subscriptions={subscriptions} profiles={profiles} />
           </div>
         );
       case 'verification':

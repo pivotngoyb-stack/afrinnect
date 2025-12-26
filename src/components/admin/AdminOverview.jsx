@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ConversionFunnel from './ConversionFunnel';
+import QuickActions from './QuickActions';
 import { Badge } from "@/components/ui/badge";
 import { Users, Crown, DollarSign, Heart, AlertTriangle, TrendingUp, CheckCircle, Globe } from 'lucide-react';
 
@@ -49,6 +50,9 @@ export default function AdminOverview({ stats }) {
 
   return (
     <div className="space-y-6">
+      {/* Quick Actions */}
+      <QuickActions />
+
       {/* KPI Cards */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {kpiCards.map((kpi, idx) => {

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from '@tanstack/react-query';
 import ScreenshotAlertNotif from '@/components/notifications/ScreenshotAlertNotif';
 import SubscriptionReminder from '@/components/monetization/SubscriptionReminder';
+import RetentionRewards from '@/components/monetization/RetentionRewards';
 import { LanguageProvider, useLanguage } from '@/components/i18n/LanguageContext';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { ErrorMonitorProvider } from '@/components/shared/ErrorMonitor';
@@ -119,6 +120,9 @@ function LayoutContent({ children, currentPageName }) {
       {/* Subscription Expiry Reminder */}
       {myProfile && <SubscriptionReminder userProfile={myProfile} />}
 
+      {/* Retention Rewards */}
+      {myProfile && <RetentionRewards userProfile={myProfile} />}
+
       {/* Bottom Navigation */}
       {showNav && (
         <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50 safe-area-inset-bottom">
@@ -170,15 +174,12 @@ function LayoutContent({ children, currentPageName }) {
         );
         }
 
+        import { useServiceWorker } from '@/components/shared/ServiceWorkerManager';
+        import { useNetworkStatus } from '@/components/shared/NetworkStatus';
+
         export default function Layout(props) {
-          // Register service worker for PWA
-          useEffect(() => {
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.register('/service-worker.js').catch((error) => {
-                console.log('Service worker registration failed:', error);
-              });
-            }
-          }, []);
+          useServiceWorker();
+          const { isOnline } = useNetworkStatus();
 
           return (
             <ErrorBoundary>
