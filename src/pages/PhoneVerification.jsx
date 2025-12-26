@@ -16,6 +16,7 @@ export default function PhoneVerification() {
   const [verificationCode, setVerificationCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
   const [verified, setVerified] = useState(false);
+  const { checkLimit } = useRateLimit('phone_verification', 3, 300000); // 3 attempts per 5 min
 
   useEffect(() => {
     const checkUser = async () => {

@@ -16,6 +16,7 @@ import EmptyState from '@/components/shared/EmptyState';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from 'date-fns';
+import EventCardSkeleton from '@/components/shared/EventCardSkeleton';
 
 export default function Events() {
   const [myProfile, setMyProfile] = useState(null);

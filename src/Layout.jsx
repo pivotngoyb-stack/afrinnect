@@ -12,6 +12,8 @@ import { LanguageProvider, useLanguage } from '@/components/i18n/LanguageContext
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { ErrorMonitorProvider } from '@/components/shared/ErrorMonitor';
 import OfflineIndicator from '@/components/shared/OfflineIndicator';
+import { useServiceWorker } from '@/components/shared/ServiceWorkerManager';
+import { useNetworkStatus } from '@/components/shared/NetworkStatus';
 
 const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories'];
 
@@ -174,10 +176,7 @@ function LayoutContent({ children, currentPageName }) {
         );
         }
 
-        import { useServiceWorker } from '@/components/shared/ServiceWorkerManager';
-        import { useNetworkStatus } from '@/components/shared/NetworkStatus';
-
-        export default function Layout(props) {
+export default function Layout(props) {
           useServiceWorker();
           const { isOnline } = useNetworkStatus();
 
