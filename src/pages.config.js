@@ -52,6 +52,8 @@ import WeddingMarketplace from './pages/WeddingMarketplace';
 import WhoLikesYou from './pages/WhoLikesYou';
 import EventDetails from './pages/EventDetails';
 import CreateEvent from './pages/CreateEvent';
+import NotFound from './pages/NotFound';
+import Error from './pages/Error';
 import __Layout from './Layout.jsx';
 
 
@@ -110,6 +112,8 @@ export const PAGES = {
     "WhoLikesYou": WhoLikesYou,
     "EventDetails": EventDetails,
     "CreateEvent": CreateEvent,
+    "NotFound": NotFound,
+    "Error": Error,
 }
 
 export const pagesConfig = {

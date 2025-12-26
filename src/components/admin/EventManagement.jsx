@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar, MapPin, Users, Plus, Edit2, Trash2, DollarSign } from 'lucide-react';
+import { Calendar, MapPin, Users, Plus, Edit2, Trash2, DollarSign, Bell } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function EventManagement({ events }) {
@@ -58,6 +58,16 @@ export default function EventManagement({ events }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-events']);
+    }
+  });
+
+  const sendRemindersMutation = useMutation({
+    mutationFn: async () => {
+      const response = await base44.functions.invoke('sendEventReminders', {});
+      return response.data;
+    },
+    onSuccess: (data) => {
+      alert(`Event reminders sent successfully!\n${data.remindersSent} reminders sent for ${data.eventsChecked} upcoming events.`);
     }
   });
 
@@ -130,10 +140,20 @@ export default function EventManagement({ events }) {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <Button className="w-full" onClick={() => setShowDialog(true)}>
-              <Plus size={18} className="mr-2" />
-              Create Event
-            </Button>
+            <div className="space-y-2">
+              <Button className="w-full" onClick={() => setShowDialog(true)}>
+                <Plus size={18} className="mr-2" />
+                Create Event
+              </Button>
+              <Button 
+                className="w-full bg-blue-600 hover:bg-blue-700" 
+                onClick={() => sendRemindersMutation.mutate()}
+                disabled={sendRemindersMutation.isPending}
+              >
+                <Bell size={18} className="mr-2" />
+                {sendRemindersMutation.isPending ? 'Sending...' : 'Send Event Reminders'}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -38,6 +38,19 @@ export default function VideoChat() {
   useEffect(() => {
     if (!myProfile || !matchId) return;
 
+    // Get other user's profile from match
+    const fetchMatchProfile = async () => {
+      const matches = await base44.entities.Match.filter({ id: matchId });
+      if (matches.length > 0) {
+        const match = matches[0];
+        const otherUserId = match.user1_id === myProfile.id ? match.user2_id : match.user1_id;
+        return otherUserId;
+      }
+      return null;
+    };
+
+    fetchMatchProfile();
+
     // Load Jitsi Meet External API script
     const script = document.createElement('script');
     script.src = 'https://meet.jit.si/external_api.js';
@@ -56,8 +69,20 @@ export default function VideoChat() {
     };
   }, [myProfile, matchId]);
 
-  const initializeJitsi = () => {
+  const initializeJitsi = async () => {
     if (!window.JitsiMeetExternalAPI || !jitsiContainerRef.current) return;
+
+    // Get other user ID from match
+    let otherUserId = null;
+    try {
+      const matches = await base44.entities.Match.filter({ id: matchId });
+      if (matches.length > 0) {
+        const match = matches[0];
+        otherUserId = match.user1_id === myProfile.id ? match.user2_id : match.user1_id;
+      }
+    } catch (e) {
+      console.error('Failed to get match data:', e);
+    }
 
     const domain = 'meet.jit.si';
     const options = {
@@ -90,7 +115,7 @@ export default function VideoChat() {
     base44.entities.VideoCall.create({
       match_id: matchId,
       caller_profile_id: myProfile?.id,
-      receiver_profile_id: 'other', // This should be set from match data
+      receiver_profile_id: otherUserId,
       status: 'connected',
       start_time: new Date().toISOString()
     });
@@ -107,12 +132,22 @@ export default function VideoChat() {
       ? Math.floor((endTime - callStartTime) / 1000) 
       : 0;
 
+    // Get other user ID from match
+    let otherUserId = null;
+    try {
+      const matches = await base44.entities.Match.filter({ id: matchId });
+      if (matches.length > 0) {
+        const match = matches[0];
+        otherUserId = match.user1_id === myProfile.id ? match.user2_id : match.user1_id;
+      }
+    } catch (e) {}
+
     // Log video call end
     try {
       await base44.entities.VideoCall.create({
         match_id: matchId,
         caller_profile_id: myProfile?.id,
-        receiver_profile_id: 'other',
+        receiver_profile_id: otherUserId,
         status: 'ended',
         end_time: endTime.toISOString(),
         duration_seconds: durationSeconds
