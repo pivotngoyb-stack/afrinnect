@@ -178,6 +178,7 @@ export default function Communities() {
             )}
           </TabsContent>
         </Tabs>
+        )}
 
         {isLoadingMore && (
           <div className="flex justify-center py-8">
@@ -191,7 +192,6 @@ export default function Communities() {
               Load More Communities
             </Button>
           </div>
-        )}
         )}
       </main>
     </div>
