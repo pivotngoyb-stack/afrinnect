@@ -32,11 +32,32 @@ export default function Notifications() {
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', myProfile?.id],
-    queryFn: () => base44.entities.Notification.filter(
-      { user_profile_id: myProfile.id },
-      '-created_date',
-      50
-    ),
+    queryFn: async () => {
+      const allNotifs = await base44.entities.Notification.filter(
+        { user_profile_id: myProfile.id },
+        '-created_date',
+        50
+      );
+      
+      // Sort notifications: likes/super_likes first (if premium), then matches, then messages, then others
+      const isPremium = myProfile?.subscription_tier && myProfile.subscription_tier !== 'free';
+      
+      return allNotifs.sort((a, b) => {
+        const priority = (notif) => {
+          if (isPremium && (notif.type === 'like' || notif.type === 'super_like')) return 0;
+          if (notif.type === 'match') return 1;
+          if (notif.type === 'message') return 2;
+          if (notif.type === 'admin_message') return 3;
+          return 4;
+        };
+        
+        const priorityDiff = priority(a) - priority(b);
+        if (priorityDiff !== 0) return priorityDiff;
+        
+        // Within same priority, sort by date (newest first)
+        return new Date(b.created_date) - new Date(a.created_date);
+      });
+    },
     enabled: !!myProfile
   });
 
@@ -107,7 +128,12 @@ export default function Notifications() {
                 <p className="text-gray-500">No notifications yet</p>
               </motion.div>
             ) : (
-              notifications.map((notif, idx) => (
+              notifications.map((notif, idx) => {
+                // Check if this is a like notification and user needs premium
+                const isLikeNotif = notif.type === 'like' || notif.type === 'super_like';
+                const needsPremium = isLikeNotif && (!myProfile?.subscription_tier || myProfile.subscription_tier === 'free');
+                
+                return (
                 <motion.div
                   key={notif.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -118,8 +144,8 @@ export default function Notifications() {
                   className={`p-4 rounded-xl border cursor-pointer transition-all hover:shadow-md ${
                     notif.is_read
                       ? 'bg-white border-gray-200'
-                      : 'bg-purple-50 border-purple-200'
-                  } ${notif.is_admin ? 'border-l-4 border-l-red-500' : ''}`}
+                      : isLikeNotif ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 border-2' : 'bg-purple-50 border-purple-200'
+                  } ${notif.is_admin ? 'border-l-4 border-l-red-500' : ''} ${needsPremium ? 'opacity-75' : ''}`}
                 >
                   <div className="flex items-start gap-4">
                     <div className="mt-1">{getNotificationIcon(notif.type)}</div>
@@ -127,9 +153,19 @@ export default function Notifications() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <h3 className="font-semibold text-gray-900">{notif.title}</h3>
-                          <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {needsPremium ? 'Someone special is interested in you! Upgrade to see who.' : notif.message}
+                          </p>
                           {notif.is_admin && (
                             <Badge className="mt-2 bg-red-600 text-xs">From Admin</Badge>
+                          )}
+                          {needsPremium && (
+                            <Link to={createPageUrl('PricingPlans')}>
+                              <Badge className="mt-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs cursor-pointer hover:from-amber-600 hover:to-amber-700">
+                                <Crown size={10} className="mr-1" />
+                                Upgrade to See Who
+                              </Badge>
+                            </Link>
                           )}
                         </div>
                         <button
@@ -148,7 +184,7 @@ export default function Notifications() {
                     </div>
                   </div>
                 </motion.div>
-              ))
+              )})
             )}
           </AnimatePresence>
         </div>
