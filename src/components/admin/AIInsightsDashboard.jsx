@@ -1,35 +1,73 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Brain, AlertTriangle, CheckCircle, TrendingUp, Users, MessageSquare, Shield } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Brain, AlertTriangle, CheckCircle, TrendingUp, Users, MessageSquare, Shield, Download, Filter, RefreshCw } from 'lucide-react';
 import AIRecommendations from './AIRecommendations';
+import { usePagination } from '@/components/shared/usePagination';
+import { toast } from 'sonner';
 
 export default function AIInsightsDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [severityFilter, setSeverityFilter] = useState('all');
+  const [dateRange, setDateRange] = useState('7d');
+  const [searchTerm, setSearchTerm] = useState('');
+  const queryClient = useQueryClient();
 
-  // Fetch AI-flagged content
-  const { data: flaggedMessages = [] } = useQuery({
-    queryKey: ['ai-flagged-messages'],
-    queryFn: () => base44.entities.Message.filter({ is_flagged: true }, '-created_date', 50),
-    refetchInterval: 10000
+  // Paginated queries with filters
+  const messageFilters = {
+    is_flagged: true,
+    ...(severityFilter !== 'all' ? { severity: severityFilter } : {})
+  };
+
+  const { items: flaggedMessages, loadMore: loadMoreMessages, hasMore: hasMoreMessages, isLoading: messagesLoading } = 
+    usePagination('Message', messageFilters, 25);
+
+  const { items: moderationActions, loadMore: loadMoreActions, hasMore: hasMoreActions } = 
+    usePagination('ModerationAction', { action_taken: 'pending' }, 25);
+
+  const { items: verificationRequests, loadMore: loadMoreVerifications, hasMore: hasMoreVerifications } = 
+    usePagination('VerificationRequest', { status: 'pending' }, 25);
+
+  // Auto-action mutation
+  const autoActionMutation = useMutation({
+    mutationFn: async ({ items, action }) => {
+      const results = await Promise.all(
+        items.map(item => 
+          base44.entities[item.entityType].update(item.id, { action_taken: action })
+        )
+      );
+      return results;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['ai-moderation-actions']);
+      toast.success('Bulk action completed');
+    }
   });
 
-  // Fetch moderation actions
-  const { data: moderationActions = [] } = useQuery({
-    queryKey: ['ai-moderation-actions'],
-    queryFn: () => base44.entities.ModerationAction.filter({ action_taken: 'pending' }, '-created_date', 50),
-    refetchInterval: 10000
-  });
-
-  // Fetch verification requests with AI scores
-  const { data: verificationRequests = [] } = useQuery({
-    queryKey: ['ai-verifications'],
-    queryFn: () => base44.entities.VerificationRequest.filter({ status: 'pending' }, '-created_date', 50),
-    refetchInterval: 10000
+  // Export data mutation
+  const exportMutation = useMutation({
+    mutationFn: async () => {
+      const data = {
+        flaggedMessages,
+        moderationActions,
+        verificationRequests,
+        exportDate: new Date().toISOString()
+      };
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ai-insights-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+    },
+    onSuccess: () => toast.success('Data exported successfully')
   });
 
   // Calculate insights
@@ -39,10 +77,15 @@ export default function AIInsightsDashboard() {
     ? (verificationRequests.reduce((sum, v) => sum + (v.ai_confidence_score || 0), 0) / verificationRequests.length).toFixed(1)
     : 0;
 
+  // Filtered messages based on search
+  const filteredMessages = flaggedMessages.filter(msg => 
+    searchTerm === '' || msg.content?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-purple-100 rounded-xl">
             <Brain size={28} className="text-purple-600" />
@@ -52,10 +95,69 @@ export default function AIInsightsDashboard() {
             <p className="text-gray-600">Consolidated AI-powered moderation and automation</p>
           </div>
         </div>
-        <Badge className="bg-purple-600">
-          {highPriorityAlerts} High Priority
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => queryClient.invalidateQueries()}
+            variant="outline"
+            size="sm"
+          >
+            <RefreshCw size={16} className="mr-2" />
+            Refresh
+          </Button>
+          <Button
+            onClick={() => exportMutation.mutate()}
+            variant="outline"
+            size="sm"
+          >
+            <Download size={16} className="mr-2" />
+            Export
+          </Button>
+          <Badge className="bg-purple-600">
+            {highPriorityAlerts} High Priority
+          </Badge>
+        </div>
       </div>
+
+      {/* Filters */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Filter size={16} className="text-gray-500" />
+              <span className="text-sm font-medium">Filters:</span>
+            </div>
+            <Select value={severityFilter} onValueChange={setSeverityFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Severity" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Severity</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={dateRange} onValueChange={setDateRange}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Date Range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="24h">Last 24 Hours</SelectItem>
+                <SelectItem value="7d">Last 7 Days</SelectItem>
+                <SelectItem value="30d">Last 30 Days</SelectItem>
+                <SelectItem value="all">All Time</SelectItem>
+              </SelectContent>
+            </Select>
+            <Input
+              placeholder="Search messages..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-xs"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Key Metrics */}
       <div className="grid md:grid-cols-4 gap-4">
@@ -166,7 +268,8 @@ export default function AIInsightsDashboard() {
 
         {/* Flagged Messages */}
         <TabsContent value="messages" className="space-y-4">
-          {flaggedMessages.map(msg => (
+          {messagesLoading && <p className="text-center py-4">Loading...</p>}
+          {filteredMessages.map(msg => (
             <Card key={msg.id}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
@@ -184,7 +287,14 @@ export default function AIInsightsDashboard() {
               </CardContent>
             </Card>
           ))}
-          {flaggedMessages.length === 0 && (
+          {hasMoreMessages && (
+            <div className="text-center py-4">
+              <Button onClick={() => loadMoreMessages()} variant="outline">
+                Load More Messages
+              </Button>
+            </div>
+          )}
+          {filteredMessages.length === 0 && (
             <Card>
               <CardContent className="p-12 text-center">
                 <CheckCircle size={48} className="mx-auto text-green-500 mb-4" />

@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import ScreenshotAlertNotif from '@/components/notifications/ScreenshotAlertNotif';
 import { LanguageProvider, useLanguage } from '@/components/i18n/LanguageContext';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
+import { ErrorMonitorProvider } from '@/components/shared/ErrorMonitor';
 
 const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories'];
 
@@ -173,9 +174,11 @@ function LayoutContent({ children, currentPageName }) {
 
           return (
             <ErrorBoundary>
-              <LanguageProvider>
-                <LayoutContent {...props} />
-              </LanguageProvider>
+              <ErrorMonitorProvider>
+                <LanguageProvider>
+                  <LayoutContent {...props} />
+                </LanguageProvider>
+              </ErrorMonitorProvider>
             </ErrorBoundary>
           );
-        }
+          }

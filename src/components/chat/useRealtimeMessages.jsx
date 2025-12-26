@@ -11,8 +11,18 @@ export function useRealtimeMessages(matchId, myProfileId, enabled = true) {
   useEffect(() => {
     if (!enabled || !matchId || !myProfileId) return;
 
-    // Create WebSocket connection with fallback
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    const reconnectDelay = 3000;
+    let heartbeatInterval;
+
+    // Create WebSocket connection with advanced reconnection
     const connectWebSocket = () => {
+      if (reconnectAttempts >= maxReconnectAttempts) {
+        console.error('Max reconnection attempts reached');
+        return;
+      }
+
       try {
         const wsUrl = window.location.origin.replace('http', 'ws') + '/api/functions/realtimeChat';
         const ws = new WebSocket(wsUrl);
@@ -20,6 +30,7 @@ export function useRealtimeMessages(matchId, myProfileId, enabled = true) {
         ws.onopen = () => {
           console.log('WebSocket connected');
           setIsConnected(true);
+          reconnectAttempts = 0;
           
           // Authenticate
           ws.send(JSON.stringify({
@@ -27,6 +38,13 @@ export function useRealtimeMessages(matchId, myProfileId, enabled = true) {
             userId: myProfileId,
             matchId: matchId
           }));
+
+          // Send heartbeat every 30 seconds to keep connection alive
+          heartbeatInterval = setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({ type: 'ping' }));
+            }
+          }, 30000);
         };
 
         ws.onmessage = (event) => {
@@ -63,24 +81,35 @@ export function useRealtimeMessages(matchId, myProfileId, enabled = true) {
           setIsConnected(false);
         };
 
-        ws.onclose = () => {
-          console.log('WebSocket closed, reconnecting...');
+        ws.onclose = (event) => {
+          console.log('WebSocket closed:', event.code, event.reason);
           setIsConnected(false);
-          // Reconnect after 3 seconds
-          setTimeout(connectWebSocket, 3000);
+          clearInterval(heartbeatInterval);
+          
+          // Only reconnect if it wasn't a clean close
+          if (event.code !== 1000) {
+            reconnectAttempts++;
+            const delay = Math.min(reconnectDelay * reconnectAttempts, 30000);
+            console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts})`);
+            setTimeout(connectWebSocket, delay);
+          }
         };
 
         socketRef.current = ws;
       } catch (error) {
         console.error('WebSocket connection error:', error);
+        reconnectAttempts++;
+        setTimeout(connectWebSocket, reconnectDelay);
       }
     };
 
     connectWebSocket();
 
     return () => {
+      reconnectAttempts = maxReconnectAttempts; // Prevent reconnection on unmount
+      clearInterval(heartbeatInterval);
       if (socketRef.current) {
-        socketRef.current.close();
+        socketRef.current.close(1000, 'Component unmounted');
       }
       clearTimeout(typingTimeoutRef.current);
     };

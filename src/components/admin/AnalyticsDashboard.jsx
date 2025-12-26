@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, TrendingUp, Users, Heart, DollarSign } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BarChart, TrendingUp, Users, Heart, DollarSign, Activity, MessageSquare } from 'lucide-react';
 
 export default function AnalyticsDashboard() {
+  const [timeRange, setTimeRange] = useState('30d');
+  const [metricType, setMetricType] = useState('engagement');
+
+  const daysCount = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
+
   const { data: analytics = [] } = useQuery({
-    queryKey: ['admin-analytics'],
+    queryKey: ['admin-analytics', timeRange],
     queryFn: async () => {
-      const last30Days = Array.from({ length: 30 }, (_, i) => {
+      const days = Array.from({ length: daysCount }, (_, i) => {
         const date = new Date();
         date.setDate(date.getDate() - i);
         return date.toISOString().split('T')[0];
@@ -42,8 +49,83 @@ export default function AnalyticsDashboard() {
     { views: 0, likes: 0, matches: 0 }
   );
 
+  // Real-time stats
+  const { data: realtimeStats } = useQuery({
+    queryKey: ['realtime-stats'],
+    queryFn: async () => {
+      const now = new Date();
+      const hourAgo = new Date(now - 60 * 60 * 1000);
+      
+      const activeUsers = await base44.entities.UserProfile.filter({
+        last_active: { $gte: hourAgo.toISOString() }
+      });
+
+      const recentMessages = await base44.entities.Message.filter({
+        created_date: { $gte: hourAgo.toISOString() }
+      });
+
+      return {
+        activeNow: activeUsers.length,
+        messagesLastHour: recentMessages.length
+      };
+    },
+    refetchInterval: 30000 // Update every 30 seconds
+  });
+
   return (
     <div className="space-y-6">
+      {/* Filters */}
+      <div className="flex items-center gap-4 flex-wrap">
+        <Select value={timeRange} onValueChange={setTimeRange}>
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7d">Last 7 Days</SelectItem>
+            <SelectItem value="30d">Last 30 Days</SelectItem>
+            <SelectItem value="90d">Last 90 Days</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={metricType} onValueChange={setMetricType}>
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="engagement">Engagement</SelectItem>
+            <SelectItem value="revenue">Revenue</SelectItem>
+            <SelectItem value="growth">Growth</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Real-time Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Active Now</p>
+                <p className="text-3xl font-bold">{realtimeStats?.activeNow || 0}</p>
+              </div>
+              <Activity className="text-green-600 animate-pulse" size={32} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Messages (Last Hour)</p>
+                <p className="text-3xl font-bold">{realtimeStats?.messagesLastHour || 0}</p>
+              </div>
+              <MessageSquare className="text-blue-600" size={32} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader>

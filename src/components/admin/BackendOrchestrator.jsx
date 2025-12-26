@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 
 export default function BackendOrchestrator() {
   const [jobStatuses, setJobStatuses] = useState({});
+  const [jobLogs, setJobLogs] = useState({});
   const [scheduledJobs, setScheduledJobs] = useState([
     {
       id: 'auto-verify',
@@ -19,7 +20,9 @@ export default function BackendOrchestrator() {
       enabled: true,
       lastRun: null,
       nextRun: null,
-      status: 'idle'
+      status: 'idle',
+      dependencies: [],
+      priority: 'high'
     },
     {
       id: 'analyze-patterns',
@@ -29,7 +32,9 @@ export default function BackendOrchestrator() {
       enabled: true,
       lastRun: null,
       nextRun: null,
-      status: 'idle'
+      status: 'idle',
+      dependencies: [],
+      priority: 'medium'
     },
     {
       id: 'escalate-alerts',
@@ -39,17 +44,48 @@ export default function BackendOrchestrator() {
       enabled: true,
       lastRun: null,
       nextRun: null,
-      status: 'idle'
+      status: 'idle',
+      dependencies: [],
+      priority: 'critical'
+    },
+    {
+      id: 'expire-subscriptions',
+      name: 'checkExpiredSubscriptions',
+      title: 'Subscription Expiry Check',
+      schedule: '0 0 * * *', // Daily at midnight
+      enabled: true,
+      lastRun: null,
+      nextRun: null,
+      status: 'idle',
+      dependencies: [],
+      priority: 'medium'
     }
   ]);
 
   const runJobMutation = useMutation({
     mutationFn: async (jobName) => {
       setJobStatuses(prev => ({ ...prev, [jobName]: 'running' }));
+      
+      const startTime = Date.now();
       const response = await base44.functions.invoke(jobName, {});
-      return { jobName, data: response.data };
+      const duration = Date.now() - startTime;
+      
+      // Store detailed logs
+      const log = {
+        timestamp: new Date().toISOString(),
+        duration,
+        result: response.data,
+        status: 'success'
+      };
+      
+      setJobLogs(prev => ({
+        ...prev,
+        [jobName]: [...(prev[jobName] || []).slice(-9), log] // Keep last 10 logs
+      }));
+      
+      return { jobName, data: response.data, duration };
     },
-    onSuccess: ({ jobName, data }) => {
+    onSuccess: ({ jobName, data, duration }) => {
       setJobStatuses(prev => ({ ...prev, [jobName]: 'success' }));
       
       // Update last run time
@@ -59,7 +95,7 @@ export default function BackendOrchestrator() {
           : job
       ));
 
-      toast.success(`${jobName} completed`, {
+      toast.success(`${jobName} completed in ${(duration / 1000).toFixed(2)}s`, {
         description: `Processed ${data.processed || data.analyzed || data.alerts_checked || 0} items`
       });
 
@@ -70,6 +106,19 @@ export default function BackendOrchestrator() {
     },
     onError: (error, jobName) => {
       setJobStatuses(prev => ({ ...prev, [jobName]: 'error' }));
+      
+      // Store error log
+      const errorLog = {
+        timestamp: new Date().toISOString(),
+        error: error.message,
+        status: 'error'
+      };
+      
+      setJobLogs(prev => ({
+        ...prev,
+        [jobName]: [...(prev[jobName] || []).slice(-9), errorLog]
+      }));
+      
       toast.error(`${jobName} failed`, {
         description: error.message
       });
@@ -79,6 +128,26 @@ export default function BackendOrchestrator() {
       }, 3000);
     }
   });
+
+  // Run jobs with dependency checking
+  const runWithDependencies = async (job) => {
+    if (job.dependencies.length > 0) {
+      // Check if dependencies completed successfully
+      const depStatuses = job.dependencies.map(depId => {
+        const depJob = scheduledJobs.find(j => j.id === depId);
+        return depJob?.status === 'success';
+      });
+
+      if (!depStatuses.every(Boolean)) {
+        toast.error('Dependencies not met', {
+          description: 'Required jobs must complete successfully first'
+        });
+        return;
+      }
+    }
+
+    runJobMutation.mutate(job.name);
+  };
 
   const toggleJobEnabled = (jobId) => {
     setScheduledJobs(prev => prev.map(job =>
@@ -103,7 +172,18 @@ export default function BackendOrchestrator() {
     if (cron === '*/15 * * * *') return 'Every 15 minutes';
     if (cron === '*/30 * * * *') return 'Every 30 minutes';
     if (cron === '*/5 * * * *') return 'Every 5 minutes';
+    if (cron === '0 0 * * *') return 'Daily at midnight';
     return cron;
+  };
+
+  const getPriorityBadge = (priority) => {
+    const colors = {
+      critical: 'bg-red-600',
+      high: 'bg-orange-600',
+      medium: 'bg-blue-600',
+      low: 'bg-gray-600'
+    };
+    return <Badge className={colors[priority]}>{priority}</Badge>;
   };
 
   return (
@@ -137,7 +217,7 @@ export default function BackendOrchestrator() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Job Details */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <p className="text-gray-600">Schedule</p>
                     <p className="font-medium">{formatSchedule(job.schedule)}</p>
@@ -148,12 +228,34 @@ export default function BackendOrchestrator() {
                       {job.lastRun ? new Date(job.lastRun).toLocaleTimeString() : 'Never'}
                     </p>
                   </div>
+                  <div>
+                    <p className="text-gray-600">Priority</p>
+                    {getPriorityBadge(job.priority)}
+                  </div>
                 </div>
+
+                {/* Job Logs */}
+                {jobLogs[job.name]?.length > 0 && (
+                  <div className="bg-gray-50 rounded-lg p-3 max-h-32 overflow-y-auto">
+                    <p className="text-xs font-medium text-gray-700 mb-2">Recent Logs:</p>
+                    {jobLogs[job.name].slice(-3).reverse().map((log, idx) => (
+                      <div key={idx} className="text-xs text-gray-600 mb-1">
+                        <span className={log.status === 'success' ? 'text-green-600' : 'text-red-600'}>
+                          {log.status === 'success' ? '✓' : '✗'}
+                        </span>
+                        {' '}
+                        {new Date(log.timestamp).toLocaleTimeString()}
+                        {log.duration && ` (${(log.duration / 1000).toFixed(2)}s)`}
+                        {log.error && ` - ${log.error}`}
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Controls */}
                 <div className="flex items-center gap-3">
                   <Button
-                    onClick={() => runJobMutation.mutate(job.name)}
+                    onClick={() => runWithDependencies(job)}
                     disabled={currentStatus === 'running' || !job.enabled}
                     size="sm"
                     className="flex-1"
