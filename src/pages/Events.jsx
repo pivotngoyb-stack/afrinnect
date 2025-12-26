@@ -119,11 +119,26 @@ export default function Events() {
     return true;
   });
 
+  const canCreateEvent = myProfile && (
+    myProfile.subscription_tier && myProfile.subscription_tier !== 'free' ||
+    myProfile.verification_status?.photo_verified
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 pb-24">
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Community Events</h1>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold text-gray-900">Community Events</h1>
+            {canCreateEvent && (
+              <Link to={createPageUrl('CreateEvent')}>
+                <Button className="bg-gradient-to-r from-purple-600 to-purple-700">
+                  <Calendar size={18} className="mr-2" />
+                  Create Event
+                </Button>
+              </Link>
+            )}
+          </div>
           
           {/* Search */}
           <div className="relative mb-4">
@@ -206,78 +221,83 @@ export default function Events() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                    {event.image_url && (
-                      <LazyImage
-                        src={event.image_url}
-                        alt={event.title}
-                        className="w-full h-48 object-cover"
-                      />
-                    )}
-                    <CardHeader>
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <Badge className="bg-purple-100 text-purple-700">
-                          {event.event_type.replace('_', ' ')}
-                        </Badge>
-                        {event.is_featured && (
-                          <Badge className="bg-amber-500">Featured</Badge>
-                        )}
-                      </div>
-                      <CardTitle>{event.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                        {event.description}
-                      </p>
-
-                      <div className="space-y-2 text-sm text-gray-700 mb-4">
-                        <div className="flex items-center gap-2">
-                          <Clock size={16} className="text-gray-400" />
-                          <span>{format(new Date(event.start_date), 'PPp')}</span>
+                  <Link to={createPageUrl(`EventDetails?id=${event.id}`)}>
+                    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                      {event.image_url && (
+                        <LazyImage
+                          src={event.image_url}
+                          alt={event.title}
+                          className="w-full h-48 object-cover"
+                        />
+                      )}
+                      <CardHeader>
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <Badge className="bg-purple-100 text-purple-700">
+                            {event.event_type.replace('_', ' ')}
+                          </Badge>
+                          {event.is_featured && (
+                            <Badge className="bg-amber-500">Featured</Badge>
+                          )}
                         </div>
-                        
-                        {event.is_virtual ? (
+                        <CardTitle>{event.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                          {event.description}
+                        </p>
+
+                        <div className="space-y-2 text-sm text-gray-700 mb-4">
                           <div className="flex items-center gap-2">
-                            <Globe size={16} className="text-gray-400" />
-                            <span>Virtual Event</span>
+                            <Clock size={16} className="text-gray-400" />
+                            <span>{format(new Date(event.start_date), 'PPp')}</span>
                           </div>
-                        ) : (
+                          
+                          {event.is_virtual ? (
+                            <div className="flex items-center gap-2">
+                              <Globe size={16} className="text-gray-400" />
+                              <span>Virtual Event</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <MapPin size={16} className="text-gray-400" />
+                              <span className="line-clamp-1">
+                                {event.location_name}, {event.city}
+                              </span>
+                            </div>
+                          )}
+
                           <div className="flex items-center gap-2">
-                            <MapPin size={16} className="text-gray-400" />
-                            <span className="line-clamp-1">
-                              {event.location_name}, {event.city}
+                            <Users size={16} className="text-gray-400" />
+                            <span>
+                              {event.attendees?.length || 0}
+                              {event.max_attendees && ` / ${event.max_attendees}`} attending
                             </span>
                           </div>
+                        </div>
+
+                        {event.price > 0 && (
+                          <p className="text-lg font-bold text-purple-600 mb-4">
+                            ${event.price} {event.currency}
+                          </p>
                         )}
 
-                        <div className="flex items-center gap-2">
-                          <Users size={16} className="text-gray-400" />
-                          <span>
-                            {event.attendees?.length || 0}
-                            {event.max_attendees && ` / ${event.max_attendees}`} attending
-                          </span>
-                        </div>
-                      </div>
-
-                      {event.price > 0 && (
-                        <p className="text-lg font-bold text-purple-600 mb-4">
-                          ${event.price} {event.currency}
-                        </p>
-                      )}
-
-                      <Button
-                        onClick={() => joinEventMutation.mutate(event.id)}
-                        disabled={isAttending || isFull || joinEventMutation.isPending}
-                        className={`w-full ${
-                          isAttending
-                            ? 'bg-green-600 hover:bg-green-700'
-                            : 'bg-purple-600 hover:bg-purple-700'
-                        }`}
-                      >
-                        {isAttending ? '✓ Attending' : isFull ? 'Event Full' : 'Join Event'}
-                      </Button>
-                    </CardContent>
-                  </Card>
+                        <Button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            joinEventMutation.mutate(event.id);
+                          }}
+                          disabled={isAttending || isFull || joinEventMutation.isPending}
+                          className={`w-full ${
+                            isAttending
+                              ? 'bg-green-600 hover:bg-green-700'
+                              : 'bg-purple-600 hover:bg-purple-700'
+                          }`}
+                        >
+                          {isAttending ? '✓ Attending' : isFull ? 'Event Full' : 'View Details'}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 </motion.div>
               );
             })}
