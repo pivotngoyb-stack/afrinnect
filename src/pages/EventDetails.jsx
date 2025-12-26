@@ -323,15 +323,11 @@ export default function EventDetails() {
             <div className="max-w-4xl mx-auto">
               {isAttending ? (
                 <div className="space-y-2">
-                  <Button
-                    onClick={() => rsvpMutation.mutate({ attending: false })}
-                    disabled={rsvpMutation.isPending}
-                    variant="outline"
-                    className="w-full py-6 text-lg border-purple-600 text-purple-600 hover:bg-purple-50"
-                  >
-                    <UserCheck size={20} className="mr-2" />
-                    You're Attending • Cancel RSVP
-                  </Button>
+                  <Link to={createPageUrl(`EventChat?id=${event.id}`)}>
+                    <Button className="w-full py-6 text-lg bg-purple-600 hover:bg-purple-700">
+                      Join Event Chat
+                    </Button>
+                  </Link>
                   {event.virtual_link && (
                     <Button
                       onClick={() => window.open(event.virtual_link, '_blank')}
@@ -341,6 +337,14 @@ export default function EventDetails() {
                       Join Event Now
                     </Button>
                   )}
+                  <Button
+                    onClick={() => rsvpMutation.mutate({ attending: false })}
+                    disabled={rsvpMutation.isPending}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Cancel RSVP
+                  </Button>
                 </div>
               ) : (
                 <Button
