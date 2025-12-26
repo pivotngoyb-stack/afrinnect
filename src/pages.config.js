@@ -1,6 +1,7 @@
 import AdminDashboard from './pages/AdminDashboard';
 import Analytics from './pages/Analytics';
 import BackgroundCheckRequest from './pages/BackgroundCheckRequest';
+import BlockedUsers from './pages/BlockedUsers';
 import BoostProfile from './pages/BoostProfile';
 import Chat from './pages/Chat';
 import Communities from './pages/Communities';
@@ -42,14 +43,13 @@ import Support from './pages/Support';
 import SupportChat from './pages/SupportChat';
 import Terms from './pages/Terms';
 import TravelMode from './pages/TravelMode';
+import VendorManagement from './pages/VendorManagement';
 import VerifyPhoto from './pages/VerifyPhoto';
 import VideoChat from './pages/VideoChat';
 import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import WeddingMarketplace from './pages/WeddingMarketplace';
 import WhoLikesYou from './pages/WhoLikesYou';
-import BlockedUsers from './pages/BlockedUsers';
-import VendorManagement from './pages/VendorManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -57,6 +57,7 @@ export const PAGES = {
     "AdminDashboard": AdminDashboard,
     "Analytics": Analytics,
     "BackgroundCheckRequest": BackgroundCheckRequest,
+    "BlockedUsers": BlockedUsers,
     "BoostProfile": BoostProfile,
     "Chat": Chat,
     "Communities": Communities,
@@ -98,14 +99,13 @@ export const PAGES = {
     "SupportChat": SupportChat,
     "Terms": Terms,
     "TravelMode": TravelMode,
+    "VendorManagement": VendorManagement,
     "VerifyPhoto": VerifyPhoto,
     "VideoChat": VideoChat,
     "VideoEvents": VideoEvents,
     "VirtualGifts": VirtualGifts,
     "WeddingMarketplace": WeddingMarketplace,
     "WhoLikesYou": WhoLikesYou,
-    "BlockedUsers": BlockedUsers,
-    "VendorManagement": VendorManagement,
 }
 
 export const pagesConfig = {

@@ -14,6 +14,8 @@ import { useConversionTracker, CONVERSION_EVENTS, trackRevenue } from '@/compone
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AfricanPattern from '@/components/shared/AfricanPattern';
+import BraintreeDropIn from '@/components/payment/BraintreeDropIn';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const PRICING_TIERS = {
   free: {
@@ -90,6 +92,7 @@ export default function PricingPlans() {
   const [selectedBilling, setSelectedBilling] = useState('yearly');
   const [myProfile, setMyProfile] = useState(null);
   const [userCountry, setUserCountry] = useState(null);
+  const [showPayment, setShowPayment] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -113,170 +116,19 @@ export default function PricingPlans() {
   const isAfricanCountry = userCountry && ['Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco'].includes(userCountry);
   const regionalDiscount = isAfricanCountry ? 0.5 : 1; // 50% off for African countries
 
-  const subscribeMutation = useMutation({
-    mutationFn: async () => {
-      const tier = PRICING_TIERS[selectedTier];
-      const priceInfo = tier.prices[selectedBilling];
-      const finalPrice = priceInfo.total * regionalDiscount;
+  const handlePaymentSuccess = (data) => {
+    trackRevenue(price.total * regionalDiscount, 'USD', `${selectedTier}_subscription`, myProfile.id);
+    trackEvent(CONVERSION_EVENTS.PREMIUM_PURCHASE, {
+      tier: selectedTier,
+      billing: selectedBilling,
+      amount: price.total * regionalDiscount
+    });
+    window.location.href = createPageUrl('Home');
+  };
 
-      trackEvent(CONVERSION_EVENTS.PREMIUM_CLICK, {
-        tier: selectedTier,
-        billing: selectedBilling,
-        price: finalPrice
-      });
-
-      const endDate = new Date();
-      if (selectedBilling === 'yearly') endDate.setFullYear(endDate.getFullYear() + 1);
-      else if (selectedBilling === 'quarterly') endDate.setMonth(endDate.getMonth() + 3);
-      else if (selectedBilling === '6months') endDate.setMonth(endDate.getMonth() + 6);
-      else endDate.setMonth(endDate.getMonth() + 1);
-
-      const purchaseDate = new Date().toISOString();
-      const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-
-      // Get user for receipt
-      const user = await base44.auth.me();
-
-      // Create subscription
-      await base44.entities.Subscription.create({
-        user_profile_id: myProfile.id,
-        plan_type: `${selectedTier}_${selectedBilling}`,
-        status: 'active',
-        start_date: purchaseDate,
-        end_date: endDate.toISOString(),
-        amount_paid: finalPrice,
-        currency: 'USD',
-        payment_provider: 'manual',
-        boosts_remaining: selectedTier === 'elite' || selectedTier === 'vip' ? 999 : 5,
-        super_likes_remaining: 999,
-        auto_renew: true,
-        regional_pricing: isAfricanCountry,
-        external_id: transactionId
-      });
-
-      // Update profile
-      await base44.entities.UserProfile.update(myProfile.id, {
-        is_premium: true,
-        subscription_tier: selectedTier,
-        premium_until: endDate.toISOString()
-      });
-
-      // Create receipt record
-      await base44.entities.Receipt.create({
-        transaction_id: transactionId,
-        user_profile_id: myProfile.id,
-        plan_name: tier.name,
-        billing_period: selectedBilling,
-        amount_paid: finalPrice,
-        currency: 'USD',
-        regional_discount: isAfricanCountry,
-        payment_provider: 'manual',
-        customer_email: user.email,
-        customer_name: myProfile.display_name,
-        purchase_date: purchaseDate,
-        subscription_start_date: purchaseDate,
-        subscription_end_date: endDate.toISOString(),
-        receipt_sent: false
-      });
-
-      // Send receipt email
-      const receiptHTML = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
-          <div style="background: linear-gradient(135deg, #7c3aed 0%, #f59e0b 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Afrinnect</h1>
-            <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Payment Receipt</p>
-          </div>
-          
-          <div style="background: white; padding: 30px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <h2 style="color: #1f2937; margin-top: 0;">Thank you for your purchase!</h2>
-            <p style="color: #6b7280; margin-bottom: 30px;">Your ${tier.name} subscription is now active.</p>
-            
-            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 10px 0; color: #6b7280; font-weight: 500;">Transaction ID:</td>
-                  <td style="padding: 10px 0; color: #1f2937; text-align: right; font-family: monospace;">${transactionId}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px 0; color: #6b7280; font-weight: 500;">Date:</td>
-                  <td style="padding: 10px 0; color: #1f2937; text-align: right;">${new Date(purchaseDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px 0; color: #6b7280; font-weight: 500;">Customer:</td>
-                  <td style="padding: 10px 0; color: #1f2937; text-align: right;">${myProfile.display_name}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px 0; color: #6b7280; font-weight: 500;">Email:</td>
-                  <td style="padding: 10px 0; color: #1f2937; text-align: right;">${user.email}</td>
-                </tr>
-              </table>
-            </div>
-            
-            <div style="border-top: 2px solid #e5e7eb; padding-top: 20px; margin-bottom: 25px;">
-              <h3 style="color: #1f2937; margin-top: 0;">Subscription Details</h3>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 10px 0; color: #6b7280;">Plan:</td>
-                  <td style="padding: 10px 0; color: #1f2937; text-align: right; font-weight: 600;">${tier.name} (${selectedBilling.replace('6months', '6 Months').replace(/^\w/, c => c.toUpperCase())})</td>
-                </tr>
-                <tr>
-                  <td style="padding: 10px 0; color: #6b7280;">Billing Period:</td>
-                  <td style="padding: 10px 0; color: #1f2937; text-align: right;">${new Date(purchaseDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}</td>
-                </tr>
-                ${isAfricanCountry ? `
-                <tr>
-                  <td style="padding: 10px 0; color: #6b7280;">Regional Discount:</td>
-                  <td style="padding: 10px 0; color: #10b981; text-align: right; font-weight: 600;">50% OFF</td>
-                </tr>
-                ` : ''}
-              </table>
-            </div>
-            
-            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 10px 0; color: #6b7280; font-size: 18px; font-weight: 600;">Total Paid:</td>
-                  <td style="padding: 10px 0; color: #7c3aed; text-align: right; font-size: 24px; font-weight: bold;">$${finalPrice.toFixed(2)} USD</td>
-                </tr>
-              </table>
-            </div>
-            
-            <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 4px; margin-bottom: 25px;">
-              <p style="margin: 0; color: #1e40af; font-size: 14px;"><strong>Note:</strong> Your subscription will auto-renew on ${new Date(endDate).toLocaleDateString()}. You can manage your subscription in Settings.</p>
-            </div>
-            
-            <div style="text-align: center; padding-top: 20px; border-top: 2px solid #e5e7eb;">
-              <p style="color: #6b7280; margin: 0; font-size: 14px;">Questions? Contact us at support@afrinnect.com</p>
-              <p style="color: #9ca3af; margin: 10px 0 0 0; font-size: 12px;">© ${new Date().getFullYear()} Afrinnect. All rights reserved.</p>
-            </div>
-          </div>
-        </div>
-      `;
-
-      await base44.integrations.Core.SendEmail({
-        to: user.email,
-        subject: `Receipt for Your ${tier.name} Subscription - Afrinnect`,
-        body: receiptHTML
-      });
-
-      // Mark receipt as sent
-      const receipts = await base44.entities.Receipt.filter({ transaction_id: transactionId });
-      if (receipts.length > 0) {
-        await base44.entities.Receipt.update(receipts[0].id, { receipt_sent: true });
-      }
-
-      // Track revenue
-      trackRevenue(finalPrice, 'USD', `${selectedTier}_subscription`, myProfile.id);
-      trackEvent(CONVERSION_EVENTS.PREMIUM_PURCHASE, {
-        tier: selectedTier,
-        billing: selectedBilling,
-        amount: finalPrice
-      });
-    },
-    onSuccess: () => {
-      window.location.href = createPageUrl('Home');
-    }
-  });
+  const handlePaymentError = (error) => {
+    alert(`Payment failed: ${error}`);
+  };
 
   const currentTier = PRICING_TIERS[selectedTier];
   const price = currentTier?.prices?.[selectedBilling];
@@ -412,13 +264,18 @@ export default function PricingPlans() {
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t shadow-lg p-4 pb-24 z-50 safe-area-inset-bottom">
         <div className="max-w-lg mx-auto">
           <Button
-            onClick={() => subscribeMutation.mutate()}
-            disabled={subscribeMutation.isPending || !myProfile}
+            onClick={() => {
+              trackEvent(CONVERSION_EVENTS.PREMIUM_CLICK, {
+                tier: selectedTier,
+                billing: selectedBilling,
+                price: price.total * regionalDiscount
+              });
+              setShowPayment(true);
+            }}
+            disabled={!myProfile}
             className="w-full py-6 text-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-xl"
           >
-            {subscribeMutation.isPending ? (
-              'Processing...'
-            ) : !myProfile ? (
+            {!myProfile ? (
               'Please log in to subscribe'
             ) : price ? (
               <>
@@ -429,10 +286,27 @@ export default function PricingPlans() {
             )}
           </Button>
           <p className="text-center text-xs text-gray-500 mt-2">
-            {myProfile ? 'Cancel anytime • No hidden fees' : 'Sign in required'}
+            {myProfile ? 'Secure payment via Braintree • Cancel anytime' : 'Sign in required'}
           </p>
         </div>
       </div>
+
+      {/* Payment Dialog */}
+      <Dialog open={showPayment} onOpenChange={setShowPayment}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Complete Your Purchase</DialogTitle>
+          </DialogHeader>
+          <BraintreeDropIn
+            amount={(price?.total || 0) * regionalDiscount}
+            planName={currentTier.name}
+            billingPeriod={selectedBilling}
+            tier={selectedTier}
+            onSuccess={handlePaymentSuccess}
+            onError={handlePaymentError}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
