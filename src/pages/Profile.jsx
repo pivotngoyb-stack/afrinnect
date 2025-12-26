@@ -536,6 +536,13 @@ export default function Profile() {
               </Button>
             </Link>
 
+            <Link to={createPageUrl('ReferralDashboard')}>
+              <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" size="lg">
+                <Users size={18} className="mr-2" />
+                Referral Dashboard
+              </Button>
+            </Link>
+
             <Link to={createPageUrl('SafetyCheckMonitor')}>
               <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
                 <Shield size={18} className="mr-2" />
