@@ -16,6 +16,9 @@ import IceBreakerPrompts from '@/components/chat/IceBreakerPrompts';
 import { AnimatePresence } from 'framer-motion';
 import TypingIndicator from '@/components/shared/TypingIndicator';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
+import { useOptimisticUpdate } from '@/components/shared/useOptimisticUpdate';
+import { sanitizeHTML, validateInput, rateLimiter } from '@/components/shared/InputSanitizer';
+import { useInfinitePagination } from '@/components/shared/useInfinitePagination';
 import SafetyCheckSetup from '@/components/safety/SafetyCheckSetup';
 import VirtualList from '@/components/shared/VirtualList';
 import OptimizedImage from '@/components/shared/OptimizedImage';
@@ -107,13 +110,18 @@ export default function Chat() {
     enabled: !!matchId && !!myProfile
   });
 
-  // Fetch messages - optimized with limit and caching
-  const { data: messages = [] } = useQuery({
-    queryKey: ['messages', matchId],
-    queryFn: () => base44.entities.Message.filter({ match_id: matchId }, 'created_date', 100),
+  // Fetch messages with infinite scroll
+  const { 
+    items: messages, 
+    loadMore: loadMoreMessages, 
+    hasMore: hasMoreMessages,
+    isLoadingMore: isLoadingMoreMessages,
+    isLoading: messagesLoading 
+  } = useInfinitePagination('Message', { match_id: matchId }, {
+    pageSize: 30,
+    sortBy: '-created_date',
     enabled: !!matchId,
-    refetchInterval: isConnected ? 30000 : 5000, // Longer interval if WebSocket connected
-    staleTime: 2000
+    refetchInterval: isConnected ? 60000 : 10000
   });
 
   // Scroll to bottom - optimized
@@ -141,9 +149,26 @@ export default function Chat() {
     }
   }, [messages.length, myProfile?.id]); // Only trigger on relevant changes
 
-  // Send message mutation
-  const sendMessageMutation = useMutation({
-    mutationFn: async ({ content, type = 'text', mediaUrl = null }) => {
+  // Send message with optimistic update
+  const sendMessageMutation = useOptimisticUpdate(
+    ['messages', matchId],
+    async ({ content, type = 'text', mediaUrl = null }) => {
+      // Rate limiting
+      if (!rateLimiter('chat_message', 10, 60000)) {
+        throw new Error('Too many messages. Please slow down.');
+      }
+
+      // Input validation
+      if (!validateInput.length(content, 1, 5000)) {
+        throw new Error('Message must be between 1 and 5000 characters');
+      }
+
+      if (!validateInput.noSpam(content)) {
+        throw new Error('Message appears to be spam');
+      }
+
+      // Sanitize content
+      const sanitizedContent = sanitizeHTML(content);
       // Check message limit for free users (3 messages per match)
       const tier = myProfile?.subscription_tier || 'free';
       if (tier === 'free') {
@@ -186,7 +211,7 @@ export default function Chat() {
         match_id: matchId,
         sender_id: myProfile.id,
         receiver_id: otherProfile.id,
-        content,
+        content: sanitizedContent,
         message_type: type,
         media_url: mediaUrl,
         is_read: false,
@@ -218,12 +243,18 @@ export default function Chat() {
 
       // Notify via WebSocket
       notifyNewMessage(message);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['messages', matchId]);
+      
+      return message;
+    }
+  );
+
+  // Handle optimistic update success/error
+  useEffect(() => {
+    if (sendMessageMutation.isSuccess) {
       setMessageText('');
-    },
-    onError: (error) => {
+    }
+    if (sendMessageMutation.isError) {
+      const error = sendMessageMutation.error;
       if (error.message === 'upgrade_required') {
         setUpgradeFeature('Unlimited Messaging');
         setShowUpgradePrompt(true);
@@ -231,7 +262,7 @@ export default function Chat() {
         alert(error.message);
       }
     }
-  });
+  }, [sendMessageMutation.isSuccess, sendMessageMutation.isError]);
 
   // Voice note mutation
   const sendVoiceNoteMutation = useMutation({
@@ -330,7 +361,24 @@ export default function Chat() {
 
   const handleSend = () => {
     if (!messageText.trim()) return;
-    sendMessageMutation.mutate({ content: messageText });
+    
+    // Create optimistic message
+    const optimisticMessage = {
+      id: `temp-${Date.now()}`,
+      match_id: matchId,
+      sender_id: myProfile.id,
+      receiver_id: otherProfile.id,
+      content: messageText,
+      message_type: 'text',
+      is_read: false,
+      created_date: new Date().toISOString(),
+      __optimistic: true
+    };
+    
+    sendMessageMutation.mutate({ 
+      content: messageText,
+      optimisticUpdate: [...messages, optimisticMessage]
+    });
   };
 
   const handleImageSelect = (e) => {
@@ -425,7 +473,24 @@ export default function Chat() {
 
       {/* Messages - optimized rendering */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4" id="messages-container">
-        {messages.length === 0 && (
+        {hasMoreMessages && !isLoadingMoreMessages && (
+          <div className="text-center py-2">
+            <button
+              onClick={loadMoreMessages}
+              className="text-sm text-purple-600 hover:underline"
+            >
+              Load older messages
+            </button>
+          </div>
+        )}
+
+        {isLoadingMoreMessages && (
+          <div className="text-center py-2">
+            <div className="animate-spin inline-block w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full" />
+          </div>
+        )}
+
+        {messages.length === 0 && !messagesLoading && (
           <div className="flex flex-col items-center justify-center h-full text-center py-12">
             <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mb-4">
               <Sparkles size={32} className="text-purple-600" />
@@ -446,8 +511,13 @@ export default function Chat() {
         
         {messages.map(msg => {
           const isMine = msg.sender_id === myProfile?.id;
+          const isOptimistic = msg.__optimistic;
+
           return (
-            <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+            <div 
+              key={msg.id} 
+              className={`flex ${isMine ? 'justify-end' : 'justify-start'} ${isOptimistic ? 'opacity-60' : ''}`}
+            >
               <div className={`max-w-xs md:max-w-md ${isMine ? 'bg-purple-600 text-white' : 'bg-white'} rounded-2xl px-4 py-2 shadow`}>
                 {msg.message_type === 'voice_note' ? (
                   <audio controls src={msg.media_url} className="w-full" preload="metadata" />

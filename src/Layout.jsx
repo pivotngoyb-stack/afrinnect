@@ -9,6 +9,7 @@ import ScreenshotAlertNotif from '@/components/notifications/ScreenshotAlertNoti
 import { LanguageProvider, useLanguage } from '@/components/i18n/LanguageContext';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { ErrorMonitorProvider } from '@/components/shared/ErrorMonitor';
+import OfflineIndicator from '@/components/shared/OfflineIndicator';
 
 const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories'];
 
@@ -76,8 +77,10 @@ function LayoutContent({ children, currentPageName }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <style>{`
+    <>
+      <OfflineIndicator />
+      <div className="min-h-screen bg-gray-50">
+        <style>{`
         :root {
           --color-primary: #7c3aed;
           --color-primary-dark: #6d28d9;
@@ -159,6 +162,7 @@ function LayoutContent({ children, currentPageName }) {
         </nav>
         )}
         </div>
+        </>
         );
         }
 

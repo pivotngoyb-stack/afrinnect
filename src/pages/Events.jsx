@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfinitePagination } from '@/components/shared/useInfinitePagination';
+import PullToRefresh from '@/components/shared/PullToRefresh';
+import LazyImage from '@/components/shared/LazyImage';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -36,34 +39,52 @@ export default function Events() {
     fetchProfile();
   }, []);
 
-  const { data: events = [], isLoading } = useQuery({
-    queryKey: ['events', eventType, location, timeFilter],
-    queryFn: async () => {
-      let query = {};
-      
-      if (eventType !== 'all') {
-        query.event_type = eventType;
-      }
-      
-      if (location !== 'all' && myProfile) {
-        query.country = myProfile.current_country;
-      }
+  // Build filters for server-side filtering
+  const buildFilters = () => {
+    const now = new Date().toISOString();
+    let query = {};
+    
+    if (eventType !== 'all') {
+      query.event_type = eventType;
+    }
+    
+    if (location !== 'all' && myProfile) {
+      query.country = myProfile.current_country;
+    }
 
-      const allEvents = await base44.entities.Event.filter(query, '-start_date', 100);
-      
-      const now = new Date();
-      return allEvents.filter(event => {
-        const eventDate = new Date(event.start_date);
-        if (timeFilter === 'upcoming') {
-          return eventDate >= now;
-        } else if (timeFilter === 'past') {
-          return eventDate < now;
-        }
-        return true;
-      });
-    },
+    if (timeFilter === 'upcoming') {
+      query.start_date = { $gte: now };
+    } else if (timeFilter === 'past') {
+      query.start_date = { $lt: now };
+    }
+
+    return query;
+  };
+
+  const { 
+    items: events, 
+    loadMore, 
+    hasMore, 
+    isLoadingMore, 
+    isLoading,
+    refetch 
+  } = useInfinitePagination('Event', buildFilters(), {
+    pageSize: 20,
+    sortBy: timeFilter === 'past' ? '-start_date' : 'start_date',
     enabled: !!myProfile
   });
+
+  const observerRef = useRef();
+  const lastEventRef = useCallback(node => {
+    if (isLoadingMore) return;
+    if (observerRef.current) observerRef.current.disconnect();
+    observerRef.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMore();
+      }
+    });
+    if (node) observerRef.current.observe(node);
+  }, [isLoadingMore, hasMore, loadMore]);
 
   const joinEventMutation = useMutation({
     mutationFn: async (eventId) => {
@@ -150,6 +171,7 @@ export default function Events() {
         </div>
       </header>
 
+      <PullToRefresh onRefresh={refetch}>
       <main className="max-w-7xl mx-auto px-4 py-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
@@ -162,19 +184,20 @@ export default function Events() {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEvents.map(event => {
+            {filteredEvents.map((event, idx) => {
               const isAttending = event.attendees?.includes(myProfile?.id);
               const isFull = event.max_attendees && event.attendees?.length >= event.max_attendees;
 
               return (
                 <motion.div
                   key={event.id}
+                  ref={idx === filteredEvents.length - 1 ? lastEventRef : null}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
                   <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                     {event.image_url && (
-                      <img
+                      <LazyImage
                         src={event.image_url}
                         alt={event.title}
                         className="w-full h-48 object-cover"
@@ -248,8 +271,19 @@ export default function Events() {
               );
             })}
           </div>
+          
+          {isLoadingMore && (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-4 border-purple-600 border-t-transparent" />
+            </div>
+          )}
+
+          {!hasMore && events.length > 0 && (
+            <p className="text-center text-gray-500 py-8">No more events</p>
+          )}
         )}
       </main>
+      </PullToRefresh>
     </div>
   );
 }

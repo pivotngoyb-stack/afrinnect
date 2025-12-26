@@ -76,8 +76,14 @@ Deno.serve(async (req) => {
           });
         }
 
+        // Handle ping (heartbeat)
+        if (data.type === 'ping') {
+          socket.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
+        }
+
       } catch (error) {
         console.error('WebSocket message error:', error);
+        socket.send(JSON.stringify({ type: 'error', message: 'Invalid message format' }));
       }
     };
 

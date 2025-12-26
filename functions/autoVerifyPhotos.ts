@@ -4,6 +4,22 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    const executeWithRetry = async (fn) => {
+      while (retryCount < maxRetries) {
+        try {
+          return await fn();
+        } catch (error) {
+          retryCount++;
+          if (retryCount >= maxRetries) throw error;
+          // Exponential backoff
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+        }
+      }
+    };
+    
     // Get all pending verification requests
     const pendingVerifications = await base44.asServiceRole.entities.VerificationRequest.filter({
       status: 'pending',
@@ -23,7 +39,8 @@ Deno.serve(async (req) => {
 
       // AI verification for photo verification
       if (verification.verification_type === 'photo') {
-        const aiAnalysis = await base44.integrations.Core.InvokeLLM({
+        const aiAnalysis = await executeWithRetry(() => 
+          base44.integrations.Core.InvokeLLM({
           prompt: `You are a photo verification AI. Analyze if this selfie matches the profile photos. 
           Profile photos: ${profile.photos?.join(', ') || 'None'}
           Verification selfie: ${verification.submitted_photo_url}
@@ -45,7 +62,7 @@ Deno.serve(async (req) => {
             }
           },
           file_urls: [verification.submitted_photo_url, ...(profile.photos || []).slice(0, 2)]
-        });
+        }));
 
         // Auto-approve if high confidence (85+)
         if (aiAnalysis.confidence_score >= 85 && aiAnalysis.is_verified) {

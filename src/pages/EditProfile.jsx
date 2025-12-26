@@ -17,6 +17,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import PhotoReorderModal from '@/components/home/PhotoReorderModal';
+import EditProfilePhotos from '@/components/profile/EditProfilePhotos';
+import EditProfileBasicInfo from '@/components/profile/EditProfileBasicInfo';
+import { useDebounce } from '@/components/shared/useDebounce';
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
@@ -189,9 +192,22 @@ export default function EditProfile() {
     }
   };
 
-  const handlePhotoUpload = async (e) => {
+  // Debounce photo upload to prevent multiple rapid uploads
+  const handlePhotoUpload = useDebounce(async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Photo must be less than 5MB');
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file');
+      return;
+    }
 
     setUploading(true);
     try {
@@ -204,10 +220,11 @@ export default function EditProfile() {
       });
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Upload failed');
+      alert('Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
-  };
+  }, 500);
 
   const removePhoto = (index) => {
     const newPhotos = formData.photos.filter((_, i) => i !== index);
@@ -316,111 +333,15 @@ export default function EditProfile() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <Card className="overflow-hidden border-0 shadow-xl bg-white/80 backdrop-blur">
-            <div className="bg-gradient-to-r from-purple-600 to-amber-600 p-6">
-              <div className="flex items-center gap-3 text-white">
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur">
-                  <Camera size={24} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">Your Photos</h2>
-                  <p className="text-sm text-white/80">Add up to 6 photos • Set one as primary</p>
-                </div>
-              </div>
-            </div>
-            
-            <CardContent className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <AnimatePresence>
-                  {formData.photos?.map((photo, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      className="relative aspect-[3/4] rounded-2xl overflow-hidden group shadow-lg"
-                    >
-                      <img src={photo} alt="" className="w-full h-full object-cover" />
-                      
-                      {/* Overlay */}
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => setPrimaryPhoto(photo)}
-                          className="rounded-full"
-                        >
-                          <Sparkles size={14} className="mr-1" />
-                          Primary
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => removePhoto(idx)}
-                          className="rounded-full"
-                        >
-                          <X size={14} />
-                        </Button>
-                      </div>
-                      
-                      {/* Primary Badge */}
-                      {photo === formData.primary_photo && (
-                        <Badge className="absolute top-3 left-3 bg-amber-500 text-white border-0 shadow-lg">
-                          <Sparkles size={12} className="mr-1" />
-                          Primary
-                        </Badge>
-                      )}
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-                
-                {/* Upload Button */}
-                {(formData.photos?.length || 0) < 6 && (
-                  <motion.label
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="aspect-[3/4] rounded-2xl border-3 border-dashed border-purple-300 bg-purple-50/50 hover:bg-purple-100/50 flex flex-col items-center justify-center cursor-pointer transition-all group"
-                  >
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handlePhotoUpload} 
-                      className="hidden" 
-                      disabled={uploading} 
-                    />
-                    {uploading ? (
-                      <Loader2 className="animate-spin text-purple-600" size={32} />
-                    ) : (
-                      <>
-                        <div className="p-4 bg-purple-200 rounded-full mb-3 group-hover:scale-110 transition-transform">
-                          <Camera size={28} className="text-purple-600" />
-                        </div>
-                        <span className="text-sm font-medium text-purple-700">Add Photo</span>
-                      </>
-                    )}
-                  </motion.label>
-                )}
-              </div>
-              
-              {formData.photos?.length === 0 && (
-                <p className="text-center text-gray-500 text-sm mt-4">
-                  ✨ Add at least 3 photos to stand out and get more matches
-                </p>
-              )}
-              
-              {formData.photos?.length > 1 && (
-                <div className="text-center mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowPhotoReorder(true)}
-                    className="border-purple-300 text-purple-600 hover:bg-purple-50"
-                  >
-                    Reorder Photos
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <EditProfilePhotos
+            photos={formData.photos || []}
+            primaryPhoto={formData.primary_photo}
+            uploading={uploading}
+            onPhotoUpload={handlePhotoUpload}
+            onRemovePhoto={removePhoto}
+            onSetPrimary={setPrimaryPhoto}
+            onReorder={() => setShowPhotoReorder(true)}
+          />
         </motion.div>
 
         {/* Photo Reorder Modal */}
@@ -440,94 +361,10 @@ export default function EditProfile() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur">
-            <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-6">
-              <div className="flex items-center gap-3 text-white">
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur">
-                  <Heart size={24} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">About You</h2>
-                  <p className="text-sm text-white/80">Tell us about yourself</p>
-                </div>
-              </div>
-            </div>
-            
-            <CardContent className="p-6 space-y-5">
-              <div>
-                <Label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  Display Name
-                </Label>
-                <Input
-                  value={formData.display_name || ''}
-                  onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
-                  placeholder="How should we call you?"
-                  className="border-2 focus:border-purple-400 rounded-xl"
-                />
-              </div>
-              
-              <div>
-                <Label className="text-sm font-semibold text-gray-700 mb-2">Bio</Label>
-                <Textarea
-                  value={formData.bio || ''}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  placeholder="Share something interesting about yourself..."
-                  rows={4}
-                  className="border-2 focus:border-purple-400 rounded-xl resize-none"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  {formData.bio?.length || 0}/500 characters
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-5">
-                <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2">Date of Birth</Label>
-                  <Input
-                    type="date"
-                    value={formData.birth_date || ''}
-                    onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
-                    className="border-2 focus:border-purple-400 rounded-xl"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2">Gender</Label>
-                  <Select 
-                    value={formData.gender || ''} 
-                    onValueChange={(v) => setFormData({ ...formData, gender: v })}
-                  >
-                    <SelectTrigger className="border-2 rounded-xl">
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="man">Man</SelectItem>
-                      <SelectItem value="woman">Woman</SelectItem>
-                      <SelectItem value="non_binary">Non-binary</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-sm font-semibold text-gray-700 mb-2">Looking For</Label>
-                <Select 
-                  value={formData.relationship_goal || ''} 
-                  onValueChange={(v) => setFormData({ ...formData, relationship_goal: v })}
-                >
-                  <SelectTrigger className="border-2 rounded-xl">
-                    <SelectValue placeholder="What are you looking for?" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dating">Dating</SelectItem>
-                    <SelectItem value="serious_relationship">Serious Relationship</SelectItem>
-                    <SelectItem value="marriage">Marriage</SelectItem>
-                    <SelectItem value="friendship">Friendship</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
+          <EditProfileBasicInfo
+            formData={formData}
+            onChange={setFormData}
+          />
         </motion.div>
 
         {/* Location & Heritage */}
