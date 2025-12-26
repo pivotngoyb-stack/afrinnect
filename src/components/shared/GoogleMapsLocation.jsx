@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { MapPin, Loader2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 // Google Maps integration component
 export default function GoogleMapsLocation({ 
@@ -19,20 +20,28 @@ export default function GoogleMapsLocation({
     loadGoogleMaps();
   }, []);
 
-  const loadGoogleMaps = () => {
+  const loadGoogleMaps = async () => {
     // Check if already loaded
     if (window.google && window.google.maps) {
       initializeMap();
       return;
     }
 
-    // Load Google Maps script
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places`;
-    script.async = true;
-    script.defer = true;
-    script.onload = initializeMap;
-    document.head.appendChild(script);
+    try {
+      // Fetch API key from backend
+      const { data } = await base44.functions.invoke('getGoogleMapsKey');
+      
+      // Load Google Maps script
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeMap;
+      document.head.appendChild(script);
+    } catch (error) {
+      console.error('Failed to load Google Maps:', error);
+      setLoading(false);
+    }
   };
 
   const initializeMap = () => {
