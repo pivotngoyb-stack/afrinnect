@@ -54,6 +54,10 @@ import EventDetails from './pages/EventDetails';
 import CreateEvent from './pages/CreateEvent';
 import NotFound from './pages/NotFound';
 import Error from './pages/Error';
+import CommunityChat from './pages/CommunityChat';
+import EventChat from './pages/EventChat';
+import ReferralDashboard from './pages/ReferralDashboard';
+import Unsubscribe from './pages/Unsubscribe';
 import __Layout from './Layout.jsx';
 
 
@@ -114,6 +118,10 @@ export const PAGES = {
     "CreateEvent": CreateEvent,
     "NotFound": NotFound,
     "Error": Error,
+    "CommunityChat": CommunityChat,
+    "EventChat": EventChat,
+    "ReferralDashboard": ReferralDashboard,
+    "Unsubscribe": Unsubscribe,
 }
 
 export const pagesConfig = {

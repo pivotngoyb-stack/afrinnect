@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
       });
 
       // Create receipt
-      await base44.asServiceRole.entities.Receipt.create({
+      const receipt = await base44.asServiceRole.entities.Receipt.create({
         transaction_id: result.transaction.id,
         user_profile_id: profile.id,
         subscription_id: subscription.id,
@@ -98,21 +98,44 @@ Deno.serve(async (req) => {
       });
 
       // Send receipt email
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        to: user.email,
-        subject: `Receipt for ${planName} Subscription`,
-        body: `
-          Thank you for subscribing to ${planName}!
-          
-          Transaction ID: ${result.transaction.id}
-          Amount: $${amount}
-          Billing Period: ${billingPeriod}
-          
-          Your subscription is now active until ${endDate.toDateString()}.
-          
-          Thank you for being part of Afrinnect!
-        `
-      });
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: user.email,
+          subject: `Receipt for ${planName} Subscription - Afrinnect`,
+          body: `
+            Thank you for subscribing to ${planName}!
+            
+            RECEIPT
+            Transaction ID: ${result.transaction.id}
+            Amount Paid: $${amount} ${subscription.currency}
+            Billing Period: ${billingPeriod}
+            Purchase Date: ${new Date().toLocaleDateString()}
+            
+            SUBSCRIPTION DETAILS
+            Plan: ${planName}
+            Status: Active
+            Start Date: ${new Date().toLocaleDateString()}
+            Renewal Date: ${endDate.toDateString()}
+            
+            Your premium features are now active! Enjoy unlimited likes, advanced filters, and more.
+            
+            Questions? Reply to this email or visit our support page.
+            
+            Thank you for being part of Afrinnect!
+            
+            ---
+            Afrinnect - African Dating Done Right
+          `
+        });
+
+        // Mark receipt as sent
+        await base44.asServiceRole.entities.Receipt.update(receipt.id, {
+          receipt_sent: true
+        });
+      } catch (emailError) {
+        console.error('Failed to send receipt email:', emailError);
+        // Don't fail the transaction if email fails
+      }
 
       return Response.json({
         success: true,
