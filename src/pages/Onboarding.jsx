@@ -172,7 +172,7 @@ export default function Onboarding() {
       return profile;
     },
     onSuccess: () => {
-      window.location.href = createPageUrl('Home');
+      setShowSafetyEducation(true);
     }
   });
 
@@ -650,6 +650,16 @@ export default function Onboarding() {
           </Button>
         </div>
       </div>
+
+      {/* Safety Education Modal */}
+      <SafetyEducationModal
+        open={showSafetyEducation}
+        onClose={() => setShowSafetyEducation(false)}
+        onComplete={() => {
+          setShowSafetyEducation(false);
+          window.location.href = createPageUrl('Home');
+        }}
+      />
     </div>
   );
 }
