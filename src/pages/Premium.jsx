@@ -52,33 +52,10 @@ export default function Premium() {
     fetchProfile();
   }, []);
 
-  const subscribeMutation = useMutation({
-    mutationFn: async () => {
-      // Create subscription record
-      const subscription = await base44.entities.Subscription.create({
-        user_profile_id: myProfile.id,
-        plan_type: `premium_${selectedPlan}`,
-        status: 'active',
-        start_date: new Date().toISOString(),
-        end_date: selectedPlan === 'lifetime' ? null : new Date(Date.now() + (selectedPlan === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString(),
-        amount_paid: PLANS[selectedPlan].price,
-        currency: 'USD',
-        boosts_remaining: 5,
-        super_likes_remaining: selectedPlan === 'lifetime' ? 999 : 30
-      });
-
-      // Update profile
-      await base44.entities.UserProfile.update(myProfile.id, {
-        is_premium: true,
-        premium_until: subscription.end_date
-      });
-
-      return subscription;
-    },
-    onSuccess: () => {
-      window.location.href = createPageUrl('Profile');
-    }
-  });
+  const handleSubscribe = () => {
+    // Redirect to pricing page with Braintree payment
+    window.location.href = createPageUrl('PricingPlans');
+  };
 
   if (myProfile?.is_premium) {
     return (
@@ -250,11 +227,10 @@ export default function Premium() {
           transition={{ delay: 0.5 }}
         >
           <Button
-            onClick={() => subscribeMutation.mutate()}
-            disabled={subscribeMutation.isPending}
+            onClick={handleSubscribe}
             className="w-full py-6 text-lg font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-xl shadow-amber-500/30"
           >
-            {subscribeMutation.isPending ? 'Processing...' : 'Subscribe Now'}
+            Subscribe Now
           </Button>
           
           <p className="text-center text-white/50 text-xs mt-4">
