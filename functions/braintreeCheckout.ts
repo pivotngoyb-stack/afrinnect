@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import braintree from 'npm:braintree@3.23.0';
 
 const gateway = new braintree.BraintreeGateway({
-  environment: braintree.Environment.Sandbox, // Change to Production for live
+  environment: braintree.Environment.Production,
   merchantId: Deno.env.get('BRAINTREE_MERCHANT_ID'),
   publicKey: Deno.env.get('BRAINTREE_PUBLIC_KEY'),
   privateKey: Deno.env.get('BRAINTREE_PRIVATE_KEY')
