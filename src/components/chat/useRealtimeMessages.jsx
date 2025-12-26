@@ -1,70 +1,124 @@
-import { useState, useEffect, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
+import { useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
-// Optimized real-time messaging with long polling
-export function useRealtimeMessages(matchId) {
-  const [messages, setMessages] = useState([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const lastTimestampRef = useRef(new Date().toISOString());
-  const pollingIntervalRef = useRef(null);
-  const isPollingRef = useRef(false);
+export function useRealtimeMessages(matchId, myProfileId, enabled = true) {
+  const [isConnected, setIsConnected] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const socketRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!matchId) return;
+    if (!enabled || !matchId || !myProfileId) return;
 
-    // Initial fetch
-    const fetchInitialMessages = async () => {
-      const msgs = await base44.entities.Message.filter(
-        { match_id: matchId },
-        'created_date',
-        100
-      );
-      setMessages(msgs);
-      if (msgs.length > 0) {
-        lastTimestampRef.current = msgs[msgs.length - 1].created_date;
-      }
-    };
-
-    fetchInitialMessages();
-
-    // Optimized polling - only fetch new messages
-    const poll = async () => {
-      if (isPollingRef.current) return; // Prevent concurrent polls
-      isPollingRef.current = true;
-
+    // Create WebSocket connection with fallback
+    const connectWebSocket = () => {
       try {
-        const response = await base44.functions.invoke('realtimeChat', {
-          matchId,
-          lastTimestamp: lastTimestampRef.current
-        });
+        const wsUrl = window.location.origin.replace('http', 'ws') + '/api/functions/realtimeChat';
+        const ws = new WebSocket(wsUrl);
 
-        if (response.data.messages?.length > 0) {
-          setMessages(prev => [...prev, ...response.data.messages]);
-          lastTimestampRef.current = response.data.messages[response.data.messages.length - 1].created_date;
-        }
+        ws.onopen = () => {
+          console.log('WebSocket connected');
+          setIsConnected(true);
+          
+          // Authenticate
+          ws.send(JSON.stringify({
+            type: 'auth',
+            userId: myProfileId,
+            matchId: matchId
+          }));
+        };
 
-        setIsTyping(response.data.typingStatus?.isTyping || false);
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+
+            // Handle typing indicator
+            if (data.type === 'user_typing') {
+              setOtherUserTyping(data.isTyping);
+              if (data.isTyping) {
+                clearTimeout(typingTimeoutRef.current);
+                typingTimeoutRef.current = setTimeout(() => {
+                  setOtherUserTyping(false);
+                }, 3000);
+              }
+            }
+
+            // Handle new message
+            if (data.type === 'new_message') {
+              queryClient.invalidateQueries(['messages', matchId]);
+            }
+
+            // Handle read receipt
+            if (data.type === 'message_read') {
+              queryClient.invalidateQueries(['messages', matchId]);
+            }
+          } catch (error) {
+            console.error('WebSocket message parse error:', error);
+          }
+        };
+
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          setIsConnected(false);
+        };
+
+        ws.onclose = () => {
+          console.log('WebSocket closed, reconnecting...');
+          setIsConnected(false);
+          // Reconnect after 3 seconds
+          setTimeout(connectWebSocket, 3000);
+        };
+
+        socketRef.current = ws;
       } catch (error) {
-        console.error('Polling error:', error);
-      } finally {
-        isPollingRef.current = false;
+        console.error('WebSocket connection error:', error);
       }
     };
 
-    // Start polling - adaptive interval based on activity
-    let interval = 3000; // Start with 3s
-    pollingIntervalRef.current = setInterval(() => {
-      poll();
-      // Increase interval if no activity (save resources)
-      interval = Math.min(interval + 500, 10000);
-    }, interval);
+    connectWebSocket();
 
     return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
+      if (socketRef.current) {
+        socketRef.current.close();
       }
+      clearTimeout(typingTimeoutRef.current);
     };
-  }, [matchId]);
+  }, [matchId, myProfileId, enabled, queryClient]);
 
-  return { messages, isTyping };
+  const sendTypingIndicator = (isTyping) => {
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({
+        type: 'typing',
+        userId: myProfileId,
+        isTyping
+      }));
+    }
+  };
+
+  const notifyNewMessage = (message) => {
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({
+        type: 'message',
+        message
+      }));
+    }
+  };
+
+  const sendReadReceipt = (messageId) => {
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({
+        type: 'read',
+        messageId
+      }));
+    }
+  };
+
+  return {
+    isConnected,
+    otherUserTyping,
+    sendTypingIndicator,
+    notifyNewMessage,
+    sendReadReceipt
+  };
 }

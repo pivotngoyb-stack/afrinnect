@@ -20,6 +20,7 @@ import SafetyCheckSetup from '@/components/safety/SafetyCheckSetup';
 import VirtualList from '@/components/shared/VirtualList';
 import OptimizedImage from '@/components/shared/OptimizedImage';
 import { usePerformanceMonitor } from '@/components/shared/usePerformanceMonitor';
+import { useRealtimeMessages } from '@/components/chat/useRealtimeMessages';
 
 export default function Chat() {
   usePerformanceMonitor('Chat');
@@ -37,7 +38,6 @@ export default function Chat() {
   const [reportReason, setReportReason] = useState('');
   const [showIceBreakers, setShowIceBreakers] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [showQuestionGame, setShowQuestionGame] = useState(false);
   const [showVirtualGifts, setShowVirtualGifts] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
@@ -45,6 +45,15 @@ export default function Chat() {
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const queryClient = useQueryClient();
+
+  // Real-time WebSocket connection
+  const { 
+    isConnected, 
+    otherUserTyping, 
+    sendTypingIndicator, 
+    notifyNewMessage,
+    sendReadReceipt 
+  } = useRealtimeMessages(matchId, myProfile?.id, !!myProfile && !!matchId);
 
   // Screenshot detection
   useEffect(() => {
@@ -103,8 +112,8 @@ export default function Chat() {
     queryKey: ['messages', matchId],
     queryFn: () => base44.entities.Message.filter({ match_id: matchId }, 'created_date', 100),
     enabled: !!matchId,
-    refetchInterval: 5000, // Reduced polling frequency
-    staleTime: 2000 // Cache for 2 seconds
+    refetchInterval: isConnected ? 30000 : 5000, // Longer interval if WebSocket connected
+    staleTime: 2000
   });
 
   // Scroll to bottom - optimized
@@ -206,6 +215,9 @@ export default function Chat() {
         from_profile_id: myProfile.id,
         link_to: createPageUrl(`Chat?matchId=${matchId}`)
       });
+
+      // Notify via WebSocket
+      notifyNewMessage(message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['messages', matchId]);
@@ -330,27 +342,12 @@ export default function Chat() {
 
   // Typing indicator handler
   const handleTyping = () => {
-    if (!isTyping) {
-      setIsTyping(true);
-      // In real app, send typing status to other user via websocket
-    }
-    
+    sendTypingIndicator(true);
     clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
+      sendTypingIndicator(false);
     }, 2000);
   };
-
-  // Simulate other user typing (in real app, this would come from websocket)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (Math.random() > 0.95) {
-        setOtherUserTyping(true);
-        setTimeout(() => setOtherUserTyping(false), 3000);
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
 
   if (!otherProfile) {
     return (

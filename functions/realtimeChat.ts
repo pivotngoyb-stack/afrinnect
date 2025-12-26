@@ -1,53 +1,107 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-// Optimized polling endpoint for real-time chat
-// Returns only new messages since last poll
+// WebSocket connection map
+const connections = new Map();
+
 Deno.serve(async (req) => {
-  try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+  // Check if this is a WebSocket upgrade request
+  if (req.headers.get("upgrade") === "websocket") {
+    const { socket, response } = Deno.upgradeWebSocket(req);
     
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const base44 = createClientFromRequest(req);
+    let userId = null;
+    let matchId = null;
 
-    const { matchId, lastMessageId, lastTimestamp } = await req.json();
-
-    // Get only new messages since last poll
-    const messages = await base44.entities.Message.filter(
-      {
-        match_id: matchId,
-        created_date: { $gt: lastTimestamp || new Date(0).toISOString() }
-      },
-      'created_date',
-      50
-    );
-
-    // Get typing status (could be stored in a separate entity)
-    const typingStatus = {
-      isTyping: false,
-      userId: null
+    socket.onopen = async () => {
+      console.log("WebSocket connected");
     };
 
-    // Mark new messages as read
-    const unreadMessages = messages.filter(m => m.receiver_id === user.id && !m.is_read);
-    if (unreadMessages.length > 0) {
-      await Promise.all(
-        unreadMessages.map(m => 
-          base44.asServiceRole.entities.Message.update(m.id, {
-            is_read: true,
-            read_at: new Date().toISOString()
-          })
-        )
-      );
-    }
+    socket.onmessage = async (event) => {
+      try {
+        const data = JSON.parse(event.data);
 
-    return Response.json({
-      messages,
-      typingStatus,
-      hasMore: messages.length === 50
-    });
-  } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+        // Handle authentication
+        if (data.type === 'auth') {
+          userId = data.userId;
+          matchId = data.matchId;
+          
+          // Store connection
+          if (!connections.has(matchId)) {
+            connections.set(matchId, []);
+          }
+          connections.get(matchId).push({ userId, socket });
+
+          // Send confirmation
+          socket.send(JSON.stringify({ type: 'authenticated', matchId }));
+        }
+
+        // Handle typing indicator
+        if (data.type === 'typing') {
+          const matchConnections = connections.get(matchId) || [];
+          matchConnections.forEach(conn => {
+            if (conn.userId !== userId && conn.socket.readyState === WebSocket.OPEN) {
+              conn.socket.send(JSON.stringify({
+                type: 'user_typing',
+                userId: data.userId,
+                isTyping: data.isTyping
+              }));
+            }
+          });
+        }
+
+        // Handle new message
+        if (data.type === 'message') {
+          // Broadcast to other user in match
+          const matchConnections = connections.get(matchId) || [];
+          matchConnections.forEach(conn => {
+            if (conn.userId !== userId && conn.socket.readyState === WebSocket.OPEN) {
+              conn.socket.send(JSON.stringify({
+                type: 'new_message',
+                message: data.message
+              }));
+            }
+          });
+        }
+
+        // Handle read receipt
+        if (data.type === 'read') {
+          const matchConnections = connections.get(matchId) || [];
+          matchConnections.forEach(conn => {
+            if (conn.userId !== userId && conn.socket.readyState === WebSocket.OPEN) {
+              conn.socket.send(JSON.stringify({
+                type: 'message_read',
+                messageId: data.messageId
+              }));
+            }
+          });
+        }
+
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+      }
+    };
+
+    socket.onclose = () => {
+      // Remove connection
+      if (matchId && connections.has(matchId)) {
+        const matchConnections = connections.get(matchId);
+        const filtered = matchConnections.filter(conn => conn.socket !== socket);
+        if (filtered.length === 0) {
+          connections.delete(matchId);
+        } else {
+          connections.set(matchId, filtered);
+        }
+      }
+      console.log("WebSocket disconnected");
+    };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    return response;
   }
+
+  // Regular HTTP endpoint for polling fallback
+  return Response.json({ error: 'WebSocket upgrade required' }, { status: 400 });
 });
