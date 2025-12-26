@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
         The Afrinnect Team
         
         ---
-        Visit app: https://afrinnect-658a9066.base44.app
+        Download the app: [Link]
         Follow us: Instagram | Twitter | Facebook
       `
     });

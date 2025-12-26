@@ -55,7 +55,7 @@ export default function Landing() {
     const urlParams = new URLSearchParams(window.location.search);
     const ref = urlParams.get('ref');
     const nextUrl = ref ? createPageUrl('Onboarding') + `?ref=${ref}` : createPageUrl('LegalAcceptance');
-    base44.auth.redirectToLogin('https://afrinnect-658a9066.base44.app' + nextUrl);
+    base44.auth.redirectToLogin(window.location.origin + nextUrl);
   };
 
   return (
