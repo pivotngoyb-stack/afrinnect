@@ -11,6 +11,7 @@ Deno.serve(async (req) => {
 
     // Send welcome email
     await base44.asServiceRole.integrations.Core.SendEmail({
+      from_name: 'Afrinnect',
       to: user_email,
       subject: 'Welcome to Afrinnect! 💜',
       body: `
@@ -33,7 +34,6 @@ Deno.serve(async (req) => {
         The Afrinnect Team
         
         ---
-        Download the app: [Link]
         Follow us: Instagram | Twitter | Facebook
       `
     });
