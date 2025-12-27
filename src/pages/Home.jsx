@@ -404,6 +404,16 @@ export default function Home() {
           });
         }
 
+        // Mark both likes as seen
+        await base44.entities.Like.update(mutualLikes[0].id, { is_seen: true });
+        const myNewLike = await base44.entities.Like.filter({
+          liker_id: myProfile.id,
+          liked_id: likedId
+        });
+        if (myNewLike.length > 0) {
+          await base44.entities.Like.update(myNewLike[0].id, { is_seen: true });
+        }
+
         // Create match
         await base44.entities.Match.create({
           user1_id: myProfile.id,
