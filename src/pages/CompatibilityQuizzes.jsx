@@ -113,17 +113,19 @@ export default function CompatibilityQuizzes() {
     setShowResult(true);
   };
 
-  const getResultDescription = (quizId) => {
-    const result = myQuizResults?.find(r => r.quiz_id === quizId);
-    if (!result) return null;
-    const type = activeQuiz?.compatibility_types.find(t => t.type_name === result.result_type);
+  const getResultForQuiz = (quizId) => {
+    return myQuizResults?.find(r => r.quiz_id === quizId);
+  };
+
+  const getResultDescription = (result, quiz) => {
+    if (!result || !quiz) return null;
+    const type = quiz.compatibility_types.find(t => t.type_name === result.result_type);
     return type?.description;
   };
 
   const currentQuestion = activeQuiz?.questions[currentQuestionIndex];
   const progress = activeQuiz ? ((currentQuestionIndex / activeQuiz.questions.length) * 100) : 0;
   const userHasResultForQuiz = (quizId) => myQuizResults?.some(r => r.quiz_id === quizId);
-  const quizResultForActiveQuiz = myQuizResults?.find(r => r.quiz_id === activeQuiz?.id);
 
   if (loadingQuizzes || loadingResults) {
     return <LoadingSkeleton />;
@@ -151,33 +153,42 @@ export default function CompatibilityQuizzes() {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {quizzes?.map(quiz => (
-            <Card key={quiz.id} className="bg-white/70 backdrop-blur-md border border-gray-200 shadow-lg hover:shadow-xl transition-all">
-              <CardHeader>
-                <img src={quiz.image_url || 'https://images.unsplash.com/photo-1517457210338-f00f72676767?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'} alt={quiz.title} className="rounded-lg mb-4 object-cover h-40 w-full" />
-                <CardTitle className="text-xl font-bold text-gray-800">{quiz.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {userHasResultForQuiz(quiz.id) && quizResultForActiveQuiz?.quiz_id === quiz.id ? (
-                  <div className="text-center mb-4">
-                    <p className="text-purple-600 font-semibold">Your Type: {quizResultForActiveQuiz.result_type}</p>
-                  </div>
-                ) : null}
+          {quizzes?.map(quiz => {
+            const userResult = getResultForQuiz(quiz.id);
+            return (
+              <Card key={quiz.id} className="bg-white/70 backdrop-blur-md border border-gray-200 shadow-lg hover:shadow-xl transition-all">
+                <CardHeader>
+                  <img src={quiz.image_url || 'https://images.unsplash.com/photo-1517457210338-f00f72676767?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'} alt={quiz.title} className="rounded-lg mb-4 object-cover h-40 w-full" />
+                  <CardTitle className="text-xl font-bold text-gray-800">{quiz.title}</CardTitle>
+                  <p className="text-sm text-gray-600 mt-2">{quiz.description}</p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {userResult && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Award size={18} className="text-purple-600" />
+                        <p className="font-semibold text-purple-900">Your Result</p>
+                      </div>
+                      <p className="text-purple-700 font-bold">{userResult.result_type}</p>
+                      <p className="text-sm text-gray-600 mt-1">{getResultDescription(userResult, quiz)}</p>
+                    </div>
+                  )}
 
-                {userHasResultForQuiz(quiz.id) ? (
-                  <Button variant="outline" className="w-full" onClick={() => startQuiz(quiz)}>
-                    <CheckCircle2 size={18} className="mr-2 text-green-600" />
-                    View Result / Retake
-                  </Button>
-                ) : (
-                  <Button className="w-full bg-purple-600 hover:bg-purple-700" onClick={() => startQuiz(quiz)}>
-                    <Play size={18} className="mr-2" />
-                    Start Quiz
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                  {userResult ? (
+                    <Button variant="outline" className="w-full" onClick={() => startQuiz(quiz)}>
+                      <CheckCircle2 size={18} className="mr-2 text-green-600" />
+                      Retake Quiz
+                    </Button>
+                  ) : (
+                    <Button className="w-full bg-purple-600 hover:bg-purple-700" onClick={() => startQuiz(quiz)}>
+                      <Play size={18} className="mr-2" />
+                      Start Quiz
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </main>
 
@@ -189,28 +200,69 @@ export default function CompatibilityQuizzes() {
 
           {!showResult ? (
             <div className="space-y-6">
-              <Progress value={progress} className="w-full" />
-              <h3 className="text-xl font-semibold text-gray-700">{currentQuestion?.question_text}</h3>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm text-gray-600">Question {currentQuestionIndex + 1} of {activeQuiz?.questions.length}</p>
+                <p className="text-sm font-semibold text-purple-600">{Math.round(progress)}%</p>
+              </div>
+              <Progress value={progress} className="w-full h-2" />
+              <h3 className="text-xl font-semibold text-gray-800 mt-4">{currentQuestion?.question_text}</h3>
               <div className="space-y-3">
                 {currentQuestion?.options.map((option, index) => (
                   <Button
                     key={index}
                     variant="outline"
-                    className="w-full justify-start py-6 text-base border-gray-300 hover:bg-purple-50 hover:border-purple-600"
+                    className="w-full justify-start py-6 text-left text-base border-2 border-gray-300 hover:bg-purple-50 hover:border-purple-600 transition-all"
                     onClick={() => handleAnswer(index)}
                   >
-                    {option.option_text}
+                    <span className="flex items-center gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-purple-600 flex items-center justify-center text-xs font-semibold">
+                        {String.fromCharCode(65 + index)}
+                      </span>
+                      {option.option_text}
+                    </span>
                   </Button>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="text-center p-4">
-              <Award size={64} className="mx-auto text-amber-500 mb-4" />
-              <h3 className="text-3xl font-bold text-gray-800 mb-2">Your Compatibility Result:</h3>
-              <p className="text-purple-600 text-xl font-semibold mb-4">{quizResultForActiveQuiz?.result_type}</p>
-              <p className="text-gray-700 mb-6">{getResultDescription(activeQuiz.id)}</p>
-              <Button onClick={() => setActiveQuiz(null)} className="bg-purple-600 hover:bg-purple-700">
+            <div className="text-center p-6">
+              <Award size={80} className="mx-auto text-amber-500 mb-6 animate-pulse" />
+              <h3 className="text-3xl font-bold text-gray-900 mb-3">Congratulations!</h3>
+              <p className="text-lg text-gray-600 mb-4">Your Compatibility Type:</p>
+              <div className="bg-purple-100 border-2 border-purple-600 rounded-xl p-6 mb-6">
+                <p className="text-3xl font-bold text-purple-600 mb-3">
+                  {myQuizResults?.find(r => r.quiz_id === activeQuiz?.id)?.result_type}
+                </p>
+                <p className="text-gray-700 text-base leading-relaxed">
+                  {getResultDescription(
+                    myQuizResults?.find(r => r.quiz_id === activeQuiz?.id),
+                    activeQuiz
+                  )}
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <p className="text-sm text-gray-600 mb-2">Your Compatibility Scores:</p>
+                {Object.entries(myQuizResults?.find(r => r.quiz_id === activeQuiz?.id)?.compatibility_score || {})
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([type, score]) => (
+                    <div key={type} className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-700">{type}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-32 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-purple-600 h-2 rounded-full transition-all" 
+                            style={{ width: `${Math.min(score * 3, 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700 w-8">{score}</span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+              <Button onClick={() => {
+                setActiveQuiz(null);
+                setShowResult(false);
+              }} className="bg-purple-600 hover:bg-purple-700 w-full">
                 Back to Quizzes
               </Button>
             </div>
