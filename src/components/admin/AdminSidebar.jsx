@@ -16,8 +16,6 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
     { id: 'verification', label: 'Verification', icon: Shield, badge: stats?.verifiedUsers },
     { id: 'moderation', label: 'Moderation', icon: AlertTriangle, badge: stats?.pendingReports, alert: stats?.pendingReports > 0 },
     { id: 'safety_monitor', label: 'Safety Monitor', icon: Shield },
-    { id: 'ai-insights', label: 'AI Insights', icon: Brain },
-    { id: 'automation', label: 'Automation', icon: Cog },
     { id: 'fake-profiles', label: 'Fake Profiles', icon: Shield },
     { id: 'revenue', label: 'Revenue', icon: DollarSign },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
@@ -25,7 +23,8 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
     { id: 'messaging', label: 'Broadcast', icon: MessageCircle },
     { id: 'support', label: 'Support', icon: Bell },
     { id: 'compliance', label: 'Compliance', icon: FileText },
-    { id: 'settings', label: 'Audit Logs', icon: Shield, badge: stats?.auditLogs }
+    { id: 'settings', label: 'System Settings', icon: Settings },
+    { id: 'audit', label: 'Audit Logs', icon: Shield, badge: stats?.auditLogs }
   ];
 
   return (

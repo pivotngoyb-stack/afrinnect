@@ -2,7 +2,6 @@ import AdminDashboard from './pages/AdminDashboard';
 import Analytics from './pages/Analytics';
 import BackgroundCheckRequest from './pages/BackgroundCheckRequest';
 import BlockedUsers from './pages/BlockedUsers';
-import BoostProfile from './pages/BoostProfile';
 import Chat from './pages/Chat';
 import Communities from './pages/Communities';
 import CommunityGuidelines from './pages/CommunityGuidelines';
@@ -14,7 +13,6 @@ import EditProfile from './pages/EditProfile';
 import Events from './pages/Events';
 import Home from './pages/Home';
 import IDVerification from './pages/IDVerification';
-import IncognitoMode from './pages/IncognitoMode';
 import Landing from './pages/Landing';
 import LanguageExchangeHub from './pages/LanguageExchangeHub';
 import LegalAcceptance from './pages/LegalAcceptance';
@@ -24,14 +22,11 @@ import Onboarding from './pages/Onboarding';
 import PanicButton from './pages/PanicButton';
 import PhoneVerification from './pages/PhoneVerification';
 import PhotoPerformance from './pages/PhotoPerformance';
-import Premium from './pages/Premium';
 import PricingPlans from './pages/PricingPlans';
 import Privacy from './pages/Privacy';
 import Profile from './pages/Profile';
 import ProfileOptimization from './pages/ProfileOptimization';
-import ReferralRewards from './pages/ReferralRewards';
 import Report from './pages/Report';
-import Rewind from './pages/Rewind';
 import SafetyCheckMonitor from './pages/SafetyCheckMonitor';
 import SafetyCheckSetup from './pages/SafetyCheckSetup';
 import Settings from './pages/Settings';
@@ -42,7 +37,6 @@ import SuccessStoryContest from './pages/SuccessStoryContest';
 import Support from './pages/Support';
 import SupportChat from './pages/SupportChat';
 import Terms from './pages/Terms';
-import TravelMode from './pages/TravelMode';
 import VendorManagement from './pages/VendorManagement';
 import VerifyPhoto from './pages/VerifyPhoto';
 import VideoChat from './pages/VideoChat';
@@ -56,11 +50,7 @@ import NotFound from './pages/NotFound';
 import Error from './pages/Error';
 import CommunityChat from './pages/CommunityChat';
 import EventChat from './pages/EventChat';
-import ReferralDashboard from './pages/ReferralDashboard';
 import Unsubscribe from './pages/Unsubscribe';
-import SuccessMetrics from './pages/SuccessMetrics';
-import ReferralCenter from './pages/ReferralCenter';
-import ABTestDashboard from './pages/ABTestDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -69,7 +59,6 @@ export const PAGES = {
     "Analytics": Analytics,
     "BackgroundCheckRequest": BackgroundCheckRequest,
     "BlockedUsers": BlockedUsers,
-    "BoostProfile": BoostProfile,
     "Chat": Chat,
     "Communities": Communities,
     "CommunityGuidelines": CommunityGuidelines,
@@ -81,7 +70,6 @@ export const PAGES = {
     "Events": Events,
     "Home": Home,
     "IDVerification": IDVerification,
-    "IncognitoMode": IncognitoMode,
     "Landing": Landing,
     "LanguageExchangeHub": LanguageExchangeHub,
     "LegalAcceptance": LegalAcceptance,
@@ -91,14 +79,11 @@ export const PAGES = {
     "PanicButton": PanicButton,
     "PhoneVerification": PhoneVerification,
     "PhotoPerformance": PhotoPerformance,
-    "Premium": Premium,
     "PricingPlans": PricingPlans,
     "Privacy": Privacy,
     "Profile": Profile,
     "ProfileOptimization": ProfileOptimization,
-    "ReferralRewards": ReferralRewards,
     "Report": Report,
-    "Rewind": Rewind,
     "SafetyCheckMonitor": SafetyCheckMonitor,
     "SafetyCheckSetup": SafetyCheckSetup,
     "Settings": Settings,
@@ -109,7 +94,6 @@ export const PAGES = {
     "Support": Support,
     "SupportChat": SupportChat,
     "Terms": Terms,
-    "TravelMode": TravelMode,
     "VendorManagement": VendorManagement,
     "VerifyPhoto": VerifyPhoto,
     "VideoChat": VideoChat,
@@ -123,11 +107,7 @@ export const PAGES = {
     "Error": Error,
     "CommunityChat": CommunityChat,
     "EventChat": EventChat,
-    "ReferralDashboard": ReferralDashboard,
     "Unsubscribe": Unsubscribe,
-    "SuccessMetrics": SuccessMetrics,
-    "ReferralCenter": ReferralCenter,
-    "ABTestDashboard": ABTestDashboard,
 }
 
 export const pagesConfig = {

@@ -31,19 +31,15 @@ import FeatureFlags from '@/components/admin/FeatureFlags';
 import PricingManagement from '@/components/admin/PricingManagement';
 import VideoProfileManagement from '@/components/admin/VideoProfileManagement';
 import SuccessStoryModeration from '@/components/admin/SuccessStoryModeration';
-import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
-import DateFeedbackReview from '@/components/admin/DateFeedbackReview';
 import StoryManagement from '@/components/admin/StoryManagement';
 import CommunityManagement from '@/components/admin/CommunityManagement';
-import VideoEventManagement from '@/components/admin/VideoEventManagement';
 import SubscriptionManagement from '@/components/admin/SubscriptionManagement';
 import ReceiptsManagement from '@/components/admin/ReceiptsManagement';
-import AIInsightsDashboard from '@/components/admin/AIInsightsDashboard';
-import BackendOrchestrator from '@/components/admin/BackendOrchestrator';
 import ChurnAnalysis from '@/components/admin/ChurnAnalysis';
 import ABTestManager from '@/components/admin/ABTestManager';
-import RobustAnalyticsDashboard from '@/components/analytics/RobustAnalyticsDashboard';
 import EmailCampaignManager from '@/components/admin/EmailCampaignManager';
+import PhotoModeration from '@/components/admin/PhotoModeration';
+import SystemSettings from '@/components/admin/SystemSettings';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -499,20 +495,13 @@ export default function AdminDashboard() {
       case 'analytics':
         return (
           <div className="space-y-6">
-            <RobustAnalyticsDashboard />
             <ABTestManager />
-            <AnalyticsDashboard />
             <ModerationRules rules={moderationRules} currentUser={currentUser} />
             <FeatureFlags flags={featureFlags} />
           </div>
         );
       case 'events':
-        return (
-          <div className="space-y-6">
-            <EventManagement events={events} />
-            <VideoEventManagement />
-          </div>
-        );
+        return <EventManagement events={events} />;
       case 'messaging':
         return (
           <div className="space-y-6">
@@ -526,20 +515,18 @@ export default function AdminDashboard() {
         return (
           <div className="space-y-6">
             <StoryManagement />
+            <PhotoModeration />
             <CommunityManagement />
             <PricingManagement plans={pricingPlans} />
             <VideoProfileManagement />
             <SuccessStoryModeration />
-            <DateFeedbackReview />
           </div>
         );
       case 'safety_monitor':
         return <SafetyMonitorDashboard />;
-      case 'ai-insights':
-        return <AIInsightsDashboard />;
-      case 'automation':
-        return <BackendOrchestrator />;
       case 'settings':
+        return <SystemSettings />;
+      case 'audit':
         return <AuditLogs logs={auditLogs} />;
       default:
         return <AdminOverview stats={stats} />;
