@@ -536,10 +536,24 @@ export default function Profile() {
               </Button>
             </Link>
 
-            <Link to={createPageUrl('ReferralDashboard')}>
+            <Link to={createPageUrl('ReferralProgram')}>
               <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" size="lg">
                 <Users size={18} className="mr-2" />
-                Referral Dashboard
+                Referral Program
+              </Button>
+            </Link>
+
+            <Link to={createPageUrl('CompatibilityQuizzes')}>
+              <Button className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700" size="lg">
+                <Sparkles size={18} className="mr-2" />
+                Compatibility Quizzes
+              </Button>
+            </Link>
+
+            <Link to={createPageUrl('WeddingMarketplace')}>
+              <Button className="w-full bg-gradient-to-r from-amber-600 to-pink-600 hover:from-amber-700 hover:to-pink-700" size="lg">
+                <Heart size={18} className="mr-2" />
+                Wedding Marketplace
               </Button>
             </Link>
 
