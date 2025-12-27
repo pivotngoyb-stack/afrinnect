@@ -19,8 +19,6 @@ import AfricanPattern from '@/components/shared/AfricanPattern';
 import PhotoReorderModal from '@/components/home/PhotoReorderModal';
 import EditProfilePhotos from '@/components/profile/EditProfilePhotos';
 import EditProfileBasicInfo from '@/components/profile/EditProfileBasicInfo';
-// import VideoProfileRecorder from '@/components/profile/VideoProfileRecorder';
-import { useDebounce } from '@/components/shared/useDebounce';
 import { compressImage, validateImageFile } from '@/components/shared/ImageCompressor';
 
 const AFRICAN_COUNTRIES = [
@@ -193,8 +191,7 @@ export default function EditProfile() {
     }
   };
 
-  // Debounce photo upload to prevent multiple rapid uploads
-  const handlePhotoUpload = useDebounce(async (e) => {
+  const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -217,7 +214,7 @@ export default function EditProfile() {
     } finally {
       setUploading(false);
     }
-  }, 500);
+  };
 
   const removePhoto = (index) => {
     const newPhotos = formData.photos.filter((_, i) => i !== index);
