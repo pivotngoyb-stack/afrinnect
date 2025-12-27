@@ -50,7 +50,8 @@ export default function Stories() {
     pageSize: 30,
     sortBy: '-created_date',
     enabled: !!myProfile,
-    refetchInterval: 60000
+    refetchInterval: 180000, // Increased to 3 minutes to reduce rate limiting
+    retry: 1
   });
 
   // Fetch profiles for stories (optimized)
