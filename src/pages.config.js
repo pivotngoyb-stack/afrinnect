@@ -58,6 +58,8 @@ import CommunityChat from './pages/CommunityChat';
 import EventChat from './pages/EventChat';
 import ReferralDashboard from './pages/ReferralDashboard';
 import Unsubscribe from './pages/Unsubscribe';
+import SuccessMetrics from './pages/SuccessMetrics';
+import ReferralCenter from './pages/ReferralCenter';
 import __Layout from './Layout.jsx';
 
 
@@ -122,6 +124,8 @@ export const PAGES = {
     "EventChat": EventChat,
     "ReferralDashboard": ReferralDashboard,
     "Unsubscribe": Unsubscribe,
+    "SuccessMetrics": SuccessMetrics,
+    "ReferralCenter": ReferralCenter,
 }
 
 export const pagesConfig = {
