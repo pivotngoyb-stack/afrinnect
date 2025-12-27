@@ -25,21 +25,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Payment system not configured. Please contact support.' }, { status: 500 });
     }
 
-    // Generate client token (try to use existing customer or create new)
+    // Generate client token without customer ID (Braintree will create one during checkout)
     let clientToken;
-    try {
-      const response = await gateway.clientToken.generate({
-        customerId: user.id
-      });
-      console.log('Generated token with customer ID, response:', JSON.stringify(response));
-      clientToken = response.clientToken || response;
-    } catch (err) {
-      console.log('Customer not found, generating without customer ID:', err.message);
-      // Customer doesn't exist, generate without customerId
-      const response = await gateway.clientToken.generate({});
-      console.log('Generated token without customer ID, response:', JSON.stringify(response));
-      clientToken = response.clientToken || response;
-    }
+    const response = await gateway.clientToken.generate({});
+    console.log('Generated token, response:', JSON.stringify(response));
+    clientToken = response.clientToken || response;
 
     if (!clientToken || typeof clientToken !== 'string') {
       console.error('Failed to generate valid client token, received:', clientToken);
