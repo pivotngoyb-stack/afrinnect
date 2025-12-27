@@ -50,8 +50,9 @@ export default function Stories() {
     pageSize: 30,
     sortBy: '-created_date',
     enabled: !!myProfile,
-    refetchInterval: 180000, // Increased to 3 minutes to reduce rate limiting
-    retry: 1
+    refetchInterval: false,
+    retry: 1,
+    staleTime: 300000
   });
 
   // Fetch profiles for stories (optimized)
@@ -186,7 +187,7 @@ export default function Stories() {
               profile={myProfile}
               hasStory={myStories.length > 0}
               isViewed={false}
-              onClick={() => myStories.length > 0 ? handleStoryClick(myProfile.id) : setUploadingStory(true)}
+              onClick={() => handleStoryClick(myProfile.id)}
               isOwnProfile
             />
           </div>

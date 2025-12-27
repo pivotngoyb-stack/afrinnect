@@ -19,6 +19,8 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
     { id: 'fake-profiles', label: 'Fake Profiles', icon: Shield },
     { id: 'revenue', label: 'Revenue', icon: DollarSign },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'ai-insights', label: 'AI Insights', icon: Brain },
+    { id: 'automation', label: 'Automation', icon: Cog },
     { id: 'events', label: 'Events', icon: Calendar, badge: stats?.totalEvents },
     { id: 'messaging', label: 'Broadcast', icon: MessageCircle },
     { id: 'support', label: 'Support', icon: Bell },

@@ -36,6 +36,8 @@ import CommunityManagement from '@/components/admin/CommunityManagement';
 import SubscriptionManagement from '@/components/admin/SubscriptionManagement';
 import ReceiptsManagement from '@/components/admin/ReceiptsManagement';
 import ChurnAnalysis from '@/components/admin/ChurnAnalysis';
+import AIInsightsDashboard from '@/components/admin/AIInsightsDashboard';
+import BackendOrchestrator from '@/components/admin/BackendOrchestrator';
 import ABTestManager from '@/components/admin/ABTestManager';
 import EmailCampaignManager from '@/components/admin/EmailCampaignManager';
 import PhotoModeration from '@/components/admin/PhotoModeration';
@@ -500,6 +502,10 @@ export default function AdminDashboard() {
             <FeatureFlags flags={featureFlags} />
           </div>
         );
+      case 'ai-insights':
+        return <AIInsightsDashboard />;
+      case 'automation':
+        return <BackendOrchestrator />;
       case 'events':
         return <EventManagement events={events} />;
       case 'messaging':

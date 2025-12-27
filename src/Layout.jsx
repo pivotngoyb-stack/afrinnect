@@ -18,7 +18,7 @@ import CookieConsent from '@/components/legal/CookieConsent';
 import PushNotificationSetup from '@/components/notifications/PushNotificationSetup';
 import { GlobalErrorHandler } from '@/components/shared/GlobalErrorHandler';
 
-const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories', 'EventDetails', 'CreateEvent'];
+const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories', 'EventDetails', 'CreateEvent', 'CompatibilityQuizzes', 'ReferralProgram', 'LanguageExchangeHub', 'VendorManagement', 'WeddingMarketplace'];
 
 function LayoutContent({ children, currentPageName }) {
   const [myProfile, setMyProfile] = useState(null);
