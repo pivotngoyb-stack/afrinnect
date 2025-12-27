@@ -37,14 +37,14 @@ function LayoutContent({ children, currentPageName }) {
               return;
             }
           }
-          
+
           // Then check profile
           const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
           if (profiles.length === 0 && currentPageName !== 'Onboarding' && currentPageName !== 'LegalAcceptance' && currentPageName !== 'Landing') {
             window.location.href = createPageUrl('Onboarding');
             return;
           }
-          
+
           if (profiles.length > 0) {
             const profile = profiles[0];
             setMyProfile(profile);
@@ -53,6 +53,7 @@ function LayoutContent({ children, currentPageName }) {
         }
       } catch (e) {
         // Not logged in
+        console.error('Auth check error:', e);
       }
     };
     checkProfile();
