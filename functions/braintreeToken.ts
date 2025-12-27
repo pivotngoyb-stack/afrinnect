@@ -17,22 +17,39 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    console.log('Generating Braintree client token for user:', user.id);
+
+    // Verify credentials are set
+    if (!Deno.env.get('BRAINTREE_MERCHANT_ID') || !Deno.env.get('BRAINTREE_PUBLIC_KEY') || !Deno.env.get('BRAINTREE_PRIVATE_KEY')) {
+      console.error('Missing Braintree credentials');
+      return Response.json({ error: 'Payment system not configured. Please contact support.' }, { status: 500 });
+    }
+
     // Generate client token (try to use existing customer or create new)
     let response;
     try {
       response = await gateway.clientToken.generate({
         customerId: user.id
       });
+      console.log('Generated token with customer ID');
     } catch (err) {
+      console.log('Customer not found, generating without customer ID:', err.message);
       // Customer doesn't exist, generate without customerId
       response = await gateway.clientToken.generate({});
+      console.log('Generated token without customer ID');
     }
 
+    if (!response || !response.clientToken) {
+      console.error('Failed to generate client token - no token in response');
+      return Response.json({ error: 'Failed to initialize payment system' }, { status: 500 });
+    }
+
+    console.log('Successfully generated client token');
     return Response.json({ 
       clientToken: response.clientToken 
     });
   } catch (error) {
     console.error('Braintree token error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Payment initialization failed: ' + error.message }, { status: 500 });
   }
 });

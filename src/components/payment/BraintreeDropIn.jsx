@@ -13,10 +13,24 @@ export default function BraintreeDropIn({ amount, planName, billingPeriod, tier,
     const fetchToken = async () => {
       try {
         const { data } = await base44.functions.invoke('braintreeToken');
+        console.log('Braintree token response:', data);
+        
+        if (data.error) {
+          console.error('Token fetch error:', data.error);
+          onError?.(data.error);
+          return;
+        }
+        
+        if (!data.clientToken) {
+          console.error('No client token in response');
+          onError?.('Payment system initialization failed. Please try again or contact support.');
+          return;
+        }
+        
         setClientToken(data.clientToken);
       } catch (error) {
         console.error('Error fetching client token:', error);
-        onError?.(error.message);
+        onError?.(error.message || 'Failed to initialize payment. Please try again.');
       }
     };
     fetchToken();
