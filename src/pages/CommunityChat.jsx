@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { ArrowLeft, Send, Loader2, Users, Shield } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Users, Shield, Image } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,6 +16,7 @@ export default function CommunityChat() {
   const communityId = urlParams.get('id');
   const [myProfile, setMyProfile] = useState(null);
   const [message, setMessage] = useState('');
+  const [uploading, setUploading] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -72,24 +73,27 @@ export default function CommunityChat() {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: async () => {
-      if (!message.trim() || !myProfile) return;
+    mutationFn: async ({ content, mediaUrl = null, messageType = 'text' }) => {
+      if (!content.trim() || !myProfile) return;
 
-      // AI content moderation
-      const moderationResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `Is this message appropriate for a community chat? Reply ONLY with "yes" or "no": "${message}"`,
-      });
+      // AI content moderation for text
+      if (messageType === 'text') {
+        const moderationResult = await base44.integrations.Core.InvokeLLM({
+          prompt: `Is this message appropriate for a community chat? Reply ONLY with "yes" or "no": "${content}"`,
+        });
 
-      if (moderationResult.toLowerCase().includes('no')) {
-        throw new Error('Message contains inappropriate content');
+        if (moderationResult.toLowerCase().includes('no')) {
+          throw new Error('Message contains inappropriate content');
+        }
       }
 
       await base44.entities.Message.create({
         match_id: `community_${communityId}`,
         sender_id: myProfile.id,
         receiver_id: communityId,
-        content: message.trim(),
-        message_type: 'text'
+        content: content.trim(),
+        message_type: messageType,
+        media_url: mediaUrl
       });
     },
     onSuccess: () => {
@@ -100,6 +104,25 @@ export default function CommunityChat() {
       alert(error.message);
     }
   });
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await sendMessageMutation.mutateAsync({ 
+        content: 'Shared a photo', 
+        mediaUrl: file_url, 
+        messageType: 'image' 
+      });
+    } catch (error) {
+      alert('Failed to upload photo');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const getProfile = (senderId) => {
     return memberProfiles.find(p => p.id === senderId);
@@ -174,6 +197,9 @@ export default function CommunityChat() {
                           : 'bg-white border border-gray-200'
                       }`}
                     >
+                      {msg.message_type === 'image' && msg.media_url ? (
+                        <img src={msg.media_url} alt="" className="rounded-lg max-w-full mb-2" />
+                      ) : null}
                       <p className="text-sm">{msg.content}</p>
                     </div>
                     <p className="text-xs text-gray-400 mt-1">
@@ -190,15 +216,35 @@ export default function CommunityChat() {
       {/* Input */}
       <div className="bg-white border-t p-4 safe-area-inset-bottom">
         <div className="max-w-4xl mx-auto flex gap-2">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoUpload}
+            className="hidden"
+            id="photo-upload"
+          />
+          <label htmlFor="photo-upload">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              disabled={uploading}
+              type="button"
+              asChild
+            >
+              <span className="cursor-pointer">
+                {uploading ? <Loader2 size={20} className="animate-spin" /> : <Image size={20} />}
+              </span>
+            </Button>
+          </label>
           <Input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessageMutation.mutate()}
+            onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessageMutation.mutate({ content: message })}
             placeholder="Type a message..."
             className="flex-1"
           />
           <Button
-            onClick={() => sendMessageMutation.mutate()}
+            onClick={() => sendMessageMutation.mutate({ content: message })}
             disabled={!message.trim() || sendMessageMutation.isPending}
             className="bg-purple-600 hover:bg-purple-700"
           >

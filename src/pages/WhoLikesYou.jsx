@@ -34,7 +34,11 @@ export default function WhoLikesYou() {
   const { data: likes = [], isLoading } = useQuery({
     queryKey: ['who-likes-me', myProfile?.id],
     queryFn: async () => {
-      const allLikes = await base44.entities.Like.filter({ liked_id: myProfile.id }, '-created_date', 100);
+      // Only get likes that haven't been seen/matched yet
+      const allLikes = await base44.entities.Like.filter({ 
+        liked_id: myProfile.id, 
+        is_seen: false 
+      }, '-created_date', 100);
       
       // Get profiles of people who liked me
       const profileIds = allLikes.map(like => like.liker_id);
@@ -77,6 +81,16 @@ export default function WhoLikesYou() {
           matched_at: new Date().toISOString(),
           status: 'active'
         });
+
+        // Mark both likes as seen (matched)
+        await base44.entities.Like.update(mutualLikes[0].id, { is_seen: true });
+        const myLikeToThem = await base44.entities.Like.filter({
+          liker_id: myProfile.id,
+          liked_id: likerId
+        });
+        if (myLikeToThem.length > 0) {
+          await base44.entities.Like.update(myLikeToThem[0].id, { is_seen: true });
+        }
 
         const likerProfiles = await base44.entities.UserProfile.filter({ id: likerId });
         if (likerProfiles.length > 0) {

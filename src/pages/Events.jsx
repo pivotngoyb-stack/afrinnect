@@ -33,9 +33,13 @@ export default function Events() {
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
         if (profiles.length > 0) {
           setMyProfile(profiles[0]);
+        } else {
+          // No profile yet, redirect to onboarding
+          window.location.href = createPageUrl('Onboarding');
         }
       } catch (e) {
-        window.location.href = createPageUrl('Landing');
+        // Not logged in, redirect to landing
+        console.error('Events auth error:', e);
       }
     };
     fetchProfile();
