@@ -57,17 +57,32 @@ export default function Stories() {
   const { data: storyProfiles = {} } = useQuery({
     queryKey: ['story-profiles', allStories.length],
     queryFn: async () => {
-      const profileIds = [...new Set(allStories.map(s => s.user_profile_id))];
-      const profiles = await Promise.all(
-        profileIds.map(id => base44.entities.UserProfile.filter({ id }).then(p => p[0]))
-      );
-      return profiles.reduce((acc, p) => {
-        if (p) acc[p.id] = p;
-        return acc;
-      }, {});
+      try {
+        const profileIds = [...new Set(allStories.map(s => s.user_profile_id))];
+        const profiles = await Promise.all(
+          profileIds.map(async (id) => {
+            try {
+              const p = await base44.entities.UserProfile.filter({ id });
+              return p[0];
+            } catch (error) {
+              console.error(`Failed to fetch profile ${id}:`, error);
+              return null;
+            }
+          })
+        );
+        return profiles.reduce((acc, p) => {
+          if (p) acc[p.id] = p;
+          return acc;
+        }, {});
+      } catch (error) {
+        console.error('Failed to fetch story profiles:', error);
+        return {};
+      }
     },
     enabled: allStories.length > 0,
-    staleTime: 60000
+    staleTime: 120000, // Increased to 2 minutes
+    retry: 1,
+    retryDelay: 5000
   });
 
   const storiesWithProfiles = allStories.map(story => ({
