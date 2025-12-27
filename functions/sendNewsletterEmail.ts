@@ -57,9 +57,7 @@ Deno.serve(async (req) => {
             
             ---
             
-            Visit Afrinnect: https://afrinnect-658a9066.base44.app
-            
-            To unsubscribe from marketing emails, visit: https://afrinnect-658a9066.base44.app/unsubscribe
+            To unsubscribe from marketing emails, click the unsubscribe link below.
             
             © 2025 Afrinnect. All rights reserved.
           `
