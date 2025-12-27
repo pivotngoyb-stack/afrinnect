@@ -314,9 +314,13 @@ export default function Onboarding() {
             type="date"
             value={formData.birth_date}
             onChange={(e) => updateField('birth_date', e.target.value)}
+            max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
             className="mt-2 h-12 text-lg"
           />
           <p className="text-xs text-gray-400 mt-2">You must be 18+ to use Afrinnect</p>
+          {formData.birth_date && calculateAge(formData.birth_date) < 18 && (
+            <p className="text-xs text-red-500 mt-1">You must be at least 18 years old</p>
+          )}
         </div>
       </div>
     </motion.div>,
