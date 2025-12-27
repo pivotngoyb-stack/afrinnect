@@ -43,77 +43,135 @@ export default function Matches() {
   const { data: matchesData = [], isLoading: loadingMatches } = useQuery({
     queryKey: ['matches', myProfile?.id],
     queryFn: async () => {
-      if (!myProfile) return [];
-      const matches1 = await base44.entities.Match.filter({ user1_id: myProfile.id, is_match: true, status: 'active' });
-      const matches2 = await base44.entities.Match.filter({ user2_id: myProfile.id, is_match: true, status: 'active' });
-      return [...matches1, ...matches2];
+      try {
+        if (!myProfile) return [];
+        const matches1 = await base44.entities.Match.filter({ user1_id: myProfile.id, is_match: true, status: 'active' });
+        const matches2 = await base44.entities.Match.filter({ user2_id: myProfile.id, is_match: true, status: 'active' });
+        return [...matches1, ...matches2];
+      } catch (error) {
+        console.error('Failed to fetch matches:', error);
+        return [];
+      }
     },
-    enabled: !!myProfile
+    enabled: !!myProfile,
+    staleTime: 120000,
+    retry: 1,
+    retryDelay: 5000
   });
 
   // Fetch profiles for matches
   const { data: matchedProfiles = [] } = useQuery({
     queryKey: ['matched-profiles', matchesData],
     queryFn: async () => {
-      if (!matchesData.length || !myProfile) return [];
-      
-      const profileIds = matchesData.map(m => 
-        m.user1_id === myProfile.id ? m.user2_id : m.user1_id
-      );
-      
-      const profiles = await Promise.all(
-        profileIds.map(id => base44.entities.UserProfile.filter({ id }))
-      );
-      
-      return profiles.flat().map((profile, idx) => ({
-        ...profile,
-        match: matchesData[idx]
-      }));
+      try {
+        if (!matchesData.length || !myProfile) return [];
+        
+        const profileIds = matchesData.map(m => 
+          m.user1_id === myProfile.id ? m.user2_id : m.user1_id
+        );
+        
+        const profiles = await Promise.all(
+          profileIds.map(async (id) => {
+            try {
+              return await base44.entities.UserProfile.filter({ id });
+            } catch (error) {
+              console.error(`Failed to fetch profile ${id}:`, error);
+              return [];
+            }
+          })
+        );
+        
+        return profiles.flat().map((profile, idx) => ({
+          ...profile,
+          match: matchesData[idx]
+        }));
+      } catch (error) {
+        console.error('Failed to fetch matched profiles:', error);
+        return [];
+      }
     },
-    enabled: matchesData.length > 0
+    enabled: matchesData.length > 0,
+    staleTime: 120000,
+    retry: 1,
+    retryDelay: 5000
   });
 
   // Fetch likes received
   const { data: likesReceived = [], isLoading: loadingLikes } = useQuery({
     queryKey: ['likes-received', myProfile?.id],
     queryFn: async () => {
-      if (!myProfile) return [];
-      return base44.entities.Like.filter({ liked_id: myProfile.id, is_seen: false }, '-created_date');
+      try {
+        if (!myProfile) return [];
+        return await base44.entities.Like.filter({ liked_id: myProfile.id, is_seen: false }, '-created_date');
+      } catch (error) {
+        console.error('Failed to fetch likes:', error);
+        return [];
+      }
     },
-    enabled: !!myProfile
+    enabled: !!myProfile,
+    staleTime: 120000,
+    retry: 1,
+    retryDelay: 5000
   });
 
   // Fetch profiles of people who liked me
   const { data: likerProfiles = [] } = useQuery({
     queryKey: ['liker-profiles', likesReceived],
     queryFn: async () => {
-      if (!likesReceived.length) return [];
-      const profiles = await Promise.all(
-        likesReceived.map(like => base44.entities.UserProfile.filter({ id: like.liker_id }))
-      );
-      return profiles.flat();
+      try {
+        if (!likesReceived.length) return [];
+        const profiles = await Promise.all(
+          likesReceived.map(async (like) => {
+            try {
+              return await base44.entities.UserProfile.filter({ id: like.liker_id });
+            } catch (error) {
+              console.error(`Failed to fetch liker profile ${like.liker_id}:`, error);
+              return [];
+            }
+          })
+        );
+        return profiles.flat();
+      } catch (error) {
+        console.error('Failed to fetch liker profiles:', error);
+        return [];
+      }
     },
-    enabled: likesReceived.length > 0
+    enabled: likesReceived.length > 0,
+    staleTime: 120000,
+    retry: 1,
+    retryDelay: 5000
   });
 
   // Fetch messages for each match
   const { data: messagesMap = {} } = useQuery({
     queryKey: ['last-messages', matchesData],
     queryFn: async () => {
-      const map = {};
-      for (const match of matchesData) {
-        const messages = await base44.entities.Message.filter(
-          { match_id: match.id },
-          '-created_date',
-          1
-        );
-        if (messages.length > 0) {
-          map[match.id] = messages[0];
+      try {
+        const map = {};
+        for (const match of matchesData) {
+          try {
+            const messages = await base44.entities.Message.filter(
+              { match_id: match.id },
+              '-created_date',
+              1
+            );
+            if (messages.length > 0) {
+              map[match.id] = messages[0];
+            }
+          } catch (error) {
+            console.error(`Failed to fetch messages for match ${match.id}:`, error);
+          }
         }
+        return map;
+      } catch (error) {
+        console.error('Failed to fetch messages:', error);
+        return {};
       }
-      return map;
     },
-    enabled: matchesData.length > 0
+    enabled: matchesData.length > 0,
+    staleTime: 60000,
+    retry: 1,
+    retryDelay: 5000
   });
 
   const newMatches = matchedProfiles.filter(p => !messagesMap[p.match?.id] && !p.match?.is_expired);

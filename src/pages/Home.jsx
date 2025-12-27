@@ -320,9 +320,11 @@ export default function Home() {
       return [...featuredProfiles, ...regularProfiles];
     },
     enabled: !!myProfile,
-    staleTime: 30000, // Cache for 30 seconds
-    cacheTime: 300000 // Keep in cache for 5 minutes
-    });
+    staleTime: 120000, // Cache for 2 minutes
+    cacheTime: 300000, // Keep in cache for 5 minutes
+    retry: 1,
+    retryDelay: 5000
+  });
 
   // Check daily like limit
   const canLike = () => {
