@@ -16,6 +16,7 @@ import { useServiceWorker } from '@/components/shared/ServiceWorkerManager';
 import { useNetworkStatus } from '@/components/shared/NetworkStatus';
 import CookieConsent from '@/components/legal/CookieConsent';
 import PushNotificationSetup from '@/components/notifications/PushNotificationSetup';
+import { GlobalErrorHandler } from '@/components/shared/GlobalErrorHandler';
 
 const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Premium', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories', 'EventDetails', 'CreateEvent'];
 
@@ -203,6 +204,7 @@ export default function Layout(props) {
             <ErrorBoundary>
               <ErrorMonitorProvider>
                 <LanguageProvider>
+                  <GlobalErrorHandler />
                   <LayoutContent {...props} />
                 </LanguageProvider>
               </ErrorMonitorProvider>

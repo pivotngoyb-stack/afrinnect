@@ -204,7 +204,8 @@ export default function Home() {
         filterQuery.current_state = { $in: combinedFilters.states };
       }
 
-      const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 50); // Reduced from 200 to 50
+      try {
+        const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 50); // Reduced from 200 to 50
 
       // Apply AI matching and comprehensive filters
       const filteredProfiles = allProfiles.filter(p => {
@@ -325,8 +326,12 @@ export default function Home() {
         regularProfiles.sort((a, b) => b.matchScore - a.matchScore);
       }
       
-      // Featured profiles appear first
-      return [...featuredProfiles, ...regularProfiles];
+        // Featured profiles appear first
+        return [...featuredProfiles, ...regularProfiles];
+      } catch (error) {
+        console.error('Failed to fetch profiles:', error);
+        return [];
+      }
     },
     enabled: !!myProfile,
     staleTime: 120000, // Cache for 2 minutes

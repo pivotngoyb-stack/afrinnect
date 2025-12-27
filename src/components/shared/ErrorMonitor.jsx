@@ -51,23 +51,25 @@ export function ErrorMonitorProvider({ children }) {
       });
     }
 
-    // Log to backend for admin review
+    // Log to backend for admin review (only log, don't throw)
     try {
-      const user = await base44.auth.me();
-      await base44.entities.AdminAuditLog.create({
-        admin_user_id: user?.id || 'unknown',
-        admin_email: user?.email || 'unknown',
-        action_type: 'user_error',
-        details: {
-          error: error.message,
-          type: error.type,
-          stack: error.stack,
-          page: window.location.pathname,
-          userAgent: navigator.userAgent
-        }
-      });
+      const user = await base44.auth.me().catch(() => null);
+      if (user) {
+        await base44.entities.AdminAuditLog.create({
+          admin_user_id: user?.id || 'unknown',
+          admin_email: user?.email || 'unknown',
+          action_type: 'user_error',
+          details: {
+            error: error.message,
+            type: error.type,
+            stack: error.stack,
+            page: window.location.pathname,
+            userAgent: navigator.userAgent
+          }
+        }).catch(logErr => console.error('Failed to log error:', logErr));
+      }
     } catch (e) {
-      console.error('Failed to log error:', e);
+      // Silent fail - don't create error loops
     }
   };
 

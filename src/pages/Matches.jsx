@@ -148,7 +148,8 @@ export default function Matches() {
     queryFn: async () => {
       try {
         const map = {};
-        for (const match of matchesData) {
+        // Batch fetch messages to reduce API calls
+        const messagePromises = matchesData.slice(0, 20).map(async (match) => {
           try {
             const messages = await base44.entities.Message.filter(
               { match_id: match.id },
@@ -156,12 +157,21 @@ export default function Matches() {
               1
             );
             if (messages.length > 0) {
-              map[match.id] = messages[0];
+              return { matchId: match.id, message: messages[0] };
             }
           } catch (error) {
             console.error(`Failed to fetch messages for match ${match.id}:`, error);
           }
-        }
+          return null;
+        });
+        
+        const results = await Promise.all(messagePromises);
+        results.forEach(result => {
+          if (result) {
+            map[result.matchId] = result.message;
+          }
+        });
+        
         return map;
       } catch (error) {
         console.error('Failed to fetch messages:', error);
@@ -169,7 +179,7 @@ export default function Matches() {
       }
     },
     enabled: matchesData.length > 0,
-    staleTime: 60000,
+    staleTime: 120000,
     retry: 1,
     retryDelay: 5000
   });

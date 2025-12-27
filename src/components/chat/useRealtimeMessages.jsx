@@ -24,7 +24,14 @@ export function useRealtimeMessages(matchId, myProfileId, enabled = true) {
       }
 
       try {
-        const wsUrl = window.location.origin.replace('http', 'ws') + '/api/functions/realtimeChat';
+        // Check if WebSocket is supported
+        if (!('WebSocket' in window)) {
+          console.warn('WebSocket not supported, falling back to polling');
+          return;
+        }
+        
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/api/functions/realtimeChat`;
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
