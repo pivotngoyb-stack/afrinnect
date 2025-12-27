@@ -61,14 +61,23 @@ function LayoutContent({ children, currentPageName }) {
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications-count', myProfile?.id],
-    queryFn: () => base44.entities.Notification.filter(
-      { user_profile_id: myProfile.id, is_read: false },
-      '-created_date',
-      20 // Limit to 20 notifications
-    ),
+    queryFn: async () => {
+      try {
+        return await base44.entities.Notification.filter(
+          { user_profile_id: myProfile.id, is_read: false },
+          '-created_date',
+          20
+        );
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+        return [];
+      }
+    },
     enabled: !!myProfile,
-    refetchInterval: 60000, // Reduced to 60 seconds
-    staleTime: 30000 // Cache for 30 seconds
+    refetchInterval: 120000, // Increased to 2 minutes to reduce rate limiting
+    staleTime: 60000, // Cache for 1 minute
+    retry: 1, // Only retry once
+    retryDelay: 5000 // Wait 5 seconds before retry
   });
 
   const unreadNotifications = notifications.length;
