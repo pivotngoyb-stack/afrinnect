@@ -181,16 +181,31 @@ export default function Stories() {
           <ListItemSkeleton count={3} />
         ) : (
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-          {/* Own story */}
+          {/* Own story - Add new */}
           <div className="relative">
-            <StoryRing
-              profile={myProfile}
-              hasStory={myStories.length > 0}
-              isViewed={false}
-              onClick={() => handleStoryClick(myProfile.id)}
-              isOwnProfile
-            />
+            <button
+              onClick={() => setUploadingStory(true)}
+              className="flex flex-col items-center gap-2"
+            >
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center border-4 border-white shadow-lg">
+                <Upload className="text-white" size={24} />
+              </div>
+              <span className="text-xs font-medium text-gray-700">Add Story</span>
+            </button>
           </div>
+
+          {/* Own story - View existing */}
+          {myStories.length > 0 && (
+            <div className="relative">
+              <StoryRing
+                profile={myProfile}
+                hasStory={true}
+                isViewed={false}
+                onClick={() => handleStoryClick(myProfile.id)}
+                isOwnProfile
+              />
+            </div>
+          )}
 
           {/* Other stories */}
           {otherStoryGroups.map(([profileId, { profile, stories }]) => {
