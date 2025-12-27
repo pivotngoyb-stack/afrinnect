@@ -51,6 +51,8 @@ import Error from './pages/Error';
 import CommunityChat from './pages/CommunityChat';
 import EventChat from './pages/EventChat';
 import Unsubscribe from './pages/Unsubscribe';
+import CompatibilityQuizzes from './pages/CompatibilityQuizzes';
+import ReferralProgram from './pages/ReferralProgram';
 import __Layout from './Layout.jsx';
 
 
@@ -108,6 +110,8 @@ export const PAGES = {
     "CommunityChat": CommunityChat,
     "EventChat": EventChat,
     "Unsubscribe": Unsubscribe,
+    "CompatibilityQuizzes": CompatibilityQuizzes,
+    "ReferralProgram": ReferralProgram,
 }
 
 export const pagesConfig = {

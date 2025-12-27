@@ -3,192 +3,96 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { ArrowLeft, Search, MapPin, DollarSign, Star, Phone, Mail, Globe, Heart } from 'lucide-react';
+import { ArrowLeft, Heart, Sparkles, MapPin, Briefcase } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import AfricanPattern from '@/components/shared/AfricanPattern';
+import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function WeddingMarketplace() {
   const [myProfile, setMyProfile] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedCountry, setSelectedCountry] = useState('all');
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const user = await base44.auth.me();
-      if (user) {
+      try {
+        const user = await base44.auth.me();
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-        if (profiles.length > 0) setMyProfile(profiles[0]);
+        if (profiles.length > 0) {
+          setMyProfile(profiles[0]);
+        }
+      } catch (e) {
+        console.error("Error fetching profile:", e);
       }
     };
     fetchProfile();
   }, []);
 
-  const { data: vendors = [] } = useQuery({
+  const { data: vendors = [], isLoading: loadingVendors } = useQuery({
     queryKey: ['wedding-vendors'],
-    queryFn: () => base44.entities.WeddingVendor.filter({ is_verified: true }, '-rating')
+    queryFn: () => base44.entities.WeddingVendor.list('-is_featured', 50),
+    staleTime: 300000,
+    retry: 1
   });
 
-  const categories = [
-    { value: 'all', label: 'All Services', icon: '💍' },
-    { value: 'venue', label: 'Venues', icon: '🏛️' },
-    { value: 'photographer', label: 'Photographers', icon: '📸' },
-    { value: 'catering', label: 'Catering', icon: '🍽️' },
-    { value: 'dj', label: 'DJ/Music', icon: '🎵' },
-    { value: 'decorator', label: 'Decorators', icon: '🎨' },
-    { value: 'planner', label: 'Planners', icon: '📋' },
-    { value: 'clothing', label: 'Clothing', icon: '👗' },
-    { value: 'jewelry', label: 'Jewelry', icon: '💎' },
-    { value: 'makeup', label: 'Makeup', icon: '💄' }
-  ];
-
-  const filteredVendors = vendors.filter(v => {
-    const matchesSearch = v.vendor_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         v.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || v.category === selectedCategory;
-    const matchesCountry = selectedCountry === 'all' || v.country === selectedCountry;
-    return matchesSearch && matchesCategory && matchesCountry;
-  });
-
-  const countries = [...new Set(vendors.map(v => v.country))];
+  if (loadingVendors) {
+    return <LoadingSkeleton />;
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 relative pb-24">
+      <AfricanPattern className="text-purple-600" opacity={0.03} />
+
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link to={createPageUrl('Profile')}>
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
+          <Link to={createPageUrl('Home')}>
             <Button variant="ghost" size="icon">
               <ArrowLeft size={24} />
             </Button>
           </Link>
-          <h1 className="text-lg font-bold">Wedding Services</h1>
+          <h1 className="text-lg font-bold">Wedding Marketplace</h1>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Hero */}
-        <Card className="mb-6 bg-gradient-to-br from-pink-600 to-purple-600 text-white border-0">
-          <CardContent className="p-6 text-center">
-            <Heart size={48} className="mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Plan Your Dream African Wedding</h2>
-            <p className="text-white/90">Connect with verified vendors across Africa for your special day</p>
-          </CardContent>
-        </Card>
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Your Dream Wedding Starts Here</h2>
+        <p className="text-gray-600 mb-8 text-center max-w-2xl mx-auto">
+          Discover and connect with top wedding vendors specializing in African and multicultural celebrations. From venues to photographers, find everything you need for your special day.
+        </p>
 
-        {/* Filters */}
-        <div className="flex gap-3 mb-6 flex-wrap">
-          <div className="flex-1 min-w-[200px]">
-            <Input
-              placeholder="Search vendors..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full"
-            />
-          </div>
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map(cat => (
-                <SelectItem key={cat.value} value={cat.value}>
-                  {cat.icon} {cat.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Country" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Countries</SelectItem>
-              {countries.map(country => (
-                <SelectItem key={country} value={country}>{country}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Category Pills */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {categories.map(cat => (
-            <Button
-              key={cat.value}
-              onClick={() => setSelectedCategory(cat.value)}
-              variant={selectedCategory === cat.value ? 'default' : 'outline'}
-              size="sm"
-              className="whitespace-nowrap"
-            >
-              {cat.icon} {cat.label}
-            </Button>
-          ))}
-        </div>
-
-        {/* Vendors Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredVendors.map(vendor => (
-            <Card key={vendor.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-0">
-                {vendor.photos?.[0] && (
-                  <img
-                    src={vendor.photos[0]}
-                    alt={vendor.vendor_name}
-                    className="w-full h-48 object-cover rounded-t-lg"
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {vendors.length > 0 ? (
+            vendors.map(vendor => (
+              <Card key={vendor.id} className="bg-white/70 backdrop-blur-md border border-gray-200 shadow-lg hover:shadow-xl transition-all">
+                <CardHeader>
+                  <img 
+                    src={vendor.image_url || 'https://images.unsplash.com/photo-1590059990212-e5628b082084?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'} 
+                    alt={vendor.name} 
+                    className="rounded-lg mb-4 object-cover h-40 w-full"
                   />
-                )}
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <Badge className="capitalize">{vendor.category.replace('_', ' ')}</Badge>
-                    <div className="flex items-center gap-1">
-                      <Star size={14} className="text-amber-500 fill-amber-500" />
-                      <span className="text-sm font-medium">{vendor.rating || 5.0}</span>
-                    </div>
-                  </div>
-                  <h3 className="font-bold text-lg mb-2">{vendor.vendor_name}</h3>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">{vendor.description}</p>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                    <MapPin size={14} />
-                    <span>{vendor.city}, {vendor.country}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                    <DollarSign size={14} />
-                    <span>{vendor.price_range}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    {vendor.contact_phone && (
-                      <Button size="sm" variant="outline" className="flex-1">
-                        <Phone size={14} className="mr-1" />
-                        Call
-                      </Button>
-                    )}
-                    {vendor.contact_email && (
-                      <Button size="sm" variant="outline" className="flex-1">
-                        <Mail size={14} className="mr-1" />
-                        Email
-                      </Button>
-                    )}
-                    {vendor.website && (
-                      <Button size="sm" variant="outline" className="flex-1" onClick={() => window.open(vendor.website, '_blank')}>
-                        <Globe size={14} className="mr-1" />
-                        Site
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <CardTitle className="text-xl font-bold text-gray-800 flex items-center justify-between">
+                    {vendor.name}
+                    {vendor.is_featured && <Badge className="bg-amber-500"><Sparkles size={14} className="mr-1" /> Featured</Badge>}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-gray-700 text-sm">
+                  <p className="flex items-center gap-2"><Briefcase size={16} />{vendor.category}</p>
+                  <p className="flex items-center gap-2"><MapPin size={16} />{vendor.location}</p>
+                  <p className="line-clamp-3">{vendor.description}</p>
+                  <Button variant="outline" className="w-full mt-4">
+                    View Details
+                  </Button>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <Heart size={48} className="mx-auto text-gray-300 mb-4" />
+              <p className="text-gray-600">No wedding vendors found at the moment.</p>
+              <p className="text-gray-500 text-sm">Check back later or suggest a vendor!</p>
+            </div>
+          )}
         </div>
-
-        {filteredVendors.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-gray-500">No vendors found. Try adjusting your filters.</p>
-          </div>
-        )}
       </main>
     </div>
   );
