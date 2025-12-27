@@ -11,6 +11,7 @@ import AfricanPattern from '@/components/shared/AfricanPattern';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import LanguageSelector from '@/components/i18n/LanguageSelector';
 import { useConversionTracker, CONVERSION_EVENTS } from '@/components/shared/ConversionTracker';
+import SEOHead from '@/components/seo/SEOHead';
 
 export default function Landing() {
   const { t } = useLanguage();
@@ -55,12 +56,18 @@ export default function Landing() {
     const urlParams = new URLSearchParams(window.location.search);
     const ref = urlParams.get('ref');
     const nextUrl = ref ? createPageUrl('Onboarding') + `?ref=${ref}` : createPageUrl('LegalAcceptance');
-    base44.auth.redirectToLogin(window.location.origin + nextUrl);
+    base44.auth.redirectToLogin('https://afrinnect-658a9066.base44.app' + nextUrl);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-amber-900 relative overflow-hidden">
-      <AfricanPattern className="text-white" opacity={0.08} />
+    <>
+      <SEOHead
+        title="Afrinnect - Connect with African Singles Worldwide"
+        description="Find meaningful relationships with African singles and diaspora worldwide. Join 10K+ members in 50+ countries for cultural dating based on shared heritage."
+        keywords="african dating, black dating, african singles, diaspora dating, african culture, ethnic dating"
+      />
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-amber-900 relative overflow-hidden">
+        <AfricanPattern className="text-white" opacity={0.08} />
 
       {/* Navigation */}
       <nav className="relative z-10 bg-white/10 backdrop-blur-lg border-b border-white/20">
@@ -297,5 +304,6 @@ export default function Landing() {
         </div>
       </footer>
     </div>
+    </>
   );
 }

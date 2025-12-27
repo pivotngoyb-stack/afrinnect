@@ -60,6 +60,7 @@ import ReferralDashboard from './pages/ReferralDashboard';
 import Unsubscribe from './pages/Unsubscribe';
 import SuccessMetrics from './pages/SuccessMetrics';
 import ReferralCenter from './pages/ReferralCenter';
+import ABTestDashboard from './pages/ABTestDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -126,6 +127,7 @@ export const PAGES = {
     "Unsubscribe": Unsubscribe,
     "SuccessMetrics": SuccessMetrics,
     "ReferralCenter": ReferralCenter,
+    "ABTestDashboard": ABTestDashboard,
 }
 
 export const pagesConfig = {
