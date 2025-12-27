@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DollarSign, TrendingUp, Users, CreditCard, RefreshCw, Crown } from 'lucide-react';
-import RevenueWidget from '@/components/monetization/RevenueWidget';
 
 export default function RevenueAnalytics({ subscriptions, profiles }) {
   const activeSubscriptions = subscriptions.filter(s => s.status === 'active');
@@ -42,7 +41,6 @@ export default function RevenueAnalytics({ subscriptions, profiles }) {
 
   return (
     <div className="space-y-6">
-      <RevenueWidget />
       {/* Key Metrics */}
       <div className="grid md:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
