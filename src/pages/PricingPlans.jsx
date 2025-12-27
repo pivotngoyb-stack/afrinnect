@@ -93,10 +93,33 @@ export default function PricingPlans() {
   const [myProfile, setMyProfile] = useState(null);
   const [userCountry, setUserCountry] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
+  const [pricingData, setPricingData] = useState(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       try {
+        // Fetch dynamic pricing from database
+        const plans = await base44.entities.PricingPlan.filter({ is_active: true });
+        if (plans.length > 0) {
+          const dynamicPricing = {};
+          plans.forEach(plan => {
+            const tier = plan.tier;
+            const period = plan.billing_period;
+            
+            if (!dynamicPricing[tier]) {
+              dynamicPricing[tier] = { prices: {} };
+            }
+            
+            dynamicPricing[tier].prices[period] = {
+              amount: plan.price_usd,
+              period: period === 'monthly' ? 'month' : period === 'yearly' ? 'month' : period === 'quarterly' ? 'month' : 'month',
+              total: plan.price_usd,
+              save: plan.discount_percentage ? `${plan.discount_percentage}%` : null
+            };
+          });
+          setPricingData(dynamicPricing);
+        }
+
         const user = await base44.auth.me();
         if (user) {
           const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
@@ -109,7 +132,7 @@ export default function PricingPlans() {
         console.log('Not logged in');
       }
     };
-    fetchProfile();
+    fetchData();
   }, []);
 
   // Regional pricing for Africa
@@ -130,7 +153,10 @@ export default function PricingPlans() {
     alert(`Payment failed: ${error}`);
   };
 
-  const currentTier = PRICING_TIERS[selectedTier];
+  // Use dynamic pricing if available, otherwise fallback to static
+  const currentTier = pricingData && pricingData[selectedTier] 
+    ? { ...PRICING_TIERS[selectedTier], ...pricingData[selectedTier] }
+    : PRICING_TIERS[selectedTier];
   const price = currentTier?.prices?.[selectedBilling];
 
   if (!currentTier || !currentTier.prices) {

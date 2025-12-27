@@ -17,10 +17,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Generate client token
-    const response = await gateway.clientToken.generate({
-      customerId: user.id
-    });
+    // Generate client token (try to use existing customer or create new)
+    let response;
+    try {
+      response = await gateway.clientToken.generate({
+        customerId: user.id
+      });
+    } catch (err) {
+      // Customer doesn't exist, generate without customerId
+      response = await gateway.clientToken.generate({});
+    }
 
     return Response.json({ 
       clientToken: response.clientToken 

@@ -49,6 +49,16 @@ export default function PricingManagement({ plans: initialPlans }) {
     }
   });
 
+  const createPlanMutation = useMutation({
+    mutationFn: async (data) => {
+      await base44.entities.PricingPlan.create(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['pricing-plans']);
+      setEditDialog({ open: false, type: null, item: null });
+    }
+  });
+
   const createPromotionMutation = useMutation({
     mutationFn: async (data) => {
       await base44.entities.Promotion.create(data);
@@ -139,6 +149,14 @@ export default function PricingManagement({ plans: initialPlans }) {
         </TabsList>
 
         <TabsContent value="plans" className="space-y-4">
+          <Button
+            onClick={() => setEditDialog({ open: true, type: 'plan', item: null })}
+            className="mb-4"
+          >
+            <Plus size={18} className="mr-2" />
+            Create Plan
+          </Button>
+
           {plans.map(plan => (
             <Card key={plan.id} className="bg-white/5 border-white/10">
               <CardContent className="p-6">
@@ -352,14 +370,114 @@ export default function PricingManagement({ plans: initialPlans }) {
         <DialogContent className="bg-gray-900 border-white/20 text-white max-w-2xl">
           <DialogHeader>
             <DialogTitle>
+              {editDialog.type === 'plan' && (editDialog.item ? 'Edit Plan' : 'Create Plan')}
               {editDialog.type === 'promo' && 'Create Promotion'}
               {editDialog.type === 'abtest' && 'Create A/B Test'}
             </DialogTitle>
           </DialogHeader>
+          {editDialog.type === 'plan' && (
+            <PlanForm 
+              plan={editDialog.item} 
+              onSubmit={editDialog.item ? updatePlanMutation.mutate : createPlanMutation.mutate} 
+            />
+          )}
           {editDialog.type === 'promo' && <PromoForm onSubmit={createPromotionMutation.mutate} />}
           {editDialog.type === 'abtest' && <ABTestForm onSubmit={createABTestMutation.mutate} />}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function PlanForm({ plan, onSubmit }) {
+  const [formData, setFormData] = useState(plan || {
+    plan_id: '',
+    name: '',
+    tier: 'premium',
+    billing_period: 'monthly',
+    price_usd: 14.99,
+    features: [],
+    is_active: true,
+    is_featured: false
+  });
+
+  const handleSubmit = () => {
+    if (plan) {
+      onSubmit({ id: plan.id, data: formData });
+    } else {
+      onSubmit(formData);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label className="text-gray-300">Plan Name</Label>
+        <Input
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          placeholder="Premium Monthly"
+          className="bg-white/10 border-white/20 text-white"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label className="text-gray-300">Tier</Label>
+          <Select value={formData.tier} onValueChange={(v) => setFormData({ ...formData, tier: v })}>
+            <SelectTrigger className="bg-white/10 border-white/20 text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="premium">Premium</SelectItem>
+              <SelectItem value="elite">Elite</SelectItem>
+              <SelectItem value="vip">VIP</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-gray-300">Billing Period</Label>
+          <Select value={formData.billing_period} onValueChange={(v) => setFormData({ ...formData, billing_period: v })}>
+            <SelectTrigger className="bg-white/10 border-white/20 text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="monthly">Monthly</SelectItem>
+              <SelectItem value="quarterly">Quarterly</SelectItem>
+              <SelectItem value="yearly">Yearly</SelectItem>
+              <SelectItem value="6months">6 Months</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div>
+        <Label className="text-gray-300">Price (USD)</Label>
+        <Input
+          type="number"
+          step="0.01"
+          value={formData.price_usd}
+          onChange={(e) => setFormData({ ...formData, price_usd: parseFloat(e.target.value) })}
+          className="bg-white/10 border-white/20 text-white"
+        />
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={formData.is_active}
+            onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+          />
+          <Label className="text-gray-300">Active</Label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={formData.is_featured}
+            onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
+          />
+          <Label className="text-gray-300">Featured</Label>
+        </div>
+      </div>
+      <Button onClick={handleSubmit} className="w-full">
+        {plan ? 'Update Plan' : 'Create Plan'}
+      </Button>
     </div>
   );
 }

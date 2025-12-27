@@ -17,7 +17,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { nonce, amount, planName, billingPeriod, tier } = await req.json();
+    const body = await req.json();
+    const { nonce, amount, planName, billingPeriod, tier } = body;
 
     // Process payment
     const result = await gateway.transaction.sale({
