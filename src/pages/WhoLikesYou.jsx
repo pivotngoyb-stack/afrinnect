@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import MatchCelebration from '@/components/match/MatchCelebration';
 
 export default function WhoLikesYou() {
   const [myProfile, setMyProfile] = useState(null);
+  const [matchedProfile, setMatchedProfile] = useState(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -87,11 +89,31 @@ export default function WhoLikesYou() {
             link_to: createPageUrl('Matches')
           });
         }
+        
+        // Update first match tracking
+        if (!myProfile.has_matched_before) {
+          await base44.entities.UserProfile.update(myProfile.id, {
+            has_matched_before: true
+          });
+        }
+        
+        return { isMatch: true, matchedProfile: likerProfiles[0] };
       }
+      
+      return { isMatch: false };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries(['who-likes-me']);
-      alert("It's a Match! 💕");
+      
+      if (result?.isMatch) {
+        // Show match celebration
+        setMatchedProfile(result.matchedProfile);
+        
+        // Redirect after celebration
+        setTimeout(() => {
+          window.location.href = createPageUrl('Matches');
+        }, 3000);
+      }
     }
   });
 
@@ -108,7 +130,13 @@ export default function WhoLikesYou() {
   const showBlurred = !myProfile?.is_premium;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 pb-24">
+    <>
+      <MatchCelebration 
+        matchedProfile={matchedProfile} 
+        onClose={() => setMatchedProfile(null)} 
+      />
+      
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 pb-24">
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -207,12 +235,14 @@ export default function WhoLikesYou() {
                           )}
                           <div className="flex gap-2">
                             <Button
-                              onClick={() => likeMutation.mutate(profile.id)}
+                              onClick={() => {
+                                likeMutation.mutate(profile.id);
+                              }}
                               disabled={likeMutation.isPending}
                               className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
                             >
                               <Heart size={18} className="mr-2" />
-                              Like Back
+                              {likeMutation.isPending ? 'Liking...' : 'Like Back'}
                             </Button>
                             <Link to={createPageUrl(`Profile?id=${profile.id}`)} className="flex-1">
                               <Button variant="outline" className="w-full">
@@ -231,5 +261,6 @@ export default function WhoLikesYou() {
         )}
       </main>
     </div>
+    </>
   );
 }
