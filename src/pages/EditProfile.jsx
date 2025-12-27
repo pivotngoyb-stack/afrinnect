@@ -19,7 +19,7 @@ import AfricanPattern from '@/components/shared/AfricanPattern';
 import PhotoReorderModal from '@/components/home/PhotoReorderModal';
 import EditProfilePhotos from '@/components/profile/EditProfilePhotos';
 import EditProfileBasicInfo from '@/components/profile/EditProfileBasicInfo';
-import VideoProfileRecorder from '@/components/profile/VideoProfileRecorder';
+// import VideoProfileRecorder from '@/components/profile/VideoProfileRecorder';
 import { useDebounce } from '@/components/shared/useDebounce';
 import { compressImage, validateImageFile } from '@/components/shared/ImageCompressor';
 
@@ -672,8 +672,8 @@ export default function EditProfile() {
           </Card>
         </motion.div>
 
-        {/* Video Profile */}
-        <motion.div
+        {/* Video Profile - Commented out temporarily */}
+        {/* <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.7 }}
@@ -682,7 +682,7 @@ export default function EditProfile() {
             existingVideoUrl={formData.video_profile_url}
             onVideoUploaded={(url) => setFormData({ ...formData, video_profile_url: url })}
           />
-        </motion.div>
+        </motion.div> */}
 
         {/* Save Button (Bottom) */}
         <motion.div
