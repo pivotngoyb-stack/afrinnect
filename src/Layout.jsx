@@ -76,8 +76,9 @@ function LayoutContent({ children, currentPageName }) {
       }
     },
     enabled: !!myProfile?.id,
-    refetchInterval: 180000, // Increased to 3 minutes
-    staleTime: 120000, // Cache for 2 minutes
+    refetchInterval: false, // Disable polling
+    refetchOnWindowFocus: true, // Only refresh on focus
+    staleTime: 300000, // Cache for 5 minutes
     retry: 1,
     retryDelay: 5000
   });

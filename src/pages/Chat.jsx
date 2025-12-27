@@ -130,9 +130,10 @@ export default function Chat() {
     pageSize: 30,
     sortBy: '-created_date',
     enabled: !!matchId,
-    refetchInterval: isConnected ? 120000 : 180000,
+    refetchInterval: false, // Disable auto-refetch, rely on WebSocket
     retry: 1,
-    retryDelay: 5000
+    retryDelay: 5000,
+    staleTime: 300000 // 5 minutes
   });
 
   // Scroll to bottom - optimized
@@ -260,11 +261,8 @@ export default function Chat() {
     }
   );
 
-  // Handle optimistic update success/error
+  // Handle message errors
   useEffect(() => {
-    if (sendMessageMutation.isSuccess) {
-      setMessageText('');
-    }
     if (sendMessageMutation.isError) {
       const error = sendMessageMutation.error;
       if (error.message === 'upgrade_required') {
@@ -273,8 +271,14 @@ export default function Chat() {
       } else {
         alert(error.message);
       }
+      // Remove failed optimistic message
+      queryClient.invalidateQueries(['messages', matchId]);
     }
-  }, [sendMessageMutation.isSuccess, sendMessageMutation.isError]);
+    if (sendMessageMutation.isSuccess) {
+      // Refresh to get the real message ID
+      queryClient.invalidateQueries(['messages', matchId]);
+    }
+  }, [sendMessageMutation.isSuccess, sendMessageMutation.isError, matchId, queryClient]);
 
   // Voice note mutation
   const sendVoiceNoteMutation = useMutation({
@@ -374,22 +378,28 @@ export default function Chat() {
   const handleSend = () => {
     if (!messageText.trim()) return;
     
+    // Clear input immediately for better UX
+    const textToSend = messageText;
+    setMessageText('');
+    
     // Create optimistic message
     const optimisticMessage = {
       id: `temp-${Date.now()}`,
       match_id: matchId,
       sender_id: myProfile.id,
       receiver_id: otherProfile.id,
-      content: messageText,
+      content: textToSend,
       message_type: 'text',
       is_read: false,
       created_date: new Date().toISOString(),
       __optimistic: true
     };
     
+    // Update messages immediately
+    queryClient.setQueryData(['messages', matchId], (old = []) => [...old, optimisticMessage]);
+    
     sendMessageMutation.mutate({ 
-      content: messageText,
-      optimisticUpdate: [...messages, optimisticMessage]
+      content: textToSend
     });
   };
 

@@ -45,37 +45,65 @@ export default function PricingManagement({ plans: initialPlans }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['pricing-plans']);
+      queryClient.invalidateQueries(['admin-pricing-plans']);
       setEditDialog({ open: false, type: null, item: null });
+      alert('Plan updated successfully!');
     }
   });
 
   const createPlanMutation = useMutation({
     mutationFn: async (data) => {
-      await base44.entities.PricingPlan.create(data);
+      await base44.entities.PricingPlan.create({
+        ...data,
+        plan_id: `${data.tier}_${data.billing_period}_${Date.now()}`,
+        features: data.features || [],
+        is_active: data.is_active !== undefined ? data.is_active : true
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['pricing-plans']);
+      queryClient.invalidateQueries(['admin-pricing-plans']);
       setEditDialog({ open: false, type: null, item: null });
+      alert('Plan created successfully!');
     }
   });
 
   const createPromotionMutation = useMutation({
     mutationFn: async (data) => {
-      await base44.entities.Promotion.create(data);
+      await base44.entities.Promotion.create({
+        ...data,
+        is_active: true,
+        current_uses: 0,
+        start_date: new Date().toISOString(),
+        end_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['promotions']);
       setEditDialog({ open: false, type: null, item: null });
+      alert('Promotion created successfully!');
     }
   });
 
   const createABTestMutation = useMutation({
     mutationFn: async (data) => {
-      await base44.entities.ABTest.create(data);
+      await base44.entities.ABTest.create({
+        ...data,
+        is_active: true,
+        winner: 'no_winner',
+        metrics: {
+          variant_a_views: 0,
+          variant_a_conversions: 0,
+          variant_b_views: 0,
+          variant_b_conversions: 0
+        },
+        start_date: new Date().toISOString()
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['ab-tests']);
       setEditDialog({ open: false, type: null, item: null });
+      alert('A/B Test created successfully!');
     }
   });
 
@@ -218,9 +246,14 @@ export default function PricingManagement({ plans: initialPlans }) {
                       <Badge className="bg-purple-500">{promo.promo_type}</Badge>
                       <Switch
                         checked={promo.is_active}
-                        onCheckedChange={(checked) => 
-                          updatePlanMutation.mutate({ id: promo.id, data: { is_active: checked } })
-                        }
+                        onCheckedChange={async (checked) => {
+                          try {
+                            await base44.entities.Promotion.update(promo.id, { is_active: checked });
+                            queryClient.invalidateQueries(['promotions']);
+                          } catch (e) {
+                            alert('Failed to update promotion');
+                          }
+                        }}
                       />
                     </div>
                     <div className="grid grid-cols-3 gap-4 text-gray-300 text-sm">
@@ -396,7 +429,14 @@ function PlanForm({ plan, onSubmit }) {
     tier: 'premium',
     billing_period: 'monthly',
     price_usd: 14.99,
-    features: [],
+    features: [
+      'Unlimited Likes',
+      'See Who Likes You',
+      'Advanced Filters',
+      '5 Super Likes/day',
+      'Profile Boost',
+      'No Ads'
+    ],
     is_active: true,
     is_featured: false
   });

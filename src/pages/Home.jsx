@@ -334,8 +334,10 @@ export default function Home() {
       }
     },
     enabled: !!myProfile,
-    staleTime: 120000, // Cache for 2 minutes
-    cacheTime: 300000, // Keep in cache for 5 minutes
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    staleTime: 300000, // Cache for 5 minutes
+    cacheTime: 600000, // Keep in cache for 10 minutes
     retry: 1,
     retryDelay: 5000
   });
