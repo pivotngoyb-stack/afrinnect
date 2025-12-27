@@ -102,21 +102,21 @@ export default function EditProfile() {
           bio: p.bio || '',
           birth_date: p.birth_date || '',
           gender: p.gender || '',
-          photos: p.photos || [],
+          photos: Array.isArray(p.photos) ? p.photos : [],
           primary_photo: p.primary_photo || '',
           country_of_origin: p.country_of_origin || '',
           current_country: p.current_country || '',
           current_city: p.current_city || '',
           tribe_ethnicity: p.tribe_ethnicity || '',
-          languages: p.languages || [],
+          languages: Array.isArray(p.languages) ? p.languages : [],
           religion: p.religion || '',
           education: p.education || '',
           profession: p.profession || '',
           relationship_goal: p.relationship_goal || '',
           height_cm: p.height_cm || '',
           lifestyle: p.lifestyle || {},
-          cultural_values: p.cultural_values || [],
-          interests: p.interests || []
+          cultural_values: Array.isArray(p.cultural_values) ? p.cultural_values : [],
+          interests: Array.isArray(p.interests) ? p.interests : []
         });
         
         // Convert cm to feet and inches
@@ -128,10 +128,9 @@ export default function EditProfile() {
           setHeightInches(inches.toString());
         }
       }
+      setLoading(false);
     } catch (error) {
       console.error('Load error:', error);
-      alert('Error loading profile: ' + error.message);
-    } finally {
       setLoading(false);
     }
   };
