@@ -77,7 +77,10 @@ export default function Events() {
   } = useInfinitePagination('Event', buildFilters(), {
     pageSize: 20,
     sortBy: timeFilter === 'past' ? '-start_date' : 'start_date',
-    enabled: !!myProfile
+    enabled: !!myProfile,
+    refetchInterval: 180000,
+    retry: 1,
+    retryDelay: 5000
   });
 
   const observerRef = useRef();
@@ -94,21 +97,26 @@ export default function Events() {
 
   const joinEventMutation = useMutation({
     mutationFn: async (eventId) => {
-      const event = events.find(e => e.id === eventId);
-      if (!event) return;
+      try {
+        const event = events.find(e => e.id === eventId);
+        if (!event) return;
 
-      const updatedAttendees = [...(event.attendees || []), myProfile.id];
-      await base44.entities.Event.update(eventId, {
-        attendees: updatedAttendees
-      });
+        const updatedAttendees = [...(event.attendees || []), myProfile.id];
+        await base44.entities.Event.update(eventId, {
+          attendees: updatedAttendees
+        });
 
-      await base44.entities.Notification.create({
-        user_profile_id: myProfile.id,
-        type: 'admin_message',
-        title: 'Event Registered!',
-        message: `You're registered for ${event.title}`,
-        link_to: createPageUrl('Events')
-      });
+        await base44.entities.Notification.create({
+          user_profile_id: myProfile.id,
+          type: 'admin_message',
+          title: 'Event Registered!',
+          message: `You're registered for ${event.title}`,
+          link_to: createPageUrl('Events')
+        });
+      } catch (error) {
+        console.error('Failed to join event:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['events']);

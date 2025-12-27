@@ -96,19 +96,27 @@ export default function Chat() {
   const { data: match } = useQuery({
     queryKey: ['match', matchId],
     queryFn: async () => {
-      const matches = await base44.entities.Match.filter({ id: matchId });
-      if (matches.length > 0) {
-        const m = matches[0];
-        const otherId = m.user1_id === myProfile?.id ? m.user2_id : m.user1_id;
-        const otherProfiles = await base44.entities.UserProfile.filter({ id: otherId });
-        if (otherProfiles.length > 0) {
-          setOtherProfile(otherProfiles[0]);
+      try {
+        const matches = await base44.entities.Match.filter({ id: matchId });
+        if (matches.length > 0) {
+          const m = matches[0];
+          const otherId = m.user1_id === myProfile?.id ? m.user2_id : m.user1_id;
+          const otherProfiles = await base44.entities.UserProfile.filter({ id: otherId });
+          if (otherProfiles.length > 0) {
+            setOtherProfile(otherProfiles[0]);
+          }
+          return m;
         }
-        return m;
+        return null;
+      } catch (error) {
+        console.error('Failed to fetch match:', error);
+        return null;
       }
-      return null;
     },
-    enabled: !!matchId && !!myProfile
+    enabled: !!matchId && !!myProfile,
+    staleTime: 120000,
+    retry: 1,
+    retryDelay: 5000
   });
 
   // Fetch messages with infinite scroll
@@ -122,7 +130,9 @@ export default function Chat() {
     pageSize: 30,
     sortBy: '-created_date',
     enabled: !!matchId,
-    refetchInterval: isConnected ? 60000 : 10000
+    refetchInterval: isConnected ? 120000 : 180000,
+    retry: 1,
+    retryDelay: 5000
   });
 
   // Scroll to bottom - optimized

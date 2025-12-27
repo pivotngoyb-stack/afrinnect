@@ -18,9 +18,13 @@ export default function Communities() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const user = await base44.auth.me();
-      const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-      if (profiles.length > 0) setMyProfile(profiles[0]);
+      try {
+        const user = await base44.auth.me();
+        const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+        if (profiles.length > 0) setMyProfile(profiles[0]);
+      } catch (error) {
+        console.error('Failed to fetch profile:', error);
+      }
     };
     fetchProfile();
   }, []);
@@ -34,7 +38,10 @@ export default function Communities() {
   } = useInfinitePagination('Community', {}, {
     pageSize: 20,
     sortBy: '-created_date',
-    enabled: !!myProfile
+    enabled: !!myProfile,
+    refetchInterval: 180000,
+    retry: 1,
+    retryDelay: 5000
   });
 
   const joinMutation = useMutation({
