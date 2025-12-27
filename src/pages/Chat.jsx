@@ -153,9 +153,9 @@ export default function Chat() {
             base44.entities.Message.update(m.id, {
               is_read: true,
               read_at: new Date().toISOString()
-            })
+            }).catch(err => console.error('Failed to mark message as read:', err))
           )
-        );
+        ).catch(err => console.error('Failed to batch update messages:', err));
       }
     }
   }, [messages.length, myProfile?.id]); // Only trigger on relevant changes

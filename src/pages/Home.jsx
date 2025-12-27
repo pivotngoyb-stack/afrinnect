@@ -84,18 +84,22 @@ export default function Home() {
           const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
           
           if (lastLogin !== today) {
-            let newStreak = profile.login_streak || 0;
-            if (lastLogin === yesterday) {
-              newStreak += 1; // Consecutive day
-            } else if (lastLogin !== today) {
-              newStreak = 1; // Reset streak
+            try {
+              let newStreak = profile.login_streak || 0;
+              if (lastLogin === yesterday) {
+                newStreak += 1; // Consecutive day
+              } else if (lastLogin !== today) {
+                newStreak = 1; // Reset streak
+              }
+              
+              await base44.entities.UserProfile.update(profile.id, {
+                login_streak: newStreak,
+                last_login_date: today,
+                last_active: new Date().toISOString()
+              });
+            } catch (error) {
+              console.error('Failed to update login streak:', error);
             }
-            
-            await base44.entities.UserProfile.update(profile.id, {
-              login_streak: newStreak,
-              last_login_date: today,
-              last_active: new Date().toISOString()
-            });
           }
         } else {
           window.location.href = createPageUrl('Onboarding');
@@ -285,17 +289,22 @@ export default function Home() {
       // Calculate distance and AI match scores for top profiles - optimized
       const profilesWithScores = await Promise.all(
         filteredProfiles.slice(0, 30).map(async (p) => { // Reduced from 50 to 30
-          const score = await calculateMatchScore(myProfile, p);
-          let distance = null;
-          if (myProfile?.location?.lat && p.location?.lat) {
-            distance = calculateDistance(
-              myProfile.location.lat,
-              myProfile.location.lng,
-              p.location.lat,
-              p.location.lng
-            );
+          try {
+            const score = await calculateMatchScore(myProfile, p);
+            let distance = null;
+            if (myProfile?.location?.lat && p.location?.lat) {
+              distance = calculateDistance(
+                myProfile.location.lat,
+                myProfile.location.lng,
+                p.location.lat,
+                p.location.lng
+              );
+            }
+            return { ...p, matchScore: score, distance };
+          } catch (error) {
+            console.error('Failed to calculate match score:', error);
+            return { ...p, matchScore: 0, distance: null };
           }
-          return { ...p, matchScore: score, distance };
         })
       );
 

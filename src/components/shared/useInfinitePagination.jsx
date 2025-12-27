@@ -21,37 +21,49 @@ export function useInfinitePagination(entityName, filters = {}, options = {}) {
   } = useInfiniteQuery({
     queryKey: [entityName, filters, sortBy],
     queryFn: async ({ pageParam = 0 }) => {
-      const skip = pageParam * pageSize;
-      
-      // Use cursor-based pagination with ID
-      let query = { ...filters };
-      if (pageParam > 0 && data?.pages?.length > 0) {
-        const lastPage = data.pages[data.pages.length - 1];
-        const lastItem = lastPage.items[lastPage.items.length - 1];
-        if (lastItem?.id) {
-          query.id = { $lt: lastItem.id };
+      try {
+        const skip = pageParam * pageSize;
+        
+        // Use cursor-based pagination with ID
+        let query = { ...filters };
+        if (pageParam > 0 && data?.pages?.length > 0) {
+          const lastPage = data.pages[data.pages.length - 1];
+          const lastItem = lastPage.items[lastPage.items.length - 1];
+          if (lastItem?.id) {
+            query.id = { $lt: lastItem.id };
+          }
         }
+
+        const results = await base44.entities[entityName].filter(
+          query,
+          sortBy,
+          pageSize + 1 // Fetch one extra to check if more exists
+        );
+
+        const hasMore = results.length > pageSize;
+        const items = hasMore ? results.slice(0, pageSize) : results;
+
+        return {
+          items,
+          nextPage: hasMore ? pageParam + 1 : null,
+          hasMore
+        };
+      } catch (error) {
+        console.error(`Failed to fetch ${entityName}:`, error);
+        return {
+          items: [],
+          nextPage: null,
+          hasMore: false
+        };
       }
-
-      const results = await base44.entities[entityName].filter(
-        query,
-        sortBy,
-        pageSize + 1 // Fetch one extra to check if more exists
-      );
-
-      const hasMore = results.length > pageSize;
-      const items = hasMore ? results.slice(0, pageSize) : results;
-
-      return {
-        items,
-        nextPage: hasMore ? pageParam + 1 : null,
-        hasMore
-      };
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
     refetchInterval: enableRefetch ? refetchInterval : false,
-    staleTime: 30000,
-    cacheTime: 300000
+    staleTime: options.staleTime || 120000,
+    cacheTime: 300000,
+    retry: options.retry || 1,
+    retryDelay: options.retryDelay || 5000,
+    enabled: options.enabled !== false
   });
 
   const allItems = data?.pages.flatMap(page => page.items) || [];

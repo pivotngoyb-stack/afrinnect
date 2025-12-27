@@ -62,6 +62,7 @@ function LayoutContent({ children, currentPageName }) {
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications-count', myProfile?.id],
     queryFn: async () => {
+      if (!myProfile?.id) return [];
       try {
         return await base44.entities.Notification.filter(
           { user_profile_id: myProfile.id, is_read: false },
@@ -73,11 +74,11 @@ function LayoutContent({ children, currentPageName }) {
         return [];
       }
     },
-    enabled: !!myProfile,
-    refetchInterval: 120000, // Increased to 2 minutes to reduce rate limiting
-    staleTime: 60000, // Cache for 1 minute
-    retry: 1, // Only retry once
-    retryDelay: 5000 // Wait 5 seconds before retry
+    enabled: !!myProfile?.id,
+    refetchInterval: 180000, // Increased to 3 minutes
+    staleTime: 120000, // Cache for 2 minutes
+    retry: 1,
+    retryDelay: 5000
   });
 
   const unreadNotifications = notifications.length;

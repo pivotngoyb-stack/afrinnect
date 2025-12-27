@@ -28,8 +28,10 @@ export const LanguageProvider = ({ children }) => {
         }
       } catch (e) {
         // Not logged in, use default
+        console.error('Failed to load language preference:', e);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
     loadLanguage();
   }, []);
@@ -48,6 +50,7 @@ export const LanguageProvider = ({ children }) => {
       }
     } catch (e) {
       // Not logged in, just update state
+      console.error('Failed to update language preference:', e);
     }
   };
 
