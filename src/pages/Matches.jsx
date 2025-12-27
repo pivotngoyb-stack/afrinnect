@@ -54,7 +54,9 @@ export default function Matches() {
       }
     },
     enabled: !!myProfile,
-    staleTime: 120000,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    staleTime: 300000,
     retry: 1,
     retryDelay: 5000
   });
@@ -91,7 +93,8 @@ export default function Matches() {
       }
     },
     enabled: matchesData.length > 0,
-    staleTime: 120000,
+    refetchInterval: false,
+    staleTime: 300000,
     retry: 1,
     retryDelay: 5000
   });
@@ -179,7 +182,8 @@ export default function Matches() {
       }
     },
     enabled: matchesData.length > 0,
-    staleTime: 120000,
+    refetchInterval: false,
+    staleTime: 300000,
     retry: 1,
     retryDelay: 5000
   });
