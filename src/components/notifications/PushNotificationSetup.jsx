@@ -16,11 +16,14 @@ export default function PushNotificationSetup({ userProfile }) {
           return;
         }
 
+        // Get VAPID key from backend
+        const { data: vapidKey } = await base44.functions.invoke('getVapidKey');
+        
         const messaging = getMessaging(app);
         
         // Get FCM token
         const token = await getToken(messaging, {
-          vapidKey: 'YOUR_VAPID_KEY' // You'll need to generate this in Firebase Console
+          vapidKey: vapidKey
         });
 
         if (token) {
