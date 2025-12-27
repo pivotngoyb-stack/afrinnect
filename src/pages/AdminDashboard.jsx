@@ -43,6 +43,7 @@ import BackendOrchestrator from '@/components/admin/BackendOrchestrator';
 import ChurnAnalysis from '@/components/admin/ChurnAnalysis';
 import ABTestManager from '@/components/admin/ABTestManager';
 import RobustAnalyticsDashboard from '@/components/analytics/RobustAnalyticsDashboard';
+import EmailCampaignManager from '@/components/admin/EmailCampaignManager';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -513,7 +514,12 @@ export default function AdminDashboard() {
           </div>
         );
       case 'messaging':
-        return <BroadcastMessages broadcasts={broadcastMessages} profiles={profiles} currentUser={currentUser} />;
+        return (
+          <div className="space-y-6">
+            <BroadcastMessages broadcasts={broadcastMessages} profiles={profiles} currentUser={currentUser} />
+            <EmailCampaignManager />
+          </div>
+        );
       case 'support':
         return <SupportTickets tickets={supportTickets} currentUser={currentUser} />;
       case 'compliance':
