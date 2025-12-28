@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
   LayoutDashboard, Users, Shield, DollarSign, AlertTriangle, MessageCircle,
-  BarChart3, Settings, Calendar, FileText, Bell, Database, Crown, Eye, LogOut, Brain, Cog
+  BarChart3, Settings, Calendar, FileText, Bell, Database, Crown, Eye, LogOut, Brain, Cog, Briefcase
 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
     { id: 'ai-insights', label: 'AI Insights', icon: Brain },
     { id: 'automation', label: 'Automation', icon: Cog },
     { id: 'events', label: 'Events', icon: Calendar, badge: stats?.totalEvents },
+    { id: 'vendors', label: 'Vendors', icon: Briefcase },
     { id: 'messaging', label: 'Broadcast', icon: MessageCircle },
     { id: 'support', label: 'Support', icon: Bell },
     { id: 'compliance', label: 'Compliance', icon: FileText },
