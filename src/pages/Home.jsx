@@ -205,6 +205,9 @@ export default function Home() {
       if (combinedFilters.states?.length > 0) {
         filterQuery.current_state = { $in: combinedFilters.states };
       }
+      if (combinedFilters.education_levels?.length > 0) {
+        filterQuery.education = { $in: combinedFilters.education_levels };
+      }
 
       try {
         const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 50); // Reduced from 200 to 50
@@ -229,12 +232,6 @@ export default function Home() {
           if (distance > maxDistance) return false;
         }
 
-        // In global mode, prioritize same country if no location
-        if (discoveryMode === 'global' && !myProfile?.location?.lat) {
-          // Still show matches, but same country preferred in sorting
-          return true;
-        }
-
         // Age filter
         if (p.birth_date && (combinedFilters.age_min || combinedFilters.age_max)) {
           const age = calculateAge(p.birth_date);
@@ -243,46 +240,63 @@ export default function Home() {
         }
 
         // Height filter
-        if (combinedFilters.height_min && p.height_cm && p.height_cm < combinedFilters.height_min) return false;
-        if (combinedFilters.height_max && p.height_cm && p.height_cm > combinedFilters.height_max) return false;
-
-        // Lifestyle filters
-        if (combinedFilters.smoking?.length > 0 && !combinedFilters.smoking.includes(p.lifestyle?.smoking)) return false;
-        if (combinedFilters.drinking?.length > 0 && !combinedFilters.drinking.includes(p.lifestyle?.drinking)) return false;
-        if (combinedFilters.fitness?.length > 0 && !combinedFilters.fitness.includes(p.lifestyle?.fitness)) return false;
-
-        // Languages filter
-        if (combinedFilters.languages?.length > 0) {
-          const hasMatchingLanguage = combinedFilters.languages.some(lang => p.languages?.includes(lang));
-          if (!hasMatchingLanguage) return false;
+        if (combinedFilters.height_min && combinedFilters.height_min !== 140) {
+          if (!p.height_cm || p.height_cm < combinedFilters.height_min) return false;
+        }
+        if (combinedFilters.height_max && combinedFilters.height_max !== 220) {
+          if (!p.height_cm || p.height_cm > combinedFilters.height_max) return false;
         }
 
-        // Tribe/ethnicity filter
-        if (combinedFilters.tribe_ethnicity && !p.tribe_ethnicity?.toLowerCase().includes(combinedFilters.tribe_ethnicity.toLowerCase())) {
-          return false;
+        // Lifestyle filters - properly check nested properties
+        if (combinedFilters.smoking?.length > 0) {
+          if (!p.lifestyle?.smoking || !combinedFilters.smoking.includes(p.lifestyle.smoking)) return false;
+        }
+        if (combinedFilters.drinking?.length > 0) {
+          if (!p.lifestyle?.drinking || !combinedFilters.drinking.includes(p.lifestyle.drinking)) return false;
+        }
+        if (combinedFilters.fitness?.length > 0) {
+          if (!p.lifestyle?.fitness || !combinedFilters.fitness.includes(p.lifestyle.fitness)) return false;
+        }
+
+        // Languages filter - check if they speak any of the selected languages
+        if (combinedFilters.languages?.length > 0) {
+          if (!p.languages || !combinedFilters.languages.some(lang => p.languages.includes(lang))) {
+            return false;
+          }
+        }
+
+        // Tribe/ethnicity filter - flexible search
+        if (combinedFilters.tribe_ethnicity && combinedFilters.tribe_ethnicity.trim() !== '') {
+          if (!p.tribe_ethnicity || !p.tribe_ethnicity.toLowerCase().includes(combinedFilters.tribe_ethnicity.toLowerCase())) {
+            return false;
+          }
         }
 
         // Verification filter
         if (combinedFilters.verified_only && !p.verification_status?.photo_verified) return false;
 
-        // Cultural values filter - ENHANCED
+        // Cultural values filter - must have at least one matching value
         if (combinedFilters.cultural_values?.length > 0) {
-          const hasMatchingValue = combinedFilters.cultural_values.some(value => p.cultural_values?.includes(value));
-          if (!hasMatchingValue) return false;
+          if (!p.cultural_values || !combinedFilters.cultural_values.some(value => p.cultural_values.includes(value))) {
+            return false;
+          }
         }
 
-        // Interests filter - ENHANCED
+        // Interests filter - must have at least one matching interest
         if (combinedFilters.interests?.length > 0) {
-          const hasMatchingInterest = combinedFilters.interests.some(interest => p.interests?.includes(interest));
-          if (!hasMatchingInterest) return false;
+          if (!p.interests || !combinedFilters.interests.some(interest => p.interests.includes(interest))) {
+            return false;
+          }
         }
 
-        // Preferred language filter - ENHANCED
-        if (combinedFilters.preferred_language && p.preferred_language !== combinedFilters.preferred_language) {
-          return false;
+        // Preferred language filter - exact match
+        if (combinedFilters.preferred_language && combinedFilters.preferred_language !== '') {
+          if (p.preferred_language !== combinedFilters.preferred_language) {
+            return false;
+          }
         }
 
-        // Hide incognito users unless they liked you
+        // Hide incognito users
         if (p.incognito_mode) return false;
 
         // Filter by gender preference - only show genders you're interested in
