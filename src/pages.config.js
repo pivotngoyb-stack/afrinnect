@@ -42,7 +42,6 @@ import VerifyPhoto from './pages/VerifyPhoto';
 import VideoChat from './pages/VideoChat';
 import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
-import WeddingMarketplace from './pages/WeddingMarketplace';
 import WhoLikesYou from './pages/WhoLikesYou';
 import EventDetails from './pages/EventDetails';
 import CreateEvent from './pages/CreateEvent';
@@ -53,6 +52,7 @@ import EventChat from './pages/EventChat';
 import Unsubscribe from './pages/Unsubscribe';
 import CompatibilityQuizzes from './pages/CompatibilityQuizzes';
 import ReferralProgram from './pages/ReferralProgram';
+import Marketplace from './pages/Marketplace';
 import __Layout from './Layout.jsx';
 
 
@@ -101,7 +101,6 @@ export const PAGES = {
     "VideoChat": VideoChat,
     "VideoEvents": VideoEvents,
     "VirtualGifts": VirtualGifts,
-    "WeddingMarketplace": WeddingMarketplace,
     "WhoLikesYou": WhoLikesYou,
     "EventDetails": EventDetails,
     "CreateEvent": CreateEvent,
@@ -112,6 +111,7 @@ export const PAGES = {
     "Unsubscribe": Unsubscribe,
     "CompatibilityQuizzes": CompatibilityQuizzes,
     "ReferralProgram": ReferralProgram,
+    "Marketplace": Marketplace,
 }
 
 export const pagesConfig = {
