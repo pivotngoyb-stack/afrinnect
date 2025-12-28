@@ -25,6 +25,7 @@ import VirtualList from '@/components/shared/VirtualList';
 import OptimizedImage from '@/components/shared/OptimizedImage';
 import { usePerformanceMonitor } from '@/components/shared/usePerformanceMonitor';
 import { useRealtimeMessages } from '@/components/chat/useRealtimeMessages';
+import TierGate, { hasAccess } from '@/components/shared/TierGate';
 
 export default function Chat() {
   usePerformanceMonitor('Chat');

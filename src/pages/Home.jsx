@@ -22,6 +22,7 @@ import confetti from 'canvas-confetti';
 import { usePerformanceMonitor } from '@/components/shared/usePerformanceMonitor';
 import EmptyState from '@/components/shared/EmptyState';
 import { useConversionTracker, CONVERSION_EVENTS } from '@/components/shared/ConversionTracker';
+import { hasAccess } from '@/components/shared/TierGate';
 import PullToRefresh from '@/components/shared/PullToRefresh';
 import LazyImage from '@/components/shared/LazyImage';
 import { useUpgradePrompts, UpgradePromptBanner } from '@/components/monetization/UpgradePrompts';
@@ -370,7 +371,8 @@ export default function Home() {
 
   // Check daily like limit
   const canLike = () => {
-    if (myProfile?.subscription_tier && myProfile.subscription_tier !== 'free') return true;
+    // Premium/Elite/VIP get unlimited likes
+    if (hasAccess(myProfile?.subscription_tier, 'unlimited_likes')) return true;
     
     const today = new Date().toISOString().split('T')[0];
     const resetDate = myProfile?.daily_likes_reset_date;
