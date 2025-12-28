@@ -180,6 +180,7 @@ export default function Stories() {
         {!myProfile ? (
           <ListItemSkeleton count={3} />
         ) : (
+        <>
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
           {/* Own story - Add new */}
           <div className="relative">
@@ -221,6 +222,35 @@ export default function Stories() {
             );
           })}
         </div>
+
+        {/* My Stories Section */}
+        {myStories.length > 0 && (
+          <div className="mt-6">
+            <h2 className="text-lg font-bold mb-4">My Stories ({myStories.length})</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {myStories.map(story => (
+                <div key={story.id} className="relative aspect-[9/16] rounded-lg overflow-hidden cursor-pointer group" onClick={() => {
+                  setViewing([story]);
+                  setCurrentStoryIndex(0);
+                }}>
+                  {story.media_type === 'video' ? (
+                    <video src={story.media_url} className="w-full h-full object-cover" />
+                  ) : (
+                    <img src={story.media_url} alt="Story" className="w-full h-full object-cover" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
+                    <div className="text-white text-xs">
+                      <p>{story.views?.length || 0} views</p>
+                      {story.caption && <p className="text-sm mt-1">{story.caption}</p>}
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 bg-purple-600/0 group-hover:bg-purple-600/10 transition-colors" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        </>
         )}
 
         {/* Upload dialog */}

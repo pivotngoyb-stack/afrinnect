@@ -110,10 +110,16 @@ export default function PricingPlans() {
               dynamicPricing[tier] = { prices: {} };
             }
             
+            // Calculate total based on period
+            let total = plan.price_usd;
+            if (period === 'yearly') total = plan.price_usd * 12;
+            if (period === 'quarterly') total = plan.price_usd * 3;
+            if (period === '6months') total = plan.price_usd * 6;
+            
             dynamicPricing[tier].prices[period] = {
               amount: plan.price_usd,
-              period: period === 'monthly' ? 'month' : period === 'yearly' ? 'month' : period === 'quarterly' ? 'month' : 'month',
-              total: plan.price_usd,
+              period: 'month',
+              total: total,
               save: plan.discount_percentage ? `${plan.discount_percentage}%` : null
             };
           });

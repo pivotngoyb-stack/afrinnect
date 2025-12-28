@@ -187,11 +187,14 @@ export default function Home() {
       };
       
       // Get list of profiles user has already passed or liked
-      const passes = await base44.entities.Pass.filter({ passer_id: myProfile.id });
+      const [passes, likes] = await Promise.all([
+        base44.entities.Pass.filter({ passer_id: myProfile.id }, '-created_date', 500),
+        base44.entities.Like.filter({ liker_id: myProfile.id }, '-created_date', 500)
+      ]);
       const passedIds = passes.map(p => p.passed_id);
-      
-      const likes = await base44.entities.Like.filter({ liker_id: myProfile.id });
       const likedIds = likes.map(l => l.liked_id);
+
+      console.log('Filtering out:', { passedIds, likedIds, total: passedIds.length + likedIds.length });
       
       if (combinedFilters.relationship_goals?.length > 0) {
         filterQuery.relationship_goal = { $in: combinedFilters.relationship_goals };
@@ -571,8 +574,12 @@ export default function Home() {
     }
     setSwipeHistory([...swipeHistory, { profile: pendingLikeProfile, action: 'like', index: currentIndex }]);
     await likeMutation.mutateAsync({ likedId: pendingLikeProfile.id, likeNote: message });
+    console.log('Like recorded:', pendingLikeProfile.id);
     setShowMessageModal(false);
     setPendingLikeProfile(null);
+    
+    // Refetch to update discovery feed
+    queryClient.invalidateQueries(['discovery-profiles']);
   };
 
   const handleSuperLike = async (profile) => {
@@ -634,12 +641,16 @@ export default function Home() {
         passer_id: myProfile.id,
         passed_id: currentProfile.id
       });
+      console.log('Pass recorded:', currentProfile.id);
     } catch (error) {
       console.error('Failed to record pass:', error);
     }
     
     setSwipeHistory([...swipeHistory, { profile: currentProfile, action: 'pass', index: currentIndex }]);
     setCurrentIndex(prev => prev + 1);
+    
+    // Refetch to update discovery feed
+    queryClient.invalidateQueries(['discovery-profiles']);
   };
 
   const handleRewind = async () => {
