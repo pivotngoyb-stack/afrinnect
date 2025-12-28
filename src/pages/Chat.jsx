@@ -165,11 +165,6 @@ export default function Chat() {
   const sendMessageMutation = useOptimisticUpdate(
     ['messages', matchId],
     async ({ content, type = 'text', mediaUrl = null }) => {
-      // Rate limiting
-      if (!rateLimiter('chat_message', 10, 60000)) {
-        throw new Error('Too many messages. Please slow down.');
-      }
-
       // Input validation
       if (!validateInput.length(content, 1, 5000)) {
         throw new Error('Message must be between 1 and 5000 characters');

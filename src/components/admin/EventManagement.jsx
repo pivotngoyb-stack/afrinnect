@@ -268,10 +268,35 @@ export default function EventManagement({ events }) {
                 type="file"
                 accept="image/*"
                 onChange={handlePhotoUpload}
-                className="mt-2"
+                className="mt-2 block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-full file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-purple-50 file:text-purple-700
+                  hover:file:bg-purple-100"
                 disabled={uploadingPhoto}
               />
               {uploadingPhoto && <p className="text-sm text-gray-500 mt-1">Uploading...</p>}
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Location Name / Venue</label>
+              <Input
+                value={formData.location_name}
+                onChange={(e) => setFormData({...formData, location_name: e.target.value})}
+                className="mt-2"
+                placeholder="e.g., The Rhythm Lounge"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Address</label>
+              <Input
+                value={formData.location_address}
+                onChange={(e) => setFormData({...formData, location_address: e.target.value})}
+                className="mt-2"
+                placeholder="Full street address"
+              />
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
