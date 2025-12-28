@@ -42,6 +42,7 @@ import ABTestManager from '@/components/admin/ABTestManager';
 import EmailCampaignManager from '@/components/admin/EmailCampaignManager';
 import PhotoModeration from '@/components/admin/PhotoModeration';
 import SystemSettings from '@/components/admin/SystemSettings';
+import VendorManagement from '@/components/admin/VendorManagement';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -508,6 +509,8 @@ export default function AdminDashboard() {
         return <BackendOrchestrator />;
       case 'events':
         return <EventManagement events={events} />;
+      case 'vendors':
+        return <VendorManagement />;
       case 'messaging':
         return (
           <div className="space-y-6">
