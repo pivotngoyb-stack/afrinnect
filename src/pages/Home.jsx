@@ -72,11 +72,6 @@ export default function Home() {
         if (profiles.length > 0) {
           const profile = profiles[0];
           setMyProfile(profile);
-          
-          // Check if tutorial should show
-          if (!profile.tutorial_completed) {
-            setShowTutorial(true);
-          }
 
           // Update login streak
           const today = new Date().toISOString().split('T')[0];
