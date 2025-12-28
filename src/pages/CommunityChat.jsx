@@ -213,8 +213,8 @@ export default function CommunityChat() {
         </div>
       </div>
 
-      {/* Input - Fixed at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50">
+      {/* Input - Fixed at bottom above navigation */}
+      <div className="fixed bottom-20 left-0 right-0 bg-white border-t shadow-lg p-4 z-50">
         <div className="max-w-4xl mx-auto flex gap-2">
           <input
             type="file"
