@@ -521,7 +521,8 @@ export default function Onboarding() {
           { value: 'dating', emoji: '💕', label: 'Dating', desc: 'Getting to know someone special' },
           { value: 'serious_relationship', emoji: '❤️', label: 'Serious Relationship', desc: 'Looking for something long-term' },
           { value: 'marriage', emoji: '💍', label: 'Marriage', desc: 'Ready to find a life partner' },
-          { value: 'friendship', emoji: '🤝', label: 'Friendship', desc: 'Just looking to connect' }
+          { value: 'friendship_community', emoji: '🤝', label: 'Friendship/Community', desc: 'Looking to connect and build community' },
+          { value: 'networking', emoji: '🌐', label: 'Networking', desc: 'Professional connections' }
         ].map(goal => (
           <button
             key={goal.value}

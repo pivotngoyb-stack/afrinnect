@@ -76,7 +76,7 @@ export default function CommunityChat() {
     mutationFn: async ({ content, mediaUrl = null, messageType = 'text' }) => {
       if (!content.trim() || !myProfile) return;
 
-      // AI content moderation for text
+      // AI content moderation for text (removed rate limiting)
       if (messageType === 'text') {
         const moderationResult = await base44.integrations.Core.InvokeLLM({
           prompt: `Is this message appropriate for a community chat? Reply ONLY with "yes" or "no": "${content}"`,
@@ -240,7 +240,7 @@ export default function CommunityChat() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessageMutation.mutate({ content: message })}
-            placeholder="Type a message..."
+            placeholder="Type a message... (All members can chat)"
             className="flex-1"
           />
           <Button
@@ -257,7 +257,7 @@ export default function CommunityChat() {
         </div>
         <p className="text-xs text-gray-500 text-center mt-2 flex items-center justify-center gap-1">
           <Shield size={12} />
-          Messages are moderated by AI
+          All members can chat • AI moderated
         </p>
       </div>
     </div>

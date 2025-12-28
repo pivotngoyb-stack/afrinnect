@@ -255,6 +255,10 @@ export default function EventManagement({ events }) {
                     <SelectItem value="networking">Networking</SelectItem>
                     <SelectItem value="concert">Concert</SelectItem>
                     <SelectItem value="food_festival">Food Festival</SelectItem>
+                    <SelectItem value="afrobeat_party">Afrobeat Party</SelectItem>
+                    <SelectItem value="dance_party">Dance Party</SelectItem>
+                    <SelectItem value="cultural_night">Cultural Night</SelectItem>
+                    <SelectItem value="music_festival">Music Festival</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
