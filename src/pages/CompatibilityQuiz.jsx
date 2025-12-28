@@ -37,19 +37,53 @@ export default function CompatibilityQuiz() {
 
   const submitMutation = useMutation({
     mutationFn: async () => {
-      const score = Math.floor(Math.random() * 30) + 70; // 70-100 score
-      const personalities = ['Adventurer', 'Nurturer', 'Leader', 'Creative', 'Intellectual'];
-      const personality = personalities[Math.floor(Math.random() * personalities.length)];
+      // Calculate scores for all 5 love languages
+      const scores = {
+        gifts: 0,
+        quality_time: 0,
+        words: 0,
+        acts: 0,
+        touch: 0
+      };
+
+      // Calculate scores based on answers
+      answers.forEach((answer, idx) => {
+        const question = selectedQuiz.questions[idx];
+        const selectedOption = question.options.find(opt => opt.option_text === answer);
+        if (selectedOption?.score_modifier) {
+          Object.keys(selectedOption.score_modifier).forEach(type => {
+            scores[type] = (scores[type] || 0) + selectedOption.score_modifier[type];
+          });
+        }
+      });
+
+      // Find primary love language (highest score)
+      let primaryType = 'quality_time';
+      let maxScore = 0;
+      Object.keys(scores).forEach(type => {
+        if (scores[type] > maxScore) {
+          maxScore = scores[type];
+          primaryType = type;
+        }
+      });
+
+      const typeInfo = selectedQuiz.compatibility_types.find(t => t.type_name === primaryType);
 
       await base44.entities.QuizResult.create({
         user_profile_id: myProfile.id,
         quiz_id: selectedQuiz.id,
         answers,
-        score,
-        personality_type: personality
+        score: maxScore,
+        personality_type: primaryType,
+        all_scores: scores
       });
 
-      return { score, personality };
+      return { 
+        score: maxScore, 
+        personality: typeInfo?.type_name || primaryType,
+        description: typeInfo?.description,
+        allScores: scores
+      };
     },
     onSuccess: (data) => {
       setResult(data);
@@ -130,13 +164,38 @@ export default function CompatibilityQuiz() {
                 <Sparkles size={40} className="text-purple-600" />
               </div>
               <h2 className="text-2xl font-bold mb-2">Quiz Complete!</h2>
-              <p className="text-gray-600 mb-6">Your Compatibility Type:</p>
-              <div className="mb-6">
-                <h3 className="text-3xl font-bold text-purple-600 mb-2">{result.personality}</h3>
-                <p className="text-xl text-gray-700">Score: {result.score}%</p>
+              <p className="text-gray-600 mb-4">Your Primary Love Language:</p>
+              <div className="mb-4">
+                <h3 className="text-3xl font-bold text-purple-600 mb-2 capitalize">{result.personality.replace('_', ' ')}</h3>
+                {result.description && (
+                  <p className="text-sm text-gray-600 mb-3">{result.description}</p>
+                )}
               </div>
+              
+              {result.allScores && (
+                <div className="mb-6 text-left">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">All Love Languages:</p>
+                  <div className="space-y-2">
+                    {Object.entries(result.allScores).map(([type, score]) => (
+                      <div key={type} className="flex items-center justify-between text-sm">
+                        <span className="capitalize text-gray-700">{type.replace('_', ' ')}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-24 bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-purple-600 h-2 rounded-full" 
+                              style={{width: `${(score / 50) * 100}%`}}
+                            />
+                          </div>
+                          <span className="text-purple-600 font-medium w-8">{score}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               <p className="text-sm text-gray-600 mb-6">
-                This helps us find better matches for you based on personality compatibility!
+                Understanding your love language helps us find compatible matches who will appreciate how you express and receive love!
               </p>
               <div className="flex gap-3">
                 <Button onClick={resetQuiz} variant="outline" className="flex-1">
