@@ -18,11 +18,13 @@ export default function EventManagement({ events }) {
     title: '',
     description: '',
     event_type: 'cultural_festival',
+    image_url: '',
     start_date: '',
     end_date: '',
     location_name: '',
     location_address: '',
     city: '',
+    state: '',
     country: '',
     is_virtual: false,
     virtual_link: '',
@@ -31,6 +33,7 @@ export default function EventManagement({ events }) {
     price: 0,
     currency: 'USD'
   });
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const queryClient = useQueryClient();
 
   const createEventMutation = useMutation({
@@ -76,11 +79,13 @@ export default function EventManagement({ events }) {
       title: '',
       description: '',
       event_type: 'cultural_festival',
+      image_url: '',
       start_date: '',
       end_date: '',
       location_name: '',
       location_address: '',
       city: '',
+      state: '',
       country: '',
       is_virtual: false,
       virtual_link: '',
@@ -89,6 +94,19 @@ export default function EventManagement({ events }) {
       price: 0,
       currency: 'USD'
     });
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData({...formData, image_url: file_url});
+    } catch (error) {
+      alert('Photo upload failed');
+    }
+    setUploadingPhoto(false);
   };
 
   const handleEdit = (event) => {
@@ -241,6 +259,21 @@ export default function EventManagement({ events }) {
               />
             </div>
 
+            <div>
+              <label className="text-sm font-medium">Event Photo</label>
+              {formData.image_url && (
+                <img src={formData.image_url} alt="Event" className="w-full h-40 object-cover rounded-lg mb-2" />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="mt-2"
+                disabled={uploadingPhoto}
+              />
+              {uploadingPhoto && <p className="text-sm text-gray-500 mt-1">Uploading...</p>}
+            </div>
+
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium">Event Type</label>
@@ -296,13 +329,23 @@ export default function EventManagement({ events }) {
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-3 gap-4">
               <div>
                 <label className="text-sm font-medium">City</label>
                 <Input
                   value={formData.city}
                   onChange={(e) => setFormData({...formData, city: e.target.value})}
                   className="mt-2"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">State/Province</label>
+                <Input
+                  value={formData.state}
+                  onChange={(e) => setFormData({...formData, state: e.target.value})}
+                  className="mt-2"
+                  placeholder="Optional"
                 />
               </div>
 
