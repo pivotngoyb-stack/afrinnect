@@ -17,7 +17,7 @@ export default function VendorManagement() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    category: 'Caterer',
+    category: 'Food & Catering',
     location: '',
     state: '',
     country: 'USA',
@@ -33,11 +33,11 @@ export default function VendorManagement() {
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['admin-vendors'],
-    queryFn: () => base44.entities.WeddingVendor.list('-created_date', 200)
+    queryFn: () => base44.entities.Vendor.list('-created_date', 200)
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.WeddingVendor.create(data),
+    mutationFn: (data) => base44.entities.Vendor.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-vendors']);
       resetForm();
@@ -45,7 +45,7 @@ export default function VendorManagement() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.WeddingVendor.update(id, data),
+    mutationFn: ({ id, data }) => base44.entities.Vendor.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-vendors']);
       resetForm();
@@ -53,14 +53,14 @@ export default function VendorManagement() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.WeddingVendor.delete(id),
+    mutationFn: (id) => base44.entities.Vendor.delete(id),
     onSuccess: () => queryClient.invalidateQueries(['admin-vendors'])
   });
 
   const resetForm = () => {
     setFormData({
       name: '',
-      category: 'Caterer',
+      category: 'Food & Catering',
       location: '',
       state: '',
       country: 'USA',
@@ -183,13 +183,20 @@ export default function VendorManagement() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Caterer">Caterer</SelectItem>
-                      <SelectItem value="Photographer">Photographer</SelectItem>
+                      <SelectItem value="Food & Catering">Food & Catering</SelectItem>
+                      <SelectItem value="Photography & Video">Photography & Video</SelectItem>
+                      <SelectItem value="Event Planning">Event Planning</SelectItem>
                       <SelectItem value="Venue">Venue</SelectItem>
-                      <SelectItem value="Decorator">Decorator</SelectItem>
-                      <SelectItem value="Tailor">Tailor</SelectItem>
-                      <SelectItem value="Makeup Artist">Makeup Artist</SelectItem>
-                      <SelectItem value="Hair Stylist">Hair Stylist</SelectItem>
+                      <SelectItem value="Music & Entertainment">Music & Entertainment</SelectItem>
+                      <SelectItem value="Beauty & Styling">Beauty & Styling</SelectItem>
+                      <SelectItem value="Fashion & Attire">Fashion & Attire</SelectItem>
+                      <SelectItem value="Decor & Flowers">Decor & Flowers</SelectItem>
+                      <SelectItem value="Transportation">Transportation</SelectItem>
+                      <SelectItem value="Rentals & Equipment">Rentals & Equipment</SelectItem>
+                      <SelectItem value="Professional Services">Professional Services</SelectItem>
+                      <SelectItem value="Health & Wellness">Health & Wellness</SelectItem>
+                      <SelectItem value="Education & Training">Education & Training</SelectItem>
+                      <SelectItem value="Home Services">Home Services</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>

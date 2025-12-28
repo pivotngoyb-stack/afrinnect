@@ -12,7 +12,7 @@ import AfricanPattern from '@/components/shared/AfricanPattern';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import { Badge } from "@/components/ui/badge";
 
-export default function WeddingMarketplace() {
+export default function Marketplace() {
   const [myProfile, setMyProfile] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedState, setSelectedState] = useState('all');
@@ -35,14 +35,14 @@ export default function WeddingMarketplace() {
   }, []);
 
   const { data: vendors = [], isLoading: loadingVendors } = useQuery({
-    queryKey: ['wedding-vendors', selectedCategory, selectedState, selectedCountry],
+    queryKey: ['vendors', selectedCategory, selectedState, selectedCountry],
     queryFn: async () => {
       let filters = {};
       if (selectedCategory !== 'all') filters.category = selectedCategory;
       if (selectedState !== 'all') filters.state = selectedState;
       if (selectedCountry !== 'all') filters.country = selectedCountry;
       
-      const allVendors = await base44.entities.WeddingVendor.filter(filters, '-is_featured', 100);
+      const allVendors = await base44.entities.Vendor.filter(filters, '-is_featured', 100);
       return allVendors;
     },
     staleTime: 300000,
@@ -50,9 +50,21 @@ export default function WeddingMarketplace() {
   });
 
   const categories = [
-    "Venue", "Caterer", "Photographer", "Decorator", "Planner", "Music/DJ", 
-    "Attire", "Tailor", "Makeup Artist", "Hair Stylist", "Officiant", "Rentals",
-    "Baker", "Florist", "Henna Artist", "Traditional Dancers", "Other"
+    "Food & Catering",
+    "Photography & Video",
+    "Event Planning",
+    "Venue",
+    "Music & Entertainment",
+    "Beauty & Styling",
+    "Fashion & Attire",
+    "Decor & Flowers",
+    "Transportation",
+    "Rentals & Equipment",
+    "Professional Services",
+    "Health & Wellness",
+    "Education & Training",
+    "Home Services",
+    "Other"
   ];
 
   const usStates = [
@@ -97,14 +109,14 @@ export default function WeddingMarketplace() {
               <ArrowLeft size={24} />
             </Button>
           </Link>
-          <h1 className="text-lg font-bold">Wedding Marketplace</h1>
+          <h1 className="text-lg font-bold">Marketplace</h1>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Your Dream Wedding Starts Here</h2>
+        <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Discover Local Services & Vendors</h2>
         <p className="text-gray-600 mb-8 text-center max-w-2xl mx-auto">
-          Discover and connect with top wedding vendors specializing in African and multicultural celebrations. From venues to photographers, find everything you need for your special day.
+          Find trusted vendors and service providers in the African community. From event planning to professional services, connect with businesses that understand your culture.
         </p>
 
         {/* Search and Filters */}

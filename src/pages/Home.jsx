@@ -186,6 +186,10 @@ export default function Home() {
         $in: ['USA', 'United States', 'Canada', 'United States of America', 'US'] 
       };
       
+      // Get list of profiles user has already passed
+      const passes = await base44.entities.Pass.filter({ passer_id: myProfile.id });
+      const passedIds = passes.map(p => p.passed_id);
+      
       if (combinedFilters.relationship_goals?.length > 0) {
         filterQuery.relationship_goal = { $in: combinedFilters.relationship_goals };
       }
@@ -205,6 +209,9 @@ export default function Home() {
       // Apply AI matching and comprehensive filters
       const filteredProfiles = allProfiles.filter(p => {
         if (myProfile && p.id === myProfile.id) return false;
+
+        // Don't show profiles user has already passed
+        if (passedIds.includes(p.id)) return false;
 
         // Distance filter (local mode)
         if (discoveryMode === 'local' && myProfile?.location?.lat && p.location?.lat) {
@@ -438,7 +445,7 @@ export default function Home() {
           status: 'active'
         });
 
-        // Send notifications to both users
+        // Send notifications and push notifications to both users
         const likedProfiles = await base44.entities.UserProfile.filter({ id: likedId });
         if (likedProfiles.length > 0) {
           await base44.entities.Notification.create({
@@ -449,6 +456,19 @@ export default function Home() {
             from_profile_id: myProfile.id,
             link_to: createPageUrl('Matches')
           });
+          
+          // Send push notification
+          try {
+            await base44.functions.invoke('sendPushNotification', {
+              user_profile_id: likedId,
+              title: "It's a Match! 💕",
+              body: `You and ${myProfile.display_name} liked each other!`,
+              link: createPageUrl('Matches'),
+              type: 'match'
+            });
+          } catch (e) {
+            console.error('Push notification failed:', e);
+          }
 
           await base44.entities.Notification.create({
             user_profile_id: myProfile.id,
@@ -458,6 +478,19 @@ export default function Home() {
             from_profile_id: likedId,
             link_to: createPageUrl('Matches')
           });
+          
+          // Send push notification
+          try {
+            await base44.functions.invoke('sendPushNotification', {
+              user_profile_id: myProfile.id,
+              title: "It's a Match! 💕",
+              body: `You and ${likedProfiles[0].display_name} liked each other!`,
+              link: createPageUrl('Matches'),
+              type: 'match'
+            });
+          } catch (e) {
+            console.error('Push notification failed:', e);
+          }
         }
 
         return { isMatch: true };
@@ -471,6 +504,19 @@ export default function Home() {
           from_profile_id: myProfile.id,
           link_to: createPageUrl('Matches')
         });
+        
+        // Send push notification
+        try {
+          await base44.functions.invoke('sendPushNotification', {
+            user_profile_id: likedId,
+            title: isSuperLike ? "You got a Super Like! ⭐" : "Someone likes you!",
+            body: `${myProfile.display_name} ${isSuperLike ? 'super liked' : 'liked'} your profile`,
+            link: createPageUrl('Matches'),
+            type: isSuperLike ? 'super_like' : 'like'
+          });
+        } catch (e) {
+          console.error('Push notification failed:', e);
+        }
       }
       return { isMatch: false };
     },
@@ -500,13 +546,13 @@ export default function Home() {
     setShowMessageModal(true);
   };
 
-  const handleLikeWithMessage = (message) => {
+  const handleLikeWithMessage = async (message) => {
     // Haptic feedback
     if (navigator.vibrate) {
       navigator.vibrate(50);
     }
     setSwipeHistory([...swipeHistory, { profile: pendingLikeProfile, action: 'like', index: currentIndex }]);
-    likeMutation.mutate({ likedId: pendingLikeProfile.id, likeNote: message });
+    await likeMutation.mutateAsync({ likedId: pendingLikeProfile.id, likeNote: message });
     setShowMessageModal(false);
     setPendingLikeProfile(null);
   };
@@ -558,11 +604,22 @@ export default function Home() {
     likeMutation.mutate({ likedId: profile.id, isSuperLike: true });
   };
 
-  const handlePass = () => {
+  const handlePass = async () => {
     // Haptic feedback
     if (navigator.vibrate) {
       navigator.vibrate(30);
     }
+    
+    // Record the pass so they don't see this person again
+    try {
+      await base44.entities.Pass.create({
+        passer_id: myProfile.id,
+        passed_id: currentProfile.id
+      });
+    } catch (error) {
+      console.error('Failed to record pass:', error);
+    }
+    
     setSwipeHistory([...swipeHistory, { profile: currentProfile, action: 'pass', index: currentIndex }]);
     setCurrentIndex(prev => prev + 1);
   };

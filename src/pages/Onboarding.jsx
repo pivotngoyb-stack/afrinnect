@@ -160,6 +160,32 @@ export default function Onboarding() {
         }
       });
 
+      // Request push notification permission immediately
+      try {
+        if ('Notification' in window && Notification.permission === 'default') {
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            // Get FCM token and save it
+            const { messaging } = await import('@/components/firebase/firebaseConfig');
+            const { getToken } = await import('firebase/messaging');
+            
+            try {
+              const vapidKey = await base44.functions.invoke('getVapidKey');
+              const token = await getToken(messaging, { vapidKey: vapidKey.vapid_key });
+              
+              // Save token to profile
+              await base44.entities.UserProfile.update(profile.id, {
+                push_token: token
+              });
+            } catch (tokenError) {
+              console.error('Failed to get FCM token:', tokenError);
+            }
+          }
+        }
+      } catch (notifError) {
+        console.error('Push notification setup failed:', notifError);
+      }
+
       // Send welcome email
       try {
         await base44.functions.invoke('sendWelcomeEmail', {
