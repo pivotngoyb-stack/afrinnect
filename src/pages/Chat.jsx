@@ -248,6 +248,19 @@ export default function Chat() {
         from_profile_id: myProfile.id,
         link_to: createPageUrl(`Chat?matchId=${matchId}`)
       });
+      
+      // Send push notification
+      try {
+        await base44.functions.invoke('sendPushNotification', {
+          user_profile_id: otherProfile.id,
+          title: `New message from ${myProfile.display_name}`,
+          body: content.substring(0, 100),
+          link: createPageUrl(`Chat?matchId=${matchId}`),
+          type: 'message'
+        });
+      } catch (e) {
+        console.error('Push notification failed:', e);
+      }
 
       // Notify via WebSocket
       notifyNewMessage(message);
