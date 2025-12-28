@@ -476,21 +476,7 @@ export default function Profile() {
                   </Button>
                 </Link>
 
-                <Link to={createPageUrl('TravelMode')}>
-                  <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" size="lg">
-                    <MapPin size={18} className="mr-2" />
-                    Travel Mode
-                    <Badge className="ml-2 bg-amber-500 text-xs">Premium</Badge>
-                  </Button>
-                </Link>
 
-                <Link to={createPageUrl('Rewind')}>
-                  <Button className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700" size="lg">
-                    <RotateCcw size={18} className="mr-2" />
-                    Rewind
-                    <Badge className="ml-2 bg-amber-500 text-xs">Premium</Badge>
-                  </Button>
-                </Link>
               </>
             )}
 
@@ -550,7 +536,7 @@ export default function Profile() {
               </Button>
             </Link>
 
-            <Link to={createPageUrl('WeddingMarketplace')}>
+            <Link to={createPageUrl('Marketplace')}>
               <Button className="w-full bg-gradient-to-r from-amber-600 to-pink-600 hover:from-amber-700 hover:to-pink-700" size="lg">
                 <Heart size={18} className="mr-2" />
                 Wedding Marketplace
