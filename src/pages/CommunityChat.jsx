@@ -137,9 +137,9 @@ export default function CommunityChat() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen bg-gray-50 flex flex-col pb-20">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-40">
+      <header className="bg-white border-b sticky top-0 z-40 flex-shrink-0">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to={createPageUrl('Communities')}>
@@ -162,8 +162,8 @@ export default function CommunityChat() {
       </header>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 max-w-4xl w-full mx-auto px-4 py-4">
-        <div className="space-y-4">
+      <div className="flex-1 overflow-y-auto max-w-4xl w-full mx-auto px-4 py-4">
+        <div className="space-y-4 pb-4">
           {messages.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <Users size={48} className="mx-auto mb-4 text-gray-300" />
@@ -211,10 +211,10 @@ export default function CommunityChat() {
             })
           )}
         </div>
-      </ScrollArea>
+      </div>
 
-      {/* Input */}
-      <div className="bg-white border-t p-4 safe-area-inset-bottom">
+      {/* Input - Fixed at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50">
         <div className="max-w-4xl mx-auto flex gap-2">
           <input
             type="file"
@@ -229,24 +229,22 @@ export default function CommunityChat() {
               size="icon" 
               disabled={uploading}
               type="button"
-              asChild
+              className="flex-shrink-0"
             >
-              <span className="cursor-pointer">
-                {uploading ? <Loader2 size={20} className="animate-spin" /> : <Image size={20} />}
-              </span>
+              {uploading ? <Loader2 size={20} className="animate-spin" /> : <Image size={20} />}
             </Button>
           </label>
           <Input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessageMutation.mutate({ content: message })}
-            placeholder="Type a message... (All members can chat)"
+            placeholder="Type a message..."
             className="flex-1"
           />
           <Button
             onClick={() => sendMessageMutation.mutate({ content: message })}
             disabled={!message.trim() || sendMessageMutation.isPending}
-            className="bg-purple-600 hover:bg-purple-700"
+            className="bg-purple-600 hover:bg-purple-700 flex-shrink-0"
           >
             {sendMessageMutation.isPending ? (
               <Loader2 size={20} className="animate-spin" />
@@ -255,8 +253,8 @@ export default function CommunityChat() {
             )}
           </Button>
         </div>
-        <p className="text-xs text-gray-500 text-center mt-2 flex items-center justify-center gap-1">
-          <Shield size={12} />
+        <p className="text-xs text-gray-500 text-center mt-2">
+          <Shield size={12} className="inline mr-1" />
           All members can chat • AI moderated
         </p>
       </div>
