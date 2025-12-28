@@ -186,9 +186,12 @@ export default function Home() {
         $in: ['USA', 'United States', 'Canada', 'United States of America', 'US'] 
       };
       
-      // Get list of profiles user has already passed
+      // Get list of profiles user has already passed or liked
       const passes = await base44.entities.Pass.filter({ passer_id: myProfile.id });
       const passedIds = passes.map(p => p.passed_id);
+      
+      const likes = await base44.entities.Like.filter({ liker_id: myProfile.id });
+      const likedIds = likes.map(l => l.liked_id);
       
       if (combinedFilters.relationship_goals?.length > 0) {
         filterQuery.relationship_goal = { $in: combinedFilters.relationship_goals };
@@ -210,8 +213,9 @@ export default function Home() {
       const filteredProfiles = allProfiles.filter(p => {
         if (myProfile && p.id === myProfile.id) return false;
 
-        // Don't show profiles user has already passed
+        // Don't show profiles user has already passed or liked
         if (passedIds.includes(p.id)) return false;
+        if (likedIds.includes(p.id)) return false;
 
         // Distance filter (local mode)
         if (discoveryMode === 'local' && myProfile?.location?.lat && p.location?.lat) {
