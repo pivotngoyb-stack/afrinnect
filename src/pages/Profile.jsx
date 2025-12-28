@@ -539,7 +539,7 @@ export default function Profile() {
             <Link to={createPageUrl('Marketplace')}>
               <Button className="w-full bg-gradient-to-r from-amber-600 to-pink-600 hover:from-amber-700 hover:to-pink-700" size="lg">
                 <Heart size={18} className="mr-2" />
-                Wedding Marketplace
+                Marketplace
               </Button>
             </Link>
 
