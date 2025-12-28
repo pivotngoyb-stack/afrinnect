@@ -219,6 +219,9 @@ export default function Home() {
       const filteredProfiles = allProfiles.filter(p => {
         if (myProfile && p.id === myProfile.id) return false;
 
+        // Exclude deleted profiles
+        if (p.is_deleted) return false;
+
         // Don't show profiles user has already passed or liked
         if (passedIds.includes(p.id)) return false;
         if (likedIds.includes(p.id)) return false;

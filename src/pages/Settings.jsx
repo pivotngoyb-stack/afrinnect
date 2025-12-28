@@ -152,9 +152,16 @@ export default function Settings() {
         deleted_at: new Date().toISOString()
       });
       
-      // Delete profile
+      // Soft delete profile by marking as deleted
       if (myProfile) {
-        await base44.entities.UserProfile.delete(myProfile.id);
+        await base44.entities.UserProfile.update(myProfile.id, {
+          is_active: false,
+          is_deleted: true,
+          display_name: '[Deleted User]',
+          bio: '',
+          photos: [],
+          primary_photo: ''
+        });
       }
       
       // Logout

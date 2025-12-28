@@ -79,10 +79,13 @@ export default function AdminDashboard() {
     enabled: isAdmin
   });
 
-  // Fetch all profiles
+  // Fetch all profiles (excluding deleted)
   const { data: profiles = [] } = useQuery({
     queryKey: ['admin-profiles'],
-    queryFn: () => base44.entities.UserProfile.list('-created_date', 1000),
+    queryFn: async () => {
+      const allProfiles = await base44.entities.UserProfile.list('-created_date', 1000);
+      return allProfiles.filter(p => !p.is_deleted);
+    },
     enabled: isAdmin
   });
 
@@ -177,13 +180,31 @@ export default function AdminDashboard() {
     enabled: isAdmin
   });
 
-  // Delete user mutation
+  // Delete user mutation (soft delete)
   const deleteUserMutation = useMutation({
     mutationFn: async (userId) => {
       const userProfiles = await base44.entities.UserProfile.filter({ user_id: userId });
+      
+      // Soft delete all profiles for this user
       for (const profile of userProfiles) {
-        await base44.entities.UserProfile.delete(profile.id);
+        await base44.entities.UserProfile.update(profile.id, {
+          is_active: false,
+          is_deleted: true,
+          display_name: '[Deleted by Admin]',
+          bio: '',
+          photos: [],
+          primary_photo: ''
+        });
       }
+      
+      // Log deletion
+      await base44.entities.DeletedAccount.create({
+        user_id: userId,
+        user_email: userProfiles[0]?.created_by || 'Unknown',
+        display_name: userProfiles[0]?.display_name || 'Unknown',
+        deletion_reason: 'Admin deleted',
+        deleted_at: new Date().toISOString()
+      });
       
       // Log action
       await base44.entities.AdminAuditLog.create({
@@ -200,6 +221,7 @@ export default function AdminDashboard() {
       queryClient.invalidateQueries(['admin-users']);
       queryClient.invalidateQueries(['admin-profiles']);
       queryClient.invalidateQueries(['admin-audit-logs']);
+      queryClient.invalidateQueries(['admin-deleted']);
       setActionDialog({ open: false, type: null, user: null });
     }
   });
