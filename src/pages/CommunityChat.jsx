@@ -10,6 +10,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
+import { Crown } from 'lucide-react';
+import { hasAccess } from '@/components/shared/TierGate';
 
 export default function CommunityChat() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -109,6 +111,12 @@ export default function CommunityChat() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Check premium access
+    if (!hasAccess(myProfile?.subscription_tier, 'unlimited_likes')) {
+      alert('Photo uploads are available for Premium members. Upgrade now!');
+      return;
+    }
+
     setUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -122,6 +130,15 @@ export default function CommunityChat() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleSendMessage = () => {
+    // Check premium access
+    if (!hasAccess(myProfile?.subscription_tier, 'unlimited_likes')) {
+      alert('Community chat is available for Premium members. Upgrade now!');
+      return;
+    }
+    sendMessageMutation.mutate({ content: message });
   };
 
   const getProfile = (senderId) => {
@@ -215,48 +232,64 @@ export default function CommunityChat() {
 
       {/* Input - Fixed at bottom above navigation */}
       <div className="fixed bottom-20 left-0 right-0 bg-white border-t shadow-lg p-4 z-50">
-        <div className="max-w-4xl mx-auto flex gap-2">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoUpload}
-            className="hidden"
-            id="photo-upload"
-          />
-          <label htmlFor="photo-upload">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              disabled={uploading}
-              type="button"
-              className="flex-shrink-0"
-            >
-              {uploading ? <Loader2 size={20} className="animate-spin" /> : <Image size={20} />}
-            </Button>
-          </label>
-          <Input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessageMutation.mutate({ content: message })}
-            placeholder="Type a message..."
-            className="flex-1"
-          />
-          <Button
-            onClick={() => sendMessageMutation.mutate({ content: message })}
-            disabled={!message.trim() || sendMessageMutation.isPending}
-            className="bg-purple-600 hover:bg-purple-700 flex-shrink-0"
-          >
-            {sendMessageMutation.isPending ? (
-              <Loader2 size={20} className="animate-spin" />
-            ) : (
-              <Send size={20} />
-            )}
-          </Button>
-        </div>
-        <p className="text-xs text-gray-500 text-center mt-2">
-          <Shield size={12} className="inline mr-1" />
-          All members can chat • AI moderated
-        </p>
+        {hasAccess(myProfile?.subscription_tier, 'unlimited_likes') ? (
+          <>
+            <div className="max-w-4xl mx-auto flex gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+                id="photo-upload"
+              />
+              <label htmlFor="photo-upload">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  disabled={uploading}
+                  type="button"
+                  className="flex-shrink-0"
+                >
+                  {uploading ? <Loader2 size={20} className="animate-spin" /> : <Image size={20} />}
+                </Button>
+              </label>
+              <Input
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                placeholder="Type a message..."
+                className="flex-1"
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!message.trim() || sendMessageMutation.isPending}
+                className="bg-purple-600 hover:bg-purple-700 flex-shrink-0"
+              >
+                {sendMessageMutation.isPending ? (
+                  <Loader2 size={20} className="animate-spin" />
+                ) : (
+                  <Send size={20} />
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-gray-500 text-center mt-2">
+              <Shield size={12} className="inline mr-1" />
+              Premium feature • AI moderated
+            </p>
+          </>
+        ) : (
+          <div className="max-w-4xl mx-auto text-center py-3 bg-gradient-to-r from-amber-50 to-purple-50 rounded-xl">
+            <Crown size={20} className="inline text-amber-600 mb-1" />
+            <p className="text-sm font-medium text-gray-700 mb-2">Premium Feature</p>
+            <p className="text-xs text-gray-500 mb-3">Upgrade to Premium to chat in communities</p>
+            <Link to={createPageUrl('PricingPlans')}>
+              <Button size="sm" className="bg-gradient-to-r from-amber-500 to-amber-600">
+                <Crown size={14} className="mr-1" />
+                Upgrade Now
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
