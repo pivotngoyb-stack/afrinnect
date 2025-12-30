@@ -29,88 +29,113 @@ export default function GoogleMapsLocation({
 
     try {
       // Fetch API key from backend
-      const { data } = await base44.functions.invoke('getGoogleMapsKey');
+      const response = await base44.functions.invoke('getGoogleMapsKey');
+      const apiKey = response?.data?.apiKey || response?.apiKey;
+      
+      if (!apiKey) {
+        throw new Error('Google Maps API key not found');
+      }
       
       // Load Google Maps script
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.async = true;
       script.defer = true;
       script.onload = initializeMap;
+      script.onerror = () => {
+        console.error('Failed to load Google Maps script');
+        setLoading(false);
+        alert('Failed to load Google Maps. Please check your internet connection and try again.');
+      };
       document.head.appendChild(script);
     } catch (error) {
       console.error('Failed to load Google Maps:', error);
       setLoading(false);
+      alert('Failed to initialize Google Maps. Please try again later.');
     }
   };
 
   const initializeMap = () => {
     if (!mapRef.current) return;
+    
+    if (!window.google || !window.google.maps) {
+      console.error('Google Maps not loaded');
+      setLoading(false);
+      return;
+    }
 
-    const defaultCenter = initialLocation || { lat: 6.5244, lng: 3.3792 }; // Lagos, Nigeria
+    try {
+      const defaultCenter = initialLocation || { lat: 6.5244, lng: 3.3792 }; // Lagos, Nigeria
 
-    const mapInstance = new google.maps.Map(mapRef.current, {
-      center: defaultCenter,
-      zoom: 12,
-      styles: [
-        {
-          featureType: 'poi',
-          elementType: 'labels',
-          stylers: [{ visibility: 'off' }]
-        }
-      ]
-    });
-
-    const markerInstance = new google.maps.Marker({
-      map: mapInstance,
-      position: defaultCenter,
-      draggable: true
-    });
-
-    // Add click listener to map
-    mapInstance.addListener('click', (e) => {
-      const location = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-      markerInstance.setPosition(location);
-      onLocationSelect?.(location);
-    });
-
-    // Add drag listener to marker
-    markerInstance.addListener('dragend', (e) => {
-      const location = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-      onLocationSelect?.(location);
-    });
-
-    if (showSearch) {
-      const input = document.getElementById('map-search-input');
-      const searchBoxInstance = new google.maps.places.SearchBox(input);
-      
-      mapInstance.addListener('bounds_changed', () => {
-        searchBoxInstance.setBounds(mapInstance.getBounds());
+      const mapInstance = new window.google.maps.Map(mapRef.current, {
+        center: defaultCenter,
+        zoom: 12,
+        styles: [
+          {
+            featureType: 'poi',
+            elementType: 'labels',
+            stylers: [{ visibility: 'off' }]
+          }
+        ]
       });
 
-      searchBoxInstance.addListener('places_changed', () => {
-        const places = searchBoxInstance.getPlaces();
-        if (places.length === 0) return;
+      const markerInstance = new window.google.maps.Marker({
+        map: mapInstance,
+        position: defaultCenter,
+        draggable: true
+      });
 
-        const place = places[0];
-        if (!place.geometry || !place.geometry.location) return;
-
-        const location = {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng()
-        };
-
-        mapInstance.setCenter(location);
+      // Add click listener to map
+      mapInstance.addListener('click', (e) => {
+        const location = { lat: e.latLng.lat(), lng: e.latLng.lng() };
         markerInstance.setPosition(location);
         onLocationSelect?.(location);
       });
 
-      setSearchBox(searchBoxInstance);
-    }
+      // Add drag listener to marker
+      markerInstance.addListener('dragend', (e) => {
+        const location = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+        onLocationSelect?.(location);
+      });
 
-    setMap(mapInstance);
-    setMarker(markerInstance);
-    setLoading(false);
+      if (showSearch) {
+        const input = document.getElementById('map-search-input');
+        if (input) {
+          const searchBoxInstance = new window.google.maps.places.SearchBox(input);
+          
+          mapInstance.addListener('bounds_changed', () => {
+            searchBoxInstance.setBounds(mapInstance.getBounds());
+          });
+
+          searchBoxInstance.addListener('places_changed', () => {
+            const places = searchBoxInstance.getPlaces();
+            if (places.length === 0) return;
+
+            const place = places[0];
+            if (!place.geometry || !place.geometry.location) return;
+
+            const location = {
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng()
+            };
+
+            mapInstance.setCenter(location);
+            markerInstance.setPosition(location);
+            onLocationSelect?.(location);
+          });
+
+          setSearchBox(searchBoxInstance);
+        }
+      }
+
+      setMap(mapInstance);
+      setMarker(markerInstance);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      setLoading(false);
+      alert('Error initializing map. Please refresh and try again.');
+    }
   };
 
   const getCurrentLocation = () => {
