@@ -126,22 +126,30 @@ export default function Stories() {
   // Upload story mutation
   const uploadStoryMutation = useMutation({
     mutationFn: async (file) => {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-      
-      await base44.entities.Story.create({
-        user_profile_id: myProfile.id,
-        media_url: file_url,
-        media_type: file.type.startsWith('video/') ? 'video' : 'photo',
-        caption: caption,
-        expires_at: expiresAt.toISOString(),
-        views: []
-      });
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+        
+        await base44.entities.Story.create({
+          user_profile_id: myProfile.id,
+          media_url: file_url,
+          media_type: file.type.startsWith('video/') ? 'video' : 'photo',
+          caption: caption,
+          expires_at: expiresAt.toISOString(),
+          views: []
+        });
+      } catch (error) {
+        console.error('Upload failed:', error);
+        throw new Error(error.message || 'Failed to upload story');
+      }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['stories']);
+      refetch();
       setUploadingStory(false);
       setCaption('');
+    },
+    onError: (error) => {
+      alert('Failed to upload story: ' + (error.message || 'Unknown error'));
     }
   });
 
