@@ -55,36 +55,52 @@ export default function Stories() {
     staleTime: 300000
   });
 
-  // Fetch profiles for stories (optimized)
+  // Fetch profiles for stories (optimized to prevent rate limiting)
   const { data: storyProfiles = {} } = useQuery({
     queryKey: ['story-profiles', allStories.length],
     queryFn: async () => {
       try {
+        if (allStories.length === 0) return {};
+        
         const profileIds = [...new Set(allStories.map(s => s.user_profile_id))];
-        const profiles = await Promise.all(
-          profileIds.map(async (id) => {
-            try {
-              const p = await base44.entities.UserProfile.filter({ id });
-              return p[0];
-            } catch (error) {
-              console.error(`Failed to fetch profile ${id}:`, error);
-              return null;
+        
+        // Batch fetch in chunks of 10 to avoid rate limits
+        const chunkSize = 10;
+        const profileMap = {};
+        
+        for (let i = 0; i < profileIds.length; i += chunkSize) {
+          const chunk = profileIds.slice(i, i + chunkSize);
+          
+          // Add delay between chunks to avoid rate limiting
+          if (i > 0) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+          
+          const chunkProfiles = await Promise.allSettled(
+            chunk.map(id => base44.entities.UserProfile.filter({ id }))
+          );
+          
+          chunkProfiles.forEach((result, idx) => {
+            if (result.status === 'fulfilled' && result.value?.[0]) {
+              const profile = result.value[0];
+              profileMap[profile.id] = profile;
             }
-          })
-        );
-        return profiles.reduce((acc, p) => {
-          if (p) acc[p.id] = p;
-          return acc;
-        }, {});
+          });
+        }
+        
+        return profileMap;
       } catch (error) {
         console.error('Failed to fetch story profiles:', error);
         return {};
       }
     },
     enabled: allStories.length > 0,
-    staleTime: 120000, // Increased to 2 minutes
+    staleTime: 300000, // 5 minutes cache
+    cacheTime: 600000, // 10 minutes
     retry: 1,
-    retryDelay: 5000
+    retryDelay: 10000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false
   });
 
   const storiesWithProfiles = allStories.map(story => ({
