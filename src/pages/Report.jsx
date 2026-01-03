@@ -85,9 +85,32 @@ export default function Report() {
             <CheckCircle size={40} className="text-green-600" />
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Report Submitted</h2>
-          <p className="text-gray-500 mb-6">
-            Thank you for helping keep Afrinnect safe. Our team will review your report within 24 hours.
+          <p className="text-gray-500 mb-4">
+            Thank you for helping keep Afrinnect safe.
           </p>
+          
+          {/* What Happens Next */}
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6 text-left">
+            <h3 className="font-semibold text-blue-900 text-sm mb-2">What Happens Next:</h3>
+            <ul className="space-y-2 text-sm text-blue-800">
+              <li className="flex items-start gap-2">
+                <CheckCircle size={16} className="flex-shrink-0 mt-0.5" />
+                <span>Our safety team reviews your report within 24 hours</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle size={16} className="flex-shrink-0 mt-0.5" />
+                <span>Violating accounts are warned, suspended, or banned</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle size={16} className="flex-shrink-0 mt-0.5" />
+                <span>You'll receive a notification once we take action</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle size={16} className="flex-shrink-0 mt-0.5" />
+                <span>The reported user won't know who reported them</span>
+              </li>
+            </ul>
+          </div>
           <Link to={createPageUrl('Home')}>
             <Button className="bg-purple-600 hover:bg-purple-700">
               Back to Home
