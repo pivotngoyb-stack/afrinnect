@@ -54,6 +54,7 @@ import VideoChat from './pages/VideoChat';
 import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import WhoLikesYou from './pages/WhoLikesYou';
+import AuthFlowTest from './pages/AuthFlowTest';
 import __Layout from './Layout.jsx';
 
 
@@ -114,6 +115,7 @@ export const PAGES = {
     "VideoEvents": VideoEvents,
     "VirtualGifts": VirtualGifts,
     "WhoLikesYou": WhoLikesYou,
+    "AuthFlowTest": AuthFlowTest,
 }
 
 export const pagesConfig = {
