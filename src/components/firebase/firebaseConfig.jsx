@@ -1,9 +1,12 @@
 
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import { getMessaging } from 'firebase/messaging';
 
+// Firebase config - public keys are safe to expose (Firebase docs confirm this)
+// Only private keys (FCM_SERVER_KEY) should be kept secret in backend
 const firebaseConfig = {
-  apiKey: "AIzaSyDFfrqew9sH07QgTT3yc0glYfuDWdW1Hyg",
+  apiKey: "AIzaSyDFfrqew9sH07QgTT3yc0glYfuDWdW1Hyg", // Safe - client-side API key
   authDomain: "afrinnect.firebaseapp.com",
   projectId: "afrinnect",
   storageBucket: "afrinnect.firebasestorage.app",
@@ -15,4 +18,5 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const messaging = getMessaging(app);
 export { app };

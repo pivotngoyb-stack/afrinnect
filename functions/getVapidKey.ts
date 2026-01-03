@@ -9,7 +9,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    return Response.json(vapidKey, { status: 200 });
+    // Return as object for consistency
+    return Response.json({ vapid_key: vapidKey }, { status: 200 });
   } catch (error) {
     return Response.json(
       { error: error.message },
