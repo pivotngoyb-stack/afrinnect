@@ -204,17 +204,42 @@ export default function Onboarding() {
         console.error('Welcome email failed:', e);
       }
 
-      // Check for referral code
+      // ANTI-FRAUD: Track referrals with validation
       const urlParams = new URLSearchParams(window.location.search);
       const refCode = urlParams.get('ref');
-      if (refCode) {
+      
+      if (refCode && refCode !== profile.id) {
         try {
-          await base44.entities.Referral.create({
-            referrer_profile_id: refCode,
-            referred_profile_id: profile.id,
-            conversion_status: 'registered',
-            reward_earned: 0
+          // Anti-fraud checks
+          const existingReferrals = await base44.asServiceRole.entities.Referral.filter({
+            referred_email: user.email
           });
+          
+          // Prevent duplicate referral credits
+          if (existingReferrals.length === 0) {
+            // Check if referrer has exceeded limits (max 50 referrals per month)
+            const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+            const referrerStats = await base44.asServiceRole.entities.Referral.filter({
+              referrer_profile_id: refCode,
+              created_date: { $gte: oneMonthAgo }
+            });
+            
+            if (referrerStats.length < 50) {
+              // Valid referral - create record
+              await base44.asServiceRole.entities.Referral.create({
+                referrer_profile_id: refCode,
+                referred_profile_id: profile.id,
+                referred_email: user.email,
+                conversion_status: 'registered',
+                reward_earned: 0,
+                device_fingerprint: navigator.userAgent
+              });
+            } else {
+              console.log('Referrer exceeded monthly limit - potential fraud');
+            }
+          } else {
+            console.log('User already referred - preventing duplicate credit');
+          }
         } catch (e) {
           console.error('Referral tracking failed:', e);
         }
