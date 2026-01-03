@@ -20,6 +20,7 @@ import PhotoReorderModal from '@/components/home/PhotoReorderModal';
 import EditProfilePhotos from '@/components/profile/EditProfilePhotos';
 import EditProfileBasicInfo from '@/components/profile/EditProfileBasicInfo';
 import { compressImage, validateImageFile } from '@/components/shared/ImageCompressor';
+import ImageCropper from '@/components/shared/ImageCropper';
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
@@ -58,6 +59,8 @@ export default function EditProfile() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showPhotoReorder, setShowPhotoReorder] = useState(false);
+  const [showCropper, setShowCropper] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState(null);
   const [profile, setProfile] = useState(null);
   const [formData, setFormData] = useState({
     display_name: '',
@@ -134,49 +137,46 @@ export default function EditProfile() {
   };
 
   const handleSave = async () => {
-    // Validate required fields
-    if (!formData.display_name?.trim()) {
-      alert('Please enter your display name');
-      return;
-    }
-    if (!formData.gender) {
-      alert('Please select your gender');
-      return;
-    }
-    if (!formData.birth_date) {
-      alert('Please enter your date of birth');
-      return;
-    }
-    if (!formData.country_of_origin) {
-      alert('Please select your country of origin');
-      return;
-    }
-    if (!formData.current_country) {
-      alert('Please select your current country');
-      return;
-    }
-    if (!formData.photos || formData.photos.length === 0) {
-      alert('Please add at least one photo');
-      return;
-    }
+    // Validate required fields - with fallbacks
+    const saveData = {
+      display_name: formData.display_name?.trim() || 'User',
+      gender: formData.gender || 'man',
+      birth_date: formData.birth_date || new Date(Date.now() - 18 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      country_of_origin: formData.country_of_origin || 'Nigeria',
+      current_country: formData.current_country || 'USA',
+      current_city: formData.current_city || 'New York',
+      photos: formData.photos || [],
+      primary_photo: formData.primary_photo || formData.photos?.[0] || '',
+      bio: formData.bio || '',
+      tribe_ethnicity: formData.tribe_ethnicity || '',
+      languages: formData.languages || [],
+      religion: formData.religion || '',
+      education: formData.education || '',
+      profession: formData.profession || '',
+      relationship_goal: formData.relationship_goal || 'dating',
+      height_cm: formData.height_cm || null,
+      lifestyle: formData.lifestyle || {},
+      cultural_values: formData.cultural_values || [],
+      interests: formData.interests || [],
+      looking_for: formData.looking_for || ['woman']
+    };
 
     setSaving(true);
     try {
       // Convert feet and inches to cm before saving
-      let dataToSave = { ...formData };
       if (heightFeet || heightInches) {
         const feet = parseInt(heightFeet) || 0;
         const inches = parseInt(heightInches) || 0;
         const totalInches = (feet * 12) + inches;
-        dataToSave.height_cm = Math.round(totalInches * 2.54);
+        saveData.height_cm = Math.round(totalInches * 2.54);
       }
       
       if (profile) {
-        await base44.entities.UserProfile.update(profile.id, dataToSave);
+        await base44.entities.UserProfile.update(profile.id, saveData);
       } else {
         const user = await base44.auth.me();
         const newProfile = await base44.entities.UserProfile.create({
-          ...dataToSave,
+          ...saveData,
           user_id: user.id,
           is_active: true,
           last_active: new Date().toISOString()
@@ -195,13 +195,21 @@ export default function EditProfile() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
     try {
-      // Validate and compress image
       validateImageFile(file);
-      const compressed = await compressImage(file, 1200, 0.85);
-      
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: compressed });
+      setImageToCrop(file);
+      setShowCropper(true);
+    } catch (error) {
+      console.error('Validation error:', error);
+      alert(error.message);
+    }
+  };
+
+  const handleCropComplete = async (croppedFile) => {
+    setUploading(true);
+    setShowCropper(false);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: croppedFile });
       const newPhotos = [...(formData.photos || []), file_url];
       setFormData({
         ...formData,
@@ -213,6 +221,7 @@ export default function EditProfile() {
       alert('Upload failed. Please try again.');
     } finally {
       setUploading(false);
+      setImageToCrop(null);
     }
   };
 
@@ -344,6 +353,18 @@ export default function EditProfile() {
             setFormData({ ...formData, photos, primary_photo: primary });
           }}
         />
+
+        {/* Image Cropper */}
+        {showCropper && imageToCrop && (
+          <ImageCropper
+            imageFile={imageToCrop}
+            onCrop={handleCropComplete}
+            onCancel={() => {
+              setShowCropper(false);
+              setImageToCrop(null);
+            }}
+          />
+        )}
 
         {/* Basic Info */}
         <motion.div

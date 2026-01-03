@@ -24,7 +24,8 @@ export default function EditProfilePhotos({
           </div>
           <div>
             <h2 className="text-xl font-bold">Your Photos</h2>
-            <p className="text-sm text-white/80">Add up to 6 photos • Set one as primary</p>
+            <p className="text-sm text-white/80">Add up to 6 photos (4:5 ratio recommended)</p>
+            <p className="text-xs text-white/60 mt-1">💡 Keep important details in the top half of the photo</p>
           </div>
         </div>
       </div>

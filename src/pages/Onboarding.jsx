@@ -129,6 +129,12 @@ export default function Onboarding() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate max size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Photo must be less than 10MB');
+      return;
+    }
+
     setIsUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -138,8 +144,10 @@ export default function Onboarding() {
       }
     } catch (error) {
       console.error('Upload failed:', error);
+      alert('Upload failed. Please try a smaller photo or different format.');
+    } finally {
+      setIsUploading(false);
     }
-    setIsUploading(false);
   };
 
   const createProfileMutation = useMutation({
@@ -581,7 +589,12 @@ export default function Onboarding() {
       exit={{ opacity: 0, y: -20 }}
     >
       <h2 className="text-2xl font-bold text-gray-900 mb-2">Add your photos</h2>
-      <p className="text-gray-500 mb-8">Show your best self! Add 4 photos ({formData.photos.length}/4)</p>
+      <p className="text-gray-500 mb-4">Show your best self! Add 4 photos ({formData.photos.length}/4)</p>
+      <div className="mb-6 p-4 bg-purple-50 border-2 border-purple-200 rounded-xl">
+        <p className="text-sm text-purple-800">
+          💡 <strong>Pro tip:</strong> Keep important details (face, upper body) in the <strong>top half</strong> of your photos for best visibility
+        </p>
+      </div>
 
       <div className="grid grid-cols-3 gap-3">
         {formData.photos.map((photo, idx) => (
