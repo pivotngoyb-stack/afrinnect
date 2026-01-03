@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Briefcase, GraduationCap, Heart, ChevronLeft, ChevronRight, Languages, Book, Sparkles } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import VerificationBadge from '../shared/VerificationBadge';
+import SafetyBadge from '../safety/SafetyBadge';
 import CountryFlag from '../shared/CountryFlag';
 import ProfileBadges from './ProfileBadges';
 import OptimizedImage from '../shared/OptimizedImage';
@@ -187,12 +188,15 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
             <span>{profile?.current_city}, {profile?.current_country}</span>
           </div>
 
-          {profile?.relationship_goal && (
-            <Badge className="mt-2 bg-purple-600/80 text-white border-0 text-xs">
-              <Heart size={10} className="mr-1" />
-              {relationshipLabels[profile.relationship_goal]}
-            </Badge>
-          )}
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
+            {profile?.relationship_goal && (
+              <Badge className="bg-purple-600/80 text-white border-0 text-xs">
+                <Heart size={10} className="mr-1" />
+                {relationshipLabels[profile.relationship_goal]}
+              </Badge>
+            )}
+            <SafetyBadge profile={profile} size="small" />
+          </div>
           
           {profile?.badges && profile.badges.length > 0 && (
             <div className="mt-2">

@@ -49,7 +49,9 @@ export default function SafetyEducationModal({ open, onClose, onComplete }) {
       features: [
         "Report inappropriate behavior instantly",
         "Block users from contacting you",
-        "Our team reviews reports within 24 hours"
+        "Our team reviews ALL reports within 24 hours",
+        "You'll get notified once we take action",
+        "Reported users never know who reported them"
       ]
     },
     {
