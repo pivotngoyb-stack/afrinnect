@@ -58,12 +58,39 @@ export default function AuthTest() {
       testResults.logoutFunction = { pass: false, message: e.message };
     }
 
-    // Test 6: Test rate limit functions
+    // Test 6: Test OTP backend
     try {
-      const otpTest = await base44.functions.invoke('sendOTP', { phone_number: '+15555555555' }).catch(() => null);
-      testResults.otpRateLimit = { pass: true, message: 'OTP endpoint accessible' };
+      const otpTest = await base44.functions.invoke('sendOTP', { phone_number: '+15555555555' }).catch(e => ({ error: e.message }));
+      testResults.otpBackend = { 
+        pass: !otpTest.error, 
+        message: otpTest.error || 'OTP backend working' 
+      };
     } catch (e) {
-      testResults.otpRateLimit = { pass: false, message: e.message };
+      testResults.otpBackend = { pass: false, message: e.message };
+    }
+
+    // Test 7: Test rate limiting
+    try {
+      const rateLimitTest = await base44.functions.invoke('rateLimitAuth', { 
+        action: 'login', 
+        identifier: 'test@test.com' 
+      }).catch(e => ({ error: e.message }));
+      testResults.rateLimit = { 
+        pass: !rateLimitTest.error, 
+        message: rateLimitTest.error || 'Rate limiting working' 
+      };
+    } catch (e) {
+      testResults.rateLimit = { pass: false, message: e.message };
+    }
+
+    // Test 8: Test password reset
+    try {
+      testResults.passwordReset = { 
+        pass: typeof base44.auth.resetPassword === 'function', 
+        message: 'Password reset function available' 
+      };
+    } catch (e) {
+      testResults.passwordReset = { pass: false, message: e.message };
     }
 
     setResults(testResults);

@@ -16,7 +16,20 @@ export const checkRateLimit = async (action, identifier) => {
       };
     }
     // Allow if rate limit check fails (fail open)
+    console.warn('Rate limit check failed:', error);
     return { allowed: true };
+  }
+};
+
+// Get client IP (approximate)
+export const getClientIP = async () => {
+  try {
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = await response.json();
+    return data.ip;
+  } catch (error) {
+    console.error('Failed to get IP:', error);
+    return 'unknown';
   }
 };
 

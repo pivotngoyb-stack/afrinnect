@@ -53,6 +53,7 @@ import VideoChat from './pages/VideoChat';
 import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import WhoLikesYou from './pages/WhoLikesYou';
+import PasswordReset from './pages/PasswordReset';
 import __Layout from './Layout.jsx';
 
 
@@ -112,6 +113,7 @@ export const PAGES = {
     "VideoEvents": VideoEvents,
     "VirtualGifts": VirtualGifts,
     "WhoLikesYou": WhoLikesYou,
+    "PasswordReset": PasswordReset,
 }
 
 export const pagesConfig = {
