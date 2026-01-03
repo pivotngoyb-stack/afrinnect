@@ -436,38 +436,48 @@ export default function Home() {
       });
 
       if (mutualLikes.length > 0) {
-        // Track first match
-        if (!myProfile.has_matched_before) {
-          trackEvent(CONVERSION_EVENTS.FIRST_MATCH);
-          await base44.entities.UserProfile.update(myProfile.id, {
-            has_matched_before: true
+        // CRITICAL FIX: Check if match already exists to prevent duplicates
+        const existingMatches = await base44.entities.Match.filter({
+          $or: [
+            { user1_id: myProfile.id, user2_id: likedId },
+            { user1_id: likedId, user2_id: myProfile.id }
+          ]
+        });
+
+        // Only create match if it doesn't exist
+        if (existingMatches.length === 0) {
+          // Track first match
+          if (!myProfile.has_matched_before) {
+            trackEvent(CONVERSION_EVENTS.FIRST_MATCH);
+            await base44.entities.UserProfile.update(myProfile.id, {
+              has_matched_before: true
+            });
+          }
+
+          // Mark both likes as seen
+          await base44.entities.Like.update(mutualLikes[0].id, { is_seen: true });
+          const myNewLike = await base44.entities.Like.filter({
+            liker_id: myProfile.id,
+            liked_id: likedId
           });
-        }
+          if (myNewLike.length > 0) {
+            await base44.entities.Like.update(myNewLike[0].id, { is_seen: true });
+          }
 
-        // Mark both likes as seen
-        await base44.entities.Like.update(mutualLikes[0].id, { is_seen: true });
-        const myNewLike = await base44.entities.Like.filter({
-          liker_id: myProfile.id,
-          liked_id: likedId
-        });
-        if (myNewLike.length > 0) {
-          await base44.entities.Like.update(myNewLike[0].id, { is_seen: true });
-        }
+          // Create match (only once)
+          await base44.entities.Match.create({
+            user1_id: myProfile.id,
+            user2_id: likedId,
+            user1_liked: true,
+            user2_liked: true,
+            is_match: true,
+            matched_at: new Date().toISOString(),
+            status: 'active'
+          });
 
-        // Create match
-        await base44.entities.Match.create({
-          user1_id: myProfile.id,
-          user2_id: likedId,
-          user1_liked: true,
-          user2_liked: true,
-          is_match: true,
-          matched_at: new Date().toISOString(),
-          status: 'active'
-        });
-
-        // Send notifications and push notifications to both users
-        const likedProfiles = await base44.entities.UserProfile.filter({ id: likedId });
-        if (likedProfiles.length > 0) {
+          // Send notifications and push notifications to both users
+          const likedProfiles = await base44.entities.UserProfile.filter({ id: likedId });
+          if (likedProfiles.length > 0) {
           await base44.entities.Notification.create({
             user_profile_id: likedId,
             type: 'match',
@@ -510,10 +520,14 @@ export default function Home() {
             });
           } catch (e) {
             console.error('Push notification failed:', e);
+            }
           }
-        }
 
-        return { isMatch: true };
+          return { isMatch: true };
+        } else {
+          // Match already exists
+          return { isMatch: true };
+        }
       } else {
         // Send like notification
         await base44.entities.Notification.create({
@@ -577,8 +591,8 @@ export default function Home() {
     setShowMessageModal(false);
     setPendingLikeProfile(null);
     
-    // Refetch to update discovery feed
-    queryClient.invalidateQueries(['discovery-profiles']);
+    // CRITICAL FIX: Force immediate cache refresh after swipe
+    await refetch();
   };
 
   const handleSuperLike = async (profile) => {
@@ -625,7 +639,9 @@ export default function Home() {
       navigator.vibrate([50, 50, 50]);
     }
     setSwipeHistory([...swipeHistory, { profile, action: 'superlike', index: currentIndex }]);
-    likeMutation.mutate({ likedId: profile.id, isSuperLike: true });
+    await likeMutation.mutateAsync({ likedId: profile.id, isSuperLike: true });
+    // CRITICAL FIX: Force immediate cache refresh
+    await refetch();
   };
 
   const handlePass = async () => {
@@ -648,8 +664,8 @@ export default function Home() {
     setSwipeHistory([...swipeHistory, { profile: currentProfile, action: 'pass', index: currentIndex }]);
     setCurrentIndex(prev => prev + 1);
     
-    // Refetch to update discovery feed
-    queryClient.invalidateQueries(['discovery-profiles']);
+    // CRITICAL FIX: Force immediate cache refresh after swipe
+    await refetch();
   };
 
   const handleRewind = async () => {
