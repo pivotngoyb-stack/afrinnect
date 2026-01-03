@@ -53,13 +53,15 @@ export default function Home() {
       try {
         const isAuth = await base44.auth.isAuthenticated();
         if (!isAuth) {
-          // Not logged in - do nothing, let layout handle redirect
+          // Not logged in - redirect to landing page
+          window.location.href = createPageUrl('Landing');
           return;
         }
 
         const user = await base44.auth.me();
         if (!user) {
-          // Not logged in - do nothing
+          // Not logged in - redirect to landing
+          window.location.href = createPageUrl('Landing');
           return;
         }
 

@@ -27,11 +27,17 @@ function LayoutContent({ children, currentPageName }) {
   
   useEffect(() => {
     const checkProfile = async () => {
+      // Skip all auth checks for public pages
+      const publicPages = ['Landing', 'Terms', 'Privacy', 'CommunityGuidelines'];
+      if (publicPages.includes(currentPageName)) {
+        return;
+      }
+
       try {
         const user = await base44.auth.me();
         if (user) {
-          // Check legal acceptance first for ALL users
-          if (currentPageName !== 'LegalAcceptance' && currentPageName !== 'Landing' && currentPageName !== 'Terms' && currentPageName !== 'Privacy' && currentPageName !== 'CommunityGuidelines') {
+          // Check legal acceptance first for ALL authenticated users
+          if (currentPageName !== 'LegalAcceptance') {
             const acceptances = await base44.entities.LegalAcceptance.filter({ user_id: user.id });
             if (acceptances.length === 0) {
               window.location.href = createPageUrl('LegalAcceptance');
@@ -41,7 +47,7 @@ function LayoutContent({ children, currentPageName }) {
 
           // Then check profile
           const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-          if (profiles.length === 0 && currentPageName !== 'Onboarding' && currentPageName !== 'LegalAcceptance' && currentPageName !== 'Landing') {
+          if (profiles.length === 0 && currentPageName !== 'Onboarding' && currentPageName !== 'LegalAcceptance') {
             window.location.href = createPageUrl('Onboarding');
             return;
           }
@@ -53,7 +59,7 @@ function LayoutContent({ children, currentPageName }) {
           setHasProfile(profiles.length > 0);
         }
       } catch (e) {
-        // Not logged in
+        // Not logged in - no action needed for public pages
         console.error('Auth check error:', e);
       }
     };

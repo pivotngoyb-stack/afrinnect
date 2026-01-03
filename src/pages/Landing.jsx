@@ -51,11 +51,24 @@ export default function Landing() {
     { number: "4.9★", label: t('landing.stats.rating') }
   ];
 
-  const handleGetStarted = () => {
+  const handleGetStarted = async () => {
     trackEvent(CONVERSION_EVENTS.SIGNUP_START);
+
+    // Check if already logged in
+    try {
+      const isAuth = await base44.auth.isAuthenticated();
+      if (isAuth) {
+        // Already logged in, go to home
+        window.location.href = createPageUrl('Home');
+        return;
+      }
+    } catch (e) {
+      // Not logged in, proceed with login
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const ref = urlParams.get('ref');
-    const nextUrl = ref ? createPageUrl('Onboarding') + `?ref=${ref}` : createPageUrl('LegalAcceptance');
+    const nextUrl = ref ? createPageUrl('Home') + `?ref=${ref}` : createPageUrl('Home');
     base44.auth.redirectToLogin('https://afrinnect-658a9066.base44.app' + nextUrl);
   };
 
