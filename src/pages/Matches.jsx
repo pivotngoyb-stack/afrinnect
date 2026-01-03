@@ -172,51 +172,67 @@ export default function Matches() {
     retryDelay: 5000
   });
 
-  // Fetch messages for each match
-  const { data: messagesMap = {} } = useQuery({
-    queryKey: ['last-messages', matchesData],
+  // Fetch messages and unread counts for each match
+  const { data: conversationData = {} } = useQuery({
+    queryKey: ['conversations-data', matchesData.map(m => m.id).join(',')],
     queryFn: async () => {
       try {
-        const map = {};
+        const data = {};
         // Batch fetch messages to reduce API calls
-        const messagePromises = matchesData.slice(0, 20).map(async (match) => {
-          try {
-            const messages = await base44.entities.Message.filter(
-              { match_id: match.id },
-              '-created_date',
-              1
-            );
-            if (messages.length > 0) {
-              return { matchId: match.id, message: messages[0] };
+        await Promise.all(
+          matchesData.slice(0, 50).map(async (match) => {
+            try {
+              // Get last message
+              const messages = await base44.entities.Message.filter(
+                { match_id: match.id },
+                '-created_date',
+                1
+              );
+              
+              // Count unread messages
+              const unreadMessages = await base44.entities.Message.filter({
+                match_id: match.id,
+                receiver_id: myProfile.id,
+                is_read: false
+              });
+              
+              data[match.id] = {
+                lastMessage: messages[0] || null,
+                unreadCount: unreadMessages.length
+              };
+            } catch (error) {
+              console.error(`Failed to fetch data for match ${match.id}:`, error);
             }
-          } catch (error) {
-            console.error(`Failed to fetch messages for match ${match.id}:`, error);
-          }
-          return null;
-        });
+          })
+        );
         
-        const results = await Promise.all(messagePromises);
-        results.forEach(result => {
-          if (result) {
-            map[result.matchId] = result.message;
-          }
-        });
-        
-        return map;
+        return data;
       } catch (error) {
-        console.error('Failed to fetch messages:', error);
+        console.error('Failed to fetch conversation data:', error);
         return {};
       }
     },
-    enabled: matchesData.length > 0,
-    refetchInterval: false,
-    staleTime: 300000,
+    enabled: matchesData.length > 0 && !!myProfile,
+    refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 15000,
     retry: 1,
     retryDelay: 5000
   });
 
-  const newMatches = matchedProfiles.filter(p => !messagesMap[p.match?.id] && !p.match?.is_expired);
-  const conversations = matchedProfiles.filter(p => messagesMap[p.match?.id]);
+  // Separate new matches from active conversations
+  const newMatches = matchedProfiles.filter(p => {
+    const hasMessages = conversationData[p.match?.id]?.lastMessage;
+    return !hasMessages && !p.match?.is_expired;
+  });
+  
+  // Active conversations sorted by most recent message
+  const conversations = matchedProfiles
+    .filter(p => conversationData[p.match?.id]?.lastMessage)
+    .sort((a, b) => {
+      const dateA = new Date(conversationData[a.match?.id]?.lastMessage?.created_date || 0);
+      const dateB = new Date(conversationData[b.match?.id]?.lastMessage?.created_date || 0);
+      return dateB - dateA; // Most recent first
+    });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20">
@@ -400,26 +416,33 @@ export default function Matches() {
 
           {/* Messages Tab */}
           <TabsContent value="messages">
-            <ScrollArea className="h-[calc(100vh-250px)]">
-              <div className="space-y-2">
-                {conversations.map(profile => (
-                  <Link key={profile.id} to={createPageUrl(`Chat?matchId=${profile.match?.id}`)}>
-                    <ConversationItem
-                      match={profile.match}
-                      profile={profile}
-                      lastMessage={messagesMap[profile.match?.id]}
-                    />
-                  </Link>
-                ))}
-                {conversations.length === 0 && (
-                  <div className="text-center py-16">
-                    <MessageCircle size={48} className="mx-auto text-gray-300 mb-4" />
-                    <p className="text-gray-500">No conversations yet</p>
-                    <p className="text-gray-400 text-sm">Match with someone to start chatting!</p>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              {conversations.length > 0 ? (
+                <ScrollArea className="h-[calc(100vh-220px)]">
+                  <div className="divide-y divide-gray-100">
+                    {conversations.map(profile => {
+                      const convData = conversationData[profile.match?.id] || {};
+                      return (
+                        <Link key={profile.id} to={createPageUrl(`Chat?matchId=${profile.match?.id}`)}>
+                          <ConversationItem
+                            match={profile.match}
+                            profile={profile}
+                            lastMessage={convData.lastMessage}
+                            unreadCount={convData.unreadCount || 0}
+                          />
+                        </Link>
+                      );
+                    })}
                   </div>
-                )}
-              </div>
-            </ScrollArea>
+                </ScrollArea>
+              ) : (
+                <div className="text-center py-16">
+                  <MessageCircle size={48} className="mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-500 font-medium">No conversations yet</p>
+                  <p className="text-gray-400 text-sm mt-2">Match with someone to start chatting!</p>
+                </div>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
 

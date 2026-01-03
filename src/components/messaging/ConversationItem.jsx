@@ -22,15 +22,15 @@ export default function ConversationItem({ match, profile, lastMessage, unreadCo
   return (
     <div 
       onClick={onClick}
-      className={`flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50 transition rounded-xl ${
-        unreadCount > 0 ? 'bg-purple-50/50' : ''
+      className={`flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors ${
+        unreadCount > 0 ? 'bg-purple-50/30' : ''
       }`}
     >
       <div className="relative flex-shrink-0">
         <img 
           src={photo}
           alt={profile?.display_name}
-          className="w-14 h-14 rounded-full object-cover border-2 border-white shadow"
+          className="w-16 h-16 rounded-full object-cover"
         />
         {profile?.is_active && (
           <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
@@ -39,25 +39,25 @@ export default function ConversationItem({ match, profile, lastMessage, unreadCo
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <h3 className={`font-semibold truncate ${unreadCount > 0 ? 'text-gray-900' : 'text-gray-700'}`}>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <h3 className={`font-semibold truncate ${unreadCount > 0 ? 'text-gray-900' : 'text-gray-800'}`}>
               {profile?.display_name}
             </h3>
             <VerificationBadge verification={profile?.verification_status} size="small" />
           </div>
-          <span className="text-xs text-gray-400 flex-shrink-0">
+          <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
             {formatMessageDate(lastMessage?.created_date || match?.matched_at)}
           </span>
         </div>
         
-        <div className="flex items-center justify-between">
-          <p className={`text-sm truncate ${unreadCount > 0 ? 'text-gray-800 font-medium' : 'text-gray-500'}`}>
+        <div className="flex items-center justify-between gap-2">
+          <p className={`text-sm truncate flex-1 ${unreadCount > 0 ? 'text-gray-900 font-semibold' : 'text-gray-500'}`}>
             {truncateMessage(lastMessage?.content)}
           </p>
           {unreadCount > 0 && (
-            <Badge className="bg-purple-600 text-white text-xs ml-2 flex-shrink-0">
-              {unreadCount}
-            </Badge>
+            <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-xs font-bold">{unreadCount > 9 ? '9+' : unreadCount}</span>
+            </div>
           )}
         </div>
       </div>
