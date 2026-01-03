@@ -104,39 +104,42 @@ export default function Matches() {
 
   // Fetch likes received - OPTIMIZED (excludes likes that became matches)
   const { data: likesReceived = [], isLoading: loadingLikes } = useQuery({
-    queryKey: ['likes-received', myProfile?.id],
+    queryKey: ['likes-received', myProfile?.id, matchesData.length],
     queryFn: async () => {
       try {
         if (!myProfile) return [];
         
-        // Get all likes where I'm the liked person
-        const allLikes = await base44.entities.Like.filter({ liked_id: myProfile.id }, '-created_date', 50);
-        
-        // Filter out likes that resulted in matches
-        const filteredLikes = [];
-        for (const like of allLikes) {
-          // Check if this like created a match
-          const existingMatches = await base44.entities.Match.filter({
+        // Get all likes and matches in parallel (only 2 API calls)
+        const [allLikes, allMatches] = await Promise.all([
+          base44.entities.Like.filter({ liked_id: myProfile.id }, '-created_date', 50),
+          base44.entities.Match.filter({
             $or: [
-              { user1_id: like.liker_id, user2_id: myProfile.id, is_match: true },
-              { user1_id: myProfile.id, user2_id: like.liker_id, is_match: true }
+              { user1_id: myProfile.id, is_match: true },
+              { user2_id: myProfile.id, is_match: true }
             ]
-          });
-          
-          // Only include if no match exists
-          if (existingMatches.length === 0) {
-            filteredLikes.push(like);
-          }
-        }
+          })
+        ]);
         
-        return filteredLikes.slice(0, 20); // Return max 20
+        // Create a Set of matched user IDs for fast lookup
+        const matchedUserIds = new Set(
+          allMatches.map(m => 
+            m.user1_id === myProfile.id ? m.user2_id : m.user1_id
+          )
+        );
+        
+        // Filter out likes from users we already matched with
+        const filteredLikes = allLikes.filter(
+          like => !matchedUserIds.has(like.liker_id)
+        );
+        
+        return filteredLikes.slice(0, 20);
       } catch (error) {
         console.error('Failed to fetch likes:', error);
         return [];
       }
     },
     enabled: !!myProfile,
-    staleTime: 60000, // 1 minute - refresh more often to update count
+    staleTime: 60000,
     retry: 1,
     retryDelay: 5000
   });
