@@ -206,33 +206,22 @@ export default function Stories() {
         ) : (
         <>
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-          {/* Own story - Add new */}
-          <div className="relative">
-            <button
-              onClick={() => setUploadingStory(true)}
-              className="flex flex-col items-center gap-2"
-            >
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center border-4 border-white shadow-lg">
-                <Upload className="text-white" size={24} />
-              </div>
-              <span className="text-xs font-medium text-gray-700">Add Story</span>
-            </button>
-          </div>
+          {/* My Story - Always first */}
+          <StoryRing
+            profile={myProfile}
+            hasStory={myStories.length > 0}
+            isViewed={false}
+            onClick={() => {
+              if (myStories.length > 0) {
+                handleStoryClick(myProfile.id);
+              } else {
+                setUploadingStory(true);
+              }
+            }}
+            isOwnProfile
+          />
 
-          {/* Own story - View existing */}
-          {myStories.length > 0 && (
-            <div className="relative">
-              <StoryRing
-                profile={myProfile}
-                hasStory={true}
-                isViewed={false}
-                onClick={() => handleStoryClick(myProfile.id)}
-                isOwnProfile
-              />
-            </div>
-          )}
-
-          {/* Other stories */}
+          {/* Other users' stories */}
           {otherStoryGroups.map(([profileId, { profile, stories }]) => {
             const hasViewed = stories.every(s => s.views?.includes(myProfile?.id));
             return (
@@ -247,33 +236,7 @@ export default function Stories() {
           })}
         </div>
 
-        {/* My Stories Section */}
-        {myStories.length > 0 && (
-          <div className="mt-6">
-            <h2 className="text-lg font-bold mb-4">My Stories ({myStories.length})</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {myStories.map(story => (
-                <div key={story.id} className="relative aspect-[9/16] rounded-lg overflow-hidden cursor-pointer group" onClick={() => {
-                  setViewing([story]);
-                  setCurrentStoryIndex(0);
-                }}>
-                  {story.media_type === 'video' ? (
-                    <video src={story.media_url} className="w-full h-full object-cover" />
-                  ) : (
-                    <img src={story.media_url} alt="Story" className="w-full h-full object-cover" />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-                    <div className="text-white text-xs">
-                      <p>{story.views?.length || 0} views</p>
-                      {story.caption && <p className="text-sm mt-1">{story.caption}</p>}
-                    </div>
-                  </div>
-                  <div className="absolute inset-0 bg-purple-600/0 group-hover:bg-purple-600/10 transition-colors" />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+
         </>
         )}
 
