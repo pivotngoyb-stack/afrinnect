@@ -39,14 +39,17 @@ export default function Matches() {
     fetchMyProfile();
   }, []);
 
-  // Fetch matches
+  // Fetch matches - OPTIMIZED
   const { data: matchesData = [], isLoading: loadingMatches } = useQuery({
     queryKey: ['matches', myProfile?.id],
     queryFn: async () => {
       try {
         if (!myProfile) return [];
-        const matches1 = await base44.entities.Match.filter({ user1_id: myProfile.id, is_match: true, status: 'active' });
-        const matches2 = await base44.entities.Match.filter({ user2_id: myProfile.id, is_match: true, status: 'active' });
+        // OPTIMIZED: Fetch with limits
+        const [matches1, matches2] = await Promise.all([
+          base44.entities.Match.filter({ user1_id: myProfile.id, is_match: true, status: 'active' }, '-matched_at', 25),
+          base44.entities.Match.filter({ user2_id: myProfile.id, is_match: true, status: 'active' }, '-matched_at', 25)
+        ]);
         return [...matches1, ...matches2];
       } catch (error) {
         console.error('Failed to fetch matches:', error);
@@ -56,7 +59,7 @@ export default function Matches() {
     enabled: !!myProfile,
     refetchInterval: false,
     refetchOnWindowFocus: false,
-    staleTime: 300000,
+    staleTime: 600000, // OPTIMIZED: 10 minutes
     retry: 1,
     retryDelay: 5000
   });
@@ -99,48 +102,51 @@ export default function Matches() {
     retryDelay: 5000
   });
 
-  // Fetch likes received
+  // Fetch likes received - OPTIMIZED
   const { data: likesReceived = [], isLoading: loadingLikes } = useQuery({
     queryKey: ['likes-received', myProfile?.id],
     queryFn: async () => {
       try {
         if (!myProfile) return [];
-        return await base44.entities.Like.filter({ liked_id: myProfile.id, is_seen: false }, '-created_date');
+        return await base44.entities.Like.filter({ liked_id: myProfile.id, is_seen: false }, '-created_date', 20); // OPTIMIZED: limit 20
       } catch (error) {
         console.error('Failed to fetch likes:', error);
         return [];
       }
     },
     enabled: !!myProfile,
-    staleTime: 120000,
+    staleTime: 300000, // OPTIMIZED: 5 minutes
     retry: 1,
     retryDelay: 5000
   });
 
-  // Fetch profiles of people who liked me
+  // Fetch profiles of people who liked me - OPTIMIZED
   const { data: likerProfiles = [] } = useQuery({
     queryKey: ['liker-profiles', likesReceived],
     queryFn: async () => {
       try {
         if (!likesReceived.length) return [];
+        // OPTIMIZED: Fetch only first 10
+        const limitedLikes = likesReceived.slice(0, 10);
         const profiles = await Promise.all(
-          likesReceived.map(async (like) => {
+          limitedLikes.map(async (like) => {
             try {
-              return await base44.entities.UserProfile.filter({ id: like.liker_id });
+              const result = await base44.entities.UserProfile.filter({ id: like.liker_id });
+              return result[0];
             } catch (error) {
               console.error(`Failed to fetch liker profile ${like.liker_id}:`, error);
-              return [];
+              return null;
             }
           })
         );
-        return profiles.flat();
+        return profiles.filter(Boolean);
       } catch (error) {
         console.error('Failed to fetch liker profiles:', error);
         return [];
       }
     },
     enabled: likesReceived.length > 0,
-    staleTime: 120000,
+    staleTime: 600000, // OPTIMIZED: 10 minutes
     retry: 1,
     retryDelay: 5000
   });
