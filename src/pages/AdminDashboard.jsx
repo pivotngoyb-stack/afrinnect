@@ -43,6 +43,7 @@ import EmailCampaignManager from '@/components/admin/EmailCampaignManager';
 import PhotoModeration from '@/components/admin/PhotoModeration';
 import SystemSettings from '@/components/admin/SystemSettings';
 import VendorManagement from '@/components/admin/VendorManagement';
+import AuthTest from '@/components/auth/AuthTest';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -559,6 +560,8 @@ export default function AdminDashboard() {
         return <SystemSettings />;
       case 'audit':
         return <AuditLogs logs={auditLogs} />;
+      case 'auth_test':
+        return <AuthTest />;
       default:
         return <AdminOverview stats={stats} />;
     }
