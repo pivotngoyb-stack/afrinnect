@@ -5,6 +5,7 @@ import { MapPin, Briefcase, GraduationCap, Heart, ChevronLeft, ChevronRight, Lan
 import { Badge } from "@/components/ui/badge";
 import VerificationBadge from '../shared/VerificationBadge';
 import SafetyBadge from '../safety/SafetyBadge';
+import TrustScoreIndicator from '../safety/TrustScoreIndicator';
 import CountryFlag from '../shared/CountryFlag';
 import ProfileBadges from './ProfileBadges';
 import OptimizedImage from '../shared/OptimizedImage';
@@ -174,6 +175,7 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
             <h2 className="text-2xl font-bold">{profile?.display_name}</h2>
             {age && <span className="text-xl font-light">{age}</span>}
             <VerificationBadge verification={profile?.verification_status} />
+            <TrustScoreIndicator profile={profile} />
           </div>
 
           <div className="flex items-center gap-2 text-white/90 mb-1 text-sm">

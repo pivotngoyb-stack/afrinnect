@@ -67,15 +67,22 @@ export default function Privacy() {
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold">5. Your Rights</h3>
+            <h3 className="text-xl font-semibold">5. Your Rights (GDPR & Africa Compliance)</h3>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-blue-900 font-medium mb-2">✅ Your Data Rights Include:</p>
+            </div>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
-              <li>Access your personal data</li>
-              <li>Correct inaccurate information</li>
-              <li>Delete your account and data</li>
-              <li>Export your data</li>
-              <li>Opt-out of marketing communications</li>
-              <li>Control who sees your profile</li>
+              <li><strong>Right to Access:</strong> Request a copy of all your personal data</li>
+              <li><strong>Right to Rectification:</strong> Correct inaccurate information</li>
+              <li><strong>Right to Erasure ("Right to be Forgotten"):</strong> Delete your account and data permanently</li>
+              <li><strong>Right to Data Portability:</strong> Export your data in a machine-readable format</li>
+              <li><strong>Right to Object:</strong> Opt-out of marketing communications</li>
+              <li><strong>Right to Restrict Processing:</strong> Limit how we use your data</li>
+              <li><strong>Right to Withdraw Consent:</strong> Control who sees your profile</li>
             </ul>
+            <p className="text-sm text-gray-600 mt-3">
+              To exercise these rights, contact privacy@afrinnect.com. We respond within 30 days.
+            </p>
           </section>
 
           <section className="space-y-4">
@@ -95,8 +102,14 @@ export default function Privacy() {
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">8. International Data Transfers</h3>
             <p className="text-gray-700">
-              Your data may be processed in countries outside your residence. We ensure appropriate safeguards are in place.
+              Your data may be processed in countries outside your residence (EU, USA, Africa). We ensure appropriate safeguards are in place, including:
             </p>
+            <ul className="list-disc pl-6 space-y-2 text-gray-700">
+              <li>Standard Contractual Clauses (SCCs) for GDPR compliance</li>
+              <li>African Union Data Protection Convention alignment</li>
+              <li>Encryption in transit and at rest</li>
+              <li>ISO 27001-compliant data centers</li>
+            </ul>
           </section>
 
           <section className="space-y-4">

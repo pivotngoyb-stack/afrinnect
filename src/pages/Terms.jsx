@@ -78,34 +78,54 @@ export default function Terms() {
             <h3 className="text-xl font-semibold">7. Subscriptions and Payments</h3>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
               <li>Premium subscriptions automatically renew unless canceled</li>
-              <li>No refund policy - all sales are final</li>
+              <li>You can cancel anytime from Settings - cancellation takes effect at the end of your billing period</li>
               <li>Prices may change with 30 days notice</li>
+              <li>Payment processing is handled securely by Braintree/PayPal</li>
             </ul>
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold">8. Account Termination</h3>
+            <h3 className="text-xl font-semibold">8. Refund Policy</h3>
+            <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded">
+              <p className="font-semibold text-amber-900 mb-2">No Refunds - All Sales Final</p>
+              <p className="text-gray-700 text-sm">
+                All subscription purchases are final and non-refundable. We do not offer refunds or credits for:
+              </p>
+              <ul className="list-disc pl-6 mt-2 space-y-1 text-gray-700 text-sm">
+                <li>Partial subscription periods</li>
+                <li>Unused premium features</li>
+                <li>Account terminations or suspensions due to violations</li>
+                <li>Duplicate purchases or accidental subscriptions</li>
+              </ul>
+              <p className="text-gray-700 text-sm mt-2">
+                <strong>Exceptions:</strong> Refunds may be granted at our sole discretion for technical errors that prevented service delivery.
+              </p>
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <h3 className="text-xl font-semibold">9. Account Termination</h3>
             <p className="text-gray-700">
               We reserve the right to suspend or terminate accounts that violate these terms. You may delete your account at any time through settings.
             </p>
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold">9. Limitation of Liability</h3>
+            <h3 className="text-xl font-semibold">10. Limitation of Liability</h3>
             <p className="text-gray-700">
               Afrinnect is provided "as is" without warranties. We are not liable for damages arising from use of the service, interactions with other users, or technical issues.
             </p>
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold">10. Changes to Terms</h3>
+            <h3 className="text-xl font-semibold">11. Changes to Terms</h3>
             <p className="text-gray-700">
               We may modify these terms at any time. Continued use after changes constitutes acceptance of new terms.
             </p>
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold">11. Intellectual Property</h3>
+            <h3 className="text-xl font-semibold">12. Intellectual Property</h3>
             <p className="text-gray-700">
               All content, features, and functionality of Afrinnect, including but not limited to text, graphics, logos, icons, images, audio clips, digital downloads, data compilations, and software, are the exclusive property of Afrinnect and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
             </p>
@@ -115,7 +135,7 @@ export default function Terms() {
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold">12. Contact</h3>
+            <h3 className="text-xl font-semibold">13. Contact</h3>
             <p className="text-gray-700">
               For questions about these terms, contact us at legal@afrinnect.com
             </p>
