@@ -26,10 +26,14 @@ Deno.serve(async (req) => {
       results.eventReminders = reminderResult.data;
     }
 
-    // Daily tasks: Subscription expiry
+    // Daily tasks: Subscription expiry & match nudges
     if (task === 'daily' || task === 'all') {
       const expiryResult = await base44.asServiceRole.functions.invoke('checkExpiredSubscriptions', {});
       results.subscriptionCheck = expiryResult.data;
+
+      // Send engagement nudges for inactive matches
+      const nudgeResult = await base44.asServiceRole.functions.invoke('sendMatchNudges', {});
+      results.matchNudges = nudgeResult.data;
     }
 
     return Response.json({

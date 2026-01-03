@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import IceBreakerPrompts from '@/components/chat/IceBreakerPrompts';
+import AIConversationStarters from '@/components/chat/AIConversationStarters';
 import { AnimatePresence } from 'framer-motion';
 import TypingIndicator from '@/components/shared/TypingIndicator';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
@@ -42,6 +43,7 @@ export default function Chat() {
   const [showReport, setShowReport] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [showIceBreakers, setShowIceBreakers] = useState(false);
+  const [showAIStarters, setShowAIStarters] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [showQuestionGame, setShowQuestionGame] = useState(false);
   const [showVirtualGifts, setShowVirtualGifts] = useState(false);
@@ -578,13 +580,22 @@ export default function Chat() {
             <p className="text-gray-500 text-sm mb-4">
               Say hello to {otherProfile.display_name}
             </p>
-            <Button
-              onClick={() => setShowIceBreakers(true)}
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              <Sparkles size={16} className="mr-2" />
-              Try an Ice Breaker
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowAIStarters(true)}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                <Sparkles size={16} className="mr-2" />
+                AI Suggestions
+              </Button>
+              <Button
+                onClick={() => setShowIceBreakers(true)}
+                variant="outline"
+                className="border-purple-600 text-purple-600 hover:bg-purple-50"
+              >
+                Ice Breakers
+              </Button>
+            </div>
           </div>
         )}
         
@@ -731,6 +742,18 @@ export default function Chat() {
           <IceBreakerPrompts
             onSelectQuestion={(q) => setMessageText(q)}
             onClose={() => setShowIceBreakers(false)}
+          />
+        )}
+        </AnimatePresence>
+
+        {/* AI Conversation Starters */}
+        <AnimatePresence>
+        {showAIStarters && myProfile && otherProfile && (
+          <AIConversationStarters
+            myProfile={myProfile}
+            otherProfile={otherProfile}
+            onSelectQuestion={(q) => setMessageText(q)}
+            onClose={() => setShowAIStarters(false)}
           />
         )}
         </AnimatePresence>
