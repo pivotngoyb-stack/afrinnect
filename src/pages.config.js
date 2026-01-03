@@ -1,5 +1,6 @@
 import AdminDashboard from './pages/AdminDashboard';
 import Analytics from './pages/Analytics';
+import AuthFlowTest from './pages/AuthFlowTest';
 import BackgroundCheckRequest from './pages/BackgroundCheckRequest';
 import BlockedUsers from './pages/BlockedUsers';
 import Chat from './pages/Chat';
@@ -54,13 +55,13 @@ import VideoChat from './pages/VideoChat';
 import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import WhoLikesYou from './pages/WhoLikesYou';
-import AuthFlowTest from './pages/AuthFlowTest';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AdminDashboard": AdminDashboard,
     "Analytics": Analytics,
+    "AuthFlowTest": AuthFlowTest,
     "BackgroundCheckRequest": BackgroundCheckRequest,
     "BlockedUsers": BlockedUsers,
     "Chat": Chat,
@@ -115,7 +116,6 @@ export const PAGES = {
     "VideoEvents": VideoEvents,
     "VirtualGifts": VirtualGifts,
     "WhoLikesYou": WhoLikesYou,
-    "AuthFlowTest": AuthFlowTest,
 }
 
 export const pagesConfig = {

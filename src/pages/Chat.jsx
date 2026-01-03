@@ -211,34 +211,51 @@ export default function Chat() {
         }
       }
 
-      // AI Content Moderation - check all messages
-      const aiCheck = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this message for harassment, threats, explicit sexual content, hate speech, scams, or requests for personal contact info (phone/address). Message: "${content}". Return JSON with is_safe (boolean), threat_level (0-10), and reason (string if unsafe).`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            is_safe: { type: "boolean" },
-            threat_level: { type: "number" },
-            reason: { type: "string" }
+      // OPTIMIZED: Async AI Content Moderation (non-blocking)
+      let shouldFlag = false;
+
+      // Send message first, moderate async
+      const moderationPromise = (async () => {
+        try {
+          const aiCheck = await base44.integrations.Core.InvokeLLM({
+            prompt: `Analyze this message for harassment, threats, explicit sexual content, hate speech, scams, or requests for personal contact info (phone/address). Message: "${content}". Return JSON with is_safe (boolean), threat_level (0-10), and reason (string if unsafe).`,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                is_safe: { type: "boolean" },
+                threat_level: { type: "number" },
+                reason: { type: "string" }
+              }
+            }
+          });
+
+          // If high-risk, retro-delete message
+          if (!aiCheck.is_safe && aiCheck.threat_level >= 7) {
+            await base44.entities.Message.update(messageId, { is_deleted: true });
+            await base44.entities.ModerationAction.create({
+              user_profile_id: myProfile.id,
+              action_type: 'message_blocked',
+              reason: aiCheck.reason,
+              severity: 'high',
+              action_taken: 'auto_deleted'
+            });
           }
+
+          // Flag medium-risk for review
+          if (!aiCheck.is_safe && aiCheck.threat_level >= 4) {
+            await base44.entities.Message.update(messageId, { is_flagged: true });
+            await base44.entities.ModerationAction.create({
+              user_profile_id: myProfile.id,
+              action_type: 'message_flagged',
+              reason: aiCheck.reason,
+              severity: aiCheck.threat_level >= 6 ? 'high' : 'medium',
+              action_taken: 'pending'
+            });
+          }
+        } catch (error) {
+          console.error('Async moderation failed:', error);
         }
-      });
-
-      // Block high-risk messages
-      if (!aiCheck.is_safe && aiCheck.threat_level >= 7) {
-        // Create moderation alert
-        await base44.entities.ModerationAction.create({
-          user_profile_id: myProfile.id,
-          action_type: 'message_blocked',
-          reason: aiCheck.reason,
-          severity: 'high',
-          action_taken: 'pending'
-        });
-        throw new Error('Message blocked for safety reasons. Our team will review this.');
-      }
-
-      // Flag medium-risk messages
-      const shouldFlag = !aiCheck.is_safe && aiCheck.threat_level >= 4;
+      })();
 
       const message = await base44.entities.Message.create({
         match_id: matchId,
@@ -249,20 +266,14 @@ export default function Chat() {
         media_url: mediaUrl,
         is_read: false,
         is_deleted: false,
-        is_flagged: shouldFlag
+        is_flagged: false // Will be set by async moderation if needed
       });
 
-      // Log flagged message for admin review
-      if (shouldFlag) {
-        await base44.entities.ModerationAction.create({
-          user_profile_id: myProfile.id,
-          action_type: 'message_flagged',
-          reason: aiCheck.reason,
-          severity: aiCheck.threat_level >= 6 ? 'high' : 'medium',
-          action_taken: 'pending',
-          details: { messageId: message.id, content }
-        });
-      }
+      // Store message ID for async moderation
+      const messageId = message.id;
+
+      // Don't await - let moderation run in background
+      moderationPromise.catch(err => console.error('Moderation error:', err));
 
       // Send notification
       await base44.entities.Notification.create({

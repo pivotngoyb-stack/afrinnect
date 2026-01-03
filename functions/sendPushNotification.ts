@@ -1,5 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// RATE LIMITING: Track push notification sends
+const pushRateLimits = new Map(); // user_profile_id -> {count, resetTime}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -18,6 +21,27 @@ Deno.serve(async (req) => {
     if (!user_profile_id || !title || !body) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
+    
+    // RATE LIMIT: Max 10 push notifications per user per hour
+    const now = Date.now();
+    const userLimit = pushRateLimits.get(user_profile_id) || { count: 0, resetTime: now + 3600000 };
+    
+    if (now > userLimit.resetTime) {
+      // Reset counter
+      userLimit.count = 0;
+      userLimit.resetTime = now + 3600000;
+    }
+    
+    if (userLimit.count >= 10) {
+      console.log(`Rate limit exceeded for user ${user_profile_id}`);
+      return Response.json({ 
+        success: false, 
+        error: 'Rate limit exceeded - max 10 notifications per hour' 
+      }, { status: 429 });
+    }
+    
+    userLimit.count++;
+    pushRateLimits.set(user_profile_id, userLimit);
 
     // Get user's push subscription tokens
     const profile = await base44.asServiceRole.entities.UserProfile.filter({ id: user_profile_id });

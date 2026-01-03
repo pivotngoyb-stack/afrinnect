@@ -84,6 +84,21 @@ export default function VideoChat() {
       console.error('Failed to get match data:', e);
     }
 
+    // TIME LIMITS BY TIER
+    const tier = myProfile?.subscription_tier || 'free';
+    const timeLimits = {
+      elite: 60, // 60 minutes
+      vip: 120   // 120 minutes (2 hours)
+    };
+    const maxDuration = timeLimits[tier] || 30; // Default 30 min
+
+    // REGION-BASED BITRATE (detect region)
+    const userRegion = myProfile?.current_country;
+    const africanCountries = ['Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Tanzania'];
+    const isAfrica = africanCountries.includes(userRegion);
+    
+    const videoBitrate = isAfrica ? 500 : 1500; // Lower bitrate for Africa to save data
+
     const domain = 'meet.jit.si';
     const options = {
       roomName: `afrinnect-${matchId}`,
@@ -96,7 +111,15 @@ export default function VideoChat() {
       configOverwrite: {
         startWithAudioMuted: false,
         startWithVideoMuted: false,
-        prejoinPageEnabled: false
+        prejoinPageEnabled: false,
+        // Region-based bitrate optimization
+        videoQuality: {
+          maxBitratesVideo: {
+            low: videoBitrate * 0.3,
+            standard: videoBitrate,
+            high: videoBitrate * 1.5
+          }
+        }
       },
       interfaceConfigOverwrite: {
         TOOLBAR_BUTTONS: [
@@ -120,8 +143,15 @@ export default function VideoChat() {
       start_time: new Date().toISOString()
     });
 
+    // ENFORCE TIME LIMIT BY TIER
+    const timeoutId = setTimeout(() => {
+      alert(`Your ${tier.toUpperCase()} tier allows ${maxDuration} minutes per call. Call ending...`);
+      handleEndCall();
+    }, maxDuration * 60 * 1000); // Convert to milliseconds
+
     // Handle when user leaves
     jitsiApiRef.current.addListener('readyToClose', () => {
+      clearTimeout(timeoutId);
       handleEndCall();
     });
   };

@@ -131,9 +131,17 @@ export default function Home() {
     return R * c; // Distance in km
   };
 
-  // Enhanced AI-powered match score calculation with personalization
+  // OPTIMIZED: AI-powered match score with caching
+  const matchScoreCache = React.useRef(new Map());
+  
   const calculateMatchScore = async (user1, user2) => {
     if (!user1 || !user2) return 0;
+    
+    // Check cache first (prevents recalculation)
+    const cacheKey = `${user1.id}_${user2.id}`;
+    if (matchScoreCache.current.has(cacheKey)) {
+      return matchScoreCache.current.get(cacheKey);
+    }
     
     let score = 0;
     
@@ -142,7 +150,7 @@ export default function Home() {
     if (user1.tribe_ethnicity === user2.tribe_ethnicity) score += 8;
     if (user1.languages?.some(l => user2.languages?.includes(l))) score += 7;
     
-    // Cultural values alignment (20 points) - ENHANCED
+    // Cultural values alignment (20 points)
     const sharedCulturalValues = user1.cultural_values?.filter(v => user2.cultural_values?.includes(v))?.length || 0;
     score += Math.min(sharedCulturalValues * 4, 20);
     
@@ -150,7 +158,7 @@ export default function Home() {
     if (user1.religion === user2.religion) score += 10;
     if (user1.relationship_goal === user2.relationship_goal) score += 10;
     
-    // Interests alignment (15 points) - ENHANCED
+    // Interests alignment (15 points)
     const sharedInterests = user1.interests?.filter(i => user2.interests?.includes(i))?.length || 0;
     score += Math.min(sharedInterests * 3, 15);
     
@@ -169,7 +177,12 @@ export default function Home() {
     if (user1.lifestyle?.drinking === user2.lifestyle?.drinking) score += 3;
     if (user1.lifestyle?.fitness === user2.lifestyle?.fitness) score += 4;
     
-    return Math.min(Math.round(score), 100);
+    const finalScore = Math.min(Math.round(score), 100);
+    
+    // Cache the result (expires on component unmount)
+    matchScoreCache.current.set(cacheKey, finalScore);
+    
+    return finalScore;
   };
 
   // Fetch profiles for discovery - OPTIMIZED
