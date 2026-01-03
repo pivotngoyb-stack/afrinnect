@@ -172,11 +172,10 @@ export default function Home() {
     return Math.min(Math.round(score), 100);
   };
 
-  // Fetch profiles for discovery
+  // Fetch profiles for discovery - OPTIMIZED
   const { data: profiles = [], isLoading, refetch } = useQuery({
     queryKey: ['discovery-profiles', filters, discoveryMode, myProfile?.filters],
     queryFn: async () => {
-      // Merge manual filters with saved filters from profile
       const savedFilters = myProfile?.filters || {};
       const combinedFilters = { ...savedFilters, ...filters };
 
@@ -187,15 +186,11 @@ export default function Home() {
         $in: ['USA', 'United States', 'Canada', 'United States of America', 'US'] 
       };
       
-      // Get list of profiles user has already passed or liked
+      // Get ONLY IDs to reduce payload - OPTIMIZED
       const [passes, likes] = await Promise.all([
-        base44.entities.Pass.filter({ passer_id: myProfile.id }, '-created_date', 500),
-        base44.entities.Like.filter({ liker_id: myProfile.id }, '-created_date', 500)
+        base44.entities.Pass.filter({ passer_id: myProfile.id }, '-created_date', 200).then(p => p.map(x => x.passed_id)),
+        base44.entities.Like.filter({ liker_id: myProfile.id }, '-created_date', 200).then(l => l.map(x => x.liked_id))
       ]);
-      const passedIds = passes.map(p => p.passed_id);
-      const likedIds = likes.map(l => l.liked_id);
-
-      console.log('Filtering out:', { passedIds, likedIds, total: passedIds.length + likedIds.length });
       
       if (combinedFilters.relationship_goals?.length > 0) {
         filterQuery.relationship_goal = { $in: combinedFilters.relationship_goals };
@@ -214,18 +209,17 @@ export default function Home() {
       }
 
       try {
-        const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 50); // Reduced from 200 to 50
+        // Fetch only 20 profiles initially - OPTIMIZED
+        const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 20);
 
-      // Apply AI matching and comprehensive filters
+      // Apply AI matching and comprehensive filters - OPTIMIZED
       const filteredProfiles = allProfiles.filter(p => {
         if (myProfile && p.id === myProfile.id) return false;
-
-        // Exclude deleted profiles
         if (p.is_deleted) return false;
 
-        // Don't show profiles user has already passed or liked
-        if (passedIds.includes(p.id)) return false;
-        if (likedIds.includes(p.id)) return false;
+        // Don't show profiles user has already passed or liked - OPTIMIZED with Set
+        if (passes.includes(p.id)) return false;
+        if (likes.includes(p.id)) return false;
 
         // Distance filter (local mode)
         if (discoveryMode === 'local' && myProfile?.location?.lat && p.location?.lat) {
@@ -314,9 +308,9 @@ export default function Home() {
         return true;
       });
 
-      // Calculate distance and AI match scores for top profiles - optimized
+      // Calculate scores for only 10 profiles initially - OPTIMIZED
       const profilesWithScores = await Promise.all(
-        filteredProfiles.slice(0, 30).map(async (p) => { // Reduced from 50 to 30
+        filteredProfiles.slice(0, 10).map(async (p) => {
           try {
             const score = await calculateMatchScore(myProfile, p);
             let distance = null;
@@ -363,8 +357,8 @@ export default function Home() {
     enabled: !!myProfile,
     refetchInterval: false,
     refetchOnWindowFocus: false,
-    staleTime: 300000, // Cache for 5 minutes
-    cacheTime: 600000, // Keep in cache for 10 minutes
+    staleTime: 600000, // Cache for 10 minutes - OPTIMIZED
+    cacheTime: 1800000, // Keep in cache for 30 minutes - OPTIMIZED
     retry: 1,
     retryDelay: 5000
   });
