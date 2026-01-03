@@ -1,10 +1,11 @@
 import DOMPurify from 'dompurify';
 
-// Configure DOMPurify
+// Configure DOMPurify - strict for chat messages
 const config = {
-  ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br'],
-  ALLOWED_ATTR: ['href', 'target', 'rel'],
-  ALLOW_DATA_ATTR: false
+  ALLOWED_TAGS: [], // No HTML allowed in chat
+  ALLOWED_ATTR: [],
+  ALLOW_DATA_ATTR: false,
+  KEEP_CONTENT: true // Keep text content
 };
 
 export const sanitizeHTML = (dirty) => {
@@ -14,8 +15,33 @@ export const sanitizeHTML = (dirty) => {
 
 export const sanitizeText = (text) => {
   if (!text) return '';
-  // Remove all HTML tags for plain text
-  return DOMPurify.sanitize(text, { ALLOWED_TAGS: [] });
+  // Remove all HTML tags and scripts
+  let cleaned = DOMPurify.sanitize(text, { ALLOWED_TAGS: [], KEEP_CONTENT: true });
+  // Remove potential XSS attempts
+  cleaned = cleaned.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  cleaned = cleaned.replace(/javascript:/gi, '');
+  cleaned = cleaned.replace(/on\w+\s*=/gi, '');
+  return cleaned.trim();
+};
+
+// Block external links in messages (optional safety feature)
+export const blockLinks = (text) => {
+  if (!text) return '';
+  // Remove URLs but keep the text
+  return text.replace(/https?:\/\/[^\s]+/gi, '[link removed for safety]');
+};
+
+// Detect potentially harmful content
+export const containsHarmfulContent = (text) => {
+  const harmful = [
+    /<script/i,
+    /javascript:/i,
+    /on\w+\s*=/i,
+    /<iframe/i,
+    /<embed/i,
+    /<object/i
+  ];
+  return harmful.some(pattern => pattern.test(text));
 };
 
 export const validateInput = {

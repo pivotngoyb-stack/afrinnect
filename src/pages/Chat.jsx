@@ -17,7 +17,7 @@ import { AnimatePresence } from 'framer-motion';
 import TypingIndicator from '@/components/shared/TypingIndicator';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import { useOptimisticUpdate } from '@/components/shared/useOptimisticUpdate';
-import { sanitizeHTML, validateInput, rateLimiter } from '@/components/shared/InputSanitizer';
+import { sanitizeText, validateInput, rateLimiter, blockLinks, containsHarmfulContent } from '@/components/shared/InputSanitizer';
 import { useInfinitePagination } from '@/components/shared/useInfinitePagination';
 import { ChatSkeleton } from '@/components/shared/SkeletonLoader';
 import SafetyCheckSetup from '@/components/safety/SafetyCheckSetup';
@@ -120,9 +120,9 @@ export default function Chat() {
     retryDelay: 5000
   });
 
-  // Fetch messages with infinite scroll
+  // Fetch messages with infinite scroll - OPTIMIZED
   const { 
-    items: messages, 
+    items: rawMessages, 
     loadMore: loadMoreMessages, 
     hasMore: hasMoreMessages,
     isLoadingMore: isLoadingMoreMessages,
@@ -136,6 +136,16 @@ export default function Chat() {
     retryDelay: 5000,
     staleTime: 300000 // 5 minutes
   });
+
+  // Remove duplicates by ID
+  const messages = React.useMemo(() => {
+    const seen = new Set();
+    return rawMessages.filter(msg => {
+      if (seen.has(msg.id)) return false;
+      seen.add(msg.id);
+      return true;
+    });
+  }, [rawMessages]);
 
   // Scroll to bottom - optimized
   useEffect(() => {
@@ -166,6 +176,11 @@ export default function Chat() {
   const sendMessageMutation = useOptimisticUpdate(
     ['messages', matchId],
     async ({ content, type = 'text', mediaUrl = null }) => {
+      // Rate limiting: max 20 messages per minute
+      if (!rateLimiter(`chat_${myProfile.id}`, 20, 60000)) {
+        throw new Error('You are sending messages too quickly. Please slow down.');
+      }
+
       // Input validation
       if (!validateInput.length(content, 1, 5000)) {
         throw new Error('Message must be between 1 and 5000 characters');
@@ -175,8 +190,17 @@ export default function Chat() {
         throw new Error('Message appears to be spam');
       }
 
-      // Sanitize content
-      const sanitizedContent = sanitizeHTML(content);
+      // Sanitize content and block harmful content
+      let sanitizedContent = sanitizeText(content);
+
+      // Optional: Block external links for safety
+      // sanitizedContent = blockLinks(sanitizedContent);
+
+      // Block if contains harmful scripts/HTML
+      if (containsHarmfulContent(content)) {
+        throw new Error('Message contains prohibited content');
+      }
+
       // Check message limit for free users (3 messages per match)
       const tier = myProfile?.subscription_tier || 'free';
       if (tier === 'free') {
@@ -270,21 +294,28 @@ export default function Chat() {
     }
   );
 
-  // Handle message errors
+  // Handle message errors and success
   useEffect(() => {
     if (sendMessageMutation.isError) {
       const error = sendMessageMutation.error;
       if (error.message === 'upgrade_required') {
         setUpgradeFeature('Unlimited Messaging');
         setShowUpgradePrompt(true);
+      } else if (error.message.includes('too quickly')) {
+        alert('⏱️ Please slow down - you can send up to 20 messages per minute.');
       } else {
         alert(error.message);
       }
-      // Remove failed optimistic message
-      queryClient.invalidateQueries(['messages', matchId]);
+      // Remove all optimistic messages on error
+      queryClient.setQueryData(['messages', matchId], (old = []) => 
+        old.filter(m => !m.__optimistic)
+      );
     }
     if (sendMessageMutation.isSuccess) {
-      // Refresh to get the real message ID
+      // Remove optimistic messages and refetch real data
+      queryClient.setQueryData(['messages', matchId], (old = []) => 
+        old.filter(m => !m.__optimistic)
+      );
       queryClient.invalidateQueries(['messages', matchId]);
     }
   }, [sendMessageMutation.isSuccess, sendMessageMutation.isError, matchId, queryClient]);
@@ -386,14 +417,17 @@ export default function Chat() {
 
   const handleSend = () => {
     if (!messageText.trim()) return;
-    
+
+    // Prevent duplicate sends
+    if (sendMessageMutation.isPending) return;
+
     // Clear input immediately for better UX
-    const textToSend = messageText;
+    const textToSend = messageText.trim();
     setMessageText('');
-    
-    // Create optimistic message
+
+    // Create optimistic message with unique temp ID
     const optimisticMessage = {
-      id: `temp-${Date.now()}`,
+      id: `temp-${Date.now()}-${Math.random()}`,
       match_id: matchId,
       sender_id: myProfile.id,
       receiver_id: otherProfile.id,
@@ -403,10 +437,10 @@ export default function Chat() {
       created_date: new Date().toISOString(),
       __optimistic: true
     };
-    
-    // Update messages immediately
+
+    // Update messages immediately (optimistic)
     queryClient.setQueryData(['messages', matchId], (old = []) => [...old, optimisticMessage]);
-    
+
     sendMessageMutation.mutate({ 
       content: textToSend
     });

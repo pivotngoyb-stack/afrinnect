@@ -28,6 +28,7 @@ import NotFound from './pages/NotFound';
 import Notifications from './pages/Notifications';
 import Onboarding from './pages/Onboarding';
 import PanicButton from './pages/PanicButton';
+import PasswordReset from './pages/PasswordReset';
 import PhoneVerification from './pages/PhoneVerification';
 import PhotoPerformance from './pages/PhotoPerformance';
 import PricingPlans from './pages/PricingPlans';
@@ -53,7 +54,6 @@ import VideoChat from './pages/VideoChat';
 import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import WhoLikesYou from './pages/WhoLikesYou';
-import PasswordReset from './pages/PasswordReset';
 import __Layout from './Layout.jsx';
 
 
@@ -88,6 +88,7 @@ export const PAGES = {
     "Notifications": Notifications,
     "Onboarding": Onboarding,
     "PanicButton": PanicButton,
+    "PasswordReset": PasswordReset,
     "PhoneVerification": PhoneVerification,
     "PhotoPerformance": PhotoPerformance,
     "PricingPlans": PricingPlans,
@@ -113,7 +114,6 @@ export const PAGES = {
     "VideoEvents": VideoEvents,
     "VirtualGifts": VirtualGifts,
     "WhoLikesYou": WhoLikesYou,
-    "PasswordReset": PasswordReset,
 }
 
 export const pagesConfig = {
