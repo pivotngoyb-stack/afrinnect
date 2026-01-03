@@ -102,20 +102,41 @@ export default function Matches() {
     retryDelay: 5000
   });
 
-  // Fetch likes received - OPTIMIZED
+  // Fetch likes received - OPTIMIZED (excludes likes that became matches)
   const { data: likesReceived = [], isLoading: loadingLikes } = useQuery({
     queryKey: ['likes-received', myProfile?.id],
     queryFn: async () => {
       try {
         if (!myProfile) return [];
-        return await base44.entities.Like.filter({ liked_id: myProfile.id, is_seen: false }, '-created_date', 20); // OPTIMIZED: limit 20
+        
+        // Get all likes where I'm the liked person
+        const allLikes = await base44.entities.Like.filter({ liked_id: myProfile.id }, '-created_date', 50);
+        
+        // Filter out likes that resulted in matches
+        const filteredLikes = [];
+        for (const like of allLikes) {
+          // Check if this like created a match
+          const existingMatches = await base44.entities.Match.filter({
+            $or: [
+              { user1_id: like.liker_id, user2_id: myProfile.id, is_match: true },
+              { user1_id: myProfile.id, user2_id: like.liker_id, is_match: true }
+            ]
+          });
+          
+          // Only include if no match exists
+          if (existingMatches.length === 0) {
+            filteredLikes.push(like);
+          }
+        }
+        
+        return filteredLikes.slice(0, 20); // Return max 20
       } catch (error) {
         console.error('Failed to fetch likes:', error);
         return [];
       }
     },
     enabled: !!myProfile,
-    staleTime: 300000, // OPTIMIZED: 5 minutes
+    staleTime: 60000, // 1 minute - refresh more often to update count
     retry: 1,
     retryDelay: 5000
   });
@@ -249,7 +270,12 @@ export default function Matches() {
                 </h3>
                 <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
                   {newMatches.map(profile => {
-                    const expiresAt = profile.match?.expires_at || new Date(Date.now() + 86400000).toISOString();
+                    // Use match expiry or default to 24h from match creation
+                    const matchedAt = new Date(profile.match?.matched_at || profile.match?.created_date).getTime();
+                    const expiresAt = profile.match?.expires_at 
+                      ? new Date(profile.match.expires_at).toISOString()
+                      : new Date(matchedAt + 24 * 60 * 60 * 1000).toISOString();
+                    
                     return (
                       <motion.div
                         key={profile.id}
