@@ -44,6 +44,19 @@ Deno.serve(async (req) => {
 
       const profile = profiles[0];
 
+      // EDGE CASE: Cancel existing subscriptions before creating new one
+      const existingSubs = await base44.asServiceRole.entities.Subscription.filter({
+        user_profile_id: profile.id,
+        status: 'active'
+      });
+
+      for (const existingSub of existingSubs) {
+        await base44.asServiceRole.entities.Subscription.update(existingSub.id, {
+          status: 'cancelled',
+          auto_renew: false
+        });
+      }
+
       const today = new Date();
       let endDate;
 
@@ -56,6 +69,15 @@ Deno.serve(async (req) => {
         endDate = new Date(today.setFullYear(today.getFullYear() + 1));
       } else if (billingPeriod === '6months') {
         endDate = new Date(today.setMonth(today.getMonth() + 6));
+      }
+
+      // EDGE CASE: Regional pricing adjustment
+      const userCountry = profile.current_country;
+      let regionalDiscount = 1.0;
+      
+      const africanCountries = ['Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia'];
+      if (africanCountries.includes(userCountry)) {
+        regionalDiscount = 0.5; // 50% off for African countries
       }
 
       // Create subscription record

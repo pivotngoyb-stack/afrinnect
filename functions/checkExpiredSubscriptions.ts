@@ -29,6 +29,23 @@ Deno.serve(async (req) => {
         });
 
         if (profiles.length > 0) {
+          // EDGE CASE: Kill active video calls if subscription expires
+          const activeCalls = await base44.asServiceRole.entities.VideoCall.filter({
+            $or: [
+              { caller_profile_id: sub.user_profile_id },
+              { receiver_profile_id: sub.user_profile_id }
+            ],
+            status: 'active'
+          });
+
+          for (const call of activeCalls) {
+            await base44.asServiceRole.entities.VideoCall.update(call.id, {
+              status: 'ended',
+              end_time: new Date().toISOString(),
+              end_reason: 'subscription_expired'
+            });
+          }
+
           await base44.asServiceRole.entities.UserProfile.update(profiles[0].id, {
             subscription_tier: 'free',
             is_premium: false,
