@@ -53,15 +53,13 @@ export default function Home() {
       try {
         const isAuth = await base44.auth.isAuthenticated();
         if (!isAuth) {
-          // Not logged in - redirect to landing page
-          window.location.href = createPageUrl('Landing');
+          // Not logged in - stay on Home (Landing will be default entry point)
           return;
         }
 
         const user = await base44.auth.me();
         if (!user) {
-          // Not logged in - redirect to landing
-          window.location.href = createPageUrl('Landing');
+          // Not logged in
           return;
         }
 
