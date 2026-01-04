@@ -58,7 +58,6 @@ export default function CommunityGuidelines() {
               <li>Tell someone where you're going</li>
               <li>Use our safety check-in feature</li>
               <li>Trust your instincts - report concerns immediately</li>
-              <li>Use the panic button if you feel unsafe</li>
             </ul>
           </section>
 
