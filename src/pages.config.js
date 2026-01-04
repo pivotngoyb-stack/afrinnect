@@ -28,7 +28,6 @@ import Matches from './pages/Matches';
 import NotFound from './pages/NotFound';
 import Notifications from './pages/Notifications';
 import Onboarding from './pages/Onboarding';
-import PanicButton from './pages/PanicButton';
 import PasswordReset from './pages/PasswordReset';
 import PhoneVerification from './pages/PhoneVerification';
 import PhotoPerformance from './pages/PhotoPerformance';
@@ -89,7 +88,6 @@ export const PAGES = {
     "NotFound": NotFound,
     "Notifications": Notifications,
     "Onboarding": Onboarding,
-    "PanicButton": PanicButton,
     "PasswordReset": PasswordReset,
     "PhoneVerification": PhoneVerification,
     "PhotoPerformance": PhotoPerformance,

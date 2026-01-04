@@ -31,8 +31,7 @@ export default function SafetyCheckSetup({ myProfile, matchProfile }) {
         user_profile_id: myProfile.id,
         meeting_with_profile_id: matchProfile.id,
         ...formData,
-        status: 'active',
-        panic_triggered: false
+        status: 'active'
       });
     },
     onSuccess: () => {

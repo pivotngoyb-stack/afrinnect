@@ -59,8 +59,7 @@ export default function SafetyCheckSetup() {
         emergency_contact_name: formData.emergency_contact_name,
         emergency_contact_phone: formData.emergency_contact_phone,
         check_in_time: formData.check_in_time,
-        status: 'active',
-        panic_triggered: false
+        status: 'active'
       });
 
       // Send notification to emergency contact
