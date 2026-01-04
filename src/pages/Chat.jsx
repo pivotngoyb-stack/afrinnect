@@ -220,38 +220,42 @@ export default function Chat() {
       const moderationPromise = (async () => {
         try {
           const aiCheck = await base44.integrations.Core.InvokeLLM({
-            prompt: `Analyze this message for harassment, threats, explicit sexual content, hate speech, scams, or requests for personal contact info (phone/address). Message: "${content}". Return JSON with is_safe (boolean), threat_level (0-10), and reason (string if unsafe).`,
+            prompt: `Analyze this message for harassment, threats, explicit sexual content, hate speech, scams, or requests for personal contact info (phone/address). Message: "${content}". Return JSON with is_safe (boolean), threat_level (0-10), violation_type (string: harassment, hate_speech, explicit_content, scam, threat, etc.), and reason (string if unsafe).`,
             response_json_schema: {
               type: "object",
               properties: {
                 is_safe: { type: "boolean" },
                 threat_level: { type: "number" },
+                violation_type: { type: "string" },
                 reason: { type: "string" }
               }
             }
           });
 
-          // If high-risk, retro-delete message
-          if (!aiCheck.is_safe && aiCheck.threat_level >= 7) {
-            await base44.entities.Message.update(messageId, { is_deleted: true });
-            await base44.entities.ModerationAction.create({
-              user_profile_id: myProfile.id,
-              action_type: 'message_blocked',
-              reason: aiCheck.reason,
-              severity: 'high',
-              action_taken: 'auto_deleted'
-            });
-          }
+          if (!aiCheck.is_safe) {
+            // Determine severity based on threat level
+            let severity = 'low';
+            if (aiCheck.threat_level >= 9) severity = 'critical';
+            else if (aiCheck.threat_level >= 7) severity = 'high';
+            else if (aiCheck.threat_level >= 5) severity = 'medium';
 
-          // Flag medium-risk for review
-          if (!aiCheck.is_safe && aiCheck.threat_level >= 4) {
-            await base44.entities.Message.update(messageId, { is_flagged: true });
-            await base44.entities.ModerationAction.create({
+            // Delete message if high-risk
+            if (aiCheck.threat_level >= 7) {
+              await base44.entities.Message.update(messageId, { is_deleted: true });
+            }
+
+            // Flag for review
+            if (aiCheck.threat_level >= 4) {
+              await base44.entities.Message.update(messageId, { is_flagged: true });
+            }
+
+            // Trigger automated enforcement
+            await base44.functions.invoke('autoEnforceViolation', {
               user_profile_id: myProfile.id,
-              action_type: 'message_flagged',
-              reason: aiCheck.reason,
-              severity: aiCheck.threat_level >= 6 ? 'high' : 'medium',
-              action_taken: 'pending'
+              violation_type: aiCheck.violation_type || 'inappropriate_message',
+              content: content,
+              severity: severity,
+              details: aiCheck.reason
             });
           }
         } catch (error) {
