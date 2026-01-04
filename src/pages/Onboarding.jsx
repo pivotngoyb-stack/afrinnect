@@ -152,6 +152,30 @@ export default function Onboarding() {
 
   const createProfileMutation = useMutation({
     mutationFn: async () => {
+      // CRITICAL: Check for existing profile (prevent duplicates)
+      const existingProfiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+      if (existingProfiles.length > 0) {
+        throw new Error('You already have a profile. Redirecting to home...');
+      }
+
+      // Get device fingerprint
+      const deviceId = navigator.userAgent + '_' + new Date().getTime();
+      
+      // Check phone number uniqueness if provided
+      const phoneNumber = formData.phone_number;
+      if (phoneNumber) {
+        const phoneCheck = await base44.entities.UserProfile.filter({ phone_number: phoneNumber });
+        if (phoneCheck.length >= 2) {
+          throw new Error('This phone number is already registered on 2 devices. Maximum 2 devices per phone number.');
+        }
+      }
+
+      // Check device limit (max 2 devices per email)
+      const allUserProfiles = await base44.entities.UserProfile.filter({ created_by: user.email });
+      if (allUserProfiles.length >= 2) {
+        throw new Error('Maximum 2 devices allowed per email. Please remove a device first.');
+      }
+
       const profile = await base44.entities.UserProfile.create({
         ...formData,
         user_id: user.id,
@@ -165,7 +189,13 @@ export default function Onboarding() {
           phone_verified: false,
           photo_verified: false,
           id_verified: false
-        }
+        },
+        device_ids: [deviceId],
+        device_info: [{
+          device_id: deviceId,
+          device_name: navigator.userAgent.substring(0, 50),
+          last_login: new Date().toISOString()
+        }]
       });
 
       // Request push notification permission immediately
@@ -249,6 +279,14 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       setShowSafetyEducation(true);
+    },
+    onError: (error) => {
+      alert(error.message);
+      if (error.message.includes('already have a profile')) {
+        setTimeout(() => {
+          window.location.href = createPageUrl('Home');
+        }, 2000);
+      }
     }
   });
 

@@ -74,6 +74,33 @@ export default function Home() {
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
         if (profiles.length > 0) {
           const profile = profiles[0];
+          
+          // Update device tracking on login
+          const deviceId = navigator.userAgent + '_' + new Date().getTime();
+          const existingDeviceIds = profile.device_ids || [];
+          
+          if (!existingDeviceIds.includes(deviceId)) {
+            // New device - check limit
+            if (existingDeviceIds.length >= 2) {
+              alert('Maximum 2 devices allowed. Please remove an old device from Settings.');
+              window.location.href = createPageUrl('Settings');
+              return;
+            }
+            
+            // Add new device
+            await base44.entities.UserProfile.update(profile.id, {
+              device_ids: [...existingDeviceIds, deviceId],
+              device_info: [
+                ...(profile.device_info || []),
+                {
+                  device_id: deviceId,
+                  device_name: navigator.userAgent.substring(0, 50),
+                  last_login: new Date().toISOString()
+                }
+              ]
+            });
+          }
+          
           setMyProfile(profile);
 
           // Update login streak
