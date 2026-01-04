@@ -141,9 +141,8 @@ export default function PricingPlans() {
     fetchData();
   }, []);
 
-  // Regional pricing for Africa
-  const isAfricanCountry = userCountry && ['Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco'].includes(userCountry);
-  const regionalDiscount = isAfricanCountry ? 0.5 : 1; // 50% off for African countries
+  // No regional pricing - standard pricing for all users
+  const regionalDiscount = 1;
 
   const handlePaymentSuccess = (data) => {
     trackRevenue(price.total * regionalDiscount, 'USD', `${selectedTier}_subscription`, myProfile.id);
@@ -189,19 +188,6 @@ export default function PricingPlans() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 pb-48">
-        {/* Regional Pricing Banner */}
-        {isAfricanCountry && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-4 bg-green-100 border border-green-300 rounded-2xl text-center"
-          >
-            <p className="font-semibold text-green-800">
-              🎉 Special African Pricing: 50% OFF for {userCountry}
-            </p>
-          </motion.div>
-        )}
-
         {/* Tier Selection */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           {Object.entries(PRICING_TIERS).filter(([key]) => key !== 'free').map(([key, tier]) => (
