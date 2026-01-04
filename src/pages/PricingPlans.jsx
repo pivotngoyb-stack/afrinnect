@@ -70,7 +70,8 @@ const PRICING_TIERS = {
   },
   vip: {
     name: 'VIP Matchmaker',
-    subtitle: 'Concierge Service',
+    subtitle: 'Coming Soon',
+    comingSoon: true,
     prices: {
       monthly: { amount: 99.99, period: 'month', total: 99.99 },
       '6months': { amount: 83.17, period: 'month', total: 499.00, save: '17%' }
@@ -193,16 +194,18 @@ export default function PricingPlans() {
           {Object.entries(PRICING_TIERS).filter(([key]) => key !== 'free').map(([key, tier]) => (
             <Card
               key={key}
-              className={`cursor-pointer transition-all ${
-                selectedTier === key
-                  ? 'ring-2 ring-purple-600 shadow-xl scale-105'
-                  : 'hover:shadow-lg'
+              className={`transition-all ${
+                tier.comingSoon 
+                  ? 'opacity-60 cursor-not-allowed'
+                  : selectedTier === key
+                  ? 'ring-2 ring-purple-600 shadow-xl scale-105 cursor-pointer'
+                  : 'hover:shadow-lg cursor-pointer'
               }`}
-              onClick={() => setSelectedTier(key)}
+              onClick={() => !tier.comingSoon && setSelectedTier(key)}
             >
               <CardContent className="p-6">
                 {tier.subtitle && (
-                  <Badge className="mb-3 bg-purple-600">{tier.subtitle}</Badge>
+                  <Badge className={`mb-3 ${tier.comingSoon ? 'bg-gray-500' : 'bg-purple-600'}`}>{tier.subtitle}</Badge>
                 )}
                 <h3 className="text-2xl font-bold mb-2">{tier.name}</h3>
                 {tier.prices && tier.prices[selectedBilling] && (
