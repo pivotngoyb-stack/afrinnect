@@ -150,7 +150,7 @@ export default function Home() {
       }
     };
     fetchMyProfile();
-  }, []);
+  }, [isCheckingAuth]);
 
   // Calculate age helper function
   const calculateAge = (birthDate) => {
