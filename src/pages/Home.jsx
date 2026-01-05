@@ -44,19 +44,35 @@ export default function Home() {
   const [showMatchCelebration, setShowMatchCelebration] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [pendingLikeProfile, setPendingLikeProfile] = useState(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const queryClient = useQueryClient();
   const { prompt: upgradePrompt, dismissPrompt } = useUpgradePrompts(myProfile);
 
-  // Fetch user's profile and redirect if needed
+  // CRITICAL: Check auth first before anything else
   useEffect(() => {
-    const fetchMyProfile = async () => {
+    const checkAuth = async () => {
       try {
         const isAuth = await base44.auth.isAuthenticated();
         if (!isAuth) {
-          // Not logged in - redirect to landing page
+          // Not logged in - redirect to landing page immediately
           window.location.href = createPageUrl('Landing');
           return;
         }
+        setIsCheckingAuth(false);
+      } catch (e) {
+        // Not authenticated - redirect to landing
+        window.location.href = createPageUrl('Landing');
+      }
+    };
+    checkAuth();
+  }, []);
+
+  // Fetch user's profile and redirect if needed
+  useEffect(() => {
+    if (isCheckingAuth) return; // Wait for auth check
+    
+    const fetchMyProfile = async () => {
+      try {
 
         const user = await base44.auth.me();
         if (!user) {
@@ -752,6 +768,18 @@ export default function Home() {
 
   const currentProfile = profiles[currentIndex];
   const hasMoreProfiles = currentIndex < profiles.length;
+
+  // Show nothing while checking auth (will redirect to Landing if not authenticated)
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <PullToRefresh onRefresh={refetch}>
