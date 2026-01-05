@@ -64,33 +64,33 @@ export default function Landing() {
     {
       name: "Amara & Kwame",
       location: "Nigeria → USA",
-      image: "https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=400",
+      image: "https://images.pexels.com/photos/1367269/pexels-photo-1367269.jpeg?w=400",
       quote: "We found each other across continents. Afrinnect helped us connect through our shared Igbo heritage. Now we're planning our traditional wedding!",
       rating: 5
     },
     {
       name: "Zara & Malik",
       location: "Kenya → UK",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400",
+      image: "https://images.pexels.com/photos/5256816/pexels-photo-5256816.jpeg?w=400",
       quote: "Meeting someone who truly understands my culture was priceless. We bonded over our love for East African music and food.",
       rating: 5
     },
     {
       name: "Thandiwe & David",
       location: "South Africa → Canada",
-      image: "https://images.unsplash.com/photo-1519058082700-08a0b56da9b4?w=400",
+      image: "https://images.pexels.com/photos/7299113/pexels-photo-7299113.jpeg?w=400",
       quote: "Afrinnect's AI matching is incredible! We matched at 94% compatibility and it showed - we've been together 2 years now.",
       rating: 5
     }
   ];
 
   const communityPhotos = [
-    "https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=300&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1519058082700-08a0b56da9b4?w=300&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=300&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=300&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?w=300&h=400&fit=crop"
+    "https://images.pexels.com/photos/1182825/pexels-photo-1182825.jpeg?w=300&h=400&fit=crop",
+    "https://images.pexels.com/photos/3228213/pexels-photo-3228213.jpeg?w=300&h=400&fit=crop",
+    "https://images.pexels.com/photos/2923156/pexels-photo-2923156.jpeg?w=300&h=400&fit=crop",
+    "https://images.pexels.com/photos/5256816/pexels-photo-5256816.jpeg?w=300&h=400&fit=crop",
+    "https://images.pexels.com/photos/2726111/pexels-photo-2726111.jpeg?w=300&h=400&fit=crop",
+    "https://images.pexels.com/photos/5384452/pexels-photo-5384452.jpeg?w=300&h=400&fit=crop"
   ];
 
   const handleGetStarted = async () => {
@@ -212,7 +212,7 @@ export default function Landing() {
             {/* Main large image */}
             <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl">
               <img 
-                src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=600&h=700&fit=crop"
+                src="https://images.pexels.com/photos/1367269/pexels-photo-1367269.jpeg?w=600&h=700&fit=crop"
                 alt="African couple"
                 className="w-full h-[500px] md:h-[600px] object-cover"
               />
@@ -244,7 +244,7 @@ export default function Landing() {
             >
               <div className="flex items-center gap-3">
                 <img 
-                  src="https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?w=100&h=100&fit=crop"
+                  src="https://images.pexels.com/photos/2726111/pexels-photo-2726111.jpeg?w=100&h=100&fit=crop"
                   alt=""
                   className="w-12 h-12 rounded-full object-cover"
                 />
@@ -263,7 +263,7 @@ export default function Landing() {
             >
               <div className="flex items-center gap-3">
                 <img 
-                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop"
+                  src="https://images.pexels.com/photos/3228213/pexels-photo-3228213.jpeg?w=100&h=100&fit=crop"
                   alt=""
                   className="w-12 h-12 rounded-full object-cover"
                 />
@@ -439,28 +439,28 @@ export default function Landing() {
                 title: t('landing.steps.step1.title'), 
                 desc: t('landing.steps.step1.desc'),
                 icon: Users,
-                image: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=300&h=200&fit=crop"
+                image: "https://images.pexels.com/photos/1182825/pexels-photo-1182825.jpeg?w=300&h=200&fit=crop"
               },
               { 
                 step: "2", 
                 title: t('landing.steps.step2.title'), 
                 desc: t('landing.steps.step2.desc'),
                 icon: Sparkles,
-                image: "https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=300&h=200&fit=crop"
+                image: "https://images.pexels.com/photos/5256816/pexels-photo-5256816.jpeg?w=300&h=200&fit=crop"
               },
               { 
                 step: "3", 
                 title: t('landing.steps.step3.title'), 
                 desc: t('landing.steps.step3.desc'),
                 icon: MessageCircle,
-                image: "https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?w=300&h=200&fit=crop"
+                image: "https://images.pexels.com/photos/2923156/pexels-photo-2923156.jpeg?w=300&h=200&fit=crop"
               },
               { 
                 step: "4", 
                 title: t('landing.steps.step4.title'), 
                 desc: t('landing.steps.step4.desc'),
                 icon: Heart,
-                image: "https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=300&h=200&fit=crop"
+                image: "https://images.pexels.com/photos/7299113/pexels-photo-7299113.jpeg?w=300&h=200&fit=crop"
               }
             ].map((item, idx) => (
               <motion.div
