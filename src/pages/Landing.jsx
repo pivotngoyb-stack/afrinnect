@@ -64,33 +64,33 @@ export default function Landing() {
     {
       name: "Amara & Kwame",
       location: "Nigeria → USA",
-      image: "https://images.pexels.com/photos/1367269/pexels-photo-1367269.jpeg?w=400",
+      image: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/b55b7c66d_image.png",
       quote: "We found each other across continents. Afrinnect helped us connect through our shared Igbo heritage. Now we're planning our traditional wedding!",
       rating: 5
     },
     {
       name: "Zara & Malik",
       location: "Kenya → UK",
-      image: "https://images.pexels.com/photos/5256816/pexels-photo-5256816.jpeg?w=400",
+      image: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/b55b7c66d_image.png",
       quote: "Meeting someone who truly understands my culture was priceless. We bonded over our love for East African music and food.",
       rating: 5
     },
     {
       name: "Thandiwe & David",
       location: "South Africa → Canada",
-      image: "https://images.pexels.com/photos/7299113/pexels-photo-7299113.jpeg?w=400",
+      image: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/b55b7c66d_image.png",
       quote: "Afrinnect's AI matching is incredible! We matched at 94% compatibility and it showed - we've been together 2 years now.",
       rating: 5
     }
   ];
 
   const communityPhotos = [
-    "https://images.pexels.com/photos/1542085/pexels-photo-1542085.jpeg?w=300&h=400&fit=crop",
-    "https://images.pexels.com/photos/2773977/pexels-photo-2773977.jpeg?w=300&h=400&fit=crop",
-    "https://images.pexels.com/photos/8088495/pexels-photo-8088495.jpeg?w=300&h=400&fit=crop",
-    "https://images.pexels.com/photos/5325890/pexels-photo-5325890.jpeg?w=300&h=400&fit=crop",
-    "https://images.pexels.com/photos/4587991/pexels-photo-4587991.jpeg?w=300&h=400&fit=crop",
-    "https://images.pexels.com/photos/6274712/pexels-photo-6274712.jpeg?w=300&h=400&fit=crop"
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/728ada3a8_image.png",
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/b55b7c66d_image.png",
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/728ada3a8_image.png",
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/b55b7c66d_image.png",
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/728ada3a8_image.png",
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/b55b7c66d_image.png"
   ];
 
   const handleGetStarted = async () => {
@@ -212,8 +212,8 @@ export default function Landing() {
             {/* Main large image */}
             <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl">
               <img 
-                src="https://images.pexels.com/photos/1367269/pexels-photo-1367269.jpeg?w=600&h=700&fit=crop"
-                alt="African couple"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/2ee966864_image.png"
+                alt="African community"
                 className="w-full h-[500px] md:h-[600px] object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
@@ -244,7 +244,7 @@ export default function Landing() {
             >
               <div className="flex items-center gap-3">
                 <img 
-                  src="https://images.pexels.com/photos/2726111/pexels-photo-2726111.jpeg?w=100&h=100&fit=crop"
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/728ada3a8_image.png"
                   alt=""
                   className="w-12 h-12 rounded-full object-cover"
                 />
@@ -263,7 +263,7 @@ export default function Landing() {
             >
               <div className="flex items-center gap-3">
                 <img 
-                  src="https://images.pexels.com/photos/3228213/pexels-photo-3228213.jpeg?w=100&h=100&fit=crop"
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/728ada3a8_image.png"
                   alt=""
                   className="w-12 h-12 rounded-full object-cover"
                 />
@@ -439,28 +439,28 @@ export default function Landing() {
                 title: t('landing.steps.step1.title'), 
                 desc: t('landing.steps.step1.desc'),
                 icon: Users,
-                image: "https://images.pexels.com/photos/1542085/pexels-photo-1542085.jpeg?w=300&h=200&fit=crop"
+                image: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/2ee966864_image.png"
               },
               { 
                 step: "2", 
                 title: t('landing.steps.step2.title'), 
                 desc: t('landing.steps.step2.desc'),
                 icon: Sparkles,
-                image: "https://images.pexels.com/photos/2773977/pexels-photo-2773977.jpeg?w=300&h=200&fit=crop"
+                image: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/b55b7c66d_image.png"
               },
               { 
                 step: "3", 
                 title: t('landing.steps.step3.title'), 
                 desc: t('landing.steps.step3.desc'),
                 icon: MessageCircle,
-                image: "https://images.pexels.com/photos/8088495/pexels-photo-8088495.jpeg?w=300&h=200&fit=crop"
+                image: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/728ada3a8_image.png"
               },
               { 
                 step: "4", 
                 title: t('landing.steps.step4.title'), 
                 desc: t('landing.steps.step4.desc'),
                 icon: Heart,
-                image: "https://images.pexels.com/photos/5325890/pexels-photo-5325890.jpeg?w=300&h=200&fit=crop"
+                image: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/b55b7c66d_image.png"
               }
             ].map((item, idx) => (
               <motion.div
