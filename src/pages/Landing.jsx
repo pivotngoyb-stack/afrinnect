@@ -85,12 +85,12 @@ export default function Landing() {
   ];
 
   const communityPhotos = [
-    "https://images.pexels.com/photos/1182825/pexels-photo-1182825.jpeg?w=300&h=400&fit=crop",
-    "https://images.pexels.com/photos/3228213/pexels-photo-3228213.jpeg?w=300&h=400&fit=crop",
-    "https://images.pexels.com/photos/2923156/pexels-photo-2923156.jpeg?w=300&h=400&fit=crop",
-    "https://images.pexels.com/photos/5256816/pexels-photo-5256816.jpeg?w=300&h=400&fit=crop",
-    "https://images.pexels.com/photos/2726111/pexels-photo-2726111.jpeg?w=300&h=400&fit=crop",
-    "https://images.pexels.com/photos/5384452/pexels-photo-5384452.jpeg?w=300&h=400&fit=crop"
+    "https://images.pexels.com/photos/1542085/pexels-photo-1542085.jpeg?w=300&h=400&fit=crop",
+    "https://images.pexels.com/photos/2773977/pexels-photo-2773977.jpeg?w=300&h=400&fit=crop",
+    "https://images.pexels.com/photos/8088495/pexels-photo-8088495.jpeg?w=300&h=400&fit=crop",
+    "https://images.pexels.com/photos/5325890/pexels-photo-5325890.jpeg?w=300&h=400&fit=crop",
+    "https://images.pexels.com/photos/4587991/pexels-photo-4587991.jpeg?w=300&h=400&fit=crop",
+    "https://images.pexels.com/photos/6274712/pexels-photo-6274712.jpeg?w=300&h=400&fit=crop"
   ];
 
   const handleGetStarted = async () => {
@@ -439,28 +439,28 @@ export default function Landing() {
                 title: t('landing.steps.step1.title'), 
                 desc: t('landing.steps.step1.desc'),
                 icon: Users,
-                image: "https://images.pexels.com/photos/1182825/pexels-photo-1182825.jpeg?w=300&h=200&fit=crop"
+                image: "https://images.pexels.com/photos/1542085/pexels-photo-1542085.jpeg?w=300&h=200&fit=crop"
               },
               { 
                 step: "2", 
                 title: t('landing.steps.step2.title'), 
                 desc: t('landing.steps.step2.desc'),
                 icon: Sparkles,
-                image: "https://images.pexels.com/photos/5256816/pexels-photo-5256816.jpeg?w=300&h=200&fit=crop"
+                image: "https://images.pexels.com/photos/2773977/pexels-photo-2773977.jpeg?w=300&h=200&fit=crop"
               },
               { 
                 step: "3", 
                 title: t('landing.steps.step3.title'), 
                 desc: t('landing.steps.step3.desc'),
                 icon: MessageCircle,
-                image: "https://images.pexels.com/photos/2923156/pexels-photo-2923156.jpeg?w=300&h=200&fit=crop"
+                image: "https://images.pexels.com/photos/8088495/pexels-photo-8088495.jpeg?w=300&h=200&fit=crop"
               },
               { 
                 step: "4", 
                 title: t('landing.steps.step4.title'), 
                 desc: t('landing.steps.step4.desc'),
                 icon: Heart,
-                image: "https://images.pexels.com/photos/7299113/pexels-photo-7299113.jpeg?w=300&h=200&fit=crop"
+                image: "https://images.pexels.com/photos/5325890/pexels-photo-5325890.jpeg?w=300&h=200&fit=crop"
               }
             ].map((item, idx) => (
               <motion.div
