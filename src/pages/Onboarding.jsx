@@ -298,7 +298,26 @@ export default function Onboarding() {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           
-          // Save location without restrictions
+          // CRITICAL: Check if user is in USA or Canada
+          try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+            const data = await response.json();
+            const country = data.address?.country;
+            
+            // Only allow USA and Canada
+            if (!country || (country !== 'United States' && country !== 'Canada' && country !== 'United States of America')) {
+              alert('Sorry, Afrinnect is currently only available in the United States and Canada. We\'ll notify you when we expand to your region!');
+              setGettingLocation(false);
+              return;
+            }
+          } catch (e) {
+            console.error('Location validation failed:', e);
+            alert('Unable to verify your location. Please try again.');
+            setGettingLocation(false);
+            return;
+          }
+          
+          // Save location
           setFormData(prev => ({
             ...prev,
             location: { lat, lng }
