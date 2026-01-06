@@ -113,6 +113,11 @@ export default function IDVerification() {
         status: 'pending'
       });
 
+      // Store verification selfie URL for later profile photo comparison
+      await base44.entities.UserProfile.update(myProfile.id, {
+        verification_selfie_url: selfieUrl
+      });
+
       // AI auto-verification using LLM
       try {
         const aiVerification = await base44.integrations.Core.InvokeLLM({
@@ -128,6 +133,7 @@ Requirements:
 3. Does the person in the selfie match the person on the ID?
 4. Is the document a valid type (passport, driver's license, or government ID)?
 5. Can you see the person's face clearly in both images?
+6. Estimate the person's age - are they 18 or older?
 
 Respond ONLY in JSON format:
 {
@@ -135,6 +141,7 @@ Respond ONLY in JSON format:
   "confidence": 0-100,
   "document_valid": true/false,
   "face_match": true/false,
+  "is_adult": true/false,
   "reasoning": "brief explanation"
 }`,
           file_urls: [documentUrl, selfieUrl],
@@ -145,13 +152,14 @@ Respond ONLY in JSON format:
               confidence: { type: "number" },
               document_valid: { type: "boolean" },
               face_match: { type: "boolean" },
+              is_adult: { type: "boolean" },
               reasoning: { type: "string" }
             }
           }
         });
 
-        // Auto-approve if AI is confident
-        if (aiVerification.verified && aiVerification.confidence >= 75) {
+        // Auto-approve if AI is confident AND user is adult
+        if (aiVerification.verified && aiVerification.confidence >= 75 && aiVerification.is_adult) {
           // Update profile to verified
           await base44.entities.UserProfile.update(myProfile.id, {
             verification_status: {
