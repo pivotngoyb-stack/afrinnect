@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
   ArrowLeft, Bell, Lock, Eye, Shield, Globe, Moon, Sun,
-  HelpCircle, FileText, LogOut, Trash2, ChevronRight, Download
+  HelpCircle, FileText, LogOut, Trash2, ChevronRight, Download, Smartphone
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -213,6 +213,62 @@ export default function Settings() {
                 <ChevronRight size={20} className="text-gray-400" />
               )}
             </Link>
+
+            <Separator />
+
+            {/* Device Management */}
+            <div className="py-2">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <span className="text-gray-700 block">Active Devices</span>
+                  <span className="text-sm text-gray-500">
+                    {myProfile?.device_ids?.length || 0} / 2 devices used
+                  </span>
+                </div>
+                <Smartphone size={18} className="text-purple-600" />
+              </div>
+              
+              {myProfile?.device_info?.length > 0 && (
+                <div className="space-y-2 mt-2">
+                  {myProfile.device_info.map((device, idx) => {
+                    const isCurrentDevice = localStorage.getItem('device_id') === device.device_id;
+                    return (
+                      <div key={idx} className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm">
+                        <div className="overflow-hidden">
+                          <p className="font-medium truncate pr-2">
+                            {device.device_name}
+                            {isCurrentDevice && <span className="text-purple-600 ml-1">(Current)</span>}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            Last login: {new Date(device.last_login).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <button 
+                          onClick={async () => {
+                            if (confirm('Remove this device? You will need to log in again on that device.')) {
+                              const newIds = myProfile.device_ids.filter(id => id !== device.device_id);
+                              const newInfo = myProfile.device_info.filter(d => d.device_id !== device.device_id);
+                              
+                              await base44.entities.UserProfile.update(myProfile.id, {
+                                device_ids: newIds,
+                                device_info: newInfo
+                              });
+                              
+                              // Refresh profile
+                              const updatedUser = await base44.entities.UserProfile.filter({ id: myProfile.id });
+                              if (updatedUser.length > 0) setMyProfile(updatedUser[0]);
+                            }
+                          }}
+                          className="text-red-500 text-xs hover:underline whitespace-nowrap ml-2"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             <Separator />
 

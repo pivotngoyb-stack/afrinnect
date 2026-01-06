@@ -120,7 +120,14 @@ export default function Home() {
           }
           
           // Update device tracking on login
-          const deviceId = navigator.userAgent + '_' + new Date().getTime();
+          // Try to get existing deviceId from localStorage or create a new persistent one
+          let deviceId = localStorage.getItem('device_id');
+          if (!deviceId) {
+            // Generate a more stable ID that doesn't change on refresh
+            deviceId = navigator.userAgent + '_' + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('device_id', deviceId);
+          }
+          
           const existingDeviceIds = profile.device_ids || [];
           
           if (!existingDeviceIds.includes(deviceId)) {
