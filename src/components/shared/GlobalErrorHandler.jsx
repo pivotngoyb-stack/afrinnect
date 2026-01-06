@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { toast } from 'sonner';
+import { useErrorLogger } from '@/components/analytics/ErrorLogger';
 
 export function GlobalErrorHandler() {
+  const { captureError } = useErrorLogger();
+
   useEffect(() => {
     // Handle fetch errors globally
     const originalFetch = window.fetch;
@@ -23,6 +26,10 @@ export function GlobalErrorHandler() {
         
         // Handle server errors
         if (response.status >= 500) {
+          captureError(new Error(`Server Error ${response.status}: ${response.url}`), {
+            type: 'network_error',
+            severity: 'high'
+          });
           toast.error('Server error', {
             description: 'Please try again later'
           });
