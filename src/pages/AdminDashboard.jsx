@@ -44,6 +44,7 @@ import PhotoModeration from '@/components/admin/PhotoModeration';
 import SystemSettings from '@/components/admin/SystemSettings';
 import VendorManagement from '@/components/admin/VendorManagement';
 import AuthTest from '@/components/auth/AuthTest';
+import RateLimitMonitor from '@/components/admin/RateLimitMonitor';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -137,6 +138,20 @@ export default function AdminDashboard() {
     queryKey: ['admin-audit-logs'],
     queryFn: () => base44.entities.AdminAuditLog.list('-created_date', 500),
     enabled: isAdmin
+  });
+
+  // Fetch rate limit violations (last 24 hours)
+  const { data: rateLimitViolations = [] } = useQuery({
+    queryKey: ['admin-rate-limits'],
+    queryFn: async () => {
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      return base44.entities.AdminAuditLog.filter({
+        action_type: 'rate_limit_exceeded',
+        created_date: { $gte: yesterday }
+      });
+    },
+    enabled: isAdmin,
+    refetchInterval: 60000 // Refresh every minute
   });
 
   // Fetch verification requests
@@ -571,6 +586,8 @@ export default function AdminDashboard() {
         return <AuditLogs logs={auditLogs} />;
       case 'auth_test':
         return <AuthTest />;
+      case 'security_monitor':
+        return <RateLimitMonitor violations={rateLimitViolations} currentUser={currentUser} />;
       default:
         return <AdminOverview stats={stats} />;
     }

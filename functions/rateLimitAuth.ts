@@ -3,6 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 // Rate limiters for different auth actions
 const loginAttempts = new Map();
 const signupAttempts = new Map();
+const violationLog = new Map(); // Track violations for AI analysis
 
 // Clean up old entries every 10 minutes
 setInterval(() => {
@@ -26,12 +27,13 @@ setInterval(() => {
 
 Deno.serve(async (req) => {
   try {
-    const { action, identifier } = await req.json();
+    const { action, identifier, user_email } = await req.json();
     
     if (!action || !identifier) {
       return Response.json({ error: 'Action and identifier required' }, { status: 400 });
     }
 
+    const base44 = createClientFromRequest(req);
     const now = Date.now();
     const hourAgo = now - 3600000;
 
@@ -41,6 +43,29 @@ Deno.serve(async (req) => {
       const recentAttempts = attempts.filter(time => time > hourAgo);
       
       if (recentAttempts.length >= 5) {
+        // Log violation to database
+        try {
+          await base44.asServiceRole.entities.AdminAuditLog.create({
+            admin_user_id: 'system',
+            admin_email: 'system@afrinnect.com',
+            action_type: 'rate_limit_exceeded',
+            target_user_id: identifier,
+            details: { 
+              type: 'login',
+              attempts: recentAttempts.length,
+              email: user_email || identifier,
+              timestamp: new Date().toISOString()
+            }
+          });
+
+          // Track violations for AI analysis
+          const violations = violationLog.get(identifier) || [];
+          violations.push({ type: 'login', time: now });
+          violationLog.set(identifier, violations);
+        } catch (e) {
+          console.error('Failed to log violation:', e);
+        }
+
         return Response.json({ 
           allowed: false,
           error: 'Too many login attempts. Please wait 1 hour or reset your password.',
@@ -58,6 +83,29 @@ Deno.serve(async (req) => {
       const recentAttempts = attempts.filter(time => time > hourAgo);
       
       if (recentAttempts.length >= 3) {
+        // Log violation to database
+        try {
+          await base44.asServiceRole.entities.AdminAuditLog.create({
+            admin_user_id: 'system',
+            admin_email: 'system@afrinnect.com',
+            action_type: 'rate_limit_exceeded',
+            target_user_id: identifier,
+            details: { 
+              type: 'signup',
+              attempts: recentAttempts.length,
+              ip: identifier,
+              timestamp: new Date().toISOString()
+            }
+          });
+
+          // Track violations for AI analysis
+          const violations = violationLog.get(identifier) || [];
+          violations.push({ type: 'signup', time: now });
+          violationLog.set(identifier, violations);
+        } catch (e) {
+          console.error('Failed to log violation:', e);
+        }
+
         return Response.json({ 
           allowed: false,
           error: 'Too many signup attempts. Please wait 1 hour.',
