@@ -551,12 +551,18 @@ export default function Profile() {
               </Button>
             </Link>
 
-            <Link to={createPageUrl('EditProfile')}>
-              <Button className="w-full bg-purple-600 hover:bg-purple-700" size="lg">
-                <Edit2 size={18} className="mr-2" />
-                Edit Profile
-              </Button>
-            </Link>
+            <div className="flex gap-3">
+              <Link to={createPageUrl('EditProfile')} className="flex-1">
+                <Button className="w-full bg-purple-600 hover:bg-purple-700" size="lg">
+                  <Edit2 size={18} className="mr-2" />
+                  Edit Profile
+                </Button>
+              </Link>
+              <BoostProfileButton 
+                userProfile={profile} 
+                onBoostSuccess={() => window.location.reload()}
+              />
+            </div>
 
             <Link to={createPageUrl('PricingPlans')}>
               <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" size="lg">
