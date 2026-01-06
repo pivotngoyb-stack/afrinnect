@@ -422,6 +422,11 @@ export default function Onboarding() {
             placeholder="Your first name"
             className="mt-2 h-12 text-lg"
           />
+          <div className="mt-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <p className="text-sm text-amber-900">
+              ⚠️ <strong>Use your real name.</strong> Fake names will prevent verification later and may result in account suspension.
+            </p>
+          </div>
         </div>
 
         <div>
