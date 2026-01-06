@@ -59,7 +59,7 @@ export default function Home() {
           return;
         }
         
-        // Check if user was previously banned
+        // Check if user was previously banned (skip on error)
         const user = await base44.auth.me();
         try {
           const banCheck = await base44.functions.invoke('checkBannedUser', { email: user.email });
@@ -70,7 +70,7 @@ export default function Home() {
             return;
           }
         } catch (e) {
-          console.error('Ban check failed:', e);
+          console.log('Ban check skipped:', e);
         }
         
         setIsCheckingAuth(false);
