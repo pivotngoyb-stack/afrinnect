@@ -18,6 +18,7 @@ import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import TutorialTooltip from '@/components/shared/TutorialTooltip';
 import MessageWithLikeModal from '@/components/home/MessageWithLikeModal';
 import UbuntuAIButton from '@/components/shared/UbuntuAIButton';
+import NotificationBell from '@/components/shared/NotificationBell';
 import confetti from 'canvas-confetti';
 import { usePerformanceMonitor } from '@/components/shared/usePerformanceMonitor';
 import EmptyState from '@/components/shared/EmptyState';
@@ -886,6 +887,9 @@ export default function Home() {
                   <HeartIcon size={18} className="text-pink-600" />
                 </Button>
               </Link>
+
+              {/* Notifications */}
+              <NotificationBell />
               </div>
               </div>
               </div>

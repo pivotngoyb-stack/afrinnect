@@ -14,6 +14,7 @@ import ProfileMini from '@/components/profile/ProfileMini';
 import ProfileCard from '@/components/profile/ProfileCard';
 import CountdownTimer from '@/components/shared/CountdownTimer';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
+import NotificationBell from '@/components/shared/NotificationBell';
 
 export default function Matches() {
   
@@ -252,6 +253,7 @@ export default function Matches() {
                   {likesReceived.length} likes
                 </Badge>
               )}
+              <NotificationBell />
             </div>
           </div>
         </div>

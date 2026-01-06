@@ -25,6 +25,7 @@ import StreakBadge from '@/components/shared/StreakBadge';
 import SocialProofBanner from '@/components/shared/SocialProofBanner';
 import SpotifySection from '@/components/profile/SpotifySection';
 import ProfileBadges from '@/components/profile/ProfileBadges';
+import NotificationBell from '@/components/shared/NotificationBell';
 import { Share2, AlertTriangle } from 'lucide-react';
 
 export default function Profile() {
@@ -200,13 +201,16 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Settings Button */}
+        {/* Header Actions */}
         {isOwnProfile && (
-          <Link to={createPageUrl('Settings')} className="absolute top-4 right-4">
-            <Button variant="ghost" size="icon" className="bg-white/20 backdrop-blur text-white hover:bg-white/30">
-              <Settings size={20} />
-            </Button>
-          </Link>
+          <div className="absolute top-4 right-4 flex gap-2">
+            <NotificationBell className="bg-white/20 backdrop-blur text-white hover:bg-white/30" />
+            <Link to={createPageUrl('Settings')}>
+              <Button variant="ghost" size="icon" className="bg-white/20 backdrop-blur text-white hover:bg-white/30">
+                <Settings size={20} />
+              </Button>
+            </Link>
+          </div>
         )}
       </header>
 
