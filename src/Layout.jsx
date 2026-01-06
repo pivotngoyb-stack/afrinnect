@@ -10,7 +10,7 @@ import SubscriptionReminder from '@/components/monetization/SubscriptionReminder
 import RetentionRewards from '@/components/monetization/RetentionRewards';
 import { LanguageProvider, useLanguage } from '@/components/i18n/LanguageContext';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
-import { ErrorMonitorProvider } from '@/components/shared/ErrorMonitor';
+import { ErrorLoggerProvider } from '@/components/analytics/ErrorLogger';
 import OfflineIndicator from '@/components/shared/OfflineIndicator';
 import { useServiceWorker } from '@/components/shared/ServiceWorkerManager';
 import { useNetworkStatus } from '@/components/shared/NetworkStatus';
@@ -210,13 +210,13 @@ export default function Layout(props) {
 
           return (
             <ErrorBoundary>
-              <ErrorMonitorProvider>
+              <ErrorLoggerProvider>
                 <LanguageProvider>
                   <GoogleAnalytics />
                   <GlobalErrorHandler />
                   <LayoutContent {...props} />
                 </LanguageProvider>
-              </ErrorMonitorProvider>
+              </ErrorLoggerProvider>
             </ErrorBoundary>
           );
           }

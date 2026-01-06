@@ -29,6 +29,7 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
     { id: 'support', label: 'Support', icon: Bell },
     { id: 'compliance', label: 'Compliance', icon: FileText },
     { id: 'settings', label: 'System Settings', icon: Settings },
+    { id: 'error_logs', label: 'Error Logs', icon: AlertTriangle, alert: true },
     { id: 'audit', label: 'Audit Logs', icon: Shield, badge: stats?.auditLogs }
   ];
 
