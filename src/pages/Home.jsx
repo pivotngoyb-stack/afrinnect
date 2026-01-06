@@ -28,6 +28,7 @@ import LazyImage from '@/components/shared/LazyImage';
 import { useUpgradePrompts, UpgradePromptBanner } from '@/components/monetization/UpgradePrompts';
 import { ProfileCardSkeleton } from '@/components/shared/SkeletonLoader';
 import BannedScreen from '@/components/auth/BannedScreen';
+import TrialExpiryBanner from '@/components/monetization/TrialExpiryBanner';
 
 export default function Home() {
   usePerformanceMonitor('Home');
@@ -884,6 +885,9 @@ export default function Home() {
               </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 pb-24">
+        {/* Trial Expiry Banner */}
+        <TrialExpiryBanner userProfile={myProfile} />
+
         {/* Ad Banner */}
         <AdBanner placement="discovery" userProfile={myProfile} />
 

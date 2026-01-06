@@ -176,6 +176,9 @@ export default function Onboarding() {
         throw new Error('Maximum 2 devices allowed per email. Please remove a device first.');
       }
 
+      // CRITICAL: Give 3-day premium trial to all new users
+      const trialExpiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+      
       const profile = await base44.entities.UserProfile.create({
         ...formData,
         user_id: user.id,
@@ -184,6 +187,9 @@ export default function Onboarding() {
         last_active: new Date().toISOString(),
         daily_likes_count: 0,
         daily_likes_reset_date: new Date().toISOString().split('T')[0],
+        is_premium: true,
+        subscription_tier: 'premium',
+        premium_until: trialExpiresAt,
         verification_status: {
           email_verified: true,
           phone_verified: false,
