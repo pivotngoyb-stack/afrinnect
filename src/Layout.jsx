@@ -27,6 +27,36 @@ function LayoutContent({ children, currentPageName }) {
   const [hasProfile, setHasProfile] = useState(true);
   const { t } = useLanguage();
   
+  // PWA Meta Tags
+  useEffect(() => {
+    // Set theme color
+    let metaThemeColor = document.querySelector("meta[name=theme-color]");
+    if (!metaThemeColor) {
+      metaThemeColor = document.createElement("meta");
+      metaThemeColor.name = "theme-color";
+      document.head.appendChild(metaThemeColor);
+    }
+    metaThemeColor.content = "#7c3aed";
+
+    // iOS specific tags
+    const metaTags = [
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+      { name: 'apple-mobile-web-app-title', content: 'Afrinnect' },
+      { name: 'mobile-web-app-capable', content: 'yes' }
+    ];
+
+    metaTags.forEach(tag => {
+      let el = document.querySelector(`meta[name="${tag.name}"]`);
+      if (!el) {
+        el = document.createElement("meta");
+        el.name = tag.name;
+        document.head.appendChild(el);
+      }
+      el.content = tag.content;
+    });
+  }, []);
+
   useEffect(() => {
     const checkProfile = async () => {
       // Skip all auth checks for public pages
