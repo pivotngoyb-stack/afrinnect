@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { 
   AlertOctagon, CheckCircle, Clock, Search, Filter, 
-  ChevronRight, Activity, Smartphone, Globe, User 
+  ChevronRight, Activity, Smartphone, Globe, User, Sparkles, Brain
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,7 @@ export default function ErrorLogsDashboard() {
   const [selectedError, setSelectedError] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [aiAnalysis, setAiAnalysis] = useState(null);
   const queryClient = useQueryClient();
 
   // Fetch Errors
@@ -57,6 +58,22 @@ export default function ErrorLogsDashboard() {
       }
     }
   });
+
+  // AI Analysis Mutation
+  const analyzeErrorMutation = useMutation({
+    mutationFn: async (error) => {
+      const response = await base44.functions.invoke('analyzeError', { error });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setAiAnalysis(data);
+    }
+  });
+
+  // Reset analysis when selecting new error
+  React.useEffect(() => {
+    setAiAnalysis(null);
+  }, [selectedError?.id]);
 
   // Filter logic
   const filteredErrors = errors.filter(err => 
@@ -211,6 +228,51 @@ export default function ErrorLogsDashboard() {
                   Occurred {new Date(selectedError.created_date).toLocaleString()}
                 </SheetDescription>
               </SheetHeader>
+
+              {/* AI Analysis Section */}
+              <div className="space-y-3">
+                {!aiAnalysis ? (
+                  <Button 
+                    onClick={() => analyzeErrorMutation.mutate(selectedError)} 
+                    disabled={analyzeErrorMutation.isPending}
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-none"
+                  >
+                    {analyzeErrorMutation.isPending ? (
+                      <Activity className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="mr-2 h-4 w-4" />
+                    )}
+                    {analyzeErrorMutation.isPending ? 'Analyzing Error...' : 'Analyze with AI'}
+                  </Button>
+                ) : (
+                  <Card className="bg-purple-900/20 border-purple-500/30">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-center gap-2 text-purple-300 font-semibold">
+                        <Brain className="h-4 w-4" />
+                        AI Diagnosis
+                      </div>
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-xs text-purple-200/60 uppercase font-bold">Diagnosis</p>
+                          <p className="text-sm text-purple-100">{aiAnalysis.diagnosis}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-purple-200/60 uppercase font-bold">Suggested Fix</p>
+                          <p className="text-sm text-purple-100 font-mono bg-black/30 p-2 rounded mt-1">
+                            {aiAnalysis.fix_suggestion}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-xs text-purple-200/60">Severity:</span>
+                          <Badge variant="outline" className="border-purple-400 text-purple-300">
+                            {aiAnalysis.severity_assessment}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
 
               {/* Actions */}
               <div className="flex gap-2">
