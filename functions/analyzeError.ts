@@ -56,6 +56,13 @@ Please provide:
             }
         });
 
+        // Save analysis to the error log for persistence
+        if (error.id) {
+            await base44.entities.ErrorLog.update(error.id, {
+                ai_analysis: analysis
+            });
+        }
+
         return Response.json(analysis);
 
     } catch (err) {

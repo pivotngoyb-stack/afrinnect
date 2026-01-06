@@ -67,13 +67,23 @@ export default function ErrorLogsDashboard() {
     },
     onSuccess: (data) => {
       setAiAnalysis(data);
+      // Update local state to show persisted result immediately
+      if (selectedError) {
+        setSelectedError(prev => ({ ...prev, ai_analysis: data }));
+      }
+      // Refresh list to persist in cache
+      queryClient.invalidateQueries(['error-logs']);
     }
   });
 
-  // Reset analysis when selecting new error
+  // Reset or load analysis when selecting new error
   React.useEffect(() => {
-    setAiAnalysis(null);
-  }, [selectedError?.id]);
+    if (selectedError?.ai_analysis) {
+      setAiAnalysis(selectedError.ai_analysis);
+    } else {
+      setAiAnalysis(null);
+    }
+  }, [selectedError?.id, selectedError?.ai_analysis]);
 
   // Filter logic
   const filteredErrors = errors.filter(err => 
