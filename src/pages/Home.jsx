@@ -58,6 +58,21 @@ export default function Home() {
           window.location.href = createPageUrl('Landing');
           return;
         }
+        
+        // Check if user was previously banned
+        const user = await base44.auth.me();
+        try {
+          const banCheck = await base44.functions.invoke('checkBannedUser', { email: user.email });
+          if (banCheck.data?.banned) {
+            alert(banCheck.data.reason);
+            await base44.auth.logout();
+            window.location.href = createPageUrl('Landing');
+            return;
+          }
+        } catch (e) {
+          console.error('Ban check failed:', e);
+        }
+        
         setIsCheckingAuth(false);
       } catch (e) {
         // Not authenticated - redirect to landing

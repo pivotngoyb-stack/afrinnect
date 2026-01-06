@@ -181,31 +181,36 @@ export default function AdminDashboard() {
     enabled: isAdmin
   });
 
-  // Delete user mutation (soft delete)
+  // Delete user mutation (hard delete for fresh start)
   const deleteUserMutation = useMutation({
     mutationFn: async (userId) => {
       const userProfiles = await base44.entities.UserProfile.filter({ user_id: userId });
+      const userEmail = userProfiles[0]?.created_by || 'Unknown';
       
-      // Soft delete all profiles for this user
-      for (const profile of userProfiles) {
-        await base44.entities.UserProfile.update(profile.id, {
-          is_active: false,
-          is_deleted: true,
-          display_name: '[Deleted by Admin]',
-          bio: '',
-          photos: [],
-          primary_photo: ''
-        });
-      }
+      // Check if they're banned before deletion
+      const wasBanned = userProfiles.some(p => p.is_banned || !p.is_active);
       
-      // Log deletion
+      // Log deletion with ban status
       await base44.entities.DeletedAccount.create({
         user_id: userId,
-        user_email: userProfiles[0]?.created_by || 'Unknown',
+        user_email: userEmail,
         display_name: userProfiles[0]?.display_name || 'Unknown',
-        deletion_reason: 'Admin deleted',
+        deletion_reason: wasBanned ? 'Deleted while banned - cannot return' : 'Admin deleted - can return',
         deleted_at: new Date().toISOString()
       });
+      
+      // Hard delete all profiles (so they can start fresh if not banned)
+      for (const profile of userProfiles) {
+        // Delete related data
+        const likes = await base44.entities.Like.filter({ liker_id: profile.id });
+        for (const like of likes) await base44.entities.Like.delete(like.id);
+        
+        const passes = await base44.entities.Pass.filter({ passer_id: profile.id });
+        for (const pass of passes) await base44.entities.Pass.delete(pass.id);
+        
+        // Delete profile
+        await base44.entities.UserProfile.delete(profile.id);
+      }
       
       // Log action
       await base44.entities.AdminAuditLog.create({
@@ -213,7 +218,7 @@ export default function AdminDashboard() {
         admin_email: currentUser.email,
         action_type: 'user_delete',
         target_user_id: userId,
-        details: { profiles: userProfiles.map(p => p.id) }
+        details: { profiles: userProfiles.map(p => p.id), was_banned: wasBanned }
       });
       
       return userId;
@@ -232,7 +237,11 @@ export default function AdminDashboard() {
     mutationFn: async (userId) => {
       const userProfiles = await base44.entities.UserProfile.filter({ user_id: userId });
       for (const profile of userProfiles) {
-        await base44.entities.UserProfile.update(profile.id, { is_active: false });
+        await base44.entities.UserProfile.update(profile.id, { 
+          is_active: false,
+          is_banned: true,
+          ban_reason: 'Banned by admin'
+        });
       }
       
       // Log action

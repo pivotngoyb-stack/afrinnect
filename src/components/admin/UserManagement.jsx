@@ -22,7 +22,16 @@ export default function UserManagement({
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterSubscription, setFilterSubscription] = useState('all');
 
-  const filteredProfiles = profiles.filter(p => {
+  // Group profiles by user_id to prevent duplicates
+  const uniqueProfiles = profiles.reduce((acc, profile) => {
+    // Keep the most recently updated profile for each user
+    if (!acc[profile.user_id] || new Date(profile.updated_date) > new Date(acc[profile.user_id].updated_date)) {
+      acc[profile.user_id] = profile;
+    }
+    return acc;
+  }, {});
+
+  const filteredProfiles = Object.values(uniqueProfiles).filter(p => {
     const matchesSearch = p.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          p.user_id?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCountry = filterCountry === 'all' || p.current_country === filterCountry;
