@@ -27,6 +27,7 @@ import PullToRefresh from '@/components/shared/PullToRefresh';
 import LazyImage from '@/components/shared/LazyImage';
 import { useUpgradePrompts, UpgradePromptBanner } from '@/components/monetization/UpgradePrompts';
 import { ProfileCardSkeleton } from '@/components/shared/SkeletonLoader';
+import BannedScreen from '@/components/auth/BannedScreen';
 
 export default function Home() {
   usePerformanceMonitor('Home');
@@ -88,7 +89,6 @@ export default function Home() {
     
     const fetchMyProfile = async () => {
       try {
-
         const user = await base44.auth.me();
         if (!user) {
           // Not logged in - redirect to landing
@@ -105,6 +105,12 @@ export default function Home() {
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
         if (profiles.length > 0) {
           const profile = profiles[0];
+
+          // CRITICAL: Check if user is banned FIRST
+          if (profile.is_banned || profile.is_suspended) {
+            setMyProfile(profile);
+            return; // Stop here - BannedScreen will be shown
+          }
           
           // Update device tracking on login
           const deviceId = navigator.userAgent + '_' + new Date().getTime();
@@ -793,6 +799,17 @@ export default function Home() {
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
+    );
+  }
+
+  // Show banned screen if user is banned or suspended
+  if (myProfile && (myProfile.is_banned || myProfile.is_suspended)) {
+    return (
+      <BannedScreen
+        userProfile={myProfile}
+        banReason={myProfile.ban_reason || myProfile.suspension_reason || 'Violation of community guidelines'}
+        userEmail={myProfile.created_by}
+      />
     );
   }
 

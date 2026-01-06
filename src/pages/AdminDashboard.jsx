@@ -45,6 +45,7 @@ import SystemSettings from '@/components/admin/SystemSettings';
 import VendorManagement from '@/components/admin/VendorManagement';
 import AuthTest from '@/components/auth/AuthTest';
 import RateLimitMonitor from '@/components/admin/RateLimitMonitor';
+import DisputeManagement from '@/components/admin/DisputeManagement';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -152,6 +153,13 @@ export default function AdminDashboard() {
     },
     enabled: isAdmin,
     refetchInterval: 60000 // Refresh every minute
+  });
+
+  // Fetch disputes
+  const { data: disputes = [] } = useQuery({
+    queryKey: ['admin-disputes'],
+    queryFn: () => base44.entities.Dispute.list('-created_date', 100),
+    enabled: isAdmin
   });
 
   // Fetch verification requests
@@ -588,6 +596,8 @@ export default function AdminDashboard() {
         return <AuthTest />;
       case 'security_monitor':
         return <RateLimitMonitor violations={rateLimitViolations} currentUser={currentUser} />;
+      case 'disputes':
+        return <DisputeManagement disputes={disputes} currentUser={currentUser} />;
       default:
         return <AdminOverview stats={stats} />;
     }
