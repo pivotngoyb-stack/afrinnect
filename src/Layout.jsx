@@ -17,6 +17,7 @@ import { useNetworkStatus } from '@/components/shared/NetworkStatus';
 import CookieConsent from '@/components/legal/CookieConsent';
 import PushNotificationSetup from '@/components/notifications/PushNotificationSetup';
 import { GlobalErrorHandler } from '@/components/shared/GlobalErrorHandler';
+import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 
 const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories', 'EventDetails', 'CreateEvent', 'CompatibilityQuizzes', 'ReferralProgram', 'LanguageExchangeHub', 'VendorManagement', 'Marketplace', 'PasswordReset'];
 
@@ -211,6 +212,7 @@ export default function Layout(props) {
             <ErrorBoundary>
               <ErrorMonitorProvider>
                 <LanguageProvider>
+                  <GoogleAnalytics />
                   <GlobalErrorHandler />
                   <LayoutContent {...props} />
                 </LanguageProvider>
