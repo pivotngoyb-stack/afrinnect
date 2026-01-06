@@ -690,17 +690,32 @@ export default function EditProfile() {
           </Card>
         </motion.div>
 
-        {/* Video Profile - Commented out temporarily */}
-        {/* <motion.div
+        {/* Video Profile */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.7 }}
         >
-          <VideoProfileRecorder
-            existingVideoUrl={formData.video_profile_url}
-            onVideoUploaded={(url) => setFormData({ ...formData, video_profile_url: url })}
-          />
-        </motion.div> */}
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+            <div className="bg-gradient-to-r from-pink-500 to-rose-600 p-6">
+              <div className="flex items-center gap-3 text-white">
+                <div className="p-3 bg-white/20 rounded-xl backdrop-blur">
+                  <Video size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Video Profile</h2>
+                  <p className="text-sm text-white/80">Introduce yourself in 30 seconds</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              <VideoProfileRecorder
+                existingVideoUrl={formData.video_profile_url}
+                onVideoUploaded={(url) => setFormData({ ...formData, video_profile_url: url })}
+              />
+            </div>
+          </div>
+        </motion.div>
 
         {/* Save Button (Bottom) */}
         <motion.div
