@@ -5,7 +5,7 @@ import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Camera, X, Loader2, Save, Check, Sparkles,
-  MapPin, Briefcase, GraduationCap, Heart, Globe, Users, Award
+  MapPin, Briefcase, GraduationCap, Heart, Globe, Users, Award, Video
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ import EditProfilePhotos from '@/components/profile/EditProfilePhotos';
 import EditProfileBasicInfo from '@/components/profile/EditProfileBasicInfo';
 import { compressImage, validateImageFile } from '@/components/shared/ImageCompressor';
 import ImageCropper from '@/components/shared/ImageCropper';
+import VideoProfileRecorder from '@/components/profile/VideoProfileRecorder';
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
