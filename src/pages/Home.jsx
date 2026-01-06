@@ -111,6 +111,12 @@ export default function Home() {
             setMyProfile(profile);
             return; // Stop here - BannedScreen will be shown
           }
+
+          // CRITICAL: Check if ID is verified - redirect if not
+          if (!profile.verification_status?.id_verified) {
+            window.location.href = createPageUrl('IDVerification');
+            return;
+          }
           
           // Update device tracking on login
           const deviceId = navigator.userAgent + '_' + new Date().getTime();
