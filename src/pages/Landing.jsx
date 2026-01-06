@@ -87,7 +87,9 @@ export default function Landing() {
   const communityPhotos = [
     "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/2ee966864_image.png",
     "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/b55b7c66d_image.png",
-    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/728ada3a8_image.png"
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/728ada3a8_image.png",
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/3face4563_image.png",
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/9b3bf8357_image.png"
   ];
 
   const handleGetStarted = async () => {
@@ -398,7 +400,7 @@ export default function Landing() {
           </div>
 
           {/* Community Photo Grid */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
             {communityPhotos.map((photo, idx) => (
               <motion.div
                 key={idx}
