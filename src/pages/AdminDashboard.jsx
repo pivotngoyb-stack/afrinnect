@@ -47,6 +47,7 @@ import AuthTest from '@/components/auth/AuthTest';
 import RateLimitMonitor from '@/components/admin/RateLimitMonitor';
 import DisputeManagement from '@/components/admin/DisputeManagement';
 import ErrorLogsDashboard from '@/components/admin/ErrorLogsDashboard';
+import QuickActions from '@/components/admin/QuickActions';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -520,7 +521,12 @@ export default function AdminDashboard() {
   const renderView = () => {
     switch (currentView) {
       case 'overview':
-        return <AdminOverview stats={stats} />;
+        return (
+          <div className="space-y-6">
+            <QuickActions />
+            <AdminOverview stats={stats} />
+          </div>
+        );
       case 'users':
         return (
           <UserManagement
