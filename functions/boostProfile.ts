@@ -18,10 +18,12 @@ Deno.serve(async (req) => {
 
     const profile = profiles[0];
 
-    // CRITICAL: Only verified users can boost
-    if (!profile.verification_status?.id_verified || !profile.verification_status?.photo_verified) {
+    // CRITICAL: Only verified users can boost (Photo OR ID verified)
+    const isVerified = profile.verification_status?.photo_verified || profile.verification_status?.id_verified;
+    
+    if (!isVerified) {
       return Response.json({ 
-        error: 'Only verified users can boost their profile. Please complete ID and photo verification first.',
+        error: 'Only verified users can boost their profile. Please complete photo verification to unlock this feature.',
         verified: false
       }, { status: 403 });
     }

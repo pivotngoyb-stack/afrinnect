@@ -113,6 +113,14 @@ Deno.serve(async (req) => {
              // Location (10pts)
              if (myProfile.current_city === p.current_city) score += 5;
 
+             // BOOST LOGIC: Boosted profiles get massive priority
+             if (p.profile_boost_active && p.boost_expires_at) {
+                 const expiry = new Date(p.boost_expires_at);
+                 if (expiry > new Date()) {
+                     score += 500; // Pushes them to the top of any list
+                 }
+             }
+
              // Calculate Distance
              let distance = null;
              if (myProfile.location?.lat && p.location?.lat) {

@@ -11,7 +11,8 @@ export default function BoostProfileButton({ userProfile, onBoostSuccess }) {
   const [isBoosting, setIsBoosting] = useState(false);
   const [error, setError] = useState('');
 
-  const isVerified = userProfile?.verification_status?.id_verified && 
+  // Allow boosting if EITHER photo OR ID is verified
+  const isVerified = userProfile?.verification_status?.id_verified || 
                      userProfile?.verification_status?.photo_verified;
   
   const hasActiveBoost = userProfile?.profile_boost_active && 
@@ -88,7 +89,7 @@ export default function BoostProfileButton({ userProfile, onBoostSuccess }) {
                 <AlertCircle className="h-5 w-5 text-red-600" />
                 <AlertDescription className="text-red-900">
                   <strong>Verification Required</strong><br />
-                  Only verified users can boost their profiles. Complete ID and photo verification first.
+                  You must be verified to boost. Please complete photo verification to unlock this feature.
                 </AlertDescription>
               </Alert>
             )}
