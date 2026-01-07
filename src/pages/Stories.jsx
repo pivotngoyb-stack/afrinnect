@@ -206,19 +206,20 @@ export default function Stories() {
     setCurrentStoryIndex(0);
   };
 
-  const handleNext = () => {
-    if (currentStoryIndex < viewing.length - 1) {
-      setCurrentStoryIndex(prev => prev + 1);
-    } else {
-      setViewing(null);
-    }
-  };
+  const handleNext = React.useCallback(() => {
+    setCurrentStoryIndex(prev => {
+      if (viewing && prev < viewing.length - 1) {
+        return prev + 1;
+      } else {
+        setTimeout(() => setViewing(null), 0);
+        return prev;
+      }
+    });
+  }, [viewing]);
 
-  const handlePrev = () => {
-    if (currentStoryIndex > 0) {
-      setCurrentStoryIndex(prev => prev - 1);
-    }
-  };
+  const handlePrev = React.useCallback(() => {
+    setCurrentStoryIndex(prev => (prev > 0 ? prev - 1 : prev));
+  }, []);
 
   const handleDeleteStory = async (storyId) => {
     if (confirm('Delete this story?')) {
