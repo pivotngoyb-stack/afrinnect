@@ -4,13 +4,16 @@ import { createPageUrl } from '@/utils';
 import { Video } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
-export default function VideoCallButton({ matchId, isPremium }) {
-  if (!isPremium) {
+export default function VideoCallButton({ matchId, isPremium, userTier }) {
+  // Check for Elite/VIP tier
+  const isEliteOrVip = userTier === 'elite' || userTier === 'vip';
+
+  if (!isEliteOrVip) {
     return (
-      <Link to={createPageUrl('Premium')}>
+      <Link to={createPageUrl('PricingPlans')}>
         <Button variant="outline" size="sm" className="gap-1">
           <Video size={16} />
-          <span className="hidden sm:inline">Video Call (Premium)</span>
+          <span className="hidden sm:inline">Video Call (Elite)</span>
         </Button>
       </Link>
     );

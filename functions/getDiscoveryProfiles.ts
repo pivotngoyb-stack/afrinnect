@@ -113,6 +113,10 @@ Deno.serve(async (req) => {
              // Location (10pts)
              if (myProfile.current_city === p.current_city) score += 5;
 
+             // TIER PRIORITY (Passive Ranking)
+             if (p.subscription_tier === 'vip') score += 50;
+             if (p.subscription_tier === 'elite') score += 30;
+
              // BOOST LOGIC: Boosted profiles get massive priority
              if (p.profile_boost_active && p.boost_expires_at) {
                  const expiry = new Date(p.boost_expires_at);
