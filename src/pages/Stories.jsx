@@ -62,13 +62,12 @@ export default function Stories() {
   });
 
   // Server-side filtered stories with pagination (The Feed)
-  const buildStoryFilters = () => {
-    const now = new Date().toISOString();
-    return {
-      is_expired: false,
-      expires_at: { $gte: now }
-    };
-  };
+  const [filterDate, setFilterDate] = useState(new Date().toISOString());
+  
+  const filters = React.useMemo(() => ({
+    is_expired: false,
+    expires_at: { $gte: filterDate }
+  }), [filterDate]);
 
   const { 
     items: allStories, 
@@ -76,7 +75,7 @@ export default function Stories() {
     hasMore, 
     isLoadingMore,
     refetch 
-  } = useInfinitePagination('Story', buildStoryFilters(), {
+  } = useInfinitePagination('Story', filters, {
     pageSize: 30,
     sortBy: '-created_date',
     enabled: !!myProfile,
@@ -201,8 +200,17 @@ export default function Stories() {
     }
   };
 
+  const handleRefresh = async () => {
+    setFilterDate(new Date().toISOString());
+    await Promise.all([
+      refetch(),
+      refetchMyStories(),
+      refetchHistory()
+    ]);
+  };
+
   return (
-    <PullToRefresh onRefresh={() => { refetch(); refetchMyStories(); refetchHistory(); }}>
+    <PullToRefresh onRefresh={handleRefresh}>
       <div className="min-h-screen bg-gray-50 pb-24">
         {/* Header */}
         <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
