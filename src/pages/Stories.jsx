@@ -4,12 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useInfinitePagination } from '@/components/shared/useInfinitePagination';
 import PullToRefresh from '@/components/shared/PullToRefresh';
 import { AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Upload } from 'lucide-react';
+import { ArrowLeft, Upload, Plus, Trash2, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
 import StoryRing from '@/components/stories/StoryRing';
 import StoryViewer from '@/components/stories/StoryViewer';
 import { ListItemSkeleton } from '@/components/shared/SkeletonLoader';
@@ -31,7 +32,36 @@ export default function Stories() {
     fetchProfile();
   }, []);
 
-  // Server-side filtered stories with pagination
+  // 1. Fetch MY active stories explicitly (fix for "cannot see my story")
+  const { data: myActiveStories = [], refetch: refetchMyStories } = useQuery({
+    queryKey: ['my-active-stories', myProfile?.id],
+    queryFn: async () => {
+      if (!myProfile?.id) return [];
+      const stories = await base44.entities.Story.filter({
+        user_profile_id: myProfile.id,
+        is_expired: false,
+        expires_at: { $gte: new Date().toISOString() }
+      }, '-created_date');
+      // Attach profile for viewer
+      return stories.map(s => ({ ...s, user_profile: myProfile }));
+    },
+    enabled: !!myProfile
+  });
+
+  // 2. Fetch MY upload history (for the "Right Side" view)
+  const { data: myUploadHistory = [], refetch: refetchHistory } = useQuery({
+    queryKey: ['my-upload-history', myProfile?.id],
+    queryFn: async () => {
+      if (!myProfile?.id) return [];
+      const stories = await base44.entities.Story.filter({
+        user_profile_id: myProfile.id
+      }, '-created_date', 20); // Last 20 uploads
+      return stories.map(s => ({ ...s, user_profile: myProfile }));
+    },
+    enabled: !!myProfile
+  });
+
+  // Server-side filtered stories with pagination (The Feed)
   const buildStoryFilters = () => {
     const now = new Date().toISOString();
     return {
@@ -55,58 +85,42 @@ export default function Stories() {
     staleTime: 300000
   });
 
-  // Fetch profiles for stories (optimized to prevent rate limiting)
+  // Fetch profiles for feed stories
   const { data: storyProfiles = {} } = useQuery({
     queryKey: ['story-profiles', allStories.length],
     queryFn: async () => {
       try {
         if (allStories.length === 0) return {};
-        
         const profileIds = [...new Set(allStories.map(s => s.user_profile_id))];
-        
-        // Batch fetch in chunks of 10 to avoid rate limits
+        // Batch fetch logic
         const chunkSize = 10;
         const profileMap = {};
-        
         for (let i = 0; i < profileIds.length; i += chunkSize) {
           const chunk = profileIds.slice(i, i + chunkSize);
-          
-          // Add delay between chunks to avoid rate limiting
-          if (i > 0) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
-          
+          if (i > 0) await new Promise(resolve => setTimeout(resolve, 500));
           const chunkProfiles = await Promise.allSettled(
             chunk.map(id => base44.entities.UserProfile.filter({ id }))
           );
-          
-          chunkProfiles.forEach((result, idx) => {
+          chunkProfiles.forEach((result) => {
             if (result.status === 'fulfilled' && result.value?.[0]) {
               const profile = result.value[0];
               profileMap[profile.id] = profile;
             }
           });
         }
-        
         return profileMap;
       } catch (error) {
-        console.error('Failed to fetch story profiles:', error);
         return {};
       }
     },
     enabled: allStories.length > 0,
-    staleTime: 300000, // 5 minutes cache
-    cacheTime: 600000, // 10 minutes
-    retry: 1,
-    retryDelay: 10000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false
+    staleTime: 300000
   });
 
   const storiesWithProfiles = allStories.map(story => ({
     ...story,
     user_profile: storyProfiles[story.user_profile_id]
-  })).filter(s => s.user_profile); // Only include stories with loaded profiles
+  })).filter(s => s.user_profile);
 
   // Group stories by user
   const storyGroups = storiesWithProfiles.reduce((acc, story) => {
@@ -120,7 +134,6 @@ export default function Stories() {
     return acc;
   }, {});
 
-  const myStories = storyGroups[myProfile?.id]?.stories || [];
   const otherStoryGroups = Object.entries(storyGroups).filter(([id]) => id !== myProfile?.id);
 
   // Upload story mutation
@@ -139,12 +152,13 @@ export default function Stories() {
           views: []
         });
       } catch (error) {
-        console.error('Upload failed:', error);
         throw new Error(error.message || 'Failed to upload story');
       }
     },
     onSuccess: () => {
-      refetch();
+      refetch(); // Refetch feed
+      refetchMyStories(); // Refetch my active stories
+      refetchHistory(); // Refetch history sidebar
       setUploadingStory(false);
       setCaption('');
     },
@@ -160,8 +174,7 @@ export default function Stories() {
     }
   };
 
-  const handleStoryClick = (profileId) => {
-    const stories = storyGroups[profileId]?.stories || [];
+  const handleStoryClick = (stories) => {
     setViewing(stories);
     setCurrentStoryIndex(0);
   };
@@ -180,71 +193,201 @@ export default function Stories() {
     }
   };
 
+  const handleDeleteStory = async (storyId) => {
+    if (confirm('Delete this story?')) {
+      await base44.entities.Story.delete(storyId);
+      refetchMyStories();
+      refetchHistory();
+    }
+  };
+
   return (
-    <PullToRefresh onRefresh={refetch}>
+    <PullToRefresh onRefresh={() => { refetch(); refetchMyStories(); refetchHistory(); }}>
       <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft size={20} />
-                </Button>
-              </Link>
-              <h1 className="text-xl font-bold">Stories</h1>
+        {/* Header */}
+        <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Link to={createPageUrl('Home')}>
+                  <Button variant="ghost" size="icon">
+                    <ArrowLeft size={20} />
+                  </Button>
+                </Link>
+                <h1 className="text-xl font-bold">Stories</h1>
+              </div>
+              <Button 
+                onClick={() => setUploadingStory(true)} 
+                variant="default"
+                size="sm"
+                className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
+              >
+                <Plus size={16} />
+                Add Story
+              </Button>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Story Rings */}
-        {!myProfile ? (
-          <ListItemSkeleton count={3} />
-        ) : (
-        <>
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-          {/* My Story - Always first */}
-          <StoryRing
-            profile={myProfile}
-            hasStory={myStories.length > 0}
-            isViewed={false}
-            onClick={() => {
-              if (myStories.length > 0) {
-                handleStoryClick(myProfile.id);
-              } else {
-                setUploadingStory(true);
-              }
-            }}
-            isOwnProfile
-          />
+        <main className="max-w-7xl mx-auto px-4 py-6">
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Left Column: Feed (Stories) */}
+            <div className="lg:col-span-2">
+              <h2 className="text-lg font-semibold mb-4 px-1">Recent Stories</h2>
+              
+              {!myProfile ? (
+                <ListItemSkeleton count={3} />
+              ) : (
+                <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide">
+                  {/* My Story Ring */}
+                  <StoryRing
+                    profile={myProfile}
+                    hasStory={myActiveStories.length > 0}
+                    isViewed={false}
+                    onClick={() => {
+                      if (myActiveStories.length > 0) {
+                        handleStoryClick(myActiveStories);
+                      } else {
+                        setUploadingStory(true);
+                      }
+                    }}
+                    isOwnProfile
+                  />
 
-          {/* Other users' stories */}
-          {otherStoryGroups.map(([profileId, { profile, stories }]) => {
-            const hasViewed = stories.every(s => s.views?.includes(myProfile?.id));
-            return (
-              <StoryRing
-                key={profileId}
-                profile={profile}
-                hasStory
-                isViewed={hasViewed}
-                onClick={() => handleStoryClick(profileId)}
-              />
-            );
-          })}
-        </div>
+                  {/* Other users' stories */}
+                  {otherStoryGroups.map(([profileId, { profile, stories }]) => {
+                    const hasViewed = stories.every(s => s.views?.includes(myProfile?.id));
+                    return (
+                      <StoryRing
+                        key={profileId}
+                        profile={profile}
+                        hasStory
+                        isViewed={hasViewed}
+                        onClick={() => handleStoryClick(stories)}
+                      />
+                    );
+                  })}
+                </div>
+              )}
 
+              {/* Feed continues here if we wanted a vertical feed, but stories are usually rings */}
+              {otherStoryGroups.length === 0 && myActiveStories.length === 0 && (
+                <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-200">
+                  <p className="text-gray-500 mb-4">No recent stories</p>
+                  <Button variant="outline" onClick={() => setUploadingStory(true)}>
+                    Be the first to post!
+                  </Button>
+                </div>
+              )}
+            </div>
 
-        </>
-        )}
+            {/* Right Column: My Uploads History */}
+            <div className="hidden lg:block">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-900">My Uploads</h3>
+                  <Badge variant="secondary">{myUploadHistory.length}</Badge>
+                </div>
+                
+                <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
+                  {myUploadHistory.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-8">
+                      You haven't uploaded any stories yet.
+                    </p>
+                  ) : (
+                    myUploadHistory.map((story) => (
+                      <div key={story.id} className="flex gap-3 group">
+                        <div 
+                          className="relative w-20 h-28 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer bg-gray-100 border border-gray-200"
+                          onClick={() => handleStoryClick([story])}
+                        >
+                          {story.media_type === 'video' ? (
+                            <video src={story.media_url} className="w-full h-full object-cover" />
+                          ) : (
+                            <img src={story.media_url} alt="" className="w-full h-full object-cover" />
+                          )}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                        </div>
+                        <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                          <div>
+                            <p className="text-sm text-gray-900 font-medium truncate">
+                              {story.caption || 'No caption'}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {new Date(story.created_date).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <Eye size={12} />
+                              <span>{story.views?.length || 0}</span>
+                            </div>
+                            <button 
+                              onClick={() => handleDeleteStory(story.id)}
+                              className="text-red-400 hover:text-red-600 p-1"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile "My Uploads" Section (visible below rings on small screens) */}
+          <div className="lg:hidden mt-8">
+            <h3 className="font-bold text-gray-900 mb-4 px-1">My Uploads</h3>
+            <div className="grid grid-cols-3 gap-3">
+              {myUploadHistory.map((story) => (
+                <div 
+                  key={story.id} 
+                  className="relative aspect-[3/4] rounded-lg overflow-hidden bg-gray-100 border border-gray-200"
+                  onClick={() => handleStoryClick([story])}
+                >
+                  {story.media_type === 'video' ? (
+                    <video src={story.media_url} className="w-full h-full object-cover" />
+                  ) : (
+                    <img src={story.media_url} alt="" className="w-full h-full object-cover" />
+                  )}
+                  {/* View count overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                    <div className="flex items-center gap-1 text-white text-xs">
+                      <Eye size={10} />
+                      <span>{story.views?.length || 0}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {myUploadHistory.length === 0 && (
+              <p className="text-sm text-gray-500 text-center py-8">No uploads yet</p>
+            )}
+          </div>
+
+          {/* Load More Button */}
+          {hasMore && !isLoadingMore && (
+            <div className="text-center py-8">
+              <Button onClick={loadMore} variant="outline">
+                Load More Stories
+              </Button>
+            </div>
+          )}
+        </main>
 
         {/* Upload dialog */}
         {uploadingStory && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-              <h2 className="text-xl font-bold mb-4">Add to Your Story</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Add to Your Story</h2>
+                <Button variant="ghost" size="icon" onClick={() => setUploadingStory(false)}>
+                  <span className="text-xl">×</span>
+                </Button>
+              </div>
               <div className="space-y-4">
                 <div>
                   <Label>Caption (optional)</Label>
@@ -272,13 +415,6 @@ export default function Stories() {
                     disabled={uploadStoryMutation.isPending}
                   />
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() => setUploadingStory(false)}
-                  className="w-full"
-                >
-                  Cancel
-                </Button>
               </div>
             </div>
           </div>
@@ -297,22 +433,7 @@ export default function Stories() {
             />
           )}
         </AnimatePresence>
-
-        {isLoadingMore && (
-          <div className="flex justify-center py-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-600 border-t-transparent" />
-          </div>
-        )}
-
-        {hasMore && !isLoadingMore && (
-          <div className="text-center py-4">
-            <Button onClick={loadMore} variant="outline">
-              Load More Stories
-            </Button>
-          </div>
-        )}
-      </main>
-    </div>
+      </div>
     </PullToRefresh>
   );
 }
