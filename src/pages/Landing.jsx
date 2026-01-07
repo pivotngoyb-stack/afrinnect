@@ -560,7 +560,7 @@ export default function Landing() {
             {t('landing.footer.tagline')}
           </p>
           <div className="flex justify-center gap-6 mt-6 text-sm text-gray-400">
-            <Link to={createPageUrl('Privacy')} className="hover:text-white">{t('landing.footer.privacy')}</Link>
+            <Link to={createPageUrl('Privacy')} className="hover:text-white" id="privacy-policy">Privacy Policy</Link>
             <Link to={createPageUrl('Terms')} className="hover:text-white">{t('landing.footer.terms')}</Link>
             <Link to={createPageUrl('CommunityGuidelines')} className="hover:text-white">{t('landing.footer.guidelines')}</Link>
           </div>
