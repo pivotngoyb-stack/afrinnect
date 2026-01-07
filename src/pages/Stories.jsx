@@ -85,8 +85,10 @@ export default function Stories() {
   });
 
   // Fetch profiles for feed stories
+  const storyUserIds = allStories.map(s => s.user_profile_id).sort().join(',');
+  
   const { data: storyProfiles = {}, isLoading: isLoadingProfiles } = useQuery({
-    queryKey: ['story-profiles', allStories.length],
+    queryKey: ['story-profiles', storyUserIds],
     queryFn: async () => {
       try {
         if (allStories.length === 0) return {};
