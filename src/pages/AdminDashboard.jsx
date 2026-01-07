@@ -206,54 +206,16 @@ export default function AdminDashboard() {
     enabled: isAdmin
   });
 
-  // Delete user mutation (hard delete for fresh start)
+  // Delete user mutation (using backend function for complete cleanup)
   const deleteUserMutation = useMutation({
     mutationFn: async (userId) => {
-      const userProfiles = await base44.entities.UserProfile.filter({ user_id: userId });
-      const userEmail = userProfiles[0]?.created_by || 'Unknown';
+      // Use the backend function to ensure the User auth record is strictly deleted
+      // along with all related data (profiles, likes, matches, etc.)
+      const response = await base44.functions.invoke('adminDeleteUser', { userId });
       
-      // Check if they're banned before deletion
-      const wasBanned = userProfiles.some(p => p.is_banned || !p.is_active);
-      
-      // Log deletion with ban status
-      await base44.entities.DeletedAccount.create({
-        user_id: userId,
-        user_email: userEmail,
-        display_name: userProfiles[0]?.display_name || 'Unknown',
-        deletion_reason: wasBanned ? 'Deleted while banned - cannot return' : 'Admin deleted - can return',
-        deleted_at: new Date().toISOString()
-      });
-      
-      // Hard delete all profiles (so they can start fresh if not banned)
-      for (const profile of userProfiles) {
-        // Delete related data
-        const likes = await base44.entities.Like.filter({ liker_id: profile.id });
-        for (const like of likes) await base44.entities.Like.delete(like.id);
-        
-        const passes = await base44.entities.Pass.filter({ passer_id: profile.id });
-        for (const pass of passes) await base44.entities.Pass.delete(pass.id);
-        
-        // Delete profile
-        await base44.entities.UserProfile.delete(profile.id);
+      if (response.status !== 200) {
+        throw new Error(response.data?.error || 'Failed to delete user');
       }
-
-      // CRITICAL: Delete the actual User authentication record so they can sign up again
-      // Only do this if they weren't banned, OR if the admin explicitly wants to reset them.
-      // Since "Delete" usually means "Remove completely", we delete the Auth record.
-      try {
-        await base44.entities.User.delete(userId);
-      } catch (e) {
-        console.error('Failed to delete User auth record:', e);
-      }
-      
-      // Log action
-      await base44.entities.AdminAuditLog.create({
-        admin_user_id: currentUser.id,
-        admin_email: currentUser.email,
-        action_type: 'user_delete',
-        target_user_id: userId,
-        details: { profiles: userProfiles.map(p => p.id), was_banned: wasBanned }
-      });
       
       return userId;
     },
@@ -263,6 +225,11 @@ export default function AdminDashboard() {
       queryClient.invalidateQueries(['admin-audit-logs']);
       queryClient.invalidateQueries(['admin-deleted']);
       setActionDialog({ open: false, type: null, user: null });
+      alert('User successfully deleted and can now sign up again.');
+    },
+    onError: (error) => {
+      console.error('Delete failed:', error);
+      alert(`Failed to delete user: ${error.message}`);
     }
   });
 
