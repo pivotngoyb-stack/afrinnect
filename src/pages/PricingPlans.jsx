@@ -214,7 +214,7 @@ export default function PricingPlans() {
                       ${(tier.prices[selectedBilling].total * regionalDiscount).toFixed(2)}
                     </span>
                     <span className="text-gray-500 ml-2">
-                      /{tier.prices[selectedBilling].period === 'month' ? 'mo' : '6mo'}
+                      /{selectedBilling === 'monthly' ? 'mo' : selectedBilling === 'quarterly' ? '3mo' : selectedBilling === 'yearly' ? 'yr' : '6mo'}
                     </span>
                   </div>
                 )}
