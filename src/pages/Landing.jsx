@@ -110,7 +110,8 @@ export default function Landing() {
     const urlParams = new URLSearchParams(window.location.search);
     const ref = urlParams.get('ref');
     const nextUrl = ref ? createPageUrl('Home') + `?ref=${ref}` : createPageUrl('Home');
-    base44.auth.redirectToLogin('https://afrinnect-658a9066.base44.app' + nextUrl);
+    // Use window.location.origin to support custom domains like afrinnect.com
+    base44.auth.redirectToLogin(window.location.origin + nextUrl);
   };
 
   return (
