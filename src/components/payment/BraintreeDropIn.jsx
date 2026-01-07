@@ -103,6 +103,11 @@ export default function BraintreeDropIn({ amount, planName, billingPeriod, tier,
                 amount: amount.toString()
               }
             }
+          },
+          // To use Cash App, enable it in your Braintree Control Panel
+          venmo: {}, // Enable Venmo if available
+          dataCollector: {
+            kount: true // Fraud detection
           }
         }}
         onInstance={setInstance}
