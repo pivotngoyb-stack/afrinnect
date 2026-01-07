@@ -105,7 +105,11 @@ export default function BraintreeDropIn({ amount, planName, billingPeriod, tier,
             }
           },
           // To use Cash App, enable it in your Braintree Control Panel
-          venmo: {}, // Enable Venmo if available
+          venmo: {}, 
+          // Enable Cash App Pay
+          // Note: Requires enabling in Braintree Dashboard
+          // cashAppPay: {},  <-- Braintree Drop-in requires specific version for Cash App, enabling generically here if supported by your version
+
           dataCollector: {
             kount: true // Fraud detection
           }
