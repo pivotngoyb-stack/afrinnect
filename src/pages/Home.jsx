@@ -271,183 +271,21 @@ export default function Home() {
     return finalScore;
   };
 
-  // Fetch profiles for discovery - OPTIMIZED
+  // Fetch profiles for discovery - OPTIMIZED via Backend Function
   const { data: profiles = [], isLoading, refetch } = useQuery({
     queryKey: ['discovery-profiles', filters, discoveryMode, myProfile?.filters],
     queryFn: async () => {
       const savedFilters = myProfile?.filters || {};
       const combinedFilters = { ...savedFilters, ...filters };
 
-      let filterQuery = { is_active: true };
-
-      // CRITICAL: Only show USA and Canada users
-      filterQuery.current_country = { 
-        $in: ['USA', 'United States', 'Canada', 'United States of America', 'US'] 
-      };
-      
-      // Get ONLY IDs to reduce payload - OPTIMIZED
-      const [passes, likes] = await Promise.all([
-        base44.entities.Pass.filter({ passer_id: myProfile.id }, '-created_date', 200).then(p => p.map(x => x.passed_id)),
-        base44.entities.Like.filter({ liker_id: myProfile.id }, '-created_date', 200).then(l => l.map(x => x.liked_id))
-      ]);
-      
-      if (combinedFilters.relationship_goals?.length > 0) {
-        filterQuery.relationship_goal = { $in: combinedFilters.relationship_goals };
-      }
-      if (combinedFilters.religions?.length > 0) {
-        filterQuery.religion = { $in: combinedFilters.religions };
-      }
-      if (combinedFilters.countries_of_origin?.length > 0) {
-        filterQuery.country_of_origin = { $in: combinedFilters.countries_of_origin };
-      }
-      if (combinedFilters.states?.length > 0) {
-        filterQuery.current_state = { $in: combinedFilters.states };
-      }
-      if (combinedFilters.education_levels?.length > 0) {
-        filterQuery.education = { $in: combinedFilters.education_levels };
-      }
-
       try {
-        // Fetch only 20 profiles initially - OPTIMIZED
-        const allProfiles = await base44.entities.UserProfile.filter(filterQuery, '-last_active', 20);
-
-      // Apply AI matching and comprehensive filters - OPTIMIZED
-      const filteredProfiles = allProfiles.filter(p => {
-        if (myProfile && p.id === myProfile.id) return false;
-        if (p.is_deleted) return false;
-
-        // Don't show profiles user has already passed or liked - OPTIMIZED with Set
-        if (passes.includes(p.id)) return false;
-        if (likes.includes(p.id)) return false;
-
-        // Distance filter (local mode)
-        if (discoveryMode === 'local' && myProfile?.location?.lat && p.location?.lat) {
-          const distance = calculateDistance(
-            myProfile.location.lat,
-            myProfile.location.lng,
-            p.location.lat,
-            p.location.lng
-          );
-          const maxDistance = combinedFilters.distance_km || 100; // Default 100km
-          if (distance > maxDistance) return false;
-        }
-
-        // Age filter
-        if (p.birth_date && (combinedFilters.age_min || combinedFilters.age_max)) {
-          const age = calculateAge(p.birth_date);
-          if (combinedFilters.age_min && age < combinedFilters.age_min) return false;
-          if (combinedFilters.age_max && age > combinedFilters.age_max) return false;
-        }
-
-        // Height filter
-        if (combinedFilters.height_min && combinedFilters.height_min !== 140) {
-          if (!p.height_cm || p.height_cm < combinedFilters.height_min) return false;
-        }
-        if (combinedFilters.height_max && combinedFilters.height_max !== 220) {
-          if (!p.height_cm || p.height_cm > combinedFilters.height_max) return false;
-        }
-
-        // Lifestyle filters - properly check nested properties
-        if (combinedFilters.smoking?.length > 0) {
-          if (!p.lifestyle?.smoking || !combinedFilters.smoking.includes(p.lifestyle.smoking)) return false;
-        }
-        if (combinedFilters.drinking?.length > 0) {
-          if (!p.lifestyle?.drinking || !combinedFilters.drinking.includes(p.lifestyle.drinking)) return false;
-        }
-        if (combinedFilters.fitness?.length > 0) {
-          if (!p.lifestyle?.fitness || !combinedFilters.fitness.includes(p.lifestyle.fitness)) return false;
-        }
-
-        // Languages filter - check if they speak any of the selected languages
-        if (combinedFilters.languages?.length > 0) {
-          if (!p.languages || !combinedFilters.languages.some(lang => p.languages.includes(lang))) {
-            return false;
-          }
-        }
-
-        // Tribe/ethnicity filter - flexible search
-        if (combinedFilters.tribe_ethnicity && combinedFilters.tribe_ethnicity.trim() !== '') {
-          if (!p.tribe_ethnicity || !p.tribe_ethnicity.toLowerCase().includes(combinedFilters.tribe_ethnicity.toLowerCase())) {
-            return false;
-          }
-        }
-
-        // Verification filter
-        if (combinedFilters.verified_only && !p.verification_status?.photo_verified) return false;
-
-        // Cultural values filter - must have at least one matching value
-        if (combinedFilters.cultural_values?.length > 0) {
-          if (!p.cultural_values || !combinedFilters.cultural_values.some(value => p.cultural_values.includes(value))) {
-            return false;
-          }
-        }
-
-        // Interests filter - must have at least one matching interest
-        if (combinedFilters.interests?.length > 0) {
-          if (!p.interests || !combinedFilters.interests.some(interest => p.interests.includes(interest))) {
-            return false;
-          }
-        }
-
-        // Preferred language filter - exact match
-        if (combinedFilters.preferred_language && combinedFilters.preferred_language !== '') {
-          if (p.preferred_language !== combinedFilters.preferred_language) {
-            return false;
-          }
-        }
-
-        // Hide incognito users
-        if (p.incognito_mode) return false;
-
-        // Filter by gender preference - only show genders you're interested in
-        if (myProfile?.looking_for?.length > 0 && !myProfile.looking_for.includes(p.gender)) {
-          return false;
-        }
-
-        return true;
-      });
-
-      // Calculate scores for only 10 profiles initially - OPTIMIZED
-      const profilesWithScores = await Promise.all(
-        filteredProfiles.slice(0, 10).map(async (p) => {
-          try {
-            const score = await calculateMatchScore(myProfile, p);
-            let distance = null;
-            if (myProfile?.location?.lat && p.location?.lat) {
-              distance = calculateDistance(
-                myProfile.location.lat,
-                myProfile.location.lng,
-                p.location.lat,
-                p.location.lng
-              );
-            }
-            return { ...p, matchScore: score, distance };
-          } catch (error) {
-            console.error('Failed to calculate match score:', error);
-            return { ...p, matchScore: 0, distance: null };
-          }
-        })
-      );
-
-      // Feature profiles based on tier (VIP > Elite > Premium)
-      const featuredProfiles = profilesWithScores.filter(p => 
-        p.subscription_tier === 'vip' || p.subscription_tier === 'elite'
-      );
-      const regularProfiles = profilesWithScores.filter(p =>
-        p.subscription_tier !== 'vip' && p.subscription_tier !== 'elite'
-      );
-      
-      // Sort both groups
-      if (discoveryMode === 'local') {
-        featuredProfiles.sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
-        regularProfiles.sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
-      } else {
-        featuredProfiles.sort((a, b) => b.matchScore - a.matchScore);
-        regularProfiles.sort((a, b) => b.matchScore - a.matchScore);
-      }
-      
-        // Featured profiles appear first
-        return [...featuredProfiles, ...regularProfiles];
+        const response = await base44.functions.invoke('getDiscoveryProfiles', {
+           filters: combinedFilters,
+           mode: discoveryMode,
+           myProfileId: myProfile.id,
+           limit: 20
+        });
+        return response.data.profiles || [];
       } catch (error) {
         console.error('Failed to fetch profiles:', error);
         return [];
@@ -456,11 +294,28 @@ export default function Home() {
     enabled: !!myProfile,
     refetchInterval: false,
     refetchOnWindowFocus: false,
-    staleTime: 600000, // Cache for 10 minutes - OPTIMIZED
-    cacheTime: 1800000, // Keep in cache for 30 minutes - OPTIMIZED
-    retry: 1,
-    retryDelay: 5000
+    staleTime: 600000, 
+    retry: 1
   });
+
+  // Image Preloading for instant swipes
+  useEffect(() => {
+    if (profiles.length > 0 && currentIndex + 1 < profiles.length) {
+      const nextProfile = profiles[currentIndex + 1];
+      if (nextProfile.primary_photo) {
+        const img = new Image();
+        img.src = nextProfile.primary_photo;
+      }
+      // Preload the one after that too if possible
+      if (currentIndex + 2 < profiles.length) {
+         const nextNext = profiles[currentIndex + 2];
+         if (nextNext.primary_photo) {
+           const img2 = new Image();
+           img2.src = nextNext.primary_photo;
+         }
+      }
+    }
+  }, [currentIndex, profiles]);
 
   // Check daily like limit
   const canLike = () => {
