@@ -519,15 +519,16 @@ export default function Chat() {
           >
             <Video size={20} />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleVirtualGifts}
-            className="text-pink-600 hover:bg-pink-50"
-            title="Send Gift (Elite/VIP)"
-          >
-            <Gift size={20} />
-          </Button>
+          <Link to={createPageUrl(`VirtualGifts?profileId=${otherProfile.id}`)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-pink-600 hover:bg-pink-50"
+              title="Send Gift (Elite/VIP)"
+            >
+              <Gift size={20} />
+            </Button>
+          </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
