@@ -85,36 +85,62 @@ export default function Stories() {
   });
 
   // Fetch profiles for feed stories
-  const storyUserIds = allStories.map(s => s.user_profile_id).sort().join(',');
+  const storyUserIds = React.useMemo(() => {
+    return allStories
+      .map(s => s.user_profile_id)
+      .filter(id => id && typeof id === 'string')
+      .sort()
+      .join(',');
+  }, [allStories]);
   
   const { data: storyProfiles = {}, isLoading: isLoadingProfiles } = useQuery({
     queryKey: ['story-profiles', storyUserIds],
     queryFn: async () => {
       try {
-        if (allStories.length === 0) return {};
-        const profileIds = [...new Set(allStories.map(s => s.user_profile_id))];
+        if (!allStories || allStories.length === 0) return {};
+        
+        const profileIds = [...new Set(
+          allStories
+            .map(s => s.user_profile_id)
+            .filter(id => id && typeof id === 'string')
+        )];
+
+        if (profileIds.length === 0) return {};
+
         // Batch fetch logic
         const chunkSize = 10;
         const profileMap = {};
         for (let i = 0; i < profileIds.length; i += chunkSize) {
           const chunk = profileIds.slice(i, i + chunkSize);
           if (i > 0) await new Promise(resolve => setTimeout(resolve, 500));
-          const chunkProfiles = await Promise.allSettled(
-            chunk.map(id => base44.entities.UserProfile.filter({ id }))
-          );
-          chunkProfiles.forEach((result) => {
-            if (result.status === 'fulfilled' && result.value?.[0]) {
-              const profile = result.value[0];
-              profileMap[profile.id] = profile;
-            }
-          });
+          
+          try {
+             // Fetch profiles in parallel but handle failures gracefully
+             const promises = chunk.map(id => 
+               base44.entities.UserProfile.filter({ id }).catch(() => [])
+             );
+             
+             const results = await Promise.all(promises);
+             
+             results.forEach(profiles => {
+               if (profiles && profiles.length > 0) {
+                 const profile = profiles[0];
+                 if (profile && profile.id) {
+                   profileMap[profile.id] = profile;
+                 }
+               }
+             });
+          } catch (e) {
+            console.error('Error fetching chunk:', e);
+          }
         }
         return profileMap;
       } catch (error) {
+        console.error('Profile fetch error:', error);
         return {};
       }
     },
-    enabled: allStories.length > 0,
+    enabled: !!allStories && allStories.length > 0 && storyUserIds.length > 0,
     staleTime: 300000
   });
 
