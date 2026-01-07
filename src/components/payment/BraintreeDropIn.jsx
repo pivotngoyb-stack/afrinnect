@@ -86,6 +86,23 @@ export default function BraintreeDropIn({ amount, planName, billingPeriod, tier,
             cardholderName: {
               required: true
             }
+          },
+          googlePay: {
+            googlePayVersion: 2,
+            transactionInfo: {
+              totalPriceStatus: 'FINAL',
+              totalPrice: amount.toString(),
+              currencyCode: 'USD'
+            }
+          },
+          applePay: {
+            displayName: 'Afrinnect',
+            paymentRequest: {
+              total: {
+                label: planName || 'Subscription',
+                amount: amount.toString()
+              }
+            }
           }
         }}
         onInstance={setInstance}
