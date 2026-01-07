@@ -77,73 +77,73 @@ export default function AdminDashboard() {
     checkAdmin();
   }, []);
 
-  // Fetch all users
-  const { data: users = [] } = useQuery({
-    queryKey: ['admin-users'],
-    queryFn: () => base44.entities.User.list('-created_date', 1000),
-    enabled: isAdmin
-  });
-
-  // Fetch all profiles (excluding deleted)
-  const { data: profiles = [] } = useQuery({
-    queryKey: ['admin-profiles'],
+  // Fetch Dashboard Stats (Server-Side)
+  const { data: statsData = null, isLoading: isLoadingStats } = useQuery({
+    queryKey: ['admin-stats'],
     queryFn: async () => {
-      const allProfiles = await base44.entities.UserProfile.list('-created_date', 1000);
-      return allProfiles.filter(p => !p.is_deleted);
+      const response = await base44.functions.invoke('getAdminStats', {});
+      return response.data;
     },
     enabled: isAdmin
   });
 
-  // Fetch all reports
+  // Conditional Data Fetching based on Active View
+  
+  // Users View
+  const { data: users = [] } = useQuery({
+    queryKey: ['admin-users'],
+    queryFn: () => base44.entities.User.list('-created_date', 500),
+    enabled: isAdmin && currentView === 'users'
+  });
+
+  const { data: profiles = [] } = useQuery({
+    queryKey: ['admin-profiles'],
+    queryFn: async () => {
+      // Use filtered list for management view if possible, or just fetch list
+      return base44.entities.UserProfile.list('-created_date', 500);
+    },
+    enabled: isAdmin && (currentView === 'users' || currentView === 'revenue' || currentView === 'verification' || currentView === 'messaging')
+  });
+
+  // Moderation View
   const { data: reports = [] } = useQuery({
     queryKey: ['admin-reports'],
     queryFn: () => base44.entities.Report.filter({ status: { $in: ['pending', 'under_review'] } }, '-created_date', 100),
-    enabled: isAdmin
+    enabled: isAdmin && currentView === 'moderation'
   });
 
-  // Fetch all subscriptions
+  // Revenue View
   const { data: subscriptions = [] } = useQuery({
     queryKey: ['admin-subscriptions'],
     queryFn: () => base44.entities.Subscription.filter({ status: 'active' }, '-created_date', 200),
-    enabled: isAdmin
+    enabled: isAdmin && currentView === 'revenue'
   });
 
-  // Fetch all safety checks
+  // Safety Monitor
   const { data: safetyChecks = [] } = useQuery({
     queryKey: ['admin-safety-checks'],
     queryFn: () => base44.entities.SafetyCheck.filter({ status: { $in: ['active', 'alert_triggered'] } }, '-created_date', 50),
-    enabled: isAdmin
+    enabled: isAdmin && currentView === 'safety_monitor'
   });
 
-  // Fetch deleted accounts
-  const { data: deletedAccounts = [] } = useQuery({
-    queryKey: ['admin-deleted'],
-    queryFn: () => base44.entities.DeletedAccount.list('-deleted_at', 100),
-    enabled: isAdmin
-  });
+  // Deleted Accounts (only needed if we add a view for it, or audit)
+  // const { data: deletedAccounts = [] } = useQuery({ ... });
 
-  // Fetch matches for analytics
-  const { data: matches = [] } = useQuery({
-    queryKey: ['admin-matches'],
-    queryFn: () => base44.entities.Match.filter({ is_match: true }, '-matched_at', 500),
-    enabled: isAdmin
-  });
-
-  // Fetch all events
+  // Events View
   const { data: events = [] } = useQuery({
     queryKey: ['admin-events'],
     queryFn: () => base44.entities.Event.list('-created_date', 100),
-    enabled: isAdmin
+    enabled: isAdmin && currentView === 'events'
   });
 
-  // Fetch audit logs
+  // Audit Logs
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['admin-audit-logs'],
-    queryFn: () => base44.entities.AdminAuditLog.list('-created_date', 500),
-    enabled: isAdmin
+    queryFn: () => base44.entities.AdminAuditLog.list('-created_date', 200),
+    enabled: isAdmin && currentView === 'audit'
   });
 
-  // Fetch rate limit violations (last 24 hours)
+  // Rate Limits
   const { data: rateLimitViolations = [] } = useQuery({
     queryKey: ['admin-rate-limits'],
     queryFn: async () => {
@@ -153,57 +153,57 @@ export default function AdminDashboard() {
         created_date: { $gte: yesterday }
       });
     },
-    enabled: isAdmin,
-    refetchInterval: 60000 // Refresh every minute
+    enabled: isAdmin && currentView === 'security_monitor',
+    refetchInterval: 60000
   });
 
-  // Fetch disputes
+  // Disputes
   const { data: disputes = [] } = useQuery({
     queryKey: ['admin-disputes'],
     queryFn: () => base44.entities.Dispute.list('-created_date', 100),
-    enabled: isAdmin
+    enabled: isAdmin && currentView === 'disputes'
   });
 
-  // Fetch verification requests
+  // Verification
   const { data: verificationRequests = [] } = useQuery({
     queryKey: ['admin-verifications'],
     queryFn: () => base44.entities.VerificationRequest.filter({ status: 'pending' }, '-created_date', 100),
-    enabled: isAdmin
+    enabled: isAdmin && currentView === 'verification'
   });
 
-  // Fetch moderation rules
+  // Analytics/Rules
   const { data: moderationRules = [] } = useQuery({
     queryKey: ['admin-moderation-rules'],
     queryFn: () => base44.entities.ModerationRule.list('-created_date', 200),
-    enabled: isAdmin
+    enabled: isAdmin && currentView === 'analytics'
   });
 
-  // Fetch support tickets
+  // Support
   const { data: supportTickets = [] } = useQuery({
     queryKey: ['admin-support-tickets'],
     queryFn: () => base44.entities.SupportTicket.filter({ status: { $in: ['open', 'in_progress'] } }, '-created_date', 200),
-    enabled: isAdmin
+    enabled: isAdmin && currentView === 'support'
   });
 
-  // Fetch broadcast messages
+  // Messaging
   const { data: broadcastMessages = [] } = useQuery({
     queryKey: ['admin-broadcasts'],
     queryFn: () => base44.entities.BroadcastMessage.list('-created_date', 100),
-    enabled: isAdmin
+    enabled: isAdmin && currentView === 'messaging'
   });
 
-  // Fetch feature flags
+  // Feature Flags
   const { data: featureFlags = [] } = useQuery({
     queryKey: ['admin-feature-flags'],
     queryFn: () => base44.entities.FeatureFlag.list('-created_date', 100),
-    enabled: isAdmin
+    enabled: isAdmin && currentView === 'analytics'
   });
 
-  // Fetch pricing plans
+  // Pricing
   const { data: pricingPlans = [] } = useQuery({
     queryKey: ['admin-pricing-plans'],
     queryFn: () => base44.entities.PricingPlan.list('-created_date', 50),
-    enabled: isAdmin
+    enabled: isAdmin && currentView === 'compliance'
   });
 
   // Delete user mutation (using backend function for complete cleanup)
@@ -385,101 +385,20 @@ export default function AdminDashboard() {
     }
   });
 
-  // Stats - All numbers calculated accurately
-  const today = new Date();
-  const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const lastMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-  // User metrics
-  const newUsersThisWeek = profiles.filter(p => new Date(p.created_date) > lastWeek).length;
-  const newUsersThisMonth = profiles.filter(p => new Date(p.created_date) > lastMonth).length;
-  const activeUsersCount = profiles.filter(p => p.is_active).length;
-  const bannedUsersCount = profiles.filter(p => !p.is_active).length;
-  const verifiedUsersCount = profiles.filter(p => p.verification_status?.photo_verified).length;
-  
-  // Subscription metrics
-  const freeUsers = profiles.filter(p => !p.subscription_tier || p.subscription_tier === 'free').length;
-  const premiumUsers = profiles.filter(p => p.subscription_tier === 'premium').length;
-  const eliteUsers = profiles.filter(p => p.subscription_tier === 'elite').length;
-  const vipUsers = profiles.filter(p => p.subscription_tier === 'vip').length;
-  const totalPaidUsers = premiumUsers + eliteUsers + vipUsers;
-  
-  // Revenue metrics
-  const totalRevenue = subscriptions.reduce((sum, sub) => sum + (sub.amount_paid || 0), 0);
-  const revenueThisMonth = subscriptions.filter(s => new Date(s.start_date) > lastMonth).reduce((sum, sub) => sum + (sub.amount_paid || 0), 0);
-  const activeSubscriptions = subscriptions.filter(s => s.status === 'active').length;
-  
-  // Match metrics
-  const totalMatches = matches.filter(m => m.is_match).length;
-  const matchesThisMonth = matches.filter(m => m.is_match && new Date(m.matched_at) > lastMonth).length;
-  const matchesThisWeek = matches.filter(m => m.is_match && new Date(m.matched_at) > lastWeek).length;
-  
-  // Engagement metrics
-  const usersWithMatches = [...new Set(matches.filter(m => m.is_match).flatMap(m => [m.user1_id, m.user2_id]))].length;
-  const matchRate = profiles.length > 0 ? ((usersWithMatches / profiles.length) * 100).toFixed(1) : 0;
-  
-  // Safety metrics
-  const pendingReports = reports.filter(r => r.status === 'pending').length;
-  const resolvedReports = reports.filter(r => r.status === 'resolved').length;
-  const activeSafetyChecks = safetyChecks.filter(s => s.status === 'active').length;
-  
-  // Support metrics
-  const openTickets = supportTickets.filter(t => t.status === 'open').length;
-  const urgentTickets = supportTickets.filter(t => t.priority === 'urgent').length;
-
-  const stats = {
-    // Core metrics
-    totalUsers: users.length,
-    totalProfiles: profiles.length,
-    activeUsers: activeUsersCount,
-    bannedUsers: bannedUsersCount,
-    verifiedUsers: verifiedUsersCount,
-    
-    // Subscription breakdown
-    freeUsers,
-    premiumUsers,
-    eliteUsers,
-    vipUsers,
-    totalPaidUsers,
-    conversionRate: profiles.length > 0 ? ((totalPaidUsers / profiles.length) * 100).toFixed(1) : 0,
-    
-    // Revenue
-    totalRevenue,
-    revenueThisMonth,
-    activeSubscriptions,
-    
-    // Matches
-    totalMatches,
-    matchesThisMonth,
-    matchesThisWeek,
-    matchRate,
-    usersWithMatches,
-    
-    // Growth
-    newUsersThisWeek,
-    newUsersThisMonth,
-    growthRate: profiles.length > 0 ? ((newUsersThisMonth / profiles.length) * 100).toFixed(1) : 0,
-    
-    // Safety & Moderation
-    totalReports: reports.length,
-    pendingReports,
-    resolvedReports,
-    activeSafetyChecks,
-    
-    // Support
-    totalTickets: supportTickets.length,
-    openTickets,
-    urgentTickets,
-    
-    // Events & Content
-    totalEvents: events.length,
-    upcomingEvents: events.filter(e => new Date(e.start_date) > new Date()).length,
-    
-    // System
-    auditLogs: auditLogs.length,
-    featureFlags: featureFlags.length,
-    moderationRules: moderationRules.length
+  // Use server-side calculated stats with fallback values
+  const defaultStats = {
+    totalUsers: 0, totalProfiles: 0, activeUsers: 0, bannedUsers: 0, verifiedUsers: 0,
+    freeUsers: 0, premiumUsers: 0, eliteUsers: 0, vipUsers: 0, totalPaidUsers: 0, conversionRate: 0,
+    totalRevenue: 0, revenueThisMonth: 0, activeSubscriptions: 0,
+    totalMatches: 0, matchesThisMonth: 0, matchesThisWeek: 0, matchRate: 0, usersWithMatches: 0,
+    newUsersThisWeek: 0, newUsersThisMonth: 0, growthRate: 0,
+    totalReports: 0, pendingReports: 0, resolvedReports: 0, activeSafetyChecks: 0,
+    totalTickets: 0, openTickets: 0, urgentTickets: 0,
+    totalEvents: 0, upcomingEvents: 0,
+    auditLogs: 0, featureFlags: 0, moderationRules: 0
   };
+
+  const stats = statsData || defaultStats;
 
   const filteredProfiles = profiles.filter(p => 
     p.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||

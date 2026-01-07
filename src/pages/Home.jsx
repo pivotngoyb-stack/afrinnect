@@ -115,7 +115,12 @@ export default function Home() {
           }
 
           // CRITICAL: Check if ID is verified - redirect if not
-          if (!profile.verification_status?.id_verified) {
+          // Grace period: Only enforce after 30 minutes from sign up
+          const createdDate = new Date(profile.created_date);
+          const timeSinceSignup = new Date() - createdDate;
+          const gracePeriod = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+          if (timeSinceSignup > gracePeriod && !profile.verification_status?.id_verified) {
             window.location.href = createPageUrl('IDVerification');
             return;
           }
