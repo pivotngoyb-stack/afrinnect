@@ -118,7 +118,7 @@ export default function StoryViewer({ stories, currentIndex, onClose, onNext, on
           <div>
             <p className="text-white font-semibold">{story.user_profile?.display_name}</p>
             <p className="text-white/80 text-xs">
-              {new Date(story.created_date).toLocaleTimeString()}
+              {story.created_date ? new Date(story.created_date).toLocaleTimeString() : ''}
             </p>
           </div>
         </div>

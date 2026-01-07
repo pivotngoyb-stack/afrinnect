@@ -324,7 +324,7 @@ export default function Stories() {
                               {story.caption || 'No caption'}
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                              {new Date(story.created_date).toLocaleDateString()}
+                              {story.created_date ? new Date(story.created_date).toLocaleDateString() : ''}
                             </p>
                           </div>
                           <div className="flex items-center justify-between">
