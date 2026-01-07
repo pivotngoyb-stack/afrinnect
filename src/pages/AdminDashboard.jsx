@@ -236,6 +236,15 @@ export default function AdminDashboard() {
         // Delete profile
         await base44.entities.UserProfile.delete(profile.id);
       }
+
+      // CRITICAL: Delete the actual User authentication record so they can sign up again
+      // Only do this if they weren't banned, OR if the admin explicitly wants to reset them.
+      // Since "Delete" usually means "Remove completely", we delete the Auth record.
+      try {
+        await base44.entities.User.delete(userId);
+      } catch (e) {
+        console.error('Failed to delete User auth record:', e);
+      }
       
       // Log action
       await base44.entities.AdminAuditLog.create({
