@@ -24,20 +24,12 @@ export function useInfinitePagination(entityName, filters = {}, options = {}) {
       try {
         const skip = pageParam * pageSize;
         
-        // Use cursor-based pagination with ID
-        let query = { ...filters };
-        if (pageParam > 0 && data?.pages?.length > 0) {
-          const lastPage = data.pages[data.pages.length - 1];
-          const lastItem = lastPage.items[lastPage.items.length - 1];
-          if (lastItem?.id) {
-            query.id = { $lt: lastItem.id };
-          }
-        }
-
+        // Pass skip as the 4th argument (standard Base44 SDK filter signature)
         const results = await base44.entities[entityName].filter(
-          query,
+          filters,
           sortBy,
-          pageSize + 1 // Fetch one extra to check if more exists
+          pageSize + 1, // Fetch one extra to check if more exists
+          skip
         );
 
         const hasMore = results.length > pageSize;
@@ -58,9 +50,9 @@ export function useInfinitePagination(entityName, filters = {}, options = {}) {
       }
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
+    initialPageParam: 0,
     refetchInterval: enableRefetch ? refetchInterval : false,
     staleTime: options.staleTime || 120000,
-    cacheTime: 300000,
     retry: options.retry || 1,
     retryDelay: options.retryDelay || 5000,
     enabled: options.enabled !== false

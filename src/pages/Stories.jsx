@@ -86,7 +86,7 @@ export default function Stories() {
   });
 
   // Fetch profiles for feed stories
-  const { data: storyProfiles = {} } = useQuery({
+  const { data: storyProfiles = {}, isLoading: isLoadingProfiles } = useQuery({
     queryKey: ['story-profiles', allStories.length],
     queryFn: async () => {
       try {
@@ -235,7 +235,7 @@ export default function Stories() {
             <div className="lg:col-span-2">
               <h2 className="text-lg font-semibold mb-4 px-1">Recent Stories</h2>
               
-              {!myProfile ? (
+              {!myProfile || (allStories.length > 0 && isLoadingProfiles) ? (
                 <ListItemSkeleton count={3} />
               ) : (
                 <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide">
@@ -271,7 +271,7 @@ export default function Stories() {
               )}
 
               {/* Feed continues here if we wanted a vertical feed, but stories are usually rings */}
-              {otherStoryGroups.length === 0 && myActiveStories.length === 0 && (
+              {otherStoryGroups.length === 0 && myActiveStories.length === 0 && !isLoadingProfiles && (
                 <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-200">
                   <p className="text-gray-500 mb-4">No recent stories</p>
                   <Button variant="outline" onClick={() => setUploadingStory(true)}>
