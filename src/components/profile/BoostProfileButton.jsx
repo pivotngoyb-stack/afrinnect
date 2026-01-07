@@ -5,11 +5,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Zap, Shield, Crown, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import BraintreeDropIn from '@/components/payment/BraintreeDropIn';
 
 export default function BoostProfileButton({ userProfile, onBoostSuccess }) {
   const [showDialog, setShowDialog] = useState(false);
   const [isBoosting, setIsBoosting] = useState(false);
   const [error, setError] = useState('');
+  const [showPaywall, setShowPaywall] = useState(false);
 
   // Allow boosting if EITHER photo OR ID is verified
   const isVerified = userProfile?.verification_status?.id_verified || 
@@ -36,14 +38,29 @@ export default function BoostProfileButton({ userProfile, onBoostSuccess }) {
         setShowDialog(false);
         if (onBoostSuccess) onBoostSuccess();
       } else if (response.data.error) {
-        setError(response.data.error);
+        if (response.data.limit_reached) {
+          setShowPaywall(true); // Trigger paywall
+        } else {
+          setError(response.data.error);
+        }
       }
     } catch (err) {
       console.error('Boost failed:', err);
-      setError(err.response?.data?.error || 'Failed to boost profile. Please try again.');
+      if (err.response?.data?.limit_reached) {
+         setShowPaywall(true);
+      } else {
+         setError(err.response?.data?.error || 'Failed to boost profile. Please try again.');
+      }
     } finally {
       setIsBoosting(false);
     }
+  };
+
+  const handlePurchaseSuccess = () => {
+    setShowPaywall(false);
+    setShowDialog(false);
+    alert('🚀 Profile Boosted! Purchase successful.');
+    if (onBoostSuccess) onBoostSuccess();
   };
 
   // Calculate time remaining for active boost
@@ -105,14 +122,36 @@ export default function BoostProfileButton({ userProfile, onBoostSuccess }) {
               </Alert>
             )}
 
-            {error && (
-              <Alert className="bg-red-50 border-red-300">
-                <AlertCircle className="h-5 w-5 text-red-600" />
-                <AlertDescription className="text-red-900">{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {/* Benefits */}
+            {showPaywall ? (
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-100">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-bold text-amber-900">Out of Boosts?</h3>
+                  <p className="text-sm text-amber-700">You've used all your boosts for this month.</p>
+                  <p className="text-base font-medium text-amber-800 mt-2">Get an instant 24h boost for just $5!</p>
+                </div>
+                
+                <BraintreeDropIn 
+                  amount={5.00}
+                  planName="One-Time Profile Boost"
+                  purchaseType="boost"
+                  onSuccess={handlePurchaseSuccess}
+                  onError={(err) => setError(err)}
+                />
+                
+                <div className="text-center mt-3">
+                   <Button variant="ghost" size="sm" onClick={() => setShowPaywall(false)} className="text-amber-700 hover:text-amber-900 hover:bg-amber-100">
+                     Back
+                   </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {error && (
+                  <Alert className="bg-red-50 border-red-300">
+                    <AlertCircle className="h-5 w-5 text-red-600" />
+                    <AlertDescription className="text-red-900">{error}</AlertDescription>
+                  </Alert>
+                )}
             <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 space-y-3">
               <h4 className="font-semibold text-gray-900">Boost Benefits:</h4>
               <div className="space-y-2">
@@ -157,23 +196,25 @@ export default function BoostProfileButton({ userProfile, onBoostSuccess }) {
               </p>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowDialog(false)}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleBoost}
-                disabled={isBoosting || hasActiveBoost || !isVerified}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-              >
-                {isBoosting ? 'Boosting...' : hasActiveBoost ? 'Already Boosted' : 'Boost Now'}
-              </Button>
-            </div>
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDialog(false)}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleBoost}
+                    disabled={isBoosting || hasActiveBoost || !isVerified}
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  >
+                    {isBoosting ? 'Boosting...' : hasActiveBoost ? 'Already Boosted' : 'Boost Now'}
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>

@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
-export default function BraintreeDropIn({ amount, planName, billingPeriod, tier, onSuccess, onError }) {
+export default function BraintreeDropIn({ amount, planName, billingPeriod, tier, purchaseType, onSuccess, onError }) {
   const [clientToken, setClientToken] = useState(null);
   const [instance, setInstance] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -48,7 +48,8 @@ export default function BraintreeDropIn({ amount, planName, billingPeriod, tier,
         amount,
         planName,
         billingPeriod,
-        tier
+        tier,
+        purchaseType
       });
 
       if (data.success) {
