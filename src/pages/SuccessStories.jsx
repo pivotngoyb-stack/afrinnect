@@ -27,8 +27,28 @@ export default function SuccessStories() {
   }, []);
 
   const { data: stories = [], isLoading } = useQuery({
-    queryKey: ['success-stories'],
-    queryFn: () => base44.entities.SuccessStory.filter({ is_approved: true }, '-created_date', 50)
+    queryKey: ['success-stories', myProfile?.id],
+    queryFn: async () => {
+      // Fetch approved stories
+      const approved = await base44.entities.SuccessStory.filter({ is_approved: true }, '-created_date', 50);
+      
+      // Fetch my stories (including pending ones)
+      let myStories = [];
+      if (myProfile?.id) {
+        try {
+          myStories = await base44.entities.SuccessStory.filter({ user1_profile_id: myProfile.id }, '-created_date', 10);
+        } catch (e) {
+          console.error('Error fetching my stories', e);
+        }
+      }
+      
+      // Merge and deduplicate
+      const allStories = [...myStories, ...approved];
+      const uniqueStories = Array.from(new Map(allStories.map(s => [s.id, s])).values());
+      
+      // Sort by date descending
+      return uniqueStories.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+    }
   });
 
   const likeMutation = useMutation({
@@ -82,7 +102,12 @@ export default function SuccessStories() {
                     />
                   )}
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                      {!story.is_approved && (
+                        <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                          🕒 Pending Review
+                        </Badge>
+                      )}
                       {story.relationship_status === 'married' && (
                         <Badge className="bg-gradient-to-r from-pink-500 to-purple-600">
                           💍 Married
