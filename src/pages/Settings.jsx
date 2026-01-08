@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
@@ -51,6 +52,10 @@ export default function Settings() {
   const [settings, setSettings] = useState(loadSettings());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [exportingData, setExportingData] = useState(false);
+  const [showEmailVerifyDialog, setShowEmailVerifyDialog] = useState(false);
+  const [emailCode, setEmailCode] = useState("");
+  const [inputCode, setInputCode] = useState("");
+  const [isSendingCode, setIsSendingCode] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -272,19 +277,30 @@ export default function Settings() {
 
             <Separator />
 
-            <button onClick={() => {
-              // Send email verification code
-              const code = Math.floor(100000 + Math.random() * 900000);
-              base44.integrations.Core.SendEmail({
-                to: myProfile?.created_by,
-                subject: 'Afrinnect Email Verification',
-                body: `Your verification code is: ${code}`
-              }).then(() => alert('Verification code sent to your email!'));
-            }} className="flex items-center justify-between py-2 w-full text-left">
+            <button onClick={async () => {
+              if (myProfile?.verification_status?.email_verified) return;
+              
+              setIsSendingCode(true);
+              const code = Math.floor(100000 + Math.random() * 900000).toString();
+              setEmailCode(code);
+              
+              try {
+                await base44.integrations.Core.SendEmail({
+                  to: myProfile?.created_by,
+                  subject: 'Ubuntu Dating - Email Verification',
+                  body: `Your verification code is: ${code}`
+                });
+                setShowEmailVerifyDialog(true);
+              } catch (e) {
+                alert("Failed to send email. Please try again.");
+              } finally {
+                setIsSendingCode(false);
+              }
+            }} className="flex items-center justify-between py-2 w-full text-left" disabled={isSendingCode || myProfile?.verification_status?.email_verified}>
               <div>
                 <span className="text-gray-700 block">Email</span>
                 <span className="text-sm text-gray-500">
-                  {myProfile?.verification_status?.email_verified ? 'Verified' : 'Verify Now'}
+                  {myProfile?.verification_status?.email_verified ? 'Verified' : isSendingCode ? 'Sending Code...' : 'Verify Now'}
                 </span>
               </div>
               {myProfile?.verification_status?.email_verified ? (
@@ -538,6 +554,63 @@ export default function Settings() {
           Ubuntu Dating v1.0.0
         </p>
       </main>
+
+      {/* Email Verification Dialog */}
+      <AlertDialog open={showEmailVerifyDialog} onOpenChange={setShowEmailVerifyDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Verify Email</AlertDialogTitle>
+            <AlertDialogDescription>
+              We sent a 6-digit code to {myProfile?.created_by}. Please enter it below.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Input
+              type="text"
+              placeholder="123456"
+              value={inputCode}
+              onChange={(e) => setInputCode(e.target.value)}
+              className="text-center text-lg tracking-widest"
+              maxLength={6}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowEmailVerifyDialog(false);
+              setInputCode("");
+            }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={async (e) => {
+              e.preventDefault(); // Prevent auto-close
+              if (inputCode === emailCode) {
+                try {
+                  await base44.entities.UserProfile.update(myProfile.id, {
+                    verification_status: {
+                      ...myProfile.verification_status,
+                      email_verified: true
+                    }
+                  });
+                  setMyProfile({
+                    ...myProfile,
+                    verification_status: {
+                      ...myProfile.verification_status,
+                      email_verified: true
+                    }
+                  });
+                  alert("Email verified successfully!");
+                  setShowEmailVerifyDialog(false);
+                  setInputCode("");
+                } catch (err) {
+                  alert("Failed to update profile.");
+                }
+              } else {
+                alert("Invalid code. Please try again.");
+              }
+            }}>
+              Verify
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Account Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
