@@ -51,15 +51,17 @@ export default function LegalAcceptance() {
       return;
     }
 
-    await base44.entities.LegalAcceptance.create({
-      user_id: user.id,
-      terms_accepted: true,
-      privacy_accepted: true,
-      guidelines_accepted: true,
-      accepted_at: new Date().toISOString()
-    });
-
-    window.location.href = createPageUrl('Onboarding');
+    try {
+      await base44.functions.invoke('acceptLegalTerms', {
+        terms_version: "1.0",
+        privacy_version: "1.0", 
+        guidelines_version: "1.0"
+      });
+      window.location.href = createPageUrl('Onboarding');
+    } catch (error) {
+      console.error("Failed to accept terms:", error);
+      alert("Something went wrong. Please try again.");
+    }
   };
 
   if (isLoading) {

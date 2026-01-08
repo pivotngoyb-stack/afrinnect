@@ -146,30 +146,8 @@ export default function Settings() {
 
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {
-      const user = await base44.auth.me();
-      
-      // Log deletion
-      await base44.entities.DeletedAccount.create({
-        user_email: user.email,
-        user_id: user.id,
-        display_name: myProfile?.display_name || 'Unknown',
-        deletion_reason: 'User requested',
-        deleted_at: new Date().toISOString()
-      });
-      
-      // Soft delete profile by marking as deleted
-      if (myProfile) {
-        await base44.entities.UserProfile.update(myProfile.id, {
-          is_active: false,
-          is_deleted: true,
-          display_name: '[Deleted User]',
-          bio: '',
-          photos: [],
-          primary_photo: ''
-        });
-      }
-      
-      // Logout
+      await base44.functions.invoke('deleteAccount', {});
+      // Logout happens automatically if account is deleted, but we force client logout
       await base44.auth.logout(createPageUrl('Landing'));
     }
   });
