@@ -14,6 +14,11 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 Deno.serve(async (req) => {
+    // In-memory rate limiting for discovery (expensive operation)
+    // NOTE: In a distributed system, this should use Redis. 
+    // Here we rely on Deno isolate persistence which works per-instance.
+    const rateLimitMap = new Map();
+    
     try {
         const base44 = createClientFromRequest(req);
         const user = await base44.auth.me();
@@ -21,6 +26,16 @@ Deno.serve(async (req) => {
         if (!user) {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
+
+        // Rate Limit Check: 20 requests per minute
+        const now = Date.now();
+        const userRequests = rateLimitMap.get(user.id) || [];
+        const recentRequests = userRequests.filter(time => now - time < 60000);
+        
+        if (recentRequests.length >= 20) {
+             return Response.json({ error: 'Rate limit exceeded. Please slow down.' }, { status: 429 });
+        }
+        rateLimitMap.set(user.id, [...recentRequests, now]);
 
         const { filters = {}, mode = 'global', limit = 20, myProfileId } = await req.json();
 
