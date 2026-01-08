@@ -130,6 +130,14 @@ export default function Landing() {
           <Logo size="default" />
           <div className="flex items-center gap-2">
             <LanguageSelector />
+            <Link to={createPageUrl('Waitlist')}>
+              <Button 
+                variant="ghost" 
+                className="text-white hover:bg-white/20 hidden md:inline-flex"
+              >
+                Join Waitlist
+              </Button>
+            </Link>
             <Button 
               onClick={handleGetStarted}
               variant="ghost" 
