@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AlertTriangle, Shield, Play, RefreshCw, Ban, CheckCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -87,23 +88,30 @@ export default function RateLimitMonitor({ violations, currentUser }) {
               Security Monitor: Rate Limit Violations
             </span>
             <div className="flex gap-2">
-              <Button
-                onClick={runAIAnalysis}
-                disabled={isRunningAI}
-                className="bg-white text-red-900 hover:bg-gray-100"
-              >
-                {isRunningAI ? (
-                  <>
-                    <RefreshCw size={16} className="mr-2 animate-spin" />
-                    AI Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Play size={16} className="mr-2" />
-                    Run AI Analysis & Auto-Ban
-                  </>
-                )}
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={runAIAnalysis}
+                      disabled={isRunningAI}
+                      className="bg-white text-red-900 hover:bg-gray-100"
+                    >
+                      {isRunningAI ? (
+                        <>
+                          <RefreshCw size={16} className="mr-2 animate-spin" />
+                          AI Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Play size={16} className="mr-2" />
+                          Run AI Analysis & Auto-Ban
+                        </>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent><p>Detect and ban scammers using AI analysis</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </CardTitle>
         </CardHeader>

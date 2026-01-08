@@ -6,6 +6,7 @@ import { Shield, AlertTriangle, CheckCircle, MapPin, Phone, User, Clock, Ban, Fl
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -267,35 +268,58 @@ export default function SafetyMonitorDashboard() {
                     </div>
 
                     <div className="flex gap-2 pt-3">
-                      <Button
-                        onClick={() => setSelectedCheck(check)}
-                        variant="outline"
-                        size="sm"
-                      >
-                        Add Notes
-                      </Button>
-                      <Button
-                        onClick={() => respondToAlertMutation.mutate({
-                          checkId: check.id,
-                          action: 'emergency',
-                          notes: 'Escalated to emergency services'
-                        })}
-                        className="bg-red-600 hover:bg-red-700"
-                        size="sm"
-                      >
-                        Escalate to Emergency
-                      </Button>
-                      <Button
-                        onClick={() => respondToAlertMutation.mutate({
-                          checkId: check.id,
-                          action: 'resolved',
-                          notes: 'False alarm - user confirmed safe'
-                        })}
-                        className="bg-green-600 hover:bg-green-700"
-                        size="sm"
-                      >
-                        Mark Resolved
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={() => setSelectedCheck(check)}
+                              variant="outline"
+                              size="sm"
+                            >
+                              Add Notes
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent><p>Add administrative notes to this case</p></TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={() => respondToAlertMutation.mutate({
+                                checkId: check.id,
+                                action: 'emergency',
+                                notes: 'Escalated to emergency services'
+                              })}
+                              className="bg-red-600 hover:bg-red-700"
+                              size="sm"
+                            >
+                              Escalate to Emergency
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent><p>Notify emergency contacts and services immediately</p></TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={() => respondToAlertMutation.mutate({
+                                checkId: check.id,
+                                action: 'resolved',
+                                notes: 'False alarm - user confirmed safe'
+                              })}
+                              className="bg-green-600 hover:bg-green-700"
+                              size="sm"
+                            >
+                              Mark Resolved
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent><p>Close this alert as resolved</p></TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </CardContent>
                 </Card>
