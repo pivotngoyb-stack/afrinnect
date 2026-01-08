@@ -13,12 +13,14 @@ import { format } from 'date-fns';
 
 export default function SuccessStories() {
   const [myProfile, setMyProfile] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const user = await base44.auth.me();
+        setIsAdmin(user.role === 'admin' || user.email === 'pivotngoyb@gmail.com');
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
         if (profiles.length > 0) setMyProfile(profiles[0]);
       } catch (e) {}
@@ -104,9 +106,17 @@ export default function SuccessStories() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                       {!story.is_approved && (
-                        <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
-                          🕒 Pending Review
-                        </Badge>
+                        isAdmin ? (
+                          <Link to={createPageUrl('AdminDashboard')}>
+                            <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200 cursor-pointer">
+                              🕒 Pending Review (Click to Approve)
+                            </Badge>
+                          </Link>
+                        ) : (
+                          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                            🕒 Pending Review
+                          </Badge>
+                        )
                       )}
                       {story.relationship_status === 'married' && (
                         <Badge className="bg-gradient-to-r from-pink-500 to-purple-600">
