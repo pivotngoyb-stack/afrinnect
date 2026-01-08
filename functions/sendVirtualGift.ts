@@ -11,12 +11,27 @@ Deno.serve(async (req) => {
 
     const { match_id, receiver_profile_id, gift_type, gift_emoji, message } = await req.json();
 
+    // 1. Validate Match & Ownership
+    const matches = await base44.entities.Match.filter({ id: match_id });
+    if (!matches.length) return Response.json({ error: 'Match not found' }, { status: 404 });
+    const match = matches[0];
+
+    if (match.status !== 'active') {
+        return Response.json({ error: 'Match is not active' }, { status: 403 });
+    }
+
     // Get sender profile
     const senderProfiles = await base44.entities.UserProfile.filter({ user_id: user.id });
     if (senderProfiles.length === 0) {
       return Response.json({ error: 'Profile not found' }, { status: 404 });
     }
     const senderProfile = senderProfiles[0];
+
+    // Verify participants
+    if ((match.user1_id !== senderProfile.id && match.user2_id !== senderProfile.id) ||
+        (match.user1_id !== receiver_profile_id && match.user2_id !== receiver_profile_id)) {
+        return Response.json({ error: 'Invalid match participants' }, { status: 403 });
+    }
 
     // Check if sender is Elite or VIP
     if (!['elite', 'vip'].includes(senderProfile.subscription_tier)) {

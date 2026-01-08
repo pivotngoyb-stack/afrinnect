@@ -25,8 +25,18 @@ Deno.serve(async (req) => {
         if (match.user1_id !== myProfile.id && match.user2_id !== myProfile.id) {
             return Response.json({ error: 'Not authorized' }, { status: 403 });
         }
+
+        if (match.status !== 'active') {
+            return Response.json({ error: 'Match is not active' }, { status: 403 });
+        }
         
         const receiverId = match.user1_id === myProfile.id ? match.user2_id : match.user1_id;
+
+        // Check if I am blocked by the receiver (Double check beyond match status)
+        const receiverProfile = await base44.entities.UserProfile.filter({ id: receiverId });
+        if (receiverProfile.length > 0 && receiverProfile[0].blocked_users?.includes(myProfile.id)) {
+             return Response.json({ error: 'You cannot message this user' }, { status: 403 });
+        }
 
         // 3. Rate Limiting (Simple check)
         const recentMsgs = await base44.entities.Message.filter(
