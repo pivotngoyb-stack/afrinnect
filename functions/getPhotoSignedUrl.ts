@@ -20,6 +20,9 @@ Deno.serve(async (req) => {
     // 1. Their own profile
     // 2. Profiles they've matched with
     const myProfiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+    if (myProfiles.length === 0) {
+        return Response.json({ error: 'Profile not found' }, { status: 404 });
+    }
     const myProfile = myProfiles[0];
 
     if (profile_id !== myProfile.id) {

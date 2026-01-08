@@ -10,6 +10,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // 1. Verify Ownership (CRITICAL)
+    const myProfiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+    if (myProfiles.length === 0) return Response.json({ error: 'Profile not found' }, { status: 404 });
+    
+    if (myProfiles[0].id !== profile_id) {
+        return Response.json({ error: 'Unauthorized: You can only verify your own photos' }, { status: 403 });
+    }
+
     // Get user's verification selfie
     const profile = await base44.asServiceRole.entities.UserProfile.filter({ id: profile_id });
     if (profile.length === 0) {
