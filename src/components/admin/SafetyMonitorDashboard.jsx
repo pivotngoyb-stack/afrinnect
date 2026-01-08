@@ -16,7 +16,20 @@ import AutomationStatus from '@/components/admin/AutomationStatus';
 export default function SafetyMonitorDashboard() {
   const [selectedCheck, setSelectedCheck] = useState(null);
   const [adminNotes, setAdminNotes] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await base44.auth.me();
+        setCurrentUser(user);
+      } catch (e) {
+        console.error("Failed to fetch admin user", e);
+      }
+    };
+    fetchUser();
+  }, []);
 
   // Fetch all active safety checks
   const { data: activeSafetyChecks = [] } = useQuery({
@@ -61,8 +74,8 @@ export default function SafetyMonitorDashboard() {
 
       // Log admin action
       await base44.entities.AdminAuditLog.create({
-        admin_user_id: 'admin',
-        admin_email: 'admin@afrinnect.com',
+        admin_user_id: currentUser?.id || 'unknown_admin',
+        admin_email: currentUser?.email || 'unknown_admin@afrinnect.com',
         action_type: 'safety_alert_response',
         target_user_id: check.user_profile_id,
         details: { action, notes }
@@ -92,8 +105,8 @@ export default function SafetyMonitorDashboard() {
       });
 
       await base44.entities.AdminAuditLog.create({
-        admin_user_id: 'admin',
-        admin_email: 'admin@afrinnect.com',
+        admin_user_id: currentUser?.id || 'unknown_admin',
+        admin_email: currentUser?.email || 'unknown_admin@afrinnect.com',
         action_type: 'message_moderation',
         details: { messageId, action }
       });
