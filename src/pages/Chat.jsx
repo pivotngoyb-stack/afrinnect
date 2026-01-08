@@ -178,133 +178,31 @@ export default function Chat() {
   const sendMessageMutation = useOptimisticUpdate(
     ['messages', matchId],
     async ({ content, type = 'text', mediaUrl = null }) => {
-      // Rate limiting: max 20 messages per minute
-      if (!rateLimiter(`chat_${myProfile.id}`, 20, 60000)) {
-        throw new Error('You are sending messages too quickly. Please slow down.');
-      }
-
-      // Input validation
-      if (!validateInput.length(content, 1, 5000)) {
+      // Client-side validation for better UX
+      if (!validateInput.length(content, 1, 5000) && !mediaUrl) {
         throw new Error('Message must be between 1 and 5000 characters');
       }
+      
+      // Call secure backend function
+      const response = await base44.functions.invoke('sendMessage', {
+        matchId,
+        content,
+        type,
+        mediaUrl
+      });
 
-      if (!validateInput.noSpam(content)) {
-        throw new Error('Message appears to be spam');
-      }
-
-      // Sanitize content and block harmful content
-      let sanitizedContent = sanitizeText(content);
-
-      // Optional: Block external links for safety
-      // sanitizedContent = blockLinks(sanitizedContent);
-
-      // Block if contains harmful scripts/HTML
-      if (containsHarmfulContent(content)) {
-        throw new Error('Message contains prohibited content');
-      }
-
-      // Check message limit for free users (3 messages per match)
-      const tier = myProfile?.subscription_tier || 'free';
-      if (tier === 'free') {
-        const myMessages = messages.filter(m => m.sender_id === myProfile.id);
-        if (myMessages.length >= 3) {
+      // Handle backend errors
+      if (response.data.error) {
+        if (response.data.error === 'upgrade_required') {
           localStorage.setItem('message_limit_hit', 'true');
           throw new Error('upgrade_required');
         }
+        throw new Error(response.data.error);
       }
 
-      // OPTIMIZED: Async AI Content Moderation (non-blocking)
-      let shouldFlag = false;
+      const message = response.data;
 
-      // Send message first, moderate async
-      const moderationPromise = (async () => {
-        try {
-          const aiCheck = await base44.integrations.Core.InvokeLLM({
-            prompt: `Analyze this message for harassment, threats, explicit sexual content, hate speech, scams, or requests for personal contact info (phone/address). Message: "${content}". Return JSON with is_safe (boolean), threat_level (0-10), violation_type (string: harassment, hate_speech, explicit_content, scam, threat, etc.), and reason (string if unsafe).`,
-            response_json_schema: {
-              type: "object",
-              properties: {
-                is_safe: { type: "boolean" },
-                threat_level: { type: "number" },
-                violation_type: { type: "string" },
-                reason: { type: "string" }
-              }
-            }
-          });
-
-          if (!aiCheck.is_safe) {
-            // Determine severity based on threat level
-            let severity = 'low';
-            if (aiCheck.threat_level >= 9) severity = 'critical';
-            else if (aiCheck.threat_level >= 7) severity = 'high';
-            else if (aiCheck.threat_level >= 5) severity = 'medium';
-
-            // Delete message if high-risk
-            if (aiCheck.threat_level >= 7) {
-              await base44.entities.Message.update(messageId, { is_deleted: true });
-            }
-
-            // Flag for review
-            if (aiCheck.threat_level >= 4) {
-              await base44.entities.Message.update(messageId, { is_flagged: true });
-            }
-
-            // Trigger automated enforcement
-            await base44.functions.invoke('autoEnforceViolation', {
-              user_profile_id: myProfile.id,
-              violation_type: aiCheck.violation_type || 'inappropriate_message',
-              content: content,
-              severity: severity,
-              details: aiCheck.reason
-            });
-          }
-        } catch (error) {
-          console.error('Async moderation failed:', error);
-        }
-      })();
-
-      const message = await base44.entities.Message.create({
-        match_id: matchId,
-        sender_id: myProfile.id,
-        receiver_id: otherProfile.id,
-        content: sanitizedContent,
-        message_type: type,
-        media_url: mediaUrl,
-        is_read: false,
-        is_deleted: false,
-        is_flagged: false // Will be set by async moderation if needed
-      });
-
-      // Store message ID for async moderation
-      const messageId = message.id;
-
-      // Don't await - let moderation run in background
-      moderationPromise.catch(err => console.error('Moderation error:', err));
-
-      // Send notification
-      await base44.entities.Notification.create({
-        user_profile_id: otherProfile.id,
-        type: 'message',
-        title: `New message from ${myProfile.display_name}`,
-        message: content.substring(0, 50),
-        from_profile_id: myProfile.id,
-        link_to: createPageUrl(`Chat?matchId=${matchId}`)
-      });
-      
-      // Send push notification
-      try {
-        await base44.functions.invoke('sendPushNotification', {
-          user_profile_id: otherProfile.id,
-          title: `New message from ${myProfile.display_name}`,
-          body: content.substring(0, 100),
-          link: createPageUrl(`Chat?matchId=${matchId}`),
-          type: 'message'
-        });
-      } catch (e) {
-        console.error('Push notification failed:', e);
-      }
-
-      // Notify via WebSocket
+      // Notify via WebSocket for immediate local echo
       notifyNewMessage(message);
       
       return message;
