@@ -241,7 +241,7 @@ export default function CompatibilityQuizzes() {
                       <span className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-purple-600 flex items-center justify-center text-xs font-semibold">
                         {String.fromCharCode(65 + index)}
                       </span>
-                      {typeof option.option_text === 'string' ? option.option_text : (option.option_text?.option_text || 'Option')}
+                      {typeof option === 'string' ? option : option.option_text}
                     </span>
                   </Button>
                 ))}

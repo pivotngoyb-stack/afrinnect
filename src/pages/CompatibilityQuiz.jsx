@@ -246,11 +246,11 @@ export default function CompatibilityQuiz() {
                   {question.options.map((option, idx) => (
                     <Button
                       key={idx}
-                      onClick={() => handleAnswer(option)}
+                      onClick={() => handleAnswer(typeof option === 'string' ? option : option.option_text)}
                       variant="outline"
                       className="w-full p-6 h-auto text-left justify-start hover:bg-purple-50 hover:border-purple-600"
                     >
-                      <span className="text-base">{option}</span>
+                      <span className="text-base">{typeof option === 'string' ? option : option.option_text}</span>
                     </Button>
                   ))}
                 </div>
