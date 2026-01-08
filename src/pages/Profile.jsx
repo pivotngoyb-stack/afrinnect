@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import {
   Settings, Edit2, Camera, Shield, Star, Crown, MapPin,
   Briefcase, GraduationCap, Book, Languages, Heart, ChevronRight,
-  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard, RotateCcw, Users, Zap
+  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard, RotateCcw, Users, Zap, Video
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import BoostProfileButton from '@/components/profile/BoostProfileButton';
@@ -319,6 +319,26 @@ export default function Profile() {
             <CardContent className="p-4">
               <p className="text-gray-700">{profile.bio}</p>
             </CardContent>
+          </Card>
+        )}
+
+        {/* Video Profile */}
+        {profile?.video_profile_url && (
+          <Card className="mb-6 overflow-hidden border-0 shadow-lg">
+            <div className="bg-gradient-to-r from-pink-500 to-rose-600 p-4">
+              <div className="flex items-center gap-2 text-white">
+                <Video size={20} />
+                <h3 className="font-bold">Video Intro</h3>
+              </div>
+            </div>
+            <div className="bg-black aspect-[9/16] max-h-[500px] flex justify-center">
+              <video 
+                src={profile.video_profile_url} 
+                controls 
+                className="h-full w-full object-contain"
+                poster={profile.primary_photo}
+              />
+            </div>
           </Card>
         )}
 

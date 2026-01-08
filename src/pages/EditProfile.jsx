@@ -159,7 +159,8 @@ export default function EditProfile() {
       lifestyle: formData.lifestyle || {},
       cultural_values: formData.cultural_values || [],
       interests: formData.interests || [],
-      looking_for: formData.looking_for || ['woman']
+      looking_for: formData.looking_for || ['woman'],
+      video_profile_url: formData.video_profile_url || null
     };
 
     setSaving(true);
