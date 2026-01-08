@@ -54,9 +54,7 @@ Deno.serve(async (req) => {
     return Response.json({ 
       success: true, 
       message: 'OTP sent successfully',
-      expires_in_seconds: 600,
-      // TEMPORARY: Return OTP for testing (REMOVE IN PRODUCTION)
-      otp_code: otp
+      expires_in_seconds: 600
     });
   } catch (error) {
     console.error('Send OTP error:', error);

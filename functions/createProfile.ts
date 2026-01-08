@@ -35,8 +35,39 @@ Deno.serve(async (req) => {
     // 3-Day Trial (Server-side enforced)
     const trialExpiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
 
+    // 3. Prepare Secure Data (Allow-list)
+    const deviceId = formData.device_id || `web_${Date.now()}`;
+    const trialExpiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+
+    const allowedFields = {
+        display_name: formData.display_name,
+        birth_date: formData.birth_date,
+        gender: formData.gender,
+        looking_for: formData.looking_for,
+        photos: formData.photos,
+        primary_photo: formData.primary_photo,
+        bio: formData.bio,
+        country_of_origin: formData.country_of_origin,
+        current_country: formData.current_country,
+        current_state: formData.current_state,
+        current_city: formData.current_city,
+        tribe_ethnicity: formData.tribe_ethnicity,
+        languages: formData.languages,
+        religion: formData.religion,
+        education: formData.education,
+        profession: formData.profession,
+        relationship_goal: formData.relationship_goal,
+        height_cm: formData.height_cm,
+        lifestyle: formData.lifestyle,
+        cultural_values: formData.cultural_values,
+        interests: formData.interests,
+        prompts: formData.prompts,
+        push_token: formData.push_token,
+        phone_number: formData.phone_number
+    };
+
     const newProfile = await base44.entities.UserProfile.create({
-        ...formData,
+        ...allowedFields,
         user_id: user.id,
         // Force critical fields (User cannot override these)
         is_active: true,
