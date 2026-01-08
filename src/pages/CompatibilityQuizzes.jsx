@@ -11,8 +11,11 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
+import LoveLanguageTest from '@/components/quizzes/LoveLanguageTest';
+import { Heart } from 'lucide-react';
 
 export default function CompatibilityQuizzes() {
+  const [showLoveLanguage, setShowLoveLanguage] = useState(false);
   const [myProfile, setMyProfile] = useState(null);
   const [activeQuiz, setActiveQuiz] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -153,6 +156,23 @@ export default function CompatibilityQuizzes() {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Love Language Card */}
+          <Card className="bg-white/70 backdrop-blur-md border-2 border-pink-200 shadow-lg hover:shadow-xl transition-all cursor-pointer transform hover:scale-105" onClick={() => setShowLoveLanguage(true)}>
+            <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-t-lg pb-10 mb-[-2rem]">
+               <div className="flex justify-between items-start">
+                 <Heart size={32} className="text-white fill-white animate-pulse" />
+                 <Badge className="bg-white/20 text-white border-none">Featured</Badge>
+               </div>
+            </CardHeader>
+            <CardContent className="pt-12">
+               <CardTitle className="text-xl font-bold text-gray-800 mb-2">Love Language Test</CardTitle>
+               <p className="text-sm text-gray-600 mb-4">Discover how you give and receive love. Based on the 5 Love Languages.</p>
+               <Button className="w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white border-0">
+                 Take Test
+               </Button>
+            </CardContent>
+          </Card>
+
           {quizzes?.map(quiz => {
             const userResult = getResultForQuiz(quiz.id);
             return (
@@ -269,6 +289,8 @@ export default function CompatibilityQuizzes() {
           )}
         </DialogContent>
       </Dialog>
+
+      <LoveLanguageTest isOpen={showLoveLanguage} onClose={() => setShowLoveLanguage(false)} />
     </div>
   );
 }
