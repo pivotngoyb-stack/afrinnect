@@ -79,14 +79,14 @@ Respond ONLY in JSON format:
             created_by: email
           });
 
-          // Auto-ban if AI is confident
-          for (const profile of profiles) {
-            await base44.asServiceRole.entities.UserProfile.update(profile.id, {
+          // Auto-ban if AI is confident (Parallel)
+          await Promise.all(profiles.map(profile => 
+            base44.asServiceRole.entities.UserProfile.update(profile.id, {
               is_banned: true,
               is_active: false,
               ban_reason: `Auto-banned by AI: ${analysis.reasoning}`
-            });
-          }
+            })
+          ));
 
           // Log the auto-ban
           await base44.asServiceRole.entities.AdminAuditLog.create({

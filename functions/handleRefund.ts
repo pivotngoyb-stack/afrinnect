@@ -52,13 +52,14 @@ Deno.serve(async (req) => {
         status: 'active'
       });
 
-      for (const call of activeCalls) {
-        await base44.asServiceRole.entities.VideoCall.update(call.id, {
+      // Parallelize calls update
+      await Promise.all(activeCalls.map(call => 
+        base44.asServiceRole.entities.VideoCall.update(call.id, {
           status: 'ended',
           end_time: new Date().toISOString(),
           end_reason: 'subscription_refunded'
-        });
-      }
+        })
+      ));
 
       // Notify user
       await base44.asServiceRole.entities.Notification.create({

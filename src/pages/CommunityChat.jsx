@@ -76,26 +76,13 @@ export default function CommunityChat() {
 
   const sendMessageMutation = useMutation({
     mutationFn: async ({ content, mediaUrl = null, messageType = 'text' }) => {
-      if (!content.trim() || !myProfile) return;
+      if ((!content && !mediaUrl) || !myProfile) return;
 
-      // AI content moderation for text (removed rate limiting)
-      if (messageType === 'text') {
-        const moderationResult = await base44.integrations.Core.InvokeLLM({
-          prompt: `Is this message appropriate for a community chat? Reply ONLY with "yes" or "no": "${content}"`,
-        });
-
-        if (moderationResult.toLowerCase().includes('no')) {
-          throw new Error('Message contains inappropriate content');
-        }
-      }
-
-      await base44.entities.Message.create({
-        match_id: `community_${communityId}`,
-        sender_id: myProfile.id,
-        receiver_id: communityId,
-        content: content.trim(),
-        message_type: messageType,
-        media_url: mediaUrl
+      await base44.functions.invoke('sendCommunityMessage', {
+        communityId,
+        content: content ? content.trim() : '',
+        messageType,
+        mediaUrl
       });
     },
     onSuccess: () => {
@@ -103,7 +90,9 @@ export default function CommunityChat() {
       queryClient.invalidateQueries({ queryKey: ['community-messages'] });
     },
     onError: (error) => {
-      alert(error.message);
+      // Extract error message from axios response if possible
+      const msg = error.response?.data?.error || error.message;
+      alert(msg);
     }
   });
 
