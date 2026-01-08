@@ -5,6 +5,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
+    // Authenticate Admin
+    const user = await base44.auth.me();
+    if (!user || (user.role !== 'admin' && user.email !== 'pivotngoyb@gmail.com')) {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // Get all rate limit violations from the last 24 hours
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const violations = await base44.asServiceRole.entities.AdminAuditLog.filter({
