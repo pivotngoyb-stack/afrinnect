@@ -5,13 +5,26 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Zap, Shield, Crown, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import BraintreeDropIn from '@/components/payment/BraintreeDropIn';
+import StripePaymentModal from '@/components/payment/StripePaymentModal';
+import { useQuery } from '@tanstack/react-query';
 
 export default function BoostProfileButton({ userProfile, onBoostSuccess }) {
   const [showDialog, setShowDialog] = useState(false);
   const [isBoosting, setIsBoosting] = useState(false);
   const [error, setError] = useState('');
   const [showPaywall, setShowPaywall] = useState(false);
+  
+  const [clientSecret, setClientSecret] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  const { data: stripeConfig } = useQuery({
+    queryKey: ['stripeConfig'],
+    queryFn: async () => {
+        const response = await base44.functions.invoke('getStripeConfig', {});
+        return response.data;
+    },
+    staleTime: Infinity
+  });
 
   // Allow boosting if EITHER photo OR ID is verified
   const isVerified = userProfile?.verification_status?.id_verified || 
@@ -59,8 +72,28 @@ export default function BoostProfileButton({ userProfile, onBoostSuccess }) {
   const handlePurchaseSuccess = () => {
     setShowPaywall(false);
     setShowDialog(false);
+    setShowPaymentModal(false);
     alert('🚀 Profile Boosted! Purchase successful.');
     if (onBoostSuccess) onBoostSuccess();
+  };
+
+  const initiatePayment = async () => {
+      try {
+          const response = await base44.functions.invoke('createStripePaymentIntent', {
+              amount: 5.00,
+              currency: 'usd',
+              planType: 'one_time_boost',
+              billingPeriod: 'one_time'
+          });
+          
+          if (response.data?.clientSecret) {
+              setClientSecret(response.data.clientSecret);
+              setShowPaymentModal(true);
+          }
+      } catch (err) {
+          console.error("Payment init failed", err);
+          setError("Failed to initialize payment. Please try again.");
+      }
   };
 
   // Calculate time remaining for active boost
@@ -130,12 +163,24 @@ export default function BoostProfileButton({ userProfile, onBoostSuccess }) {
                   <p className="text-base font-medium text-amber-800 mt-2">Get an instant 24h boost for just $5!</p>
                 </div>
                 
-                <BraintreeDropIn 
-                  amount={5.00}
-                  planName="One-Time Profile Boost"
-                  purchaseType="boost"
-                  onSuccess={handlePurchaseSuccess}
-                  onError={(err) => setError(err)}
+                <div className="space-y-3">
+                    <Button 
+                        onClick={initiatePayment} 
+                        className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold"
+                    >
+                        Purchase Boost - $5.00
+                    </Button>
+                    <p className="text-xs text-center text-amber-700">Secured by Stripe</p>
+                </div>
+
+                <StripePaymentModal 
+                    isOpen={showPaymentModal}
+                    onClose={() => setShowPaymentModal(false)}
+                    clientSecret={clientSecret}
+                    amount={5.00}
+                    planName="One-Time Profile Boost"
+                    stripePublicKey={stripeConfig?.publicKey}
+                    onSuccess={handlePurchaseSuccess}
                 />
                 
                 <div className="text-center mt-3">
