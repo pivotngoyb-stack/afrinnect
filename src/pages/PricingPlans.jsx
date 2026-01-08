@@ -181,7 +181,7 @@ export default function PricingPlans() {
 
   useEffect(() => {
     const createPaymentIntent = async () => {
-      if (showPayment && selectedTier && billingPeriod && stripeConfig) {
+      if (showPayment && selectedTier && selectedBilling && stripeConfig) {
         try {
             if (!price) return;
 
@@ -348,7 +348,7 @@ export default function PricingPlans() {
             )}
           </Button>
           <p className="text-center text-xs text-gray-500 mt-2">
-            {myProfile ? 'Secure payment via Braintree • Cancel anytime' : 'Sign in required'}
+            {myProfile ? 'Secure payment via Stripe • Cancel anytime' : 'Sign in required'}
           </p>
         </div>
       </div>
