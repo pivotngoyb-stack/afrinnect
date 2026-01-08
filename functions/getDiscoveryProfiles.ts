@@ -46,7 +46,8 @@ Deno.serve(async (req) => {
         const excludeIds = new Set([
             myProfile.id, 
             ...passes.map(p => p.passed_id), 
-            ...likes.map(l => l.liked_id)
+            ...likes.map(l => l.liked_id),
+            ...(myProfile.blocked_users || []) // Exclude users I have blocked
         ]);
 
         // 3. Build Database Query
@@ -55,6 +56,8 @@ Deno.serve(async (req) => {
             is_active: true,
             is_deleted: { $ne: true }, 
             id: { $nin: Array.from(excludeIds) },
+            // Safety: Don't show users who blocked me
+            blocked_users: { $ne: myProfile.id },
             // Restrict to USA/Canada
             current_country: { $in: ['USA', 'United States', 'Canada', 'United States of America', 'US'] }
         };
