@@ -55,6 +55,7 @@ import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import WhoLikesYou from './pages/WhoLikesYou';
 import Waitlist from './pages/Waitlist';
+import AdminLaunchChecklist from './pages/AdminLaunchChecklist';
 import __Layout from './Layout.jsx';
 
 
@@ -116,6 +117,7 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "WhoLikesYou": WhoLikesYou,
     "Waitlist": Waitlist,
+    "AdminLaunchChecklist": AdminLaunchChecklist,
 }
 
 export const pagesConfig = {

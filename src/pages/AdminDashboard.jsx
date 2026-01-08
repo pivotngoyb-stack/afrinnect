@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
-import { Send } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Send, Rocket } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +19,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminOverview from '@/components/admin/AdminOverview';
 import UserManagement from '@/components/admin/UserManagement';
@@ -443,6 +445,13 @@ export default function AdminDashboard() {
       case 'overview':
         return (
           <div className="space-y-6">
+            <div className="flex justify-end">
+              <Link to={createPageUrl('AdminLaunchChecklist')}>
+                <Button variant="default" className="gap-2 bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white border-0 shadow-lg">
+                  <Rocket size={16} /> Launch Checklist
+                </Button>
+              </Link>
+            </div>
             <QuickActions />
             <AdminOverview stats={stats} />
           </div>
