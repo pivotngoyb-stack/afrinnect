@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import Logo from '@/components/shared/Logo';
 
 export default function AdminSidebar({ currentView, onViewChange, stats, onLogout, userEmail }) {
@@ -48,25 +49,33 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
           const isActive = currentView === item.id;
           
           return (
-            <button
-              key={item.id}
-              onClick={() => onViewChange(item.id)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${
-                isActive
-                  ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg shadow-purple-500/30 scale-105'
-                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Icon size={20} className={isActive ? 'animate-pulse' : ''} />
-                <span className={`font-medium ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
-              </div>
-              {item.badge !== undefined && (
-                <Badge className={item.alert ? 'bg-red-500 animate-pulse shadow-lg' : 'bg-white/10 border border-white/20'}>
-                  {item.badge}
-                </Badge>
-              )}
-            </button>
+            <TooltipProvider key={item.id}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onViewChange(item.id)}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${
+                      isActive
+                        ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg shadow-purple-500/30 scale-105'
+                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon size={20} className={isActive ? 'animate-pulse' : ''} />
+                      <span className={`font-medium ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
+                    </div>
+                    {item.badge !== undefined && (
+                      <Badge className={item.alert ? 'bg-red-500 animate-pulse shadow-lg' : 'bg-white/10 border border-white/20'}>
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>View {item.label} Dashboard</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           );
         })}
       </nav>

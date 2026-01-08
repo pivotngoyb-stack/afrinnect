@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ConversionFunnel from './ConversionFunnel';
 import QuickActions from './QuickActions';
 import { Badge } from "@/components/ui/badge";
-import { Users, Crown, DollarSign, Heart, AlertTriangle, TrendingUp, CheckCircle, Globe } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Users, Crown, DollarSign, Heart, AlertTriangle, TrendingUp, CheckCircle, Globe, Info } from 'lucide-react';
 
 export default function AdminOverview({ stats }) {
   const kpiCards = [
@@ -58,21 +59,30 @@ export default function AdminOverview({ stats }) {
         {kpiCards.map((kpi, idx) => {
           const Icon = kpi.icon;
           return (
-            <Card key={idx} className={`bg-gradient-to-br from-${kpi.color}-500/10 to-${kpi.color}-600/5 border-${kpi.color}-500/20`}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`p-3 rounded-xl bg-${kpi.color}-500/20`}>
-                    <Icon size={24} className={`text-${kpi.color}-500`} />
-                  </div>
-                  <Badge className={`bg-${kpi.color}-500/20 text-${kpi.color}-700`}>
-                    {kpi.change}
-                  </Badge>
-                </div>
-                <h3 className="text-3xl font-bold mb-1">{kpi.value}</h3>
-                <p className="text-sm text-gray-600">{kpi.title}</p>
-                <p className="text-xs text-gray-500 mt-2">{kpi.subtext}</p>
-              </CardContent>
-            </Card>
+            <TooltipProvider key={idx}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Card className={`bg-gradient-to-br from-${kpi.color}-500/10 to-${kpi.color}-600/5 border-${kpi.color}-500/20 cursor-help transition-transform hover:scale-105`}>
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`p-3 rounded-xl bg-${kpi.color}-500/20`}>
+                          <Icon size={24} className={`text-${kpi.color}-500`} />
+                        </div>
+                        <Badge className={`bg-${kpi.color}-500/20 text-${kpi.color}-700`}>
+                          {kpi.change}
+                        </Badge>
+                      </div>
+                      <h3 className="text-3xl font-bold mb-1">{kpi.value}</h3>
+                      <p className="text-sm text-gray-600">{kpi.title}</p>
+                      <p className="text-xs text-gray-500 mt-2">{kpi.subtext}</p>
+                    </CardContent>
+                  </Card>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Track key metrics for {kpi.title}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           );
         })}
       </div>

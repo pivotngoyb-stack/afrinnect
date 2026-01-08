@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CheckCircle, XCircle, Clock, MessageSquare, Eye } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -162,13 +163,20 @@ export default function DisputeManagement({ disputes, currentUser }) {
                   <p className="text-sm text-gray-900">{dispute.reason}</p>
                 </div>
 
-                <Button
-                  onClick={() => setSelectedDispute(dispute)}
-                  className="w-full gap-2"
-                >
-                  <MessageSquare size={16} />
-                  Review & Respond
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => setSelectedDispute(dispute)}
+                        className="w-full gap-2"
+                      >
+                        <MessageSquare size={16} />
+                        Review & Respond
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Review appeal details and send response</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             ))}
 

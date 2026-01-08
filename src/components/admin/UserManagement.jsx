@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, Filter, Eye, Ban, Trash2, Send, Shield, Crown, CheckCircle, Download, Award, Star } from 'lucide-react';
 
 export default function UserManagement({ 
@@ -216,38 +217,69 @@ export default function UserManagement({
                         <Shield size={16} />
                       </Button>
                     )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onMessageUser(profile)}
-                    >
-                      <Send size={16} />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onViewUser(profile.id)}
-                    >
-                      <Eye size={16} />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-red-600"
-                      onClick={() => onBanUser(profile)}
-                      disabled={user?.email === 'pivotngoyb@gmail.com'}
-                    >
-                      <Ban size={16} />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-red-600"
-                      onClick={() => onDeleteUser(profile)}
-                      disabled={user?.email === 'pivotngoyb@gmail.com'}
-                    >
-                      <Trash2 size={16} />
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onMessageUser(profile)}
+                          >
+                            <Send size={16} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Send Message</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onViewUser(profile.id)}
+                          >
+                            <Eye size={16} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>View Profile</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-red-600"
+                            onClick={() => onBanUser(profile)}
+                            disabled={user?.email === 'pivotngoyb@gmail.com'}
+                          >
+                            <Ban size={16} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Ban User</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-red-600"
+                            onClick={() => onDeleteUser(profile)}
+                            disabled={user?.email === 'pivotngoyb@gmail.com'}
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Delete User</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
               );
