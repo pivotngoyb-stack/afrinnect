@@ -13,6 +13,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminOverview from '@/components/admin/AdminOverview';
@@ -57,6 +61,11 @@ export default function AdminDashboard() {
   const [actionDialog, setActionDialog] = useState({ open: false, type: null, user: null });
   const [messageDialog, setMessageDialog] = useState({ open: false, type: 'single', profile: null });
   const [messageText, setMessageText] = useState('');
+  const [waitlistDialog, setWaitlistDialog] = useState(false);
+  const [waitlistEmail, setWaitlistEmail] = useState({ 
+    subject: "You're invited to Afrinnect! 🌍", 
+    body: "Hi {{name}},\n\nThe wait is over! Afrinnect is now live and ready for you.\n\nJoin us today to connect with African singles worldwide.\n\nClick here to get started: https://afrinnect.com\n\nSee you inside,\nThe Afrinnect Team" 
+  });
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -363,6 +372,22 @@ export default function AdminDashboard() {
     }
   });
 
+  // Send waitlist invites mutation
+  const sendWaitlistInvitesMutation = useMutation({
+    mutationFn: async (data) => {
+      const response = await base44.functions.invoke('sendWaitlistInvites', data);
+      if (response.data?.error) throw new Error(response.data.error);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setWaitlistDialog(false);
+      alert(`Emails sent successfully to ${data.sent} people!`);
+    },
+    onError: (error) => {
+      alert(`Failed to send emails: ${error.message}`);
+    }
+  });
+
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async ({ profileIds, message }) => {
@@ -471,6 +496,25 @@ export default function AdminDashboard() {
       case 'messaging':
         return (
           <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Send className="h-5 w-5 text-purple-600" />
+                  Waitlist Invitations
+                </CardTitle>
+                <CardDescription>
+                  Send launch emails to everyone on the waitlist who hasn't been invited yet.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <button 
+                  onClick={() => setWaitlistDialog(true)}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  Draft Launch Email
+                </button>
+              </CardContent>
+            </Card>
             <BroadcastMessages broadcasts={broadcastMessages} profiles={profiles} currentUser={currentUser} />
             <EmailCampaignManager />
           </div>
@@ -562,6 +606,54 @@ export default function AdminDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Waitlist Email Dialog */}
+      <Dialog open={waitlistDialog} onOpenChange={setWaitlistDialog}>
+        <DialogContent className="sm:max-w-[525px] bg-gray-900 border-white/20 text-white">
+          <DialogHeader>
+            <DialogTitle>Send Waitlist Invites</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              This will send an email to all active waitlist members. Use {'{{name}}'} to insert their name.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="subject" className="text-white">Subject</Label>
+              <Input
+                id="subject"
+                value={waitlistEmail.subject}
+                onChange={(e) => setWaitlistEmail({ ...waitlistEmail, subject: e.target.value })}
+                className="bg-white/10 border-white/20 text-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="body" className="text-white">Email Body</Label>
+              <Textarea
+                id="body"
+                value={waitlistEmail.body}
+                onChange={(e) => setWaitlistEmail({ ...waitlistEmail, body: e.target.value })}
+                className="bg-white/10 border-white/20 text-white h-48"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => setWaitlistDialog(false)}
+              className="px-4 py-2 rounded-md bg-white/10 hover:bg-white/20 text-white transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => sendWaitlistInvitesMutation.mutate(waitlistEmail)}
+              disabled={sendWaitlistInvitesMutation.isPending}
+              className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white transition-colors flex items-center gap-2"
+            >
+              {sendWaitlistInvitesMutation.isPending ? 'Sending...' : 'Send Emails'}
+              <Send size={16} />
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Message Dialog */}
       <AlertDialog open={messageDialog.open} onOpenChange={(open) => setMessageDialog({ ...messageDialog, open })}>
