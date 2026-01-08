@@ -74,6 +74,13 @@ Deno.serve(async (req) => {
         const profileId = profiles[0]?.id;
 
         if (profileId) {
+            // Idempotency Check
+            const existingSub = await base44.asServiceRole.entities.Subscription.filter({ external_id: paymentIntent.id });
+            if (existingSub.length > 0) {
+                console.log('Subscription already processed');
+                return Response.json({ received: true });
+            }
+
             // Cancel old active subscriptions
             for (const sub of existingSubs) {
                 await base44.asServiceRole.entities.Subscription.update(sub.id, { status: 'cancelled' });

@@ -71,23 +71,11 @@ Return JSON array:
 
   const suggestDateMutation = useMutation({
     mutationFn: async (suggestion) => {
-      await base44.entities.DatePlan.create({
-        match_id: matchId,
-        suggested_by: 'ai',
-        venue_name: suggestion.venue_name,
-        venue_address: suggestion.venue_address,
-        date_type: suggestion.date_type,
-        budget_estimate: suggestion.budget_estimate,
-        status: 'proposed'
+      const response = await base44.functions.invoke('proposeDate', {
+        matchId,
+        suggestion
       });
-      
-      await base44.entities.Notification.create({
-        user_profile_id: matchId, // Should get other user ID
-        type: 'date_plan',
-        title: '📅 Date Suggestion',
-        message: `Date idea: ${suggestion.venue_name}`,
-        from_profile_id: myProfile.id
-      });
+      return response.data;
     },
     onSuccess: () => {
       alert('Date suggestion sent!');

@@ -318,9 +318,8 @@ export default function Onboarding() {
             }
           } catch (e) {
             console.error('Location validation failed:', e);
-            alert('Unable to verify your location. Please try again.');
-            setGettingLocation(false);
-            return;
+            alert('Could not verify your location automatically. Please ensure you are in a supported region.');
+            // Proceed without return to unblock user
           }
           
           // Save location
