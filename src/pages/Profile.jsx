@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import {
   Settings, Edit2, Camera, Shield, Star, Crown, MapPin,
   Briefcase, GraduationCap, Book, Languages, Heart, ChevronRight,
-  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard, RotateCcw, Users
+  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard, RotateCcw, Users, Zap
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import BoostProfileButton from '@/components/profile/BoostProfileButton';
@@ -236,12 +236,19 @@ export default function Profile() {
             <span>{profile?.current_city}, {profile?.current_country}</span>
           </div>
 
-          {profile?.is_premium && (
-            <Badge className="mt-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white">
-              <Crown size={12} className="mr-1" />
-              Premium Member
-            </Badge>
-          )}
+          <Badge className={`mt-2 text-white ${
+            profile?.subscription_tier === 'vip' ? 'bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 border-0' :
+            profile?.subscription_tier === 'elite' ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 border-0' :
+            profile?.subscription_tier === 'premium' ? 'bg-gradient-to-r from-purple-500 to-purple-600 border-0' :
+            'bg-gray-500 border-0'
+          }`}>
+            {profile?.subscription_tier === 'vip' ? <Crown size={12} className="mr-1" /> :
+             profile?.subscription_tier === 'elite' ? <Zap size={12} className="mr-1" /> :
+             profile?.subscription_tier === 'premium' ? <Star size={12} className="mr-1" /> :
+             null}
+            {profile?.subscription_tier === 'free' || !profile?.subscription_tier ? 'Free Member' : 
+             profile.subscription_tier.charAt(0).toUpperCase() + profile.subscription_tier.slice(1) + ' Member'}
+          </Badge>
 
           {isOwnProfile && profile?.login_streak >= 3 && (
             <div className="mt-3">
@@ -571,7 +578,7 @@ export default function Profile() {
             <Link to={createPageUrl('PricingPlans')}>
               <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" size="lg">
                 <Crown size={18} className="mr-2" />
-                {profile?.is_premium ? 'Manage Subscription' : 'Upgrade to Premium'}
+                {profile?.subscription_tier && profile?.subscription_tier !== 'free' ? 'Manage Subscription' : 'Upgrade Membership'}
               </Button>
             </Link>
 
