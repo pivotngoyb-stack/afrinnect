@@ -15,6 +15,12 @@ Deno.serve(async (req) => {
         max_attendees, price, currency, tags, is_featured
     } = await req.json();
 
+    // 0. Input Validation (Security)
+    if (!title || title.length > 100) return Response.json({ error: 'Title too long (max 100)' }, { status: 400 });
+    if (description && description.length > 2000) return Response.json({ error: 'Description too long (max 2000)' }, { status: 400 });
+    if (price && parseFloat(price) < 0) return Response.json({ error: 'Price cannot be negative' }, { status: 400 });
+    if (new Date(start_date) < new Date()) return Response.json({ error: 'Event must be in the future' }, { status: 400 });
+
     // 1. Validate User Eligibility
     const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
     if (profiles.length === 0) return Response.json({ error: 'Profile not found' }, { status: 404 });

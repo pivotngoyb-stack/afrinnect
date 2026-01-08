@@ -24,6 +24,11 @@ Deno.serve(async (req) => {
     }
     const profile = profiles[0];
 
+    // 1.1 Security Check: Banned/Suspended users cannot update profile
+    if (profile.is_banned || profile.is_suspended) {
+        return Response.json({ error: 'Account is restricted' }, { status: 403 });
+    }
+
     // 2. Allowed Updates (Strict Whitelist)
     // We explicitly EXCLUDE: is_premium, subscription_tier, is_banned, violation_count, etc.
     const updateData = {
@@ -52,6 +57,15 @@ Deno.serve(async (req) => {
         is_active: true,
         last_active: new Date().toISOString()
     };
+
+    // 2.1 Validate Data Types (Security)
+    if (updateData.video_profile_url && !updateData.video_profile_url.startsWith('http')) {
+        delete updateData.video_profile_url; // Prevent javascript: URIs
+    }
+    
+    if (updateData.photos && !Array.isArray(updateData.photos)) {
+        delete updateData.photos;
+    }
 
     // Remove undefined/null values to avoid overwriting with nulls if not sent
     Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
