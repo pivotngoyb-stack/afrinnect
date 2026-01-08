@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CheckCircle, XCircle, Shield, Camera, IdCard, Crown, Award } from 'lucide-react';
 
 export default function VerificationQueue({ requests, profiles, currentUser }) {
@@ -31,6 +32,27 @@ export default function VerificationQueue({ requests, profiles, currentUser }) {
         await base44.entities.UserProfile.update(profile.id, {
           verification_status: updates
         });
+        
+        // Send Notification
+        await base44.entities.Notification.create({
+          user_profile_id: profile.id,
+          type: 'admin_message',
+          title: 'Verification Approved! 🎉',
+          message: `Your ${request.verification_type} verification request has been approved.`,
+          is_admin: true
+        });
+
+        // Send Push Notification
+        try {
+          await base44.functions.invoke('sendPushNotification', {
+            user_profile_id: profile.id,
+            title: 'Verification Approved! 🎉',
+            body: `Your ${request.verification_type} verification request has been approved.`,
+            type: 'system'
+          });
+        } catch (e) {
+          console.error('Push notification failed:', e);
+        }
       }
 
       // Log action
@@ -46,6 +68,7 @@ export default function VerificationQueue({ requests, profiles, currentUser }) {
       queryClient.invalidateQueries(['admin-verifications']);
       queryClient.invalidateQueries(['admin-profiles']);
       setSelectedRequest(null);
+      alert('Verification approved!');
     }
   });
 
@@ -56,6 +79,30 @@ export default function VerificationQueue({ requests, profiles, currentUser }) {
         reviewed_by: currentUser.email,
         rejection_reason: rejectionReason
       });
+      
+      // Send Notification
+      const profile = profiles.find(p => p.id === request.user_profile_id);
+      if (profile) {
+        await base44.entities.Notification.create({
+          user_profile_id: profile.id,
+          type: 'admin_message',
+          title: 'Verification Update',
+          message: `Your ${request.verification_type} verification request was rejected. Reason: ${rejectionReason || 'Does not meet guidelines.'}`,
+          is_admin: true
+        });
+
+        // Send Push Notification
+        try {
+          await base44.functions.invoke('sendPushNotification', {
+            user_profile_id: profile.id,
+            title: 'Verification Update',
+            body: `Your verification request was rejected. Check app for details.`,
+            type: 'system'
+          });
+        } catch (e) {
+          console.error('Push notification failed:', e);
+        }
+      }
 
       // Log action
       await base44.entities.AdminAuditLog.create({
@@ -70,6 +117,7 @@ export default function VerificationQueue({ requests, profiles, currentUser }) {
       queryClient.invalidateQueries(['admin-verifications']);
       setSelectedRequest(null);
       setRejectionReason('');
+      alert('Verification rejected.');
     }
   });
 
@@ -89,56 +137,84 @@ export default function VerificationQueue({ requests, profiles, currentUser }) {
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Shield size={24} className="text-orange-600" />
-              <div>
-                <p className="text-2xl font-bold">{pendingRequests.length}</p>
-                <p className="text-sm text-gray-600">Pending Reviews</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Camera size={24} className="text-blue-600" />
-              <div>
-                <p className="text-2xl font-bold">
-                  {requests.filter(r => r.verification_type === 'photo' && r.status === 'pending').length}
-                </p>
-                <p className="text-sm text-gray-600">Photo Verifications</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <IdCard size={24} className="text-green-600" />
-              <div>
-                <p className="text-2xl font-bold">
-                  {requests.filter(r => r.verification_type === 'id' && r.status === 'pending').length}
-                </p>
-                <p className="text-sm text-gray-600">ID Verifications</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Crown size={24} className="text-amber-600" />
-              <div>
-                <p className="text-2xl font-bold">
-                  {requests.filter(r => (r.verification_type === 'elite' || r.verification_type === 'vip') && r.status === 'pending').length}
-                </p>
-                <p className="text-sm text-gray-600">Premium Badges</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Card className="cursor-help">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Shield size={24} className="text-orange-600" />
+                    <div>
+                      <p className="text-2xl font-bold">{pendingRequests.length}</p>
+                      <p className="text-sm text-gray-600">Pending Reviews</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TooltipTrigger>
+            <TooltipContent><p>Total verification requests awaiting review</p></TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Card className="cursor-help">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Camera size={24} className="text-blue-600" />
+                    <div>
+                      <p className="text-2xl font-bold">
+                        {requests.filter(r => r.verification_type === 'photo' && r.status === 'pending').length}
+                      </p>
+                      <p className="text-sm text-gray-600">Photo Verifications</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TooltipTrigger>
+            <TooltipContent><p>Number of photo verification requests pending review</p></TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Card className="cursor-help">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <IdCard size={24} className="text-green-600" />
+                    <div>
+                      <p className="text-2xl font-bold">
+                        {requests.filter(r => r.verification_type === 'id' && r.status === 'pending').length}
+                      </p>
+                      <p className="text-sm text-gray-600">ID Verifications</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TooltipTrigger>
+            <TooltipContent><p>Number of ID verification requests pending review</p></TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Card className="cursor-help">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Crown size={24} className="text-amber-600" />
+                    <div>
+                      <p className="text-2xl font-bold">
+                        {requests.filter(r => (r.verification_type === 'elite' || r.verification_type === 'vip') && r.status === 'pending').length}
+                      </p>
+                      <p className="text-sm text-gray-600">Premium Badges</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TooltipTrigger>
+            <TooltipContent><p>Number of premium badge verification requests pending review</p></TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {/* Verification Queue */}
@@ -164,9 +240,16 @@ export default function VerificationQueue({ requests, profiles, currentUser }) {
                       )}
                     </div>
                   </div>
-                  <Button onClick={() => setSelectedRequest(request)}>
-                    Review
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button onClick={() => setSelectedRequest(request)}>
+                          Review
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent><p>Review this verification request</p></TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               );
             })}
@@ -230,23 +313,38 @@ export default function VerificationQueue({ requests, profiles, currentUser }) {
 
               {/* Actions */}
               <div className="flex gap-3">
-                <Button
-                  onClick={() => approveVerificationMutation.mutate(selectedRequest)}
-                  disabled={approveVerificationMutation.isPending}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
-                >
-                  <CheckCircle size={18} className="mr-2" />
-                  Approve
-                </Button>
-                <Button
-                  onClick={() => rejectVerificationMutation.mutate(selectedRequest)}
-                  disabled={rejectVerificationMutation.isPending}
-                  variant="destructive"
-                  className="flex-1"
-                >
-                  <XCircle size={18} className="mr-2" />
-                  Reject
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => approveVerificationMutation.mutate(selectedRequest)}
+                        disabled={approveVerificationMutation.isPending}
+                        className="flex-1 bg-green-600 hover:bg-green-700"
+                      >
+                        <CheckCircle size={18} className="mr-2" />
+                        Approve
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Approve this verification and update user profile</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => rejectVerificationMutation.mutate(selectedRequest)}
+                        disabled={rejectVerificationMutation.isPending}
+                        variant="destructive"
+                        className="flex-1"
+                      >
+                        <XCircle size={18} className="mr-2" />
+                        Reject
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Reject this verification request</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           )}
