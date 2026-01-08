@@ -51,7 +51,11 @@ export default function Matches() {
           base44.entities.Match.filter({ user1_id: myProfile.id, is_match: true, status: 'active' }, '-matched_at', 25),
           base44.entities.Match.filter({ user2_id: myProfile.id, is_match: true, status: 'active' }, '-matched_at', 25)
         ]);
-        return [...matches1, ...matches2];
+        const allMatches = [...matches1, ...matches2];
+        // Sort combined results by matched_at descending to ensure correct order
+        return allMatches.sort((a, b) => 
+          new Date(b.matched_at || b.created_date) - new Date(a.matched_at || a.created_date)
+        );
       } catch (error) {
         console.error('Failed to fetch matches:', error);
         return [];
