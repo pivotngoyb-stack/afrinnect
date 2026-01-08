@@ -52,7 +52,7 @@ export default function SubmitStory() {
       }
 
       await base44.entities.SuccessStory.create({
-        user_profile_id_1: myProfile.id,
+        user1_profile_id: myProfile.id,
         story_text: storyText,
         relationship_status: relationshipStatus,
         match_date: matchDate || new Date().toISOString(),
@@ -200,7 +200,7 @@ export default function SubmitStory() {
               {/* Submit Button */}
               <Button
                 onClick={() => submitStoryMutation.mutate()}
-                disabled={!storyText.trim() || storyText.length < 50 || submitStoryMutation.isPending}
+                disabled={!myProfile || !storyText.trim() || storyText.length < 50 || submitStoryMutation.isPending}
                 className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700"
                 size="lg"
               >
