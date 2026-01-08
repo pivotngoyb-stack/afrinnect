@@ -87,6 +87,18 @@ function LayoutContent({ children, currentPageName }) {
           if (profiles.length > 0) {
             const profile = profiles[0];
             setMyProfile(profile);
+
+            // Enforce ID Verification after 30 minutes
+            const createdDate = new Date(profile.created_date);
+            const timeSinceSignup = new Date() - createdDate;
+            const gracePeriod = 30 * 60 * 1000; // 30 minutes
+
+            if (timeSinceSignup > gracePeriod && 
+                !profile.verification_status?.id_verified && 
+                currentPageName !== 'IDVerification') {
+              window.location.href = createPageUrl('IDVerification');
+              return;
+            }
           }
           setHasProfile(profiles.length > 0);
         }
