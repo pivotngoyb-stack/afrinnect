@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import StripePaymentModal from '@/components/payment/StripePaymentModal';
+import { useQuery } from '@tanstack/react-query';
 
 const GIFTS = [
   { type: 'rose', name: 'Rose', emoji: '🌹', price: 1.99 },
@@ -23,8 +25,19 @@ export default function VirtualGifts() {
   const [myProfile, setMyProfile] = useState(null);
   const [selectedGift, setSelectedGift] = useState(null);
   const [message, setMessage] = useState('');
+  const [showPayment, setShowPayment] = useState(false);
+  const [clientSecret, setClientSecret] = useState(null);
   const urlParams = new URLSearchParams(window.location.search);
   const profileId = urlParams.get('profileId');
+
+  const { data: stripeConfig } = useQuery({
+    queryKey: ['stripeConfig'],
+    queryFn: async () => {
+        const response = await base44.functions.invoke('getStripeConfig', {});
+        return response.data;
+    },
+    staleTime: Infinity
+  });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -68,10 +81,32 @@ export default function VirtualGifts() {
       });
     },
     onSuccess: () => {
+      setShowPayment(false);
       alert('Gift sent! 🎁');
       window.location.href = createPageUrl('Home');
     }
   });
+
+  const handleInitiatePayment = async () => {
+      if (!selectedGift) return;
+      
+      try {
+          const response = await base44.functions.invoke('createStripePaymentIntent', {
+              amount: selectedGift.price,
+              currency: 'usd',
+              planType: 'virtual_gift',
+              billingPeriod: 'one_time'
+          });
+          
+          if (response.data?.clientSecret) {
+              setClientSecret(response.data.clientSecret);
+              setShowPayment(true);
+          }
+      } catch (error) {
+          console.error("Payment init failed", error);
+          alert("Failed to initialize payment");
+      }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-amber-50 pb-24">
@@ -136,7 +171,7 @@ export default function VirtualGifts() {
             </Card>
 
             <Button
-              onClick={() => sendGiftMutation.mutate()}
+              onClick={handleInitiatePayment}
               disabled={sendGiftMutation.isPending}
               className="w-full py-6 text-lg bg-gradient-to-r from-pink-600 to-purple-600"
             >
@@ -146,6 +181,16 @@ export default function VirtualGifts() {
           </motion.div>
         )}
       </main>
+
+      <StripePaymentModal 
+          isOpen={showPayment}
+          onClose={() => setShowPayment(false)}
+          clientSecret={clientSecret}
+          amount={selectedGift?.price}
+          planName={`Virtual Gift: ${selectedGift?.name}`}
+          stripePublicKey={stripeConfig?.publicKey}
+          onSuccess={() => sendGiftMutation.mutate()}
+      />
     </div>
   );
 }
