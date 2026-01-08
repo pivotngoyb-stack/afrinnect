@@ -10,6 +10,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // CRITICAL: Admin Only
+    if (user.role !== 'admin' && user.email !== 'pivotngoyb@gmail.com') {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { action, new_tier, profile_id } = await req.json();
     // action: 'upgrade', 'downgrade', 'refund', 'expire'
 

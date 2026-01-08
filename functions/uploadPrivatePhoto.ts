@@ -17,6 +17,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No file provided' }, { status: 400 });
     }
 
+    // 1. Validate File Type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+        return Response.json({ error: 'Invalid file type. Only images allowed.' }, { status: 400 });
+    }
+
+    // 2. Validate File Size (e.g. 10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+        return Response.json({ error: 'File too large. Max 10MB.' }, { status: 400 });
+    }
+
     // Upload to PRIVATE storage (requires signed URLs to access)
     const { file_uri } = await base44.asServiceRole.integrations.Core.UploadPrivateFile({ 
       file 
