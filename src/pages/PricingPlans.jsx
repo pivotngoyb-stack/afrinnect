@@ -95,8 +95,22 @@ export default function PricingPlans() {
   const [userCountry, setUserCountry] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
   const [pricingData, setPricingData] = useState(null);
+  const [stripeConfig, setStripeConfig] = useState(null);
+  const [clientSecret, setClientSecret] = useState(null);
 
   useEffect(() => {
+    const fetchStripeConfig = async () => {
+        try {
+            const response = await base44.functions.invoke('getStripeConfig', {});
+            if (response.data?.publicKey) {
+                setStripeConfig(response.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch Stripe config:', error);
+        }
+    };
+    fetchStripeConfig();
+
     const fetchData = async () => {
       try {
         // Fetch dynamic pricing from database
@@ -164,6 +178,33 @@ export default function PricingPlans() {
     ? { ...PRICING_TIERS[selectedTier], ...pricingData[selectedTier] }
     : PRICING_TIERS[selectedTier];
   const price = currentTier?.prices?.[selectedBilling];
+
+  useEffect(() => {
+    const createPaymentIntent = async () => {
+      if (showPayment && selectedTier && billingPeriod && stripeConfig) {
+        try {
+            if (!price) return;
+
+            const response = await base44.functions.invoke('createStripePaymentIntent', {
+                amount: price.total * regionalDiscount,
+                currency: 'usd',
+                planType: `${selectedTier}_${selectedBilling}`,
+                billingPeriod: selectedBilling
+            });
+
+            if (response.data?.clientSecret) {
+                setClientSecret(response.data.clientSecret);
+            }
+        } catch (error) {
+            console.error('Failed to create payment intent:', error);
+        }
+      }
+    };
+
+    if (showPayment) {
+        createPaymentIntent();
+    }
+  }, [showPayment, selectedTier, selectedBilling, stripeConfig, price]);
 
   if (!currentTier || !currentTier.prices) {
     return (
@@ -313,21 +354,21 @@ export default function PricingPlans() {
       </div>
 
       {/* Payment Dialog */}
-      <Dialog open={showPayment} onOpenChange={setShowPayment}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Complete Your Purchase</DialogTitle>
-          </DialogHeader>
-          <BraintreeDropIn
-            amount={(price?.total || 0) * regionalDiscount}
-            planName={currentTier.name}
-            billingPeriod={selectedBilling}
-            tier={selectedTier}
-            onSuccess={handlePaymentSuccess}
-            onError={handlePaymentError}
-          />
-        </DialogContent>
-      </Dialog>
+      <StripePaymentModal
+        isOpen={showPayment}
+        onClose={() => {
+            setShowPayment(false);
+            setClientSecret(null);
+        }}
+        clientSecret={clientSecret}
+        amount={(price?.total || 0) * regionalDiscount}
+        planName={`${currentTier.name} Plan (${selectedBilling})`}
+        stripePublicKey={stripeConfig?.publicKey}
+        onSuccess={() => {
+            setShowPayment(false);
+            handlePaymentSuccess();
+        }}
+      />
     </div>
   );
 }

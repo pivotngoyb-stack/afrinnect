@@ -6,11 +6,13 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Loader2, Lock, Star, Check, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import BraintreeDropIn from '@/components/payment/BraintreeDropIn';
+import StripePaymentModal from '@/components/payment/StripePaymentModal';
 
 export default function CouplesComparison({ isOpen, onClose }) {
   const [step, setStep] = useState('select_match'); // select_match, payment, results
   const [selectedMatch, setSelectedMatch] = useState(null);
+  const [clientSecret, setClientSecret] = useState(null);
+  const [stripeConfig, setStripeConfig] = useState(null);
   const [comparisonResult, setComparisonResult] = useState(null);
   const [myProfile, setMyProfile] = useState(null);
   const queryClient = useQueryClient();
@@ -24,6 +26,18 @@ export default function CouplesComparison({ isOpen, onClose }) {
       } catch (e) { console.error(e); }
     };
     fetchMe();
+
+    const fetchStripeConfig = async () => {
+        try {
+            const response = await base44.functions.invoke('getStripeConfig', {});
+            if (response.data?.publicKey) {
+                setStripeConfig(response.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch Stripe config:', error);
+        }
+    };
+    fetchStripeConfig();
   }, []);
 
   const { data: matches, isLoading: loadingMatches } = useQuery({
@@ -46,9 +60,25 @@ export default function CouplesComparison({ isOpen, onClose }) {
     enabled: !!myProfile
   });
 
-  const handleMatchSelect = (match) => {
+  const handleMatchSelect = async (match) => {
     setSelectedMatch(match);
-    setStep('payment');
+    
+    // Create payment intent
+    try {
+        const response = await base44.functions.invoke('createStripePaymentIntent', {
+            amount: 2.00,
+            currency: 'usd',
+            planType: 'couples_comparison',
+            billingPeriod: 'one_time'
+        });
+        if (response.data?.clientSecret) {
+            setClientSecret(response.data.clientSecret);
+            setStep('payment');
+        }
+    } catch (e) {
+        console.error("Failed to init payment", e);
+        alert("Failed to initialize payment");
+    }
   };
 
   const handlePaymentSuccess = async () => {
@@ -114,15 +144,49 @@ export default function CouplesComparison({ isOpen, onClose }) {
                </div>
              </div>
              
-             <BraintreeDropIn 
-               amount={2.00}
-               planName="Couples Comparison"
-               onSuccess={handlePaymentSuccess}
-               onError={(err) => alert("Payment failed: " + err)}
-             />
+             {clientSecret && stripeConfig && (
+                <div className="border rounded-xl p-4">
+                    <StripePaymentModal 
+                        isOpen={true} // Embedded mode or reuse modal? 
+                        // The modal component is designed as a fixed overlay. 
+                        // We should probably modify StripePaymentModal to be embeddable OR just render Elements here directly.
+                        // However, reusing the modal as a component inside the dialog might be weird if it has fixed positioning.
+                        // Let's check StripePaymentModal implementation. 
+                        // It has "fixed inset-0 z-50". 
+                        // So we should just trigger the modal instead of embedding it here?
+                        // Or import Elements directly here.
+                        // For simplicity, I'll invoke the Modal by state, but here we are IN a dialog.
+                        // Opening a modal on top of a dialog is fine.
+                        // Let's just show a button to Pay that opens the modal.
+                    />
+                </div>
+             )}
+             
+             <Button 
+                className="w-full bg-purple-600 hover:bg-purple-700 mb-2"
+                onClick={() => setStep('payment_modal')}
+             >
+                Proceed to Payment ($2.00)
+             </Button>
+
              <Button variant="ghost" onClick={() => setStep('select_match')} className="w-full mt-2">Back</Button>
+             
+             <StripePaymentModal
+                isOpen={step === 'payment_modal'}
+                onClose={() => setStep('payment')}
+                clientSecret={clientSecret}
+                amount={2.00}
+                planName="Couples Comparison"
+                stripePublicKey={stripeConfig?.publicKey}
+                onSuccess={() => {
+                    setStep('payment'); // Close modal
+                    handlePaymentSuccess();
+                }}
+             />
           </div>
         )}
+        
+        {step === 'payment_modal' && null /* Modal handles its own visibility */}
 
         {step === 'analyzing' && (
           <div className="text-center py-8">
