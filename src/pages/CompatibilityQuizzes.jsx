@@ -11,11 +11,11 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
-import LoveLanguageTest from '@/components/quizzes/LoveLanguageTest';
+import CouplesComparison from '@/components/quizzes/CouplesComparison';
 import { Heart } from 'lucide-react';
 
 export default function CompatibilityQuizzes() {
-  const [showLoveLanguage, setShowLoveLanguage] = useState(false);
+  const [showCouplesComparison, setShowCouplesComparison] = useState(false);
   const [myProfile, setMyProfile] = useState(null);
   const [activeQuiz, setActiveQuiz] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -156,19 +156,22 @@ export default function CompatibilityQuizzes() {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Love Language Card */}
-          <Card className="bg-white/70 backdrop-blur-md border-2 border-pink-200 shadow-lg hover:shadow-xl transition-all cursor-pointer transform hover:scale-105" onClick={() => setShowLoveLanguage(true)}>
-            <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-t-lg pb-10 mb-[-2rem]">
+          {/* Couples Comparison Card */}
+          <Card className="bg-white/70 backdrop-blur-md border-2 border-purple-200 shadow-lg hover:shadow-xl transition-all cursor-pointer transform hover:scale-105" onClick={() => setShowCouplesComparison(true)}>
+            <CardHeader className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-t-lg pb-10 mb-[-2rem]">
                <div className="flex justify-between items-start">
-                 <Heart size={32} className="text-white fill-white animate-pulse" />
-                 <Badge className="bg-white/20 text-white border-none">Featured</Badge>
+                 <div className="flex -space-x-2">
+                   <div className="w-8 h-8 rounded-full bg-white/30 border-2 border-white flex items-center justify-center">You</div>
+                   <div className="w-8 h-8 rounded-full bg-white/30 border-2 border-white flex items-center justify-center">?</div>
+                 </div>
+                 <Badge className="bg-amber-400 text-black border-none font-bold">Premium</Badge>
                </div>
             </CardHeader>
             <CardContent className="pt-12">
-               <CardTitle className="text-xl font-bold text-gray-800 mb-2">Love Language Test</CardTitle>
-               <p className="text-sm text-gray-600 mb-4">Discover how you give and receive love. Based on the 5 Love Languages.</p>
-               <Button className="w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white border-0">
-                 Take Test
+               <CardTitle className="text-xl font-bold text-gray-800 mb-2">Couples Comparison</CardTitle>
+               <p className="text-sm text-gray-600 mb-4">Compare compatibility with your matches. Unlock deep insights for just $2.</p>
+               <Button className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white border-0">
+                 Compare Now
                </Button>
             </CardContent>
           </Card>
@@ -238,7 +241,7 @@ export default function CompatibilityQuizzes() {
                       <span className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-purple-600 flex items-center justify-center text-xs font-semibold">
                         {String.fromCharCode(65 + index)}
                       </span>
-                      {option.option_text}
+                      {typeof option.option_text === 'string' ? option.option_text : (option.option_text?.option_text || 'Option')}
                     </span>
                   </Button>
                 ))}
@@ -290,7 +293,7 @@ export default function CompatibilityQuizzes() {
         </DialogContent>
       </Dialog>
 
-      <LoveLanguageTest isOpen={showLoveLanguage} onClose={() => setShowLoveLanguage(false)} />
+      <CouplesComparison isOpen={showCouplesComparison} onClose={() => setShowCouplesComparison(false)} />
     </div>
   );
 }
