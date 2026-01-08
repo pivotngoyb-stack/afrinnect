@@ -16,14 +16,24 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export default function SafetyCheckSetup({ myProfile, matchProfile }) {
+export default function SafetyCheckSetup({ myProfile, matchProfile, initialData }) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    date_location: '',
+    date_location: initialData?.venue_name ? `${initialData.venue_name}, ${initialData.venue_address || ''}` : '',
     emergency_contact_name: '',
     emergency_contact_phone: '',
-    check_in_time: ''
+    check_in_time: initialData?.check_in_time || ''
   });
+
+  useEffect(() => {
+    if (initialData && open) {
+        setFormData(prev => ({
+            ...prev,
+            date_location: initialData.venue_name ? `${initialData.venue_name}, ${initialData.venue_address || ''}` : prev.date_location,
+            check_in_time: initialData.check_in_time || prev.check_in_time
+        }));
+    }
+  }, [initialData, open]);
 
   const createSafetyCheckMutation = useMutation({
     mutationFn: async () => {
