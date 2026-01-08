@@ -144,24 +144,6 @@ export default function CouplesComparison({ isOpen, onClose }) {
                </div>
              </div>
              
-             {clientSecret && stripeConfig && (
-                <div className="border rounded-xl p-4">
-                    <StripePaymentModal 
-                        isOpen={true} // Embedded mode or reuse modal? 
-                        // The modal component is designed as a fixed overlay. 
-                        // We should probably modify StripePaymentModal to be embeddable OR just render Elements here directly.
-                        // However, reusing the modal as a component inside the dialog might be weird if it has fixed positioning.
-                        // Let's check StripePaymentModal implementation. 
-                        // It has "fixed inset-0 z-50". 
-                        // So we should just trigger the modal instead of embedding it here?
-                        // Or import Elements directly here.
-                        // For simplicity, I'll invoke the Modal by state, but here we are IN a dialog.
-                        // Opening a modal on top of a dialog is fine.
-                        // Let's just show a button to Pay that opens the modal.
-                    />
-                </div>
-             )}
-             
              <Button 
                 className="w-full bg-purple-600 hover:bg-purple-700 mb-2"
                 onClick={() => setStep('payment_modal')}
