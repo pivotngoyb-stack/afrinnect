@@ -92,25 +92,15 @@ export default function Landing() {
     "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/9b3bf8357_image.png"
   ];
 
-  const handleGetStarted = async () => {
+  const handleGetStarted = () => {
+    window.location.href = createPageUrl('Waitlist');
+  };
+
+  const handleLogin = async () => {
     trackEvent(CONVERSION_EVENTS.SIGNUP_START);
-
-    // Check if already logged in
-    try {
-      const isAuth = await base44.auth.isAuthenticated();
-      if (isAuth) {
-        // Already logged in, go to home
-        window.location.href = createPageUrl('Home');
-        return;
-      }
-    } catch (e) {
-      // Not logged in, proceed with login
-    }
-
     const urlParams = new URLSearchParams(window.location.search);
     const ref = urlParams.get('ref');
     const nextUrl = ref ? createPageUrl('Home') + `?ref=${ref}` : createPageUrl('Home');
-    // Use window.location.origin to support custom domains like afrinnect.com
     base44.auth.redirectToLogin(window.location.origin + nextUrl);
   };
 
@@ -139,7 +129,7 @@ export default function Landing() {
               </Button>
             </Link>
             <Button 
-              onClick={handleGetStarted}
+              onClick={handleLogin}
               variant="ghost" 
               className="text-white hover:bg-white/20"
             >
@@ -189,7 +179,7 @@ export default function Landing() {
                 <ArrowRight size={20} className="ml-2" />
               </Button>
               <Button 
-                onClick={handleGetStarted}
+                onClick={handleLogin}
                 size="lg" 
                 variant="outline"
                 className="bg-white/10 backdrop-blur-lg border-white/30 text-white hover:bg-white/20 px-10 py-6 text-lg rounded-full"
