@@ -100,7 +100,7 @@ export default function CreateEvent() {
         ? new Date(`${formData.end_date}T${formData.end_time}`)
         : null;
 
-      const event = await base44.entities.Event.create({
+      const response = await base44.functions.invoke('createEvent', {
         title: formData.title,
         description: formData.description,
         event_type: formData.event_type,
@@ -113,25 +113,15 @@ export default function CreateEvent() {
         location_address: formData.location_address,
         city: formData.city,
         country: formData.country,
-        organizer_id: myProfile.id,
-        attendees: [myProfile.id], // Organizer auto-attends
-        max_attendees: formData.max_attendees ? parseInt(formData.max_attendees) : null,
-        price: parseFloat(formData.price) || 0,
+        max_attendees: formData.max_attendees,
+        price: formData.price,
         currency: formData.currency,
         tags: formData.tags,
-        is_featured: formData.is_featured && myProfile.subscription_tier === 'vip'
+        is_featured: formData.is_featured
       });
 
-      // Send notification to organizer
-      await base44.entities.Notification.create({
-        user_profile_id: myProfile.id,
-        type: 'admin_message',
-        title: 'Event Created! 🎉',
-        message: `Your event "${formData.title}" has been published`,
-        link_to: createPageUrl(`EventDetails?id=${event.id}`)
-      });
-
-      return event;
+      if (response.data.error) throw new Error(response.data.error);
+      return { id: response.data.event_id };
     },
     onSuccess: (event) => {
       window.location.href = createPageUrl(`EventDetails?id=${event.id}`);

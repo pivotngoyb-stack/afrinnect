@@ -176,33 +176,14 @@ export default function Onboarding() {
         throw new Error('Maximum 2 devices allowed per email. Please remove a device first.');
       }
 
-      // CRITICAL: Give 3-day premium trial to all new users
-      const trialExpiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
-      
-      const profile = await base44.entities.UserProfile.create({
+      const response = await base44.functions.invoke('createProfile', {
         ...formData,
-        user_id: user.id,
-        primary_photo: formData.photos[0],
-        is_active: true,
-        last_active: new Date().toISOString(),
-        daily_likes_count: 0,
-        daily_likes_reset_date: new Date().toISOString().split('T')[0],
-        is_premium: true,
-        subscription_tier: 'premium',
-        premium_until: trialExpiresAt,
-        verification_status: {
-          email_verified: true,
-          phone_verified: false,
-          photo_verified: false,
-          id_verified: false
-        },
-        device_ids: [deviceId],
-        device_info: [{
-          device_id: deviceId,
-          device_name: navigator.userAgent.substring(0, 50),
-          last_login: new Date().toISOString()
-        }]
+        device_id: deviceId,
+        device_name: navigator.userAgent.substring(0, 50)
       });
+
+      if (response.data.error) throw new Error(response.data.error);
+      const profile = response.data.profile;
 
       // Request push notification permission immediately
       try {
@@ -217,10 +198,8 @@ export default function Onboarding() {
               const vapidKey = await base44.functions.invoke('getVapidKey');
               const token = await getToken(messaging, { vapidKey: vapidKey.vapid_key });
               
-              // Save token to profile
-              await base44.entities.UserProfile.update(profile.id, {
-                push_token: token
-              });
+              // Save token to profile (still using update here, but token is allowed field usually)
+              await base44.functions.invoke('updateUserProfile', { push_token: token });
             } catch (tokenError) {
               console.error('Failed to get FCM token:', tokenError);
             }
@@ -228,57 +207,6 @@ export default function Onboarding() {
         }
       } catch (notifError) {
         console.error('Push notification setup failed:', notifError);
-      }
-
-      // Send welcome email
-      try {
-        await base44.functions.invoke('sendWelcomeEmail', {
-          user_email: user.email,
-          user_name: formData.display_name
-        });
-      } catch (e) {
-        console.error('Welcome email failed:', e);
-      }
-
-      // ANTI-FRAUD: Track referrals with validation
-      const urlParams = new URLSearchParams(window.location.search);
-      const refCode = urlParams.get('ref');
-      
-      if (refCode && refCode !== profile.id) {
-        try {
-          // Anti-fraud checks
-          const existingReferrals = await base44.asServiceRole.entities.Referral.filter({
-            referred_email: user.email
-          });
-          
-          // Prevent duplicate referral credits
-          if (existingReferrals.length === 0) {
-            // Check if referrer has exceeded limits (max 50 referrals per month)
-            const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-            const referrerStats = await base44.asServiceRole.entities.Referral.filter({
-              referrer_profile_id: refCode,
-              created_date: { $gte: oneMonthAgo }
-            });
-            
-            if (referrerStats.length < 50) {
-              // Valid referral - create record
-              await base44.asServiceRole.entities.Referral.create({
-                referrer_profile_id: refCode,
-                referred_profile_id: profile.id,
-                referred_email: user.email,
-                conversion_status: 'registered',
-                reward_earned: 0,
-                device_fingerprint: navigator.userAgent
-              });
-            } else {
-              console.log('Referrer exceeded monthly limit - potential fraud');
-            }
-          } else {
-            console.log('User already referred - preventing duplicate credit');
-          }
-        } catch (e) {
-          console.error('Referral tracking failed:', e);
-        }
       }
 
       return profile;

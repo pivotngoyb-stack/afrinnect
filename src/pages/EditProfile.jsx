@@ -174,16 +174,12 @@ export default function EditProfile() {
       }
       
       if (profile) {
-        await base44.entities.UserProfile.update(profile.id, saveData);
+        await base44.functions.invoke('updateUserProfile', saveData);
       } else {
-        const user = await base44.auth.me();
-        const newProfile = await base44.entities.UserProfile.create({
-          ...saveData,
-          user_id: user.id,
-          is_active: true,
-          last_active: new Date().toISOString()
-        });
-        setProfile(newProfile);
+        // Fallback creation via secure function
+        const response = await base44.functions.invoke('createProfile', saveData);
+        if (response.data.error) throw new Error(response.data.error);
+        setProfile(response.data.profile);
       }
       window.location.href = createPageUrl('Profile');
     } catch (error) {

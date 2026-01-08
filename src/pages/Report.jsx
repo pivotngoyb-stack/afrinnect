@@ -60,16 +60,19 @@ export default function Report() {
 
   const submitMutation = useMutation({
     mutationFn: async () => {
-      return base44.entities.Report.create({
-        reporter_id: myProfile.id,
+      const response = await base44.functions.invoke('submitReport', {
         reported_id: userId,
         report_type: reportType,
-        description,
-        status: 'pending'
+        description
       });
+      if (response.data.error) throw new Error(response.data.error);
+      return response.data;
     },
     onSuccess: () => {
       setSubmitted(true);
+    },
+    onError: (error) => {
+        alert(error.message);
     }
   });
 
