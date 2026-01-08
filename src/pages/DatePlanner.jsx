@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { ArrowLeft, MapPin, Calendar, DollarSign, Sparkles, CheckCircle, XCircle, Clock } from 'lucide-react';
@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useQueryClient } from '@tanstack/react-query';
 import SafetyCheckSetup from '@/components/safety/SafetyCheckSetup';
 
 export default function DatePlanner() {
@@ -127,6 +126,7 @@ Return JSON array:
     },
     onSuccess: () => {
       alert('Date suggestion sent!');
+      window.location.reload();
     }
   });
 
@@ -242,8 +242,9 @@ Return JSON array:
     }
 
     // 4. No Plan: Create Flow
-    if (suggestions.length === 0) {
-        return (
+    return (
+      <div className="space-y-6">
+        {suggestions.length === 0 ? (
           <Card className="text-center">
             <CardContent className="p-8">
               <Sparkles size={64} className="mx-auto text-purple-600 mb-4" />
@@ -288,6 +289,25 @@ Return JSON array:
             ))}
           </>
         )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 pb-24">
+      <header className="bg-white/80 backdrop-blur-lg border-b sticky top-0 z-40">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+          <Link to={createPageUrl(`Chat?matchId=${matchId}`)}>
+            <Button variant="ghost" size="icon">
+              <ArrowLeft size={20} />
+            </Button>
+          </Link>
+          <h1 className="font-bold text-lg">Plan a Date</h1>
+        </div>
+      </header>
+
+      <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
+        {renderContent()}
       </main>
     </div>
   );
