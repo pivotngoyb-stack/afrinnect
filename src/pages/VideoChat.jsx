@@ -2,117 +2,108 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { PhoneOff } from 'lucide-react';
+import { PhoneOff, Loader2, Video, AlertTriangle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function VideoChat() {
   const [myProfile, setMyProfile] = useState(null);
+  const [callState, setCallState] = useState({ loading: true, error: null, roomId: null, callId: null });
   const [callStartTime, setCallStartTime] = useState(null);
+  
   const jitsiContainerRef = useRef(null);
   const jitsiApiRef = useRef(null);
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const matchId = urlParams.get('matchId');
 
+  // 1. Initialize & Join
   useEffect(() => {
-    const fetchProfile = async () => {
+    const initCall = async () => {
       try {
+        // Get user first
         const user = await base44.auth.me();
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-        if (profiles.length > 0) {
-          const profile = profiles[0];
-          setMyProfile(profile);
-          
-          // Restrict video calls to Elite and VIP only
-          const tier = profile.subscription_tier;
-          if (tier !== 'elite' && tier !== 'vip') {
-            alert('Video calls are only available for Elite and VIP members');
-            navigate(createPageUrl(`Chat?matchId=${matchId}`));
-          }
+        if (profiles.length === 0) throw new Error("Profile not found");
+        const profile = profiles[0];
+        setMyProfile(profile);
+
+        // Initiate or Join Call via Backend
+        // This handles "Find existing OR Create new" logic securely
+        const response = await base44.functions.invoke('initiateVideoCall', { match_id: matchId });
+        
+        if (response.data.error) {
+            throw new Error(response.data.error);
         }
-      } catch (e) {}
-    };
-    fetchProfile();
-  }, [matchId, navigate]);
 
-  useEffect(() => {
-    if (!myProfile || !matchId) return;
+        const { room_id, call_id } = response.data;
+        setCallState({ loading: false, error: null, roomId: room_id, callId: call_id });
 
-    // Get other user's profile from match
-    const fetchMatchProfile = async () => {
-      const matches = await base44.entities.Match.filter({ id: matchId });
-      if (matches.length > 0) {
-        const match = matches[0];
-        const otherUserId = match.user1_id === myProfile.id ? match.user2_id : match.user1_id;
-        return otherUserId;
+      } catch (err) {
+        console.error("Call init failed:", err);
+        setCallState({ 
+            loading: false, 
+            error: err.message || "Failed to connect to video service", 
+            roomId: null, 
+            callId: null 
+        });
       }
-      return null;
     };
 
-    fetchMatchProfile();
+    if (matchId) {
+        initCall();
+    }
+  }, [matchId]);
 
-    // Load Jitsi Meet External API script
+  // 2. Launch Jitsi when Room ID is ready
+  useEffect(() => {
+    if (!callState.roomId || !myProfile || jitsiApiRef.current) return;
+
+    // Load Script
     const script = document.createElement('script');
     script.src = 'https://meet.jit.si/external_api.js';
     script.async = true;
     script.onload = () => {
-      initializeJitsi();
+        setupJitsi(callState.roomId);
     };
     document.body.appendChild(script);
 
     return () => {
-      // Cleanup Jitsi
-      if (jitsiApiRef.current) {
-        jitsiApiRef.current.dispose();
-      }
-      document.body.removeChild(script);
+        if (jitsiApiRef.current) {
+            jitsiApiRef.current.dispose();
+            jitsiApiRef.current = null;
+        }
+        if (script.parentNode) {
+            script.parentNode.removeChild(script);
+        }
     };
-  }, [myProfile, matchId]);
+  }, [callState.roomId, myProfile]);
 
-  const initializeJitsi = async () => {
+  const setupJitsi = (roomId) => {
     if (!window.JitsiMeetExternalAPI || !jitsiContainerRef.current) return;
 
-    // Get other user ID from match
-    let otherUserId = null;
-    try {
-      const matches = await base44.entities.Match.filter({ id: matchId });
-      if (matches.length > 0) {
-        const match = matches[0];
-        otherUserId = match.user1_id === myProfile.id ? match.user2_id : match.user1_id;
-      }
-    } catch (e) {
-      console.error('Failed to get match data:', e);
-    }
-
-    // TIME LIMITS BY TIER
+    // Time Limits
     const tier = myProfile?.subscription_tier || 'free';
-    const timeLimits = {
-      elite: 60, // 60 minutes
-      vip: 120   // 120 minutes (2 hours)
-    };
-    const maxDuration = timeLimits[tier] || 30; // Default 30 min
-
-    // REGION-BASED BITRATE (detect region)
-    const userRegion = myProfile?.current_country;
-    const africanCountries = ['Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Tanzania'];
-    const isAfrica = africanCountries.includes(userRegion);
+    const maxDuration = (tier === 'vip') ? 120 : (tier === 'elite' ? 60 : 5); // 5 min fallback/free grace?
     
-    const videoBitrate = isAfrica ? 500 : 1500; // Lower bitrate for Africa to save data
+    // Bitrate
+    const isAfrica = ['Nigeria', 'Ghana', 'Kenya', 'South Africa'].includes(myProfile?.current_country);
+    const videoBitrate = isAfrica ? 500 : 1500;
 
     const domain = 'meet.jit.si';
     const options = {
-      roomName: `afrinnect-${matchId}`,
+      roomName: roomId, // Secure, generated ID
       width: '100%',
       height: '100%',
       parentNode: jitsiContainerRef.current,
       userInfo: {
-        displayName: myProfile?.display_name || 'User'
+        displayName: myProfile.display_name
       },
       configOverwrite: {
         startWithAudioMuted: false,
         startWithVideoMuted: false,
         prejoinPageEnabled: false,
-        // Region-based bitrate optimization
+        disableDeepLinking: true, 
         videoQuality: {
           maxBitratesVideo: {
             low: videoBitrate * 0.3,
@@ -124,91 +115,97 @@ export default function VideoChat() {
       interfaceConfigOverwrite: {
         TOOLBAR_BUTTONS: [
           'microphone', 'camera', 'hangup', 'settings', 
-          'videoquality', 'filmstrip', 'tileview'
+          'videoquality', 'filmstrip', 'tileview', 'chat'
         ],
         SHOW_JITSI_WATERMARK: false,
-        SHOW_WATERMARK_FOR_GUESTS: false
+        SHOW_WATERMARK_FOR_GUESTS: false,
+        MOBILE_APP_PROMO: false
       }
     };
 
-    jitsiApiRef.current = new window.JitsiMeetExternalAPI(domain, options);
+    const api = new window.JitsiMeetExternalAPI(domain, options);
+    jitsiApiRef.current = api;
     setCallStartTime(new Date());
 
-    // Log video call start
-    base44.entities.VideoCall.create({
-      match_id: matchId,
-      caller_profile_id: myProfile?.id,
-      receiver_profile_id: otherUserId,
-      status: 'connected',
-      start_time: new Date().toISOString()
-    });
+    // Update status to 'connected' if it was just initiated
+    // (We do this silently)
+    base44.entities.VideoCall.update(callState.callId, { status: 'connected' }).catch(() => {});
 
-    // ENFORCE TIME LIMIT BY TIER
+    // Time Limit Enforcement
     const timeoutId = setTimeout(() => {
-      alert(`Your ${tier.toUpperCase()} tier allows ${maxDuration} minutes per call. Call ending...`);
-      handleEndCall();
-    }, maxDuration * 60 * 1000); // Convert to milliseconds
+        alert(`Time limit reached for ${tier} plan. Ending call.`);
+        handleEndCall();
+    }, maxDuration * 60 * 1000);
 
-    // Handle when user leaves
-    jitsiApiRef.current.addListener('readyToClose', () => {
-      clearTimeout(timeoutId);
-      handleEndCall();
+    api.addListener('videoConferenceLeft', () => {
+        clearTimeout(timeoutId);
+        handleEndCall();
+    });
+    
+    api.addListener('readyToClose', () => {
+        clearTimeout(timeoutId);
+        handleEndCall();
     });
   };
 
   const handleEndCall = async () => {
-    const endTime = new Date();
-    const durationSeconds = callStartTime 
-      ? Math.floor((endTime - callStartTime) / 1000) 
-      : 0;
-
-    // Get other user ID from match
-    let otherUserId = null;
-    try {
-      const matches = await base44.entities.Match.filter({ id: matchId });
-      if (matches.length > 0) {
-        const match = matches[0];
-        otherUserId = match.user1_id === myProfile.id ? match.user2_id : match.user1_id;
-      }
-    } catch (e) {}
-
-    // Log video call end
-    try {
-      await base44.entities.VideoCall.create({
-        match_id: matchId,
-        caller_profile_id: myProfile?.id,
-        receiver_profile_id: otherUserId,
-        status: 'ended',
-        end_time: endTime.toISOString(),
-        duration_seconds: durationSeconds
-      });
-    } catch (e) {}
+    if (callState.callId) {
+        // Calculate duration
+        const duration = callStartTime ? Math.floor((new Date() - callStartTime) / 1000) : 0;
+        
+        // Notify backend to close call
+        try {
+            await base44.functions.invoke('endVideoCall', {
+                call_id: callState.callId,
+                duration_seconds: duration
+            });
+        } catch(e) {
+            console.error("Error closing call record", e);
+        }
+    }
 
     if (jitsiApiRef.current) {
-      jitsiApiRef.current.dispose();
+        jitsiApiRef.current.dispose();
     }
     
     navigate(createPageUrl(`Chat?matchId=${matchId}`));
   };
 
-  return (
-    <div className="fixed inset-0 bg-gray-900">
-      {/* Jitsi Container */}
-      <div 
-        ref={jitsiContainerRef} 
-        className="w-full h-full"
-      />
+  if (callState.loading) {
+      return (
+          <div className="fixed inset-0 bg-gray-900 flex flex-col items-center justify-center text-white">
+              <Loader2 size={48} className="animate-spin text-purple-500 mb-4" />
+              <h2 className="text-xl font-semibold">Connecting securely...</h2>
+              <p className="text-gray-400">Setting up your private room</p>
+          </div>
+      );
+  }
 
-      {/* End Call Button Overlay */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50">
-        <Button
-          size="icon"
-          className="rounded-full w-16 h-16 bg-red-600 hover:bg-red-700 shadow-2xl"
-          onClick={handleEndCall}
-        >
-          <PhoneOff size={24} className="text-white" />
-        </Button>
-      </div>
+  if (callState.error) {
+      return (
+          <div className="fixed inset-0 bg-gray-900 flex items-center justify-center p-4">
+              <Card className="w-full max-w-md bg-white">
+                  <CardContent className="p-6 text-center">
+                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <AlertTriangle size={32} className="text-red-600" />
+                      </div>
+                      <h2 className="text-xl font-bold text-gray-900 mb-2">Call Failed</h2>
+                      <p className="text-gray-600 mb-6">{callState.error}</p>
+                      <Button onClick={() => navigate(createPageUrl(`Chat?matchId=${matchId}`))} className="w-full">
+                          Return to Chat
+                      </Button>
+                  </CardContent>
+              </Card>
+          </div>
+      );
+  }
+
+  return (
+    <div className="fixed inset-0 bg-gray-900 relative">
+      <div ref={jitsiContainerRef} className="w-full h-full" />
+      
+      {/* Fallback End Button (if Jitsi toolbar fails or overlay needed) */}
+      {/* We rely on Jitsi toolbar 'hangup' button mostly, but this is a failsafe */}
     </div>
   );
 }
