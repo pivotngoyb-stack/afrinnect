@@ -499,16 +499,6 @@ export default function Profile() {
                     <Badge className="ml-2 bg-amber-500 text-xs">Premium</Badge>
                   </Button>
                 </Link>
-
-                <Link to={createPageUrl('BackgroundCheckRequest')}>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700" size="lg">
-                    <Shield size={18} className="mr-2" />
-                    Request Background Check
-                    <Badge className="ml-2 bg-amber-500 text-xs">Premium</Badge>
-                  </Button>
-                </Link>
-
-
               </>
             )}
 
@@ -518,15 +508,6 @@ export default function Profile() {
                 <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
                   <Shield size={18} className="mr-2" />
                   Verify Your Photo
-                </Button>
-              </Link>
-            )}
-
-            {!profile?.verification_status?.phone_verified && (
-              <Link to={createPageUrl('PhoneVerification')}>
-                <Button className="w-full bg-blue-600 hover:bg-blue-700" size="lg">
-                  <Shield size={18} className="mr-2" />
-                  Verify Your Phone
                 </Button>
               </Link>
             )}
@@ -547,31 +528,10 @@ export default function Profile() {
               </Button>
             </Link>
 
-            <Link to={createPageUrl('LanguageExchangeHub')}>
-              <Button className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700" size="lg">
-                <Languages size={18} className="mr-2" />
-                Language Exchange
-              </Button>
-            </Link>
-
-            <Link to={createPageUrl('ReferralProgram')}>
-              <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" size="lg">
-                <Users size={18} className="mr-2" />
-                Referral Program
-              </Button>
-            </Link>
-
             <Link to={createPageUrl('CompatibilityQuizzes')}>
               <Button className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700" size="lg">
                 <Sparkles size={18} className="mr-2" />
                 Compatibility Quizzes
-              </Button>
-            </Link>
-
-            <Link to={createPageUrl('Marketplace')}>
-              <Button className="w-full bg-gradient-to-r from-amber-600 to-pink-600 hover:from-amber-700 hover:to-pink-700" size="lg">
-                <Heart size={18} className="mr-2" />
-                Marketplace
               </Button>
             </Link>
 
@@ -601,6 +561,59 @@ export default function Profile() {
                 {profile?.subscription_tier && profile?.subscription_tier !== 'free' ? 'Manage Subscription' : 'Upgrade Membership'}
               </Button>
             </Link>
+
+            {/* Coming Soon Section */}
+            <div className="pt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Separator className="flex-1" />
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Coming Soon</span>
+                <Separator className="flex-1" />
+              </div>
+              
+              <div className="space-y-3 opacity-70 grayscale">
+                <Button disabled variant="outline" className="w-full justify-between bg-gray-50 text-gray-500 border-gray-200 cursor-not-allowed" size="lg">
+                  <div className="flex items-center">
+                    <Shield size={18} className="mr-2" />
+                    Request Background Check
+                  </div>
+                  <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">Coming Soon</Badge>
+                </Button>
+
+                {!profile?.verification_status?.phone_verified && (
+                  <Button disabled variant="outline" className="w-full justify-between bg-gray-50 text-gray-500 border-gray-200 cursor-not-allowed" size="lg">
+                    <div className="flex items-center">
+                      <Shield size={18} className="mr-2" />
+                      Verify Your Phone
+                    </div>
+                    <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">Coming Soon</Badge>
+                  </Button>
+                )}
+
+                <Button disabled variant="outline" className="w-full justify-between bg-gray-50 text-gray-500 border-gray-200 cursor-not-allowed" size="lg">
+                  <div className="flex items-center">
+                    <Languages size={18} className="mr-2" />
+                    Language Exchange
+                  </div>
+                  <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">Coming Soon</Badge>
+                </Button>
+
+                <Button disabled variant="outline" className="w-full justify-between bg-gray-50 text-gray-500 border-gray-200 cursor-not-allowed" size="lg">
+                  <div className="flex items-center">
+                    <Users size={18} className="mr-2" />
+                    Referral Program
+                  </div>
+                  <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">Coming Soon</Badge>
+                </Button>
+
+                <Button disabled variant="outline" className="w-full justify-between bg-gray-50 text-gray-500 border-gray-200 cursor-not-allowed" size="lg">
+                  <div className="flex items-center">
+                    <Heart size={18} className="mr-2" />
+                    Marketplace
+                  </div>
+                  <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">Coming Soon</Badge>
+                </Button>
+              </div>
+            </div>
 
             <Separator className="my-6" />
 
