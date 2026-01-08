@@ -21,6 +21,10 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Match not found' }, { status: 404 });
     }
     const match = matches[0];
+
+    if (match.status !== 'active') {
+        return Response.json({ error: 'Match is not active' }, { status: 400 });
+    }
     
     // Determine roles
     // We need to know who the OTHER person is
@@ -64,7 +68,7 @@ Deno.serve(async (req) => {
     }
 
     // 4. Create NEW Call
-    const roomId = `call_${match_id}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    const roomId = `call_${match_id}_${crypto.randomUUID()}`;
 
     const call = await base44.asServiceRole.entities.VideoCall.create({
       match_id,

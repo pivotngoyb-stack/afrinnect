@@ -17,6 +17,10 @@ Deno.serve(async (req) => {
         if (!matches.length) return Response.json({ error: 'Match not found' }, { status: 404 });
         
         const match = matches[0];
+
+        if (match.status !== 'active') {
+            return Response.json({ error: 'Match is not active' }, { status: 400 });
+        }
         
         // Fetch My Profile
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });

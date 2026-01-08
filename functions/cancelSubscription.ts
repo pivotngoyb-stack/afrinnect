@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     }
 
     // Update in DB
-    await base44.entities.Subscription.update(subscription.id, {
+    await base44.asServiceRole.entities.Subscription.update(subscription.id, {
         auto_renew: false
     });
 

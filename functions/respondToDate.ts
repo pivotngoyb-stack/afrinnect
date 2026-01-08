@@ -22,6 +22,10 @@ Deno.serve(async (req) => {
         if (!matches.length) return Response.json({ error: 'Match not found' }, { status: 404 });
         const match = matches[0];
 
+        if (match.status !== 'active') {
+            return Response.json({ error: 'Match is not active' }, { status: 400 });
+        }
+
         // 3. Verify User is part of match AND NOT the creator (you can't accept your own proposal)
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
         if (!profiles.length) return Response.json({ error: 'Profile not found' }, { status: 404 });
