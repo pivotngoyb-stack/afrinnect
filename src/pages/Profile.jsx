@@ -67,6 +67,20 @@ export default function Profile() {
     enabled: !!profileId || !!myProfile
   });
 
+  const { data: featureFlags = [] } = useQuery({
+    queryKey: ['feature-flags'],
+    queryFn: () => base44.entities.FeatureFlag.list(),
+    staleTime: 300000
+  });
+
+  const isFeatureEnabled = (featureName) => {
+    const flag = featureFlags.find(f => f.feature_name === featureName);
+    if (!flag) return false;
+    if (flag.is_enabled) return true;
+    if (flag.enabled_for_premium && profile?.is_premium) return true;
+    return false;
+  };
+
   // Fetch social proof data
   useEffect(() => {
     const fetchSocialProof = async () => {
@@ -562,58 +576,65 @@ export default function Profile() {
               </Button>
             </Link>
 
-            {/* Coming Soon Section */}
-            <div className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Separator className="flex-1" />
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Coming Soon</span>
-                <Separator className="flex-1" />
-              </div>
+            {/* Dynamic Features Section */}
+            {[
+              { id: 'background_check', label: 'Request Background Check', icon: Shield, link: 'BackgroundCheckRequest', badge: 'Safety' },
+              { id: 'phone_verification', label: 'Verify Your Phone', icon: Shield, link: 'PhoneVerification', condition: !profile?.verification_status?.phone_verified },
+              { id: 'language_exchange', label: 'Language Exchange', icon: Languages, link: 'LanguageExchangeHub' },
+              { id: 'referral_program', label: 'Referral Program', icon: Users, link: 'ReferralProgram', badge: 'Earn' },
+              { id: 'marketplace', label: 'Marketplace', icon: Heart, link: 'Marketplace' }
+            ].map((feature) => {
+              const isEnabled = isFeatureEnabled(feature.id);
+              if (feature.condition === false) return null; // Skip if condition not met (e.g. already verified)
               
-              <div className="space-y-3 opacity-70 grayscale">
-                <Button disabled variant="outline" className="w-full justify-between bg-gray-50 text-gray-500 border-gray-200 cursor-not-allowed" size="lg">
-                  <div className="flex items-center">
-                    <Shield size={18} className="mr-2" />
-                    Request Background Check
-                  </div>
-                  <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">Coming Soon</Badge>
-                </Button>
+              if (isEnabled) {
+                // Render as active feature
+                return (
+                  <Link to={createPageUrl(feature.link)} key={feature.id} className="block mt-3">
+                    <Button className="w-full bg-white text-gray-800 border-2 border-purple-100 hover:bg-purple-50 hover:border-purple-200 shadow-sm" size="lg">
+                      <feature.icon size={18} className="mr-2 text-purple-600" />
+                      {feature.label}
+                      {feature.badge && <Badge className="ml-2 bg-purple-100 text-purple-700 hover:bg-purple-200 border-0">{feature.badge}</Badge>}
+                    </Button>
+                  </Link>
+                );
+              }
+              return null; // Don't render enabled features here, they are handled above
+            })}
 
-                {!profile?.verification_status?.phone_verified && (
-                  <Button disabled variant="outline" className="w-full justify-between bg-gray-50 text-gray-500 border-gray-200 cursor-not-allowed" size="lg">
-                    <div className="flex items-center">
-                      <Shield size={18} className="mr-2" />
-                      Verify Your Phone
-                    </div>
-                    <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">Coming Soon</Badge>
-                  </Button>
-                )}
+            {/* Coming Soon Section - Only show disabled features */}
+            {['background_check', 'phone_verification', 'language_exchange', 'referral_program', 'marketplace'].some(id => !isFeatureEnabled(id)) && (
+              <div className="pt-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Separator className="flex-1" />
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Coming Soon</span>
+                  <Separator className="flex-1" />
+                </div>
+                
+                <div className="space-y-3 opacity-70 grayscale">
+                  {[
+                    { id: 'background_check', label: 'Request Background Check', icon: Shield },
+                    { id: 'phone_verification', label: 'Verify Your Phone', icon: Shield, condition: !profile?.verification_status?.phone_verified },
+                    { id: 'language_exchange', label: 'Language Exchange', icon: Languages },
+                    { id: 'referral_program', label: 'Referral Program', icon: Users },
+                    { id: 'marketplace', label: 'Marketplace', icon: Heart }
+                  ].map(feature => {
+                    const isEnabled = isFeatureEnabled(feature.id);
+                    if (isEnabled || feature.condition === false) return null;
 
-                <Button disabled variant="outline" className="w-full justify-between bg-gray-50 text-gray-500 border-gray-200 cursor-not-allowed" size="lg">
-                  <div className="flex items-center">
-                    <Languages size={18} className="mr-2" />
-                    Language Exchange
-                  </div>
-                  <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">Coming Soon</Badge>
-                </Button>
-
-                <Button disabled variant="outline" className="w-full justify-between bg-gray-50 text-gray-500 border-gray-200 cursor-not-allowed" size="lg">
-                  <div className="flex items-center">
-                    <Users size={18} className="mr-2" />
-                    Referral Program
-                  </div>
-                  <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">Coming Soon</Badge>
-                </Button>
-
-                <Button disabled variant="outline" className="w-full justify-between bg-gray-50 text-gray-500 border-gray-200 cursor-not-allowed" size="lg">
-                  <div className="flex items-center">
-                    <Heart size={18} className="mr-2" />
-                    Marketplace
-                  </div>
-                  <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">Coming Soon</Badge>
-                </Button>
+                    return (
+                      <Button key={feature.id} disabled variant="outline" className="w-full justify-between bg-gray-50 text-gray-500 border-gray-200 cursor-not-allowed" size="lg">
+                        <div className="flex items-center">
+                          <feature.icon size={18} className="mr-2" />
+                          {feature.label}
+                        </div>
+                        <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">Coming Soon</Badge>
+                      </Button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             <Separator className="my-6" />
 
