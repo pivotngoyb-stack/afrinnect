@@ -35,9 +35,18 @@ Deno.serve(async (req) => {
     // 3-Day Trial (Server-side enforced)
     const trialExpiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
 
-    // 3. Prepare Secure Data (Allow-list)
-    const deviceId = formData.device_id || `web_${Date.now()}`;
-    const trialExpiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+    // 2.1 Validate Age (Server-side Enforcement)
+    if (formData.birth_date) {
+        const birthDate = new Date(formData.birth_date);
+        const ageDifMs = Date.now() - birthDate.getTime();
+        const ageDate = new Date(ageDifMs); 
+        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+        if (age < 18) {
+             return Response.json({ error: 'You must be at least 18 years old to use this service.' }, { status: 400 });
+        }
+    } else {
+        return Response.json({ error: 'Birth date is required' }, { status: 400 });
+    }
 
     const allowedFields = {
         display_name: formData.display_name,
