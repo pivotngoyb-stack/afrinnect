@@ -569,12 +569,42 @@ export default function Profile() {
               />
             </div>
 
-            <Link to={createPageUrl('PricingPlans')}>
-              <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" size="lg">
-                <Crown size={18} className="mr-2" />
-                {profile?.subscription_tier && profile?.subscription_tier !== 'free' ? 'Manage Subscription' : 'Upgrade Membership'}
-              </Button>
-            </Link>
+            {profile?.subscription_tier && profile?.subscription_tier !== 'free' ? (
+              <div className="space-y-2">
+                <Button 
+                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" 
+                  size="lg"
+                  onClick={async () => {
+                    if (confirm('Are you sure you want to cancel your subscription? You will keep your benefits until the end of the current billing period.')) {
+                      try {
+                        const res = await base44.functions.invoke('cancelSubscription', {});
+                        if (res.data.success) {
+                          alert(res.data.message);
+                          window.location.reload();
+                        } else {
+                          alert(res.data.error || 'Cancellation failed');
+                        }
+                      } catch(e) {
+                        alert('Error cancelling subscription');
+                      }
+                    }
+                  }}
+                >
+                  <Crown size={18} className="mr-2" />
+                  Cancel Subscription
+                </Button>
+                <p className="text-xs text-center text-gray-500">
+                  Billing continues until cancelled. 
+                </p>
+              </div>
+            ) : (
+              <Link to={createPageUrl('PricingPlans')}>
+                <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" size="lg">
+                  <Crown size={18} className="mr-2" />
+                  Upgrade Membership
+                </Button>
+              </Link>
+            )}
 
             {/* Dynamic Features Section */}
             {[

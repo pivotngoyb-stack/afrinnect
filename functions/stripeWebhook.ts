@@ -32,6 +32,34 @@ Deno.serve(async (req) => {
 
     const base44 = createClientFromRequest(req);
 
+    // Handle Subscription Updated (Cancellation scheduled)
+    if (event.type === 'customer.subscription.updated') {
+        const subscription = event.data.object;
+        if (subscription.cancel_at_period_end) {
+            const subs = await base44.asServiceRole.entities.Subscription.filter({ external_id: subscription.id });
+            if (subs.length > 0) {
+                await base44.asServiceRole.entities.Subscription.update(subs[0].id, { auto_renew: false });
+            }
+        }
+    }
+
+    // Handle Subscription Deleted (Expired/Cancelled immediately)
+    if (event.type === 'customer.subscription.deleted') {
+        const subscription = event.data.object;
+        const subs = await base44.asServiceRole.entities.Subscription.filter({ external_id: subscription.id });
+        if (subs.length > 0) {
+            const sub = subs[0];
+            await base44.asServiceRole.entities.Subscription.update(sub.id, { status: 'expired', auto_renew: false });
+            
+            // Downgrade user
+            await base44.asServiceRole.entities.UserProfile.update(sub.user_profile_id, {
+                is_premium: false,
+                subscription_tier: 'free',
+                premium_until: new Date().toISOString().split('T')[0]
+            });
+        }
+    }
+
     // Handle Invoice Payment Succeeded (Recurring & Initial)
     if (event.type === 'invoice.payment_succeeded') {
         const invoice = event.data.object;
