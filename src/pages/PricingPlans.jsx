@@ -14,7 +14,7 @@ import { useConversionTracker, CONVERSION_EVENTS, trackRevenue } from '@/compone
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AfricanPattern from '@/components/shared/AfricanPattern';
-import BraintreeDropIn from '@/components/payment/BraintreeDropIn';
+import StripePaymentModal from '@/components/payment/StripePaymentModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const PRICING_TIERS = {
