@@ -625,7 +625,7 @@ export default function AdminDashboard() {
           <DialogHeader>
             <DialogTitle>Send Waitlist Invites</DialogTitle>
             <DialogDescription className="text-gray-400">
-              This will send an email to all active waitlist members. Use {'{{name}}'} to insert their name.
+              This will send an email to ALL waitlist members (both pending and already invited) who haven't joined yet. Use {'{{name}}'} to insert their name.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">

@@ -17,11 +17,25 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Subject and body are required' }, { status: 400 });
         }
 
-        // Get all pending waitlist entries
+        // Get all pending and invited waitlist entries
         // LIMITATION: Fetching max 1000 for now. For larger lists, pagination would be needed.
-        const entries = await base44.entities.WaitlistEntry.filter({ status: 'pending' }, '-created_date', 1000);
+        const pendingEntries = await base44.entities.WaitlistEntry.filter({ status: 'pending' }, '-created_date', 1000);
+        const invitedEntries = await base44.entities.WaitlistEntry.filter({ status: 'invited' }, '-created_date', 1000);
+
+        // Combine and deduplicate by email
+        const allEntries = [...pendingEntries];
+        const seenEmails = new Set(pendingEntries.map(e => e.email));
+
+        for (const entry of invitedEntries) {
+            if (!seenEmails.has(entry.email)) {
+                allEntries.push(entry);
+                seenEmails.add(entry.email);
+            }
+        }
 
         let sentCount = 0;
+        // Use allEntries instead of entries
+        const entries = allEntries;
         const errors = [];
 
         for (const entry of entries) {
