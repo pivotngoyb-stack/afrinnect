@@ -94,13 +94,6 @@ export default function Onboarding() {
         const profiles = await base44.entities.UserProfile.filter({ user_id: currentUser.id });
         if (profiles.length > 0) {
           window.location.href = createPageUrl('Home');
-        } else {
-          // WAITLIST MODE: Block new signups (allow only admin)
-          const isAdmin = currentUser.email === 'pivotngoyb@gmail.com' || currentUser.role === 'admin';
-          if (!isAdmin) {
-            window.location.href = createPageUrl('Waitlist');
-            return;
-          }
         }
         } catch (e) {
         // Not logged in - stay on loading, will be handled by Base44

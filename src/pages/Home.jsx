@@ -98,12 +98,6 @@ export default function Home() {
           return;
         }
 
-        // If admin, redirect to admin dashboard
-        if (user.email === 'pivotngoyb@gmail.com' || user.role === 'admin') {
-          window.location.href = createPageUrl('AdminDashboard');
-          return;
-        }
-
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
         if (profiles.length > 0) {
           const profile = profiles[0];
@@ -112,17 +106,6 @@ export default function Home() {
           if (profile.is_banned || profile.is_suspended) {
             setMyProfile(profile);
             return; // Stop here - BannedScreen will be shown
-          }
-
-          // CRITICAL: Check if ID is verified - redirect if not
-          // Grace period: Only enforce after 30 minutes from sign up
-          const createdDate = new Date(profile.created_date);
-          const timeSinceSignup = new Date() - createdDate;
-          const gracePeriod = 30 * 60 * 1000; // 30 minutes in milliseconds
-
-          if (timeSinceSignup > gracePeriod && !profile.verification_status?.id_verified) {
-            window.location.href = createPageUrl('IDVerification');
-            return;
           }
           
           // Update device tracking on login

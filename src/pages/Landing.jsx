@@ -93,7 +93,7 @@ export default function Landing() {
   ];
 
   const handleGetStarted = () => {
-    window.location.href = createPageUrl('Waitlist');
+    window.location.href = createPageUrl('Onboarding');
   };
 
   const handleLogin = async () => {

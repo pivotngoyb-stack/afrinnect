@@ -1,4 +1,5 @@
 import AdminDashboard from './pages/AdminDashboard';
+import AdminLaunchChecklist from './pages/AdminLaunchChecklist';
 import Analytics from './pages/Analytics';
 import AuthFlowTest from './pages/AuthFlowTest';
 import BackgroundCheckRequest from './pages/BackgroundCheckRequest';
@@ -53,14 +54,14 @@ import VerifyPhoto from './pages/VerifyPhoto';
 import VideoChat from './pages/VideoChat';
 import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
-import WhoLikesYou from './pages/WhoLikesYou';
 import Waitlist from './pages/Waitlist';
-import AdminLaunchChecklist from './pages/AdminLaunchChecklist';
+import WhoLikesYou from './pages/WhoLikesYou';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AdminDashboard": AdminDashboard,
+    "AdminLaunchChecklist": AdminLaunchChecklist,
     "Analytics": Analytics,
     "AuthFlowTest": AuthFlowTest,
     "BackgroundCheckRequest": BackgroundCheckRequest,
@@ -115,9 +116,8 @@ export const PAGES = {
     "VideoChat": VideoChat,
     "VideoEvents": VideoEvents,
     "VirtualGifts": VirtualGifts,
-    "WhoLikesYou": WhoLikesYou,
     "Waitlist": Waitlist,
-    "AdminLaunchChecklist": AdminLaunchChecklist,
+    "WhoLikesYou": WhoLikesYou,
 }
 
 export const pagesConfig = {
