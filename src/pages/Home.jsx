@@ -48,6 +48,7 @@ export default function Home() {
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [pendingLikeProfile, setPendingLikeProfile] = useState(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const queryClient = useQueryClient();
   const { prompt: upgradePrompt, dismissPrompt } = useUpgradePrompts(myProfile);
 
@@ -96,6 +97,10 @@ export default function Home() {
           // Not logged in - redirect to landing
           window.location.href = createPageUrl('Landing');
           return;
+        }
+        
+        if (user.role === 'admin' || user.email === 'pivotngoyb@gmail.com') {
+          setIsAdmin(true);
         }
 
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
@@ -733,6 +738,14 @@ export default function Home() {
 
               {/* Notifications */}
               <NotificationBell />
+              
+              {isAdmin && (
+                <Link to={createPageUrl('AdminDashboard')}>
+                  <Button variant="ghost" size="icon" className="text-purple-600 hover:bg-purple-50" title="Admin Dashboard">
+                    <Crown size={20} />
+                  </Button>
+                </Link>
+              )}
               </div>
               </div>
               </div>
