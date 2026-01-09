@@ -5,9 +5,10 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, Mail, Loader2 } from 'lucide-react';
+import { Search, Mail, Loader2, Send } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
-export default function WaitlistManagement() {
+export default function WaitlistManagement({ onSendEmail }) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data: entries = [], isLoading } = useQuery({
@@ -38,6 +39,12 @@ export default function WaitlistManagement() {
                 className="pl-8"
               />
             </div>
+            {onSendEmail && (
+              <Button onClick={onSendEmail} className="bg-purple-600 hover:bg-purple-700 gap-2">
+                <Send size={16} />
+                Send Launch Email
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>

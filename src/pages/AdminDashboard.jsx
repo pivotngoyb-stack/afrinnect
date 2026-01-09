@@ -504,7 +504,7 @@ export default function AdminDashboard() {
       case 'vendors':
         return <VendorManagement />;
       case 'waitlist':
-        return <WaitlistManagement />;
+        return <WaitlistManagement onSendEmail={() => setWaitlistDialog(true)} />;
       case 'messaging':
         return (
           <div className="space-y-6">
