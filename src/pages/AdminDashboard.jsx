@@ -49,6 +49,7 @@ import EmailCampaignManager from '@/components/admin/EmailCampaignManager';
 import PhotoModeration from '@/components/admin/PhotoModeration';
 import SystemSettings from '@/components/admin/SystemSettings';
 import VendorManagement from '@/components/admin/VendorManagement';
+import WaitlistManagement from '@/components/admin/WaitlistManagement';
 import AuthTest from '@/components/auth/AuthTest';
 import RateLimitMonitor from '@/components/admin/RateLimitMonitor';
 import DisputeManagement from '@/components/admin/DisputeManagement';
@@ -502,6 +503,8 @@ export default function AdminDashboard() {
         return <EventManagement events={events} />;
       case 'vendors':
         return <VendorManagement />;
+      case 'waitlist':
+        return <WaitlistManagement />;
       case 'messaging':
         return (
           <div className="space-y-6">

@@ -26,6 +26,7 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
     { id: 'automation', label: 'Automation', icon: Cog },
     { id: 'events', label: 'Events', icon: Calendar, badge: stats?.totalEvents },
     { id: 'vendors', label: 'Vendors', icon: Briefcase },
+    { id: 'waitlist', label: 'Waitlist', icon: Users },
     { id: 'messaging', label: 'Broadcast', icon: MessageCircle },
     { id: 'support', label: 'Support', icon: Bell },
     { id: 'compliance', label: 'Compliance', icon: FileText },
