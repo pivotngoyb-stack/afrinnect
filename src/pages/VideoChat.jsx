@@ -6,7 +6,7 @@ import { PhoneOff, Loader2, Video, AlertTriangle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-export default function VideoChat() {
+export default function VideoChat(props) {
   const [myProfile, setMyProfile] = useState(null);
   const [callState, setCallState] = useState({ loading: true, error: null, roomId: null, callId: null });
   const [callStartTime, setCallStartTime] = useState(null);
@@ -15,7 +15,8 @@ export default function VideoChat() {
   const jitsiApiRef = useRef(null);
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
-  const matchId = urlParams.get('matchId');
+  // Support both prop and URL param
+  const activeMatchId = props.matchId || urlParams.get('matchId');
 
   // 1. Initialize & Join
   useEffect(() => {
@@ -29,8 +30,7 @@ export default function VideoChat() {
         setMyProfile(profile);
 
         // Initiate or Join Call via Backend
-        // This handles "Find existing OR Create new" logic securely
-        const response = await base44.functions.invoke('initiateVideoCall', { match_id: matchId });
+        const response = await base44.functions.invoke('initiateVideoCall', { match_id: activeMatchId });
         
         if (response.data.error) {
             throw new Error(response.data.error);
@@ -50,10 +50,10 @@ export default function VideoChat() {
       }
     };
 
-    if (matchId) {
+    if (activeMatchId) {
         initCall();
     }
-  }, [matchId]);
+  }, [activeMatchId]);
 
   // 2. Launch Jitsi when Room ID is ready
   useEffect(() => {
@@ -168,12 +168,16 @@ export default function VideoChat() {
         jitsiApiRef.current.dispose();
     }
     
-    navigate(createPageUrl(`Chat?matchId=${matchId}`));
+    if (props.onClose) {
+        props.onClose();
+    } else {
+        navigate(createPageUrl(`Chat?matchId=${activeMatchId}`));
+    }
   };
 
   if (callState.loading) {
       return (
-          <div className="fixed inset-0 bg-gray-900 flex flex-col items-center justify-center text-white">
+          <div className={`${props.embedded ? 'absolute' : 'fixed'} inset-0 bg-gray-900 flex flex-col items-center justify-center text-white z-50`}>
               <Loader2 size={48} className="animate-spin text-purple-500 mb-4" />
               <h2 className="text-xl font-semibold">Connecting securely...</h2>
               <p className="text-gray-400">Setting up your private room</p>
@@ -183,7 +187,7 @@ export default function VideoChat() {
 
   if (callState.error) {
       return (
-          <div className="fixed inset-0 bg-gray-900 flex items-center justify-center p-4">
+          <div className={`${props.embedded ? 'absolute' : 'fixed'} inset-0 bg-gray-900 flex items-center justify-center p-4 z-50`}>
               <Card className="w-full max-w-md bg-white">
                   <CardContent className="p-6 text-center">
                       <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -191,8 +195,8 @@ export default function VideoChat() {
                       </div>
                       <h2 className="text-xl font-bold text-gray-900 mb-2">Call Failed</h2>
                       <p className="text-gray-600 mb-6">{callState.error}</p>
-                      <Button onClick={() => navigate(createPageUrl(`Chat?matchId=${matchId}`))} className="w-full">
-                          Return to Chat
+                      <Button onClick={handleEndCall} className="w-full">
+                          Close
                       </Button>
                   </CardContent>
               </Card>
@@ -201,11 +205,8 @@ export default function VideoChat() {
   }
 
   return (
-    <div className="fixed inset-0 bg-gray-900 relative">
+    <div className={`${props.embedded ? 'absolute' : 'fixed'} inset-0 bg-gray-900 relative z-50`}>
       <div ref={jitsiContainerRef} className="w-full h-full" />
-      
-      {/* Fallback End Button (if Jitsi toolbar fails or overlay needed) */}
-      {/* We rely on Jitsi toolbar 'hangup' button mostly, but this is a failsafe */}
     </div>
   );
 }
