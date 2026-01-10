@@ -378,6 +378,7 @@ export default function Home() {
 
   // Check daily like limit
   const canLike = () => {
+    if (isAdmin) return true; // Admins get unlimited likes
     // Premium/Elite/VIP get unlimited likes
     if (hasAccess(myProfile?.subscription_tier, 'unlimited_likes')) return true;
     

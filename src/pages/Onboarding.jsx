@@ -170,10 +170,13 @@ export default function Onboarding() {
         }
       }
 
-      // Check device limit (max 2 devices per email)
-      const allUserProfiles = await base44.entities.UserProfile.filter({ created_by: user.email });
-      if (allUserProfiles.length >= 2) {
-        throw new Error('Maximum 2 devices allowed per email. Please remove a device first.');
+      // Check device limit (max 2 devices per email) - Bypass for Admin
+      const isAdmin = user?.role === 'admin' || user?.email === 'pivotngoyb@gmail.com';
+      if (!isAdmin) {
+        const allUserProfiles = await base44.entities.UserProfile.filter({ created_by: user.email });
+        if (allUserProfiles.length >= 2) {
+          throw new Error('Maximum 2 devices allowed per email. Please remove a device first.');
+        }
       }
 
       const response = await base44.functions.invoke('createProfile', {
@@ -241,8 +244,9 @@ export default function Onboarding() {
             const city = addr.city || addr.town || addr.village || addr.hamlet || addr.suburb || '';
             const state = addr.state || addr.province || '';
             
-            // Only allow USA and Canada
-            if (!country || (country !== 'United States' && country !== 'Canada' && country !== 'United States of America')) {
+            // Only allow USA and Canada (Bypass for Admin)
+            const isAdmin = user?.role === 'admin' || user?.email === 'pivotngoyb@gmail.com';
+            if (!isAdmin && (!country || (country !== 'United States' && country !== 'Canada' && country !== 'United States of America'))) {
               alert('Sorry, Afrinnect is currently only available in the United States and Canada. We\'ll notify you when we expand to your region!');
               setGettingLocation(false);
               return;
