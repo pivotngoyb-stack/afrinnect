@@ -318,7 +318,7 @@ export default function Home() {
       return true; // New day, reset
     }
     
-    return likesUsed < 10; // Free users get 10 likes per day
+    return likesUsed < 15; // Free users get 15 likes per day
   };
 
   // Like mutation

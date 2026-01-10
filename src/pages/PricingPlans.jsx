@@ -24,7 +24,7 @@ const PRICING_TIERS = {
     features: [
       { text: 'Profile creation', included: true },
       { text: 'Up to 3 photos', included: true },
-      { text: '10 likes per day', included: true },
+      { text: '15 likes per day', included: true },
       { text: 'Basic filters only', included: true },
       { text: 'Match and chat', included: true },
       { text: 'See who liked you', included: false },
