@@ -88,8 +88,9 @@ function LayoutContent({ children, currentPageName }) {
             const profile = profiles[0];
             setMyProfile(profile);
 
-            // Mandatory Photo Verification after 30 minutes
-            if (currentPageName !== 'VerifyPhoto' && currentPageName !== 'Onboarding' && currentPageName !== 'LegalAcceptance') {
+            // Mandatory Photo Verification after 30 minutes (Bypass for Admin)
+            const isAdmin = user.role === 'admin' || user.email === 'pivotngoyb@gmail.com';
+            if (!isAdmin && currentPageName !== 'VerifyPhoto' && currentPageName !== 'Onboarding' && currentPageName !== 'LegalAcceptance') {
               const createdDate = new Date(profile.created_date || new Date().toISOString()); // Fallback for old accounts
               const now = new Date();
               const diffMinutes = (now - createdDate) / 1000 / 60;
