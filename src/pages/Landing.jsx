@@ -85,6 +85,7 @@ export default function Landing() {
   ];
 
   const communityPhotos = [
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/0129c1998_ai-generated-8702314_1280.jpg",
     "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/2ee966864_image.png",
     "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/b55b7c66d_image.png",
     "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/728ada3a8_image.png",
@@ -117,7 +118,13 @@ export default function Landing() {
       {/* Navigation */}
       <nav className="relative z-10 bg-white/10 backdrop-blur-lg border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Logo size="default" />
+          <div className="relative group cursor-pointer">
+            <h1 className="text-3xl md:text-4xl font-black tracking-tighter transform -skew-x-6 transition-all duration-300 group-hover:skew-x-0">
+              <span className="bg-clip-text text-transparent bg-gradient-to-b from-yellow-300 via-amber-500 to-orange-600 drop-shadow-[2px_2px_0px_rgba(0,0,0,0.5)]" style={{ WebkitTextStroke: '1px white' }}>
+                AFRINNECT
+              </span>
+            </h1>
+          </div>
           <div className="flex items-center gap-2">
             <LanguageSelector />
             <Button 
@@ -200,9 +207,9 @@ export default function Landing() {
             className="relative"
           >
             {/* Main large image */}
-            <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/20">
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/2ee966864_image.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/0129c1998_ai-generated-8702314_1280.jpg"
                 alt="African community"
                 className="w-full h-[500px] md:h-[600px] object-cover"
               />
