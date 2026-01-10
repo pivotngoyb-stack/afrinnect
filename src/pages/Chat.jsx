@@ -28,6 +28,8 @@ import { usePerformanceMonitor } from '@/components/shared/usePerformanceMonitor
 import { useRealtimeMessages } from '@/components/chat/useRealtimeMessages';
 import TierGate, { hasAccess } from '@/components/shared/TierGate';
 import MessageLimitPaywall from '@/components/paywall/MessageLimitPaywall';
+import VoiceRecorder from '@/components/shared/VoiceRecorder';
+import VideoChat from '../VideoChat';
 
 export default function Chat() {
   usePerformanceMonitor('Chat');
@@ -51,6 +53,7 @@ export default function Chat() {
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [showMessageLimitPaywall, setShowMessageLimitPaywall] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState('');
+  const [showVideoCall, setShowVideoCall] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const queryClient = useQueryClient();
@@ -313,8 +316,7 @@ export default function Chat() {
   const handleVideoCall = () => {
     const tier = myProfile?.subscription_tier;
     if (tier === 'elite' || tier === 'vip') {
-      // Open video call
-      window.location.href = createPageUrl(`VideoChat?matchId=${matchId}`);
+      setShowVideoCall(true);
     } else {
       setUpgradeFeature('Video Calls');
       setShowUpgradePrompt(true);
@@ -583,14 +585,11 @@ export default function Chat() {
             </Button>
           </label>
           
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setRecording(!recording)}
-            className={recording ? 'bg-red-100' : ''}
-          >
-            <Mic size={20} className={recording ? 'text-red-600' : ''} />
-          </Button>
+          <VoiceRecorder 
+            compact 
+            onRecordingComplete={(blob) => sendVoiceNoteMutation.mutate(blob)} 
+            isUploading={sendVoiceNoteMutation.isPending}
+          />
 
           <Input
             placeholder="Type a message..."
@@ -721,6 +720,24 @@ export default function Chat() {
             </div>
           </div>
         )}
+
+        {/* Video Call Overlay */}
+        <AnimatePresence>
+          {showVideoCall && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[60]"
+            >
+              <VideoChat 
+                matchId={matchId} 
+                embedded 
+                onClose={() => setShowVideoCall(false)} 
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
         </div>
         );
         }
