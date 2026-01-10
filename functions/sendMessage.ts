@@ -51,10 +51,15 @@ Deno.serve(async (req) => {
             }
         }
 
-        // 4. Subscription Limit Check (Free tier limit)
+        // 4. Subscription Limit Check (Free tier limit - 20 messages per day)
         if (myProfile.subscription_tier === 'free') {
-            const matchMsgs = await base44.entities.Message.filter({ match_id: matchId, sender_id: myProfile.id });
-            if (matchMsgs.length >= 3) {
+            const today = new Date().toISOString().split('T')[0];
+            const dailyMsgs = await base44.entities.Message.filter({ 
+                sender_id: myProfile.id,
+                created_date: { $gte: `${today}T00:00:00.000Z` }
+            });
+            
+            if (dailyMsgs.length >= 20) {
                  return Response.json({ error: 'upgrade_required' }, { status: 403 });
             }
         }

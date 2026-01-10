@@ -27,6 +27,7 @@ import OptimizedImage from '@/components/shared/OptimizedImage';
 import { usePerformanceMonitor } from '@/components/shared/usePerformanceMonitor';
 import { useRealtimeMessages } from '@/components/chat/useRealtimeMessages';
 import TierGate, { hasAccess } from '@/components/shared/TierGate';
+import MessageLimitPaywall from '@/components/paywall/MessageLimitPaywall';
 
 export default function Chat() {
   usePerformanceMonitor('Chat');
@@ -48,6 +49,7 @@ export default function Chat() {
   const [showQuestionGame, setShowQuestionGame] = useState(false);
   const [showVirtualGifts, setShowVirtualGifts] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [showMessageLimitPaywall, setShowMessageLimitPaywall] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState('');
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -214,8 +216,7 @@ export default function Chat() {
     if (sendMessageMutation.isError) {
       const error = sendMessageMutation.error;
       if (error.message === 'upgrade_required') {
-        setUpgradeFeature('Unlimited Messaging');
-        setShowUpgradePrompt(true);
+        setShowMessageLimitPaywall(true);
       } else if (error.message.includes('too quickly')) {
         alert('⏱️ Please slow down - you can send up to 20 messages per minute.');
       } else {
@@ -686,6 +687,13 @@ export default function Chat() {
             </div>
           </div>
         )}
+
+        {/* Message Limit Paywall */}
+        <AnimatePresence>
+          {showMessageLimitPaywall && (
+            <MessageLimitPaywall onClose={() => setShowMessageLimitPaywall(false)} />
+          )}
+        </AnimatePresence>
 
         {/* Upgrade Prompt Modal */}
         {showUpgradePrompt && (
