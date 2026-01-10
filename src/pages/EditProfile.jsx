@@ -251,6 +251,21 @@ export default function EditProfile() {
     setFormData({ ...formData, [field]: updated });
   };
 
+  const handleVoiceUpload = async (audioBlob) => {
+    if (!audioBlob) return;
+    setUploading(true);
+    try {
+      const file = new File([audioBlob], "voice_intro.webm", { type: "audio/webm" });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, voice_intro_url: file_url }));
+    } catch (error) {
+      console.error('Voice upload error:', error);
+      alert('Failed to upload voice intro. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const calculateCompletion = () => {
     const fields = [
       formData.display_name,
