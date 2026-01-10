@@ -22,6 +22,8 @@ import EditProfileBasicInfo from '@/components/profile/EditProfileBasicInfo';
 import { compressImage, validateImageFile } from '@/components/shared/ImageCompressor';
 import ImageCropper from '@/components/shared/ImageCropper';
 import VideoProfileRecorder from '@/components/profile/VideoProfileRecorder';
+import VoiceRecorder from '@/components/shared/VoiceRecorder';
+import { Mic } from 'lucide-react';
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
@@ -82,7 +84,8 @@ export default function EditProfile() {
     height_cm: '',
     lifestyle: {},
     cultural_values: [],
-    interests: []
+    interests: [],
+    voice_intro_url: ''
   });
   const [heightFeet, setHeightFeet] = useState('');
   const [heightInches, setHeightInches] = useState('');
@@ -118,7 +121,8 @@ export default function EditProfile() {
           height_cm: p.height_cm || '',
           lifestyle: p.lifestyle || {},
           cultural_values: Array.isArray(p.cultural_values) ? p.cultural_values : [],
-          interests: Array.isArray(p.interests) ? p.interests : []
+          interests: Array.isArray(p.interests) ? p.interests : [],
+          voice_intro_url: p.voice_intro_url || ''
         });
         
         // Convert cm to feet and inches
@@ -160,7 +164,8 @@ export default function EditProfile() {
       cultural_values: formData.cultural_values || [],
       interests: formData.interests || [],
       looking_for: formData.looking_for || ['woman'],
-      video_profile_url: formData.video_profile_url || null
+      video_profile_url: formData.video_profile_url || null,
+      voice_intro_url: formData.voice_intro_url || null
     };
 
     setSaving(true);
@@ -173,6 +178,8 @@ export default function EditProfile() {
         saveData.height_cm = Math.round(totalInches * 2.54);
       }
       
+      saveData.voice_intro_url = formData.voice_intro_url;
+
       if (profile) {
         await base44.functions.invoke('updateUserProfile', saveData);
       } else {
@@ -711,6 +718,48 @@ export default function EditProfile() {
                 existingVideoUrl={formData.video_profile_url}
                 onVideoUploaded={(url) => setFormData({ ...formData, video_profile_url: url })}
               />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Voice Intro */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.75 }}
+        >
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+            <div className="bg-gradient-to-r from-indigo-500 to-violet-600 p-6">
+              <div className="flex items-center gap-3 text-white">
+                <div className="p-3 bg-white/20 rounded-xl backdrop-blur">
+                  <Mic size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Voice Intro</h2>
+                  <p className="text-sm text-white/80">Let them hear your voice</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 flex flex-col items-center">
+              {formData.voice_intro_url && (
+                <div className="w-full mb-4">
+                  <audio controls src={formData.voice_intro_url} className="w-full" />
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setFormData({ ...formData, voice_intro_url: '' })}
+                    className="text-red-500 mt-2 hover:bg-red-50"
+                  >
+                    Remove Voice Intro
+                  </Button>
+                </div>
+              )}
+              {!formData.voice_intro_url && (
+                <VoiceRecorder 
+                  onRecordingComplete={handleVoiceUpload}
+                  isUploading={uploading}
+                />
+              )}
             </div>
           </div>
         </motion.div>
