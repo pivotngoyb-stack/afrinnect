@@ -83,6 +83,21 @@ Deno.serve(async (req) => {
                     action_link: rec.action_link,
                     is_dismissed: false
                 });
+
+                // If AI detects a safety threat, auto-report to Admin
+                if (rec.type === 'safety_alert') {
+                     try {
+                         await base44.entities.Report.create({
+                            reporter_id: user.id, // Self-report / System report
+                            reported_id: user.id, // Flagging the user themselves for review
+                            report_type: 'other',
+                            description: `[AI BEHAVIOR ALERT] User flagged for risky behavior patterns. Title: ${rec.title}. Desc: ${rec.description}`,
+                            status: 'pending',
+                            action_taken: 'none',
+                            evidence_urls: []
+                         });
+                     } catch(e) { console.error("Auto-report failed", e); }
+                }
             }
         }
 

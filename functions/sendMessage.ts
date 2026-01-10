@@ -148,13 +148,30 @@ Deno.serve(async (req) => {
             is_deleted: isDeleted
         });
 
-        // 7. Save Scam Analysis (if triggered)
+        // 7. Save Scam Analysis & Auto-Report to Admin
         if (scamAnalysisData) {
             await base44.entities.ScamAnalysis.create({
                 message_id: message.id,
                 sender_id: myProfile.id,
                 ...scamAnalysisData
             });
+
+            // Automatically file a formal Report if high risk (visible to Admin)
+            if (scamAnalysisData.risk_score > 70) {
+                 try {
+                     await base44.entities.Report.create({
+                        reporter_id: receiverId, // Filed on behalf of the victim
+                        reported_id: myProfile.id,
+                        report_type: 'scam',
+                        description: `[AI AUTO-FLAG] High Risk Message (${scamAnalysisData.risk_score}%). Type: ${scamAnalysisData.scam_type}. Reasons: ${scamAnalysisData.ai_analysis.reasons.join(', ')}`,
+                        status: 'pending',
+                        action_taken: isDeleted ? 'content_removed' : 'none',
+                        evidence_urls: []
+                     });
+                 } catch (e) {
+                     console.error("Failed to auto-report", e);
+                 }
+            }
         }
 
         // 8. Notifications (only if not deleted)
