@@ -89,7 +89,9 @@ Return:
       });
 
       // Update profile if verified (requires 80%+ confidence)
-      if (result.is_match && result.confidence >= 80 && result.facial_structure_match && result.features_match) {
+      const isVerified = result.is_match && result.confidence >= 80 && result.facial_structure_match && result.features_match;
+      
+      if (isVerified) {
         await base44.entities.UserProfile.update(myProfile.id, {
           verification_status: {
             ...myProfile.verification_status,
@@ -100,14 +102,14 @@ Return:
         });
       }
 
-      return result;
+      return { ...result, verified: isVerified };
     },
     onSuccess: (data) => {
       setVerificationResult(data);
     }
   });
 
-  if (verificationResult?.is_match) {
+  if (verificationResult?.verified) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <motion.div
@@ -261,23 +263,28 @@ Return:
         </Button>
 
         {/* Failed Verification */}
-        {verificationResult && !verificationResult.is_match && (
+        {verificationResult && !verificationResult.verified && (
           <Alert className="mt-6 border-red-200 bg-red-50">
             <AlertCircle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
               <strong>Verification Failed</strong>
-              <p className="mt-1 text-sm">{verificationResult.reason}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSelfieUrl(null);
-                  setVerificationResult(null);
-                }}
-                className="mt-3"
-              >
-                Try Again
-              </Button>
+              <p className="mt-1 text-sm">
+                {verificationResult.reason || "We couldn't verify your photo. Please make sure your face is clearly visible and matches your profile photo."}
+              </p>
+              <div className="mt-3 flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelfieUrl(null);
+                    setVerificationResult(null);
+                  }}
+                  className="bg-white hover:bg-gray-50 text-red-600 border-red-200"
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  Retake Selfie
+                </Button>
+              </div>
             </AlertDescription>
           </Alert>
         )}
