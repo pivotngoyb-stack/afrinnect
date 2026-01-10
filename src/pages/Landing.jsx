@@ -512,8 +512,7 @@ export default function Landing() {
               </div>
             ))}
           </div>
-          <p className="text-xl text-gray-600 mb-2">{t('landing.premium.price')}</p>
-          <p className="text-sm text-gray-500">{t('landing.premium.africaPrice')}</p>
+
           </div>
           </section>
 
