@@ -29,7 +29,7 @@ import { useRealtimeMessages } from '@/components/chat/useRealtimeMessages';
 import TierGate, { hasAccess } from '@/components/shared/TierGate';
 import MessageLimitPaywall from '@/components/paywall/MessageLimitPaywall';
 import VoiceRecorder from '@/components/shared/VoiceRecorder';
-import VideoChat from '../VideoChat';
+import VideoChat from './VideoChat';
 
 export default function Chat() {
   usePerformanceMonitor('Chat');
