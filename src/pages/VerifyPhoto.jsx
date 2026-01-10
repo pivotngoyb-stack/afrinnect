@@ -120,14 +120,14 @@ Return:
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Photo Verified! ✓</h2>
           <p className="text-gray-500 mb-2">
-            Your profile now has the verified badge
+            Thank you for verifying your identity.
           </p>
           <p className="text-sm text-gray-400 mb-8">
             Confidence: {verificationResult.confidence}%
           </p>
-          <Link to={createPageUrl('Profile')}>
-            <Button className="bg-purple-600 hover:bg-purple-700">
-              View My Profile
+          <Link to={createPageUrl('Home')}>
+            <Button className="bg-purple-600 hover:bg-purple-700 w-full">
+              Continue to Afrinnect
             </Button>
           </Link>
         </motion.div>
@@ -145,7 +145,7 @@ Return:
               <ArrowLeft size={24} />
             </Button>
           </Link>
-          <h1 className="text-lg font-bold">Photo Verification</h1>
+          <h1 className="text-lg font-bold">Mandatory Verification</h1>
         </div>
       </header>
 
@@ -158,12 +158,14 @@ Return:
                 <Shield size={24} className="text-purple-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Why verify your photo?</h3>
+                <h3 className="font-semibold text-gray-900 mb-2">Mandatory Verification</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  To ensure the safety of our community, we require all members to verify their photos after 30 minutes of joining.
+                </p>
                 <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Verify that your selfie matches your profile photos</li>
                   <li>• Get the verified badge on your profile</li>
                   <li>• Build trust with potential matches</li>
-                  <li>• Stand out from unverified profiles</li>
-                  <li>• Increase your match rate by 3x</li>
                 </ul>
               </div>
             </div>

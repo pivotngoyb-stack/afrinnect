@@ -87,6 +87,18 @@ function LayoutContent({ children, currentPageName }) {
           if (profiles.length > 0) {
             const profile = profiles[0];
             setMyProfile(profile);
+
+            // Mandatory Photo Verification after 30 minutes
+            if (currentPageName !== 'VerifyPhoto' && currentPageName !== 'Onboarding' && currentPageName !== 'LegalAcceptance') {
+              const createdDate = new Date(profile.created_date || new Date().toISOString()); // Fallback for old accounts
+              const now = new Date();
+              const diffMinutes = (now - createdDate) / 1000 / 60;
+
+              if (diffMinutes > 30 && !profile.verification_status?.photo_verified) {
+                window.location.href = createPageUrl('VerifyPhoto');
+                return;
+              }
+            }
           }
           setHasProfile(profiles.length > 0);
         }
