@@ -11,9 +11,13 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import MatchCelebration from '@/components/match/MatchCelebration';
 
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Eye } from 'lucide-react';
+
 export default function WhoLikesYou() {
   const [myProfile, setMyProfile] = useState(null);
   const [matchedProfile, setMatchedProfile] = useState(null);
+  const [activeTab, setActiveTab] = useState('likes');
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -31,7 +35,7 @@ export default function WhoLikesYou() {
     fetchProfile();
   }, []);
 
-  const { data: likes = [], isLoading } = useQuery({
+  const { data: likes = [], isLoading: isLoadingLikes } = useQuery({
     queryKey: ['who-likes-me', myProfile?.id],
     queryFn: async () => {
       // Only get likes that haven't been seen/matched yet
@@ -50,6 +54,24 @@ export default function WhoLikesYou() {
         ...like,
         profile: profiles[idx]
       })).filter(like => like.profile);
+    },
+    enabled: !!myProfile
+  });
+
+  const { data: views = [], isLoading: isLoadingViews } = useQuery({
+    queryKey: ['who-viewed-me', myProfile?.id],
+    queryFn: async () => {
+      const allViews = await base44.entities.ProfileView.filter({ 
+        viewed_profile_id: myProfile.id
+      }, '-created_date', 50);
+      
+      // Get profiles of people who viewed me (deduplicated)
+      const uniqueViewerIds = [...new Set(allViews.map(view => view.viewer_profile_id))];
+      const profiles = await Promise.all(
+        uniqueViewerIds.map(id => base44.entities.UserProfile.filter({ id }).then(p => p[0]))
+      );
+
+      return profiles.filter(p => p && p.id !== myProfile.id);
     },
     enabled: !!myProfile
   });
@@ -154,14 +176,7 @@ export default function WhoLikesYou() {
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Who Likes You</h1>
-              {showBlurred && likes.length > 0 && (
-                <p className="text-sm text-gray-600 mt-1">
-                  {likes.length} {likes.length === 1 ? 'person' : 'people'} liked you
-                </p>
-              )}
-            </div>
+            <h1 className="text-2xl font-bold text-gray-900">Activity</h1>
             {myProfile?.subscription_tier && myProfile.subscription_tier !== 'free' ? (
               <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white">
                 <Crown size={14} className="mr-1" />
@@ -180,99 +195,196 @@ export default function WhoLikesYou() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
-          </div>
-        ) : likes.length === 0 ? (
-          <div className="text-center py-20">
-            <Heart size={64} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600">No likes yet</p>
-            <p className="text-sm text-gray-500 mt-2">Keep swiping to find your match!</p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {likes.map(({ profile, is_super_like }) => {
-              const age = calculateAge(profile.birth_date);
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger value="likes" className="text-lg">
+              <Heart size={18} className="mr-2" />
+              Likes You
+              {likes.length > 0 && showBlurred && (
+                <Badge className="ml-2 bg-pink-500">{likes.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="views" className="text-lg">
+              <Eye size={18} className="mr-2" />
+              Viewed You
+              {views.length > 0 && showBlurred && (
+                <Badge className="ml-2 bg-purple-500">{views.length}</Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
 
-              return (
-                <motion.div
-                  key={profile.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow relative">
-                    <div className="relative">
-                      <img
-                        src={profile.primary_photo || profile.photos?.[0]}
-                        alt={profile.display_name}
-                        className={`w-full h-64 object-cover ${showBlurred ? 'blur-2xl' : ''}`}
-                      />
-                      {is_super_like && !showBlurred && (
-                        <Badge className="absolute top-3 right-3 bg-blue-600">
-                          ⭐ Super Like
-                        </Badge>
-                      )}
-                      {showBlurred && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                          <div className="text-center">
-                            <Lock size={48} className="text-white mx-auto mb-2" />
-                            <p className="text-white font-semibold">Upgrade to See</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <CardContent className="p-4">
-                      {showBlurred ? (
-                        <>
-                          <div className="h-6 bg-gray-200 rounded mb-2 blur-sm"></div>
-                          <div className="h-4 bg-gray-200 rounded w-3/4 mb-4 blur-sm"></div>
-                          <Link to={createPageUrl('PricingPlans')}>
-                            <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700">
-                              <Crown size={18} className="mr-2" />
-                              Upgrade to See Who Likes You
-                            </Button>
-                          </Link>
-                        </>
-                      ) : (
-                        <>
-                          <h3 className="text-lg font-bold text-gray-900">
-                            {profile.display_name}{age && `, ${age}`}
-                          </h3>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {profile.current_city}, {profile.current_country}
-                          </p>
-                          {profile.bio && (
-                            <p className="text-sm text-gray-700 mb-4 line-clamp-2">
-                              {profile.bio}
-                            </p>
+          <TabsContent value="likes">
+            {isLoadingLikes ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
+              </div>
+            ) : likes.length === 0 ? (
+              <div className="text-center py-20">
+                <Heart size={64} className="mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-600">No likes yet</p>
+                <p className="text-sm text-gray-500 mt-2">Keep swiping to find your match!</p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {likes.map(({ profile, is_super_like }) => {
+                  const age = calculateAge(profile.birth_date);
+
+                  return (
+                    <motion.div
+                      key={profile.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <Card className="overflow-hidden hover:shadow-lg transition-shadow relative">
+                        <div className="relative">
+                          <img
+                            src={profile.primary_photo || profile.photos?.[0]}
+                            alt={profile.display_name}
+                            className={`w-full h-64 object-cover ${showBlurred ? 'blur-2xl' : ''}`}
+                          />
+                          {is_super_like && !showBlurred && (
+                            <Badge className="absolute top-3 right-3 bg-blue-600">
+                              ⭐ Super Like
+                            </Badge>
                           )}
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => {
-                                likeMutation.mutate(profile.id);
-                              }}
-                              disabled={likeMutation.isPending}
-                              className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-                            >
-                              <Heart size={18} className="mr-2" />
-                              {likeMutation.isPending ? 'Liking...' : 'Like Back'}
-                            </Button>
-                            <Link to={createPageUrl(`Profile?id=${profile.id}`)} className="flex-1">
-                              <Button variant="outline" className="w-full">
-                                View Profile
-                              </Button>
-                            </Link>
-                          </div>
-                        </>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
+                          {showBlurred && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                              <div className="text-center">
+                                <Lock size={48} className="text-white mx-auto mb-2" />
+                                <p className="text-white font-semibold">Upgrade to See</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <CardContent className="p-4">
+                          {showBlurred ? (
+                            <>
+                              <div className="h-6 bg-gray-200 rounded mb-2 blur-sm"></div>
+                              <div className="h-4 bg-gray-200 rounded w-3/4 mb-4 blur-sm"></div>
+                              <Link to={createPageUrl('PricingPlans')}>
+                                <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700">
+                                  <Crown size={18} className="mr-2" />
+                                  Upgrade to See Who Likes You
+                                </Button>
+                              </Link>
+                            </>
+                          ) : (
+                            <>
+                              <h3 className="text-lg font-bold text-gray-900">
+                                {profile.display_name}{age && `, ${age}`}
+                              </h3>
+                              <p className="text-sm text-gray-600 mb-2">
+                                {profile.current_city}, {profile.current_country}
+                              </p>
+                              {profile.bio && (
+                                <p className="text-sm text-gray-700 mb-4 line-clamp-2">
+                                  {profile.bio}
+                                </p>
+                              )}
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={() => {
+                                    likeMutation.mutate(profile.id);
+                                  }}
+                                  disabled={likeMutation.isPending}
+                                  className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                                >
+                                  <Heart size={18} className="mr-2" />
+                                  {likeMutation.isPending ? 'Liking...' : 'Like Back'}
+                                </Button>
+                                <Link to={createPageUrl(`Profile?id=${profile.id}`)} className="flex-1">
+                                  <Button variant="outline" className="w-full">
+                                    View Profile
+                                  </Button>
+                                </Link>
+                              </div>
+                            </>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="views">
+            {isLoadingViews ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
+              </div>
+            ) : views.length === 0 ? (
+              <div className="text-center py-20">
+                <Eye size={64} className="mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-600">No profile views yet</p>
+                <p className="text-sm text-gray-500 mt-2">Optimize your profile to get more attention!</p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {views.map((profile) => {
+                  const age = calculateAge(profile.birth_date);
+
+                  return (
+                    <motion.div
+                      key={profile.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <Card className="overflow-hidden hover:shadow-lg transition-shadow relative">
+                        <div className="relative">
+                          <img
+                            src={profile.primary_photo || profile.photos?.[0]}
+                            alt={profile.display_name}
+                            className={`w-full h-64 object-cover ${showBlurred ? 'blur-2xl' : ''}`}
+                          />
+                          {showBlurred && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                              <div className="text-center">
+                                <Lock size={48} className="text-white mx-auto mb-2" />
+                                <p className="text-white font-semibold">Upgrade to See</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <CardContent className="p-4">
+                          {showBlurred ? (
+                            <>
+                              <div className="h-6 bg-gray-200 rounded mb-2 blur-sm"></div>
+                              <div className="h-4 bg-gray-200 rounded w-3/4 mb-4 blur-sm"></div>
+                              <Link to={createPageUrl('PricingPlans')}>
+                                <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700">
+                                  <Crown size={18} className="mr-2" />
+                                  Upgrade to See Who Viewed You
+                                </Button>
+                              </Link>
+                            </>
+                          ) : (
+                            <>
+                              <h3 className="text-lg font-bold text-gray-900">
+                                {profile.display_name}{age && `, ${age}`}
+                              </h3>
+                              <p className="text-sm text-gray-600 mb-2">
+                                {profile.current_city}, {profile.current_country}
+                              </p>
+                              <div className="flex gap-2">
+                                <Link to={createPageUrl(`Profile?id=${profile.id}`)} className="flex-1">
+                                  <Button variant="outline" className="w-full">
+                                    View Profile
+                                  </Button>
+                                </Link>
+                              </div>
+                            </>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
     </>
