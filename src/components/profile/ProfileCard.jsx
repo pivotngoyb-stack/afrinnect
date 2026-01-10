@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { MapPin, Briefcase, GraduationCap, Heart, ChevronLeft, ChevronRight, Languages, Book, Sparkles, Mic } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import VerificationBadge from '../shared/VerificationBadge';
@@ -13,6 +13,23 @@ import ProfileTierDecoration from './ProfileTierDecoration';
 
 const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, onSuperLike, showActions = true, expanded = false }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  
+  // Swipe animation values
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 200], [-15, 15]);
+  const likeOpacity = useTransform(x, [50, 150], [0, 1]);
+  const nopeOpacity = useTransform(x, [-50, -150], [0, 1]);
+  const borderOpacity = useTransform(x, [-150, 0, 150], [1, 0, 1]);
+  const borderColor = useTransform(x, [-150, 0, 150], ['#ef4444', 'rgba(0,0,0,0)', '#22c55e']);
+
+  const handleDragEnd = (event, info) => {
+    const threshold = 100;
+    if (info.offset.x > threshold && onLike) {
+      onLike();
+    } else if (info.offset.x < -threshold && onPass) {
+      onPass();
+    }
+  };
   const [showDetails, setShowDetails] = useState(expanded);
   const [viewLogged, setViewLogged] = useState(false);
   const [viewerProfile, setViewerProfile] = useState(null);
@@ -108,12 +125,39 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
   return (
     <ProfileTierDecoration tier={profile?.subscription_tier}>
       <motion.div 
-        className="relative w-full max-w-[90vw] sm:max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden"
-        style={{ maxHeight: '80vh' }}
+        className="relative w-full max-w-[90vw] sm:max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden cursor-grab active:cursor-grabbing"
+        style={{ x, rotate, maxHeight: '80vh', borderColor, borderWidth: expanded ? 0 : 2 }}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
+        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+        drag={!expanded && showActions ? "x" : false}
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.7}
+        onDragEnd={handleDragEnd}
       >
+        {/* Swipe Overlays */}
+        {!expanded && showActions && (
+          <>
+            <motion.div 
+              style={{ opacity: likeOpacity }} 
+              className="absolute top-10 left-8 z-50 pointer-events-none transform -rotate-12"
+            >
+              <div className="border-4 border-green-500 rounded-xl px-4 py-2 bg-black/20 backdrop-blur-sm">
+                <span className="text-4xl font-extrabold text-green-500 tracking-widest">LIKE</span>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              style={{ opacity: nopeOpacity }} 
+              className="absolute top-10 right-8 z-50 pointer-events-none transform rotate-12"
+            >
+              <div className="border-4 border-red-500 rounded-xl px-4 py-2 bg-black/20 backdrop-blur-sm">
+                <span className="text-4xl font-extrabold text-red-500 tracking-widest">NOPE</span>
+              </div>
+            </motion.div>
+          </>
+        )}
+
       {/* Photo Section */}
       <div 
         className="relative aspect-[4/5] overflow-hidden cursor-pointer"
