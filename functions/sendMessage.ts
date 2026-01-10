@@ -32,13 +32,13 @@ Deno.serve(async (req) => {
         
         const receiverId = match.user1_id === myProfile.id ? match.user2_id : match.user1_id;
 
-        // Check if I am blocked by the receiver (Double check beyond match status)
+        // Check blocking
         const receiverProfile = await base44.entities.UserProfile.filter({ id: receiverId });
         if (receiverProfile.length > 0 && receiverProfile[0].blocked_users?.includes(myProfile.id)) {
              return Response.json({ error: 'You cannot message this user' }, { status: 403 });
         }
 
-        // 3. Rate Limiting (Simple check)
+        // 3. Rate Limiting
         const recentMsgs = await base44.entities.Message.filter(
             { sender_id: myProfile.id }, 
             '-created_date', 
@@ -46,42 +46,93 @@ Deno.serve(async (req) => {
         );
         if (recentMsgs.length > 0) {
             const lastTime = new Date(recentMsgs[0].created_date).getTime();
-            if (Date.now() - lastTime < 1000) { // 1 second limit
+            if (Date.now() - lastTime < 1000) { 
                 return Response.json({ error: 'You are sending too quickly' }, { status: 429 });
             }
         }
 
-        // 4. Subscription Limit Check (Free tier limit - 20 messages per day)
+        // 4. Subscription Limit
         if (myProfile.subscription_tier === 'free') {
             const today = new Date().toISOString().split('T')[0];
             const dailyMsgs = await base44.entities.Message.filter({ 
                 sender_id: myProfile.id,
                 created_date: { $gte: `${today}T00:00:00.000Z` }
             });
-            
             if (dailyMsgs.length >= 20) {
                  return Response.json({ error: 'upgrade_required' }, { status: 403 });
             }
         }
 
-        // 5. AI Moderation
+        // 5. ROBUST AI SCAM & SAFETY ANALYSIS
         let isFlagged = false;
         let isDeleted = false;
+        let scamAnalysisData = null;
 
-        try {
-             // Only moderate text
-             if (type === 'text' && content) {
-                 const aiCheck = await base44.integrations.Core.InvokeLLM({
-                    prompt: `Analyze message for safety (harassment, scam, hate). Message: "${content}". Return JSON: { is_safe: boolean, reason: string }`,
-                    response_json_schema: { type: "object", properties: { is_safe: { type: "boolean" }, reason: { type: "string" } } }
-                 });
-                 if (!aiCheck.is_safe) {
-                     isFlagged = true;
-                     // If very bad, delete? For now just flag.
-                 }
-             }
-        } catch (e) {
-            console.error("Moderation failed", e);
+        if (type === 'text' && content) {
+            try {
+                // Fetch recent context for this user to detect patterns (e.g. repeated messages)
+                const lastFewMsgs = await base44.entities.Message.filter(
+                    { sender_id: myProfile.id }, 
+                    '-created_date', 
+                    5
+                );
+                const msgHistory = lastFewMsgs.map(m => m.content).join(" | ");
+
+                const analysis = await base44.integrations.Core.InvokeLLM({
+                    prompt: `
+                    Analyze this message for scam indicators and safety risks.
+                    Sender Context: Account age ${(new Date() - new Date(myProfile.created_date)) / (1000 * 60 * 60 * 24)} days.
+                    Message Content: "${content}"
+                    Recent History: "${msgHistory}"
+
+                    Detect:
+                    1. Money requests / Crypto scams
+                    2. Off-platform redirection (WhatsApp, Telegram) used aggressively
+                    3. Harassment / Hate speech
+                    4. Phishing links
+                    5. Urgent/Panic-inducing language
+
+                    Return JSON: {
+                        "is_safe": boolean,
+                        "risk_score": number (0-100),
+                        "scam_type": "string" (money_request, crypto, phishing, off_platform, harassment, none),
+                        "reasons": ["string"]
+                    }
+                    `,
+                    response_json_schema: {
+                        type: "object",
+                        properties: {
+                            is_safe: { type: "boolean" },
+                            risk_score: { type: "number" },
+                            scam_type: { type: "string" },
+                            reasons: { type: "array", items: { type: "string" } }
+                        }
+                    }
+                });
+
+                if (!analysis.is_safe || analysis.risk_score > 50) {
+                    isFlagged = true;
+                    // If high risk, soft delete immediately
+                    if (analysis.risk_score > 80) {
+                        isDeleted = true; // "Shadow ban" message
+                    }
+
+                    // Log detailed analysis
+                    scamAnalysisData = {
+                        risk_score: analysis.risk_score,
+                        scam_type: analysis.scam_type,
+                        ai_analysis: {
+                            is_suspicious: !analysis.is_safe,
+                            confidence: analysis.risk_score,
+                            reasons: analysis.reasons
+                        },
+                        action_taken: isDeleted ? 'hidden' : 'flagged'
+                    };
+                }
+
+            } catch (e) {
+                console.error("Safety analysis failed", e);
+            }
         }
 
         // 6. Create Message
@@ -97,25 +148,35 @@ Deno.serve(async (req) => {
             is_deleted: isDeleted
         });
 
-        // 7. Notifications
-        await base44.entities.Notification.create({
-            user_profile_id: receiverId,
-            type: 'message',
-            title: `Message from ${myProfile.display_name}`,
-            message: content.substring(0, 50),
-            from_profile_id: myProfile.id,
-            link_to: `Chat?matchId=${matchId}`
-        });
+        // 7. Save Scam Analysis (if triggered)
+        if (scamAnalysisData) {
+            await base44.entities.ScamAnalysis.create({
+                message_id: message.id,
+                sender_id: myProfile.id,
+                ...scamAnalysisData
+            });
+        }
 
-        // Push Notification (Fire and forget)
-        try {
-             await base44.functions.invoke('sendPushNotification', {
-                 user_profile_id: receiverId,
-                 title: `New message from ${myProfile.display_name}`,
-                 body: content.substring(0, 50),
-                 type: 'message'
-             });
-        } catch(e) {}
+        // 8. Notifications (only if not deleted)
+        if (!isDeleted) {
+            await base44.entities.Notification.create({
+                user_profile_id: receiverId,
+                type: 'message',
+                title: `Message from ${myProfile.display_name}`,
+                message: content.substring(0, 50),
+                from_profile_id: myProfile.id,
+                link_to: `Chat?matchId=${matchId}`
+            });
+
+            try {
+                 await base44.functions.invoke('sendPushNotification', {
+                     user_profile_id: receiverId,
+                     title: `New message from ${myProfile.display_name}`,
+                     body: content.substring(0, 50),
+                     type: 'message'
+                 });
+            } catch(e) {}
+        }
 
         return Response.json(message);
 
