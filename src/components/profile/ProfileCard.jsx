@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Briefcase, GraduationCap, Heart, ChevronLeft, ChevronRight, Languages, Book, Sparkles } from 'lucide-react';
+import { MapPin, Briefcase, GraduationCap, Heart, ChevronLeft, ChevronRight, Languages, Book, Sparkles, Mic } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import VerificationBadge from '../shared/VerificationBadge';
 import SafetyBadge from '../safety/SafetyBadge';
@@ -223,6 +223,19 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
                 <div>
                   <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">About</h3>
                   <p className="text-gray-700">{profile.bio}</p>
+                </div>
+              )}
+
+              {/* Voice Intro */}
+              {profile?.voice_intro_url && (
+                <div className="bg-purple-50 rounded-xl p-4 flex items-center gap-3 border border-purple-100">
+                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                    <Mic size={20} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-purple-900 mb-1">Voice Intro</p>
+                    <audio controls src={profile.voice_intro_url} className="w-full h-8" />
+                  </div>
                 </div>
               )}
 
