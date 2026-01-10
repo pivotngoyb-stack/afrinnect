@@ -55,7 +55,9 @@ export default function WhoLikesYou() {
         profile: profiles[idx]
       })).filter(like => like.profile);
     },
-    enabled: !!myProfile
+    enabled: !!myProfile,
+    staleTime: 60000, // Optimize: Keep data fresh for 1 minute
+    refetchOnWindowFocus: true
   });
 
   const { data: views = [], isLoading: isLoadingViews } = useQuery({
@@ -73,7 +75,9 @@ export default function WhoLikesYou() {
 
       return profiles.filter(p => p && p.id !== myProfile.id);
     },
-    enabled: !!myProfile
+    enabled: !!myProfile,
+    staleTime: 60000, // Optimize: Keep data fresh for 1 minute
+    refetchOnWindowFocus: true
   });
 
   const likeMutation = useMutation({

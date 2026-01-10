@@ -52,6 +52,49 @@ export default function Home() {
   const queryClient = useQueryClient();
   const { prompt: upgradePrompt, dismissPrompt } = useUpgradePrompts(myProfile);
 
+  // OPTIMIZATION: Prefetch Activity Data
+  useEffect(() => {
+    if (myProfile?.id) {
+      const prefetchActivity = async () => {
+        // Prefetch Likes
+        await queryClient.prefetchQuery({
+          queryKey: ['who-likes-me', myProfile.id],
+          queryFn: async () => {
+            const allLikes = await base44.entities.Like.filter({ liked_id: myProfile.id, is_seen: false }, '-created_date', 100);
+            return allLikes;
+          },
+          staleTime: 60000 // 1 minute
+        });
+
+        // Prefetch Views
+        await queryClient.prefetchQuery({
+          queryKey: ['who-viewed-me', myProfile.id],
+          queryFn: async () => {
+            const allViews = await base44.entities.ProfileView.filter({ viewed_profile_id: myProfile.id }, '-created_date', 50);
+            return allViews;
+          },
+          staleTime: 60000 // 1 minute
+        });
+      };
+      prefetchActivity();
+    }
+  }, [myProfile?.id, queryClient]);
+
+  // Fetch counts for badge
+  const { data: activityCounts } = useQuery({
+    queryKey: ['activity-counts', myProfile?.id],
+    queryFn: async () => {
+      if (!myProfile?.id) return { likes: 0, views: 0 };
+      const likes = await base44.entities.Like.count({ liked_id: myProfile.id, is_seen: false });
+      // For views, we just count recent ones as "new" for the badge
+      const today = new Date().toISOString().split('T')[0];
+      const views = await base44.entities.ProfileView.count({ viewed_profile_id: myProfile.id, created_date: { $gte: today } });
+      return { likes, views };
+    },
+    enabled: !!myProfile?.id,
+    refetchInterval: 30000
+  });
+
   // CRITICAL: Check auth first before anything else
   useEffect(() => {
     const checkAuth = async () => {
@@ -731,8 +774,11 @@ export default function Home() {
 
               {/* Who Likes You Button */}
               <Link to={createPageUrl('WhoLikesYou')}>
-                <Button variant="outline" className="gap-1">
+                <Button variant="outline" className="gap-1 relative">
                   <HeartIcon size={18} className="text-pink-600" />
+                  {(activityCounts?.likes > 0 || activityCounts?.views > 0) && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
+                  )}
                 </Button>
               </Link>
 
