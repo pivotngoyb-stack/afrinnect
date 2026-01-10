@@ -5,7 +5,28 @@ import VerificationBadge from '../shared/VerificationBadge';
 import CountryFlag from '../shared/CountryFlag';
 import OptimizedImage from '../shared/OptimizedImage';
 
-const ProfileMini = React.memo(function ProfileMini({ profile, onClick }) {
+const ProfileMini = React.memo(function ProfileMini({ profile, myLocation, onClick }) {
+  
+  // Calculate Distance in Miles
+  const distance = React.useMemo(() => {
+    if (!myLocation?.lat || !myLocation?.lng || !profile?.location?.lat || !profile?.location?.lng) return null;
+    
+    const lat1 = myLocation.lat;
+    const lon1 = myLocation.lng;
+    const lat2 = profile.location.lat;
+    const lon2 = profile.location.lng;
+    
+    const R = 3959; // Earth Radius in Miles
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return Math.round(R * c);
+  }, [myLocation, profile?.location]);
+
   const calculateAge = (birthDate) => {
     if (!birthDate) return null;
     const today = new Date();
@@ -59,9 +80,17 @@ const ProfileMini = React.memo(function ProfileMini({ profile, onClick }) {
             {age && <span className="font-light">{age}</span>}
           </div>
 
-          <div className="flex items-center gap-1 text-white/80 text-xs mb-2">
-            <CountryFlag country={profile?.country_of_origin} size="small" showName={false} />
-            <span className="truncate">{profile?.current_city}</span>
+          <div className="flex flex-col gap-0.5 mb-2">
+            <div className="flex items-center gap-1 text-white/80 text-xs">
+              <CountryFlag country={profile?.country_of_origin} size="small" showName={false} />
+              <span className="truncate">{profile?.current_city}</span>
+            </div>
+            {distance !== null && (
+              <div className="flex items-center gap-1 text-white/70 text-[10px]">
+                <MapPin size={10} />
+                <span>{distance} mi away</span>
+              </div>
+            )}
           </div>
 
           {profile?.relationship_goal && (

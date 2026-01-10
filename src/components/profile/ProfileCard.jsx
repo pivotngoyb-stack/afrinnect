@@ -11,7 +11,7 @@ import ProfileBadges from './ProfileBadges';
 import OptimizedImage from '../shared/OptimizedImage';
 import ProfileTierDecoration from './ProfileTierDecoration';
 
-const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, onSuperLike, showActions = true, expanded = false }) {
+const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLike, onPass, onSuperLike, showActions = true, expanded = false }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   
   // Swipe animation values
@@ -93,6 +93,26 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
   };
 
   const age = calculateAge(profile?.birth_date);
+
+  // Calculate Distance in Miles
+  const distance = React.useMemo(() => {
+    if (!myLocation?.lat || !myLocation?.lng || !profile?.location?.lat || !profile?.location?.lng) return null;
+    
+    const lat1 = myLocation.lat;
+    const lon1 = myLocation.lng;
+    const lat2 = profile.location.lat;
+    const lon2 = profile.location.lng;
+    
+    const R = 3959; // Earth Radius in Miles
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return Math.round(R * c);
+  }, [myLocation, profile?.location]);
 
   const nextPhoto = (e) => {
     e?.stopPropagation();
@@ -231,7 +251,10 @@ const ProfileCard = React.memo(function ProfileCard({ profile, onLike, onPass, o
 
           <div className="flex items-center gap-1 text-white/80 text-xs">
             <MapPin size={12} />
-            <span>{profile?.current_city}, {profile?.current_country}</span>
+            <span>
+              {profile?.current_city}, {profile?.current_country}
+              {distance !== null && ` • ${distance} miles away`}
+            </span>
           </div>
 
           <div className="flex items-center gap-2 mt-2 flex-wrap">

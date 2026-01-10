@@ -261,9 +261,11 @@ export default function Home() {
     return age;
   };
 
-  // Calculate distance between two coordinates (Haversine formula)
+  // Calculate distance between two coordinates (Haversine formula) - Returns Miles
+  // Note: 1 Km = 0.621371 Miles. R (Earth Radius) in miles = 3959
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radius of Earth in kilometers
+    if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+    const R = 3959; // Radius of Earth in miles
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a = 
@@ -271,7 +273,7 @@ export default function Home() {
       Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
       Math.sin(dLon/2) * Math.sin(dLon/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c; // Distance in km
+    return Math.round(R * c); 
   };
 
   // OPTIMIZED: AI-powered match score with caching
@@ -885,6 +887,7 @@ export default function Home() {
                 <ProfileCard
                   key={currentProfile.id}
                   profile={currentProfile}
+                  myLocation={myProfile?.location}
                   onLike={() => handleLike(currentProfile)}
                   onPass={handlePass}
                   onSuperLike={() => handleSuperLike(currentProfile)}
@@ -913,6 +916,7 @@ export default function Home() {
               <ProfileMini
                 key={profile.id}
                 profile={profile}
+                myLocation={myProfile?.location}
                 onClick={() => setSelectedProfile(profile)}
               />
             ))}
@@ -942,6 +946,7 @@ export default function Home() {
               >
                 <ProfileCard
                   profile={selectedProfile}
+                  myLocation={myProfile?.location}
                   onLike={() => {
                     handleLike(selectedProfile);
                     setSelectedProfile(null);

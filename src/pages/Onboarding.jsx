@@ -236,7 +236,10 @@ export default function Onboarding() {
           try {
             const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
             const data = await response.json();
-            const country = data.address?.country;
+            const addr = data.address || {};
+            const country = addr.country;
+            const city = addr.city || addr.town || addr.village || addr.hamlet || addr.suburb || '';
+            const state = addr.state || addr.province || '';
             
             // Only allow USA and Canada
             if (!country || (country !== 'United States' && country !== 'Canada' && country !== 'United States of America')) {
@@ -244,17 +247,24 @@ export default function Onboarding() {
               setGettingLocation(false);
               return;
             }
+
+            // Auto-fill location data
+            setFormData(prev => ({
+              ...prev,
+              location: { lat, lng },
+              current_country: country === 'United States of America' ? 'United States' : country,
+              current_city: city,
+              current_state: state
+            }));
+
           } catch (e) {
             console.error('Location validation failed:', e);
-            alert('Could not verify your location automatically. Please ensure you are in a supported region.');
-            // Proceed without return to unblock user
+            // Fallback: just save coordinates if reverse geocoding fails
+             setFormData(prev => ({
+              ...prev,
+              location: { lat, lng }
+            }));
           }
-          
-          // Save location
-          setFormData(prev => ({
-            ...prev,
-            location: { lat, lng }
-          }));
           setGettingLocation(false);
         },
         (error) => {
