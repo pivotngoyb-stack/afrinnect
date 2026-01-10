@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export default function AIConversationStarters({ myProfile, otherProfile, onSelectQuestion, onClose }) {
+export default function AIConversationStarters({ myProfile, otherProfile, matchId, onSelectQuestion, onClose }) {
   const [suggestions, setSuggestions] = useState([]);
   const [generating, setGenerating] = useState(false);
 
@@ -15,35 +15,15 @@ export default function AIConversationStarters({ myProfile, otherProfile, onSele
     mutationFn: async () => {
       setGenerating(true);
       
-      const prompt = `Generate 5 personalized conversation starters for these two people who just matched on a dating app:
-
-Person A: ${myProfile.display_name}, ${myProfile.gender}, from ${myProfile.country_of_origin}, lives in ${myProfile.current_city}. Interests: ${myProfile.interests?.join(', ')}. Looking for: ${myProfile.relationship_goal}.
-
-Person B: ${otherProfile.display_name}, ${otherProfile.gender}, from ${otherProfile.country_of_origin}, lives in ${otherProfile.current_city}. Interests: ${otherProfile.interests?.join(', ')}.
-
-Generate questions that:
-1. Reference their shared interests or backgrounds
-2. Are culturally aware (African heritage/diaspora context)
-3. Are fun, engaging, and natural
-4. Avoid cliches like "what's your favorite color"
-5. Range from light to meaningful
-
-Return JSON array of 5 strings.`;
-
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            starters: {
-              type: "array",
-              items: { type: "string" }
-            }
-          }
-        }
+      const response = await base44.functions.invoke('getChatSuggestions', {
+        matchId: matchId
       });
 
-      return result.starters || [];
+      if (response.data.error) {
+        throw new Error(response.data.error);
+      }
+
+      return response.data.suggestions || [];
     },
     onSuccess: (data) => {
       setSuggestions(data);

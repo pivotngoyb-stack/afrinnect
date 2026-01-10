@@ -655,6 +655,7 @@ export default function Chat() {
           <AIConversationStarters
             myProfile={myProfile}
             otherProfile={otherProfile}
+            matchId={matchId}
             onSelectQuestion={(q) => setMessageText(q)}
             onClose={() => setShowAIStarters(false)}
           />

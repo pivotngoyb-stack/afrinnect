@@ -49,8 +49,34 @@ export default function Home() {
   const [pendingLikeProfile, setPendingLikeProfile] = useState(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [recommendations, setRecommendations] = useState([]);
   const queryClient = useQueryClient();
   const { prompt: upgradePrompt, dismissPrompt } = useUpgradePrompts(myProfile);
+
+  // Fetch AI Behavior Analysis Recommendations
+  useEffect(() => {
+    if (myProfile?.id) {
+      const fetchRecs = async () => {
+        // Check if we have existing recs
+        const recs = await base44.entities.UserRecommendation.filter({ user_id: myProfile.id, is_dismissed: false });
+        
+        if (recs.length === 0) {
+          // Trigger analysis if none exist (rarely, to avoid spam)
+          // We can just rely on manual trigger or occasional background job, 
+          // but here we'll do it on load if empty for demo purposes
+          try {
+             const res = await base44.functions.invoke('analyzeBehavior');
+             if (res.data.success) {
+               setRecommendations(res.data.recommendations || []);
+             }
+          } catch(e) { console.error(e); }
+        } else {
+          setRecommendations(recs);
+        }
+      };
+      fetchRecs();
+    }
+  }, [myProfile?.id]);
 
   // OPTIMIZATION: Prefetch Activity Data
   useEffect(() => {
@@ -803,6 +829,38 @@ export default function Home() {
 
         {/* Ad Banner */}
         <AdBanner placement="discovery" userProfile={myProfile} />
+
+        {/* AI Recommendations Section */}
+        {recommendations.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <Sparkles size={18} className="text-purple-600" />
+              Recommended for You
+            </h3>
+            <div className="space-y-3">
+              {recommendations.map((rec, idx) => (
+                <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-purple-100 flex items-start gap-3">
+                  <div className="p-2 bg-purple-50 rounded-lg shrink-0">
+                    {rec.type === 'safety_alert' ? <Shield size={20} className="text-red-500" /> :
+                     rec.type === 'match_tip' ? <HeartIcon size={20} className="text-pink-500" /> :
+                     <Sparkles size={20} className="text-purple-600" />}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 text-sm">{rec.title}</h4>
+                    <p className="text-xs text-gray-600 mt-1">{rec.description}</p>
+                    {rec.action_link && (
+                      <Link to={createPageUrl(rec.action_link)}>
+                        <Button variant="link" size="sm" className="h-auto p-0 mt-2 text-purple-600">
+                          Check it out →
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {isLoading ? (
           <div className="flex items-center justify-center min-h-[70vh]">
