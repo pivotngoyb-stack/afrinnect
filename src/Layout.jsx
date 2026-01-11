@@ -19,6 +19,7 @@ import PushNotificationSetup from '@/components/notifications/PushNotificationSe
 import { GlobalErrorHandler } from '@/components/shared/GlobalErrorHandler';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import InstallPrompt from '@/components/mobile/InstallPrompt';
+import BannedScreen from '@/components/auth/BannedScreen';
 
 const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories', 'EventDetails', 'CreateEvent', 'CompatibilityQuizzes', 'ReferralProgram', 'LanguageExchangeHub', 'VendorManagement', 'Marketplace', 'PasswordReset'];
 
@@ -180,7 +181,16 @@ function LayoutContent({ children, currentPageName }) {
         }
       `}</style>
 
-      {children}
+      {/* Global Ban/Suspension Check */}
+      {myProfile && (myProfile.is_banned || myProfile.is_suspended) ? (
+        <BannedScreen
+          userProfile={myProfile}
+          banReason={myProfile.ban_reason || myProfile.suspension_reason || 'Violation of community guidelines'}
+          userEmail={myProfile.created_by}
+        />
+      ) : (
+        children
+      )}
 
       {/* Screenshot Alert Notifications */}
       {myProfile && <ScreenshotAlertNotif myProfileId={myProfile.id} />}
