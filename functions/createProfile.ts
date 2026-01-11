@@ -48,6 +48,38 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Birth date is required' }, { status: 400 });
     }
 
+    // 2.2 AI Content Safety Check (Fake Profiles / Hate Speech)
+    if (formData.bio || formData.display_name) {
+        try {
+            const safetyCheck = await base44.integrations.Core.InvokeLLM({
+                prompt: `Analyze this user profile data for safety:
+                Name: "${formData.display_name}"
+                Bio: "${formData.bio}"
+                
+                Detect:
+                1. Fake profiles (celebrity names, nonsensical text)
+                2. Hate speech or offensive content
+                3. Solicitation or spam
+                
+                Return JSON: {"is_safe": boolean, "reason": "string"}`,
+                response_json_schema: {
+                    type: "object",
+                    properties: {
+                        is_safe: { type: "boolean" },
+                        reason: { type: "string" }
+                    }
+                }
+            });
+
+            if (!safetyCheck.is_safe) {
+                return Response.json({ error: `Profile rejected: ${safetyCheck.reason}` }, { status: 400 });
+            }
+        } catch (e) {
+            console.error("Profile safety check failed", e);
+            // Fail open to avoid blocking legit users on AI error, but log it
+        }
+    }
+
     const allowedFields = {
         display_name: formData.display_name,
         birth_date: formData.birth_date,

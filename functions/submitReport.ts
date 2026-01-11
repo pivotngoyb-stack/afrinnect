@@ -32,21 +32,54 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'You have submitted too many reports recently. Please try again later.' }, { status: 429 });
     }
 
-    // 3. Create Report
+    // 3. AI Triage & Severity Analysis
+    let severity = 'low';
+    let autoAction = 'none';
+    let moderatorNotes = '';
+
+    try {
+        const triage = await base44.integrations.Core.InvokeLLM({
+            prompt: `Analyze this user report for severity.
+            Type: ${report_type}
+            Description: "${description}"
+            
+            Determine severity (low, medium, high, critical) based on potential harm.
+            Critical = Immediate danger, illegal activity, severe hate speech.
+            
+            Return JSON: {"severity": "string", "recommended_action": "string"}`,
+            response_json_schema: {
+                type: "object",
+                properties: {
+                    severity: { type: "string" },
+                    recommended_action: { type: "string" }
+                }
+            }
+        });
+        severity = triage.severity;
+        moderatorNotes = `AI Triage: ${severity.toUpperCase()} - ${triage.recommended_action}`;
+        
+        // Critical reports trigger immediate notification
+        if (severity === 'critical' || severity === 'high') {
+             await base44.integrations.Core.SendEmail({
+                to: 'support@afrinnect.com',
+                subject: `🚨 URGENT REPORT: ${report_type.toUpperCase()}`,
+                body: `High severity report received.\nReporter: ${reporter.email}\nTarget ID: ${reported_id}\nReason: ${description}\nAI Severity: ${severity}`
+            });
+        }
+    } catch (e) {
+        console.error("AI Triage failed", e);
+    }
+
+    // 4. Create Report
     await base44.asServiceRole.entities.Report.create({
         reporter_id: reporter.id,
         reported_id,
         report_type,
         description: description || '',
-        status: 'pending', // Enforce pending status
-        action_taken: 'none'
+        status: 'pending', 
+        action_taken: autoAction,
+        moderator_notes: moderatorNotes
     });
-
-    // 4. Notify Admin (Optional: for high severity types)
-    if (['scam', 'underage', 'hate_speech'].includes(report_type)) {
-        // We could trigger an immediate notification to admins here
-        // For now, we'll rely on the admin dashboard pulling 'pending' reports
-    }
 
     return Response.json({ success: true });
 
