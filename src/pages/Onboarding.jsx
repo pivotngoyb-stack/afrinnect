@@ -68,21 +68,30 @@ export default function Onboarding() {
   const [step, setStep] = useState(0);
   const [user, setUser] = useState(null);
   const [showSafetyEducation, setShowSafetyEducation] = useState(false);
-  const [formData, setFormData] = useState({
-    display_name: '',
-    birth_date: '',
-    gender: '',
-    looking_for: [],
-    photos: [],
-    country_of_origin: '',
-    current_country: '',
-    current_city: '',
-    relationship_goal: '',
-    interests: [],
-    location: { lat: null, lng: null }
+  const [formData, setFormData] = useState(() => {
+    // Load from localStorage if available
+    const saved = localStorage.getItem('onboarding_data');
+    return saved ? JSON.parse(saved) : {
+      display_name: '',
+      birth_date: '',
+      gender: '',
+      looking_for: [],
+      photos: [],
+      country_of_origin: '',
+      current_country: '',
+      current_city: '',
+      relationship_goal: '',
+      interests: [],
+      location: { lat: null, lng: null }
+    };
   });
   const [isUploading, setIsUploading] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
+
+  // Auto-save to localStorage
+  useEffect(() => {
+    localStorage.setItem('onboarding_data', JSON.stringify(formData));
+  }, [formData]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -186,6 +195,10 @@ export default function Onboarding() {
       });
 
       if (response.data.error) throw new Error(response.data.error);
+      
+      // Clear saved progress on success
+      localStorage.removeItem('onboarding_data');
+      
       const profile = response.data.profile;
 
       // Request push notification permission immediately

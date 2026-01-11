@@ -416,7 +416,24 @@ export default function Matches() {
                 ))}
                 {likerProfiles.length === 0 && !loadingLikes && (
                   <div className="col-span-full text-center py-16">
-                    <p className="text-gray-500">No new likes yet</p>
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                      <Heart size={32} className="text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">No new likes yet</h3>
+                    <p className="text-gray-500 mb-6 max-w-xs mx-auto">
+                      Boost your profile to get up to 10x more visibility!
+                    </p>
+                    <div className="flex justify-center gap-3">
+                      <Link to={createPageUrl('Home')}>
+                        <Button variant="outline">Keep Swiping</Button>
+                      </Link>
+                      <Link to={createPageUrl('PricingPlans')}>
+                        <Button className="bg-gradient-to-r from-purple-600 to-amber-600 border-0">
+                          <Sparkles size={16} className="mr-2" />
+                          Boost Profile
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 )}
               </div>

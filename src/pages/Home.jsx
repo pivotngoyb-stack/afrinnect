@@ -902,13 +902,31 @@ export default function Home() {
                   ]}
                 />
               ) : (
-                <EmptyState
-                  icon={Sparkles}
-                  title="That's everyone for now!"
-                  description="Adjust your filters or check back later for new members"
-                  actionLabel="Reset Filters"
-                  onAction={() => setFilters({})}
-                />
+                <div className="flex flex-col items-center justify-center h-full max-w-md mx-auto text-center px-4">
+                  <div className="w-24 h-24 bg-purple-50 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                    <Globe size={40} className="text-purple-400" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">That's everyone nearby!</h2>
+                  <p className="text-gray-600 mb-8">
+                    We've run out of profiles in your current filter range. Try expanding your search to meet more amazing people.
+                  </p>
+                  <div className="space-y-3 w-full">
+                    <Button 
+                      onClick={() => setFilters({})} 
+                      variant="outline" 
+                      className="w-full h-12 text-base"
+                    >
+                      Reset Filters
+                    </Button>
+                    <Button 
+                      onClick={() => setDiscoveryMode('global')}
+                      className="w-full h-12 text-base bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700"
+                    >
+                      <Globe size={18} className="mr-2" />
+                      Go Global
+                    </Button>
+                  </div>
+                </div>
               )}
             </AnimatePresence>
           </div>
