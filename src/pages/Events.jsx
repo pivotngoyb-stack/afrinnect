@@ -208,6 +208,7 @@ export default function Events() {
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Location" />
               </SelectTrigger>
+              <SelectContent>
                 <SelectItem value="all">All Locations</SelectItem>
                 <SelectItem value="local">Near Me</SelectItem>
               </SelectContent>
