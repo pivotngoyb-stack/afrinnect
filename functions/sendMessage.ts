@@ -63,42 +63,39 @@ Deno.serve(async (req) => {
             }
         }
 
-        // 5. ROBUST AI SCAM & SAFETY ANALYSIS
+        // 5. ROBUST AI SCAM & SAFETY ANALYSIS & AUTOMATIC ENFORCEMENT
         let isFlagged = false;
         let isDeleted = false;
         let scamAnalysisData = null;
 
         if ((type === 'text' && content) || (type === 'image' && mediaUrl)) {
             try {
-                // Fetch recent context for this user to detect patterns (e.g. repeated messages)
-                const lastFewMsgs = await base44.entities.Message.filter(
-                    { sender_id: myProfile.id }, 
-                    '-created_date', 
-                    5
-                );
+                // Fetch recent context
+                const lastFewMsgs = await base44.entities.Message.filter({ sender_id: myProfile.id }, '-created_date', 5);
                 const msgHistory = lastFewMsgs.map(m => m.content).join(" | ");
 
                 const analysis = await base44.integrations.Core.InvokeLLM({
                     prompt: `
-                    Analyze this message for ZERO TOLERANCE violations, scams, and safety risks.
+                    Analyze this message for ZERO TOLERANCE violations.
                     Sender Context: Account age ${(new Date() - new Date(myProfile.created_date)) / (1000 * 60 * 60 * 24)} days.
                     Message Content: "${content || '[Image Attached]'}"
                     Recent History: "${msgHistory}"
 
                     STRICTLY DETECT (Zero Tolerance):
-                    1. Harassment, bullying, or threatening behavior
-                    2. Hate speech, racism, or discrimination
-                    3. Sexual harassment or unsolicited explicit content (including NSFW images)
-                    4. Fake profiles or catfishing indicators
-                    5. Scamming, money requests, or crypto scams
-                    6. Sharing others' private information (Doxing)
-                    7. Prostitution, trafficking, or solicitation
-                    8. Off-platform redirection (WhatsApp, Telegram) used aggressively
+                    1. Harassment, bullying, threats
+                    2. Hate speech, racism, discrimination
+                    3. Sexual harassment, unsolicited explicit content
+                    4. Fake profiles, catfishing
+                    5. Scamming, money requests
+                    6. Doxing (sharing private info)
+                    7. Prostitution, trafficking, solicitation
+                    8. Aggressive off-platform redirection
 
                     Return JSON: {
                         "is_safe": boolean,
                         "risk_score": number (0-100),
                         "scam_type": "string" (harassment, hate_speech, sexual_content, scam, doxing, trafficking, none),
+                        "severity": "string" (low, medium, high, critical),
                         "reasons": ["string"]
                     }
                     `,
@@ -109,6 +106,7 @@ Deno.serve(async (req) => {
                             is_safe: { type: "boolean" },
                             risk_score: { type: "number" },
                             scam_type: { type: "string" },
+                            severity: { type: "string" },
                             reasons: { type: "array", items: { type: "string" } }
                         }
                     }
@@ -116,12 +114,8 @@ Deno.serve(async (req) => {
 
                 if (!analysis.is_safe || analysis.risk_score > 50) {
                     isFlagged = true;
-                    // If high risk, soft delete immediately
-                    if (analysis.risk_score > 80) {
-                        isDeleted = true; // "Shadow ban" message
-                    }
+                    if (analysis.risk_score > 80) isDeleted = true;
 
-                    // Log detailed analysis
                     scamAnalysisData = {
                         risk_score: analysis.risk_score,
                         scam_type: analysis.scam_type,
@@ -132,8 +126,69 @@ Deno.serve(async (req) => {
                         },
                         action_taken: isDeleted ? 'hidden' : 'flagged'
                     };
-                }
 
+                    // AUTOMATIC ENFORCEMENT (High Confidence Only)
+                    if (analysis.risk_score > 85) {
+                        const violations = (myProfile.violation_count || 0) + 1;
+                        let action = 'warning';
+                        let suspensionDays = 0;
+                        let notifyAuth = false;
+
+                        // Enforcement Logic
+                        if (analysis.severity === 'critical' || ['trafficking', 'doxing'].includes(analysis.scam_type)) {
+                            action = 'permanent_ban';
+                            notifyAuth = true;
+                        } else if (analysis.severity === 'high' || analysis.risk_score > 95) {
+                            action = violations >= 2 ? 'permanent_ban' : 'temporary_ban';
+                            suspensionDays = 30;
+                        } else {
+                            // Medium severity
+                            if (violations >= 3) action = 'permanent_ban';
+                            else if (violations >= 2) { action = 'temporary_ban'; suspensionDays = 7; }
+                            else action = 'warning';
+                        }
+
+                        // Apply Enforcement
+                        const updateData = { violation_count: violations };
+                        
+                        if (action === 'permanent_ban') {
+                            updateData.is_banned = true;
+                            updateData.ban_reason = `AI Auto-Ban: ${analysis.scam_type}`;
+                            updateData.is_active = false;
+                        } else if (action === 'temporary_ban') {
+                            updateData.is_suspended = true;
+                            updateData.suspension_expires_at = new Date(Date.now() + suspensionDays * 86400000).toISOString();
+                            updateData.suspension_reason = `AI Auto-Suspend: ${analysis.scam_type}`;
+                        } else {
+                            updateData.warning_count = (myProfile.warning_count || 0) + 1;
+                        }
+
+                        // Update Profile (As Service Role)
+                        await base44.asServiceRole.entities.UserProfile.update(myProfile.id, updateData);
+
+                        // Notify User
+                        const alertTitle = action === 'permanent_ban' ? '⛔ Account Banned' : 
+                                         action === 'temporary_ban' ? '🚫 Account Suspended' : 
+                                         '⚠️ Warning Issued';
+                        
+                        await base44.asServiceRole.entities.Notification.create({
+                            user_profile_id: myProfile.id,
+                            type: 'admin_message',
+                            title: alertTitle,
+                            message: `Violation detected: ${analysis.scam_type}. ${action === 'warning' ? 'Further violations will result in suspension.' : ''}`,
+                            is_admin: true
+                        });
+
+                        // Report to Authorities (Admin/Support)
+                        if (notifyAuth) {
+                            await base44.integrations.Core.SendEmail({
+                                to: 'support@afrinnect.com',
+                                subject: '🚨 URGENT: Illegal Activity Detected',
+                                body: `User ${myProfile.display_name} (${myProfile.id}) detected for ${analysis.scam_type}.\nConfidence: ${analysis.risk_score}%\nContent: "${content}"`
+                            });
+                        }
+                    }
+                }
             } catch (e) {
                 console.error("Safety analysis failed", e);
             }
