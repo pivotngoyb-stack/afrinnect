@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Heart, Users, MessageCircle, Crown, Shield, Trash2 } from 'lucide-react';
+import { ArrowLeft, Heart, Users, MessageCircle, Crown, Shield, Trash2, CheckCheck } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -76,6 +76,16 @@ export default function Notifications() {
     }
   });
 
+  const markAllReadMutation = useMutation({
+    mutationFn: async () => {
+      const unread = notifications.filter(n => !n.is_read);
+      await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { is_read: true })));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['notifications']);
+    }
+  });
+
   const deleteNotifMutation = useMutation({
     mutationFn: (notifId) => base44.entities.Notification.delete(notifId),
     onSuccess: () => {
@@ -120,6 +130,18 @@ export default function Notifications() {
               <Badge className="bg-purple-600">{unreadCount} new</Badge>
             )}
           </div>
+          {unreadCount > 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-purple-600 hover:bg-purple-50"
+              onClick={() => markAllReadMutation.mutate()}
+              disabled={markAllReadMutation.isPending}
+            >
+              <CheckCheck size={18} className="mr-1" />
+              Mark all read
+            </Button>
+          )}
         </div>
       </header>
 

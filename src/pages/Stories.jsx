@@ -8,6 +8,7 @@ import { ArrowLeft, Upload, Plus, Trash2, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
+import { toast } from "sonner";
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -189,9 +190,10 @@ export default function Stories() {
       refetchHistory(); // Refetch history sidebar
       setUploadingStory(false);
       setCaption('');
+      toast.success("Story uploaded successfully! 🎉");
     },
     onError: (error) => {
-      alert('Failed to upload story: ' + (error.message || 'Unknown error'));
+      toast.error('Failed to upload story: ' + (error.message || 'Unknown error'));
     }
   });
 

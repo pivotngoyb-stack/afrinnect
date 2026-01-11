@@ -10,10 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Input } from "@/components/ui/input";
+import { Search } from 'lucide-react';
 import { ListItemSkeleton } from '@/components/shared/SkeletonLoader';
 
 export default function Communities() {
   const [myProfile, setMyProfile] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -79,7 +82,15 @@ export default function Communities() {
   });
 
   const myCommunities = communities.filter(c => c.members?.includes(myProfile?.id));
-  const suggestedCommunities = communities.filter(c => !c.members?.includes(myProfile?.id));
+  
+  const suggestedCommunities = communities.filter(c => {
+    const notMember = !c.members?.includes(myProfile?.id);
+    const matchesSearch = !searchQuery || 
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      c.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.category?.toLowerCase().includes(searchQuery.toLowerCase());
+    return notMember && matchesSearch;
+  });
 
   const CommunityCard = ({ community }) => {
     const isMember = community.members?.includes(myProfile?.id);
@@ -176,11 +187,34 @@ export default function Communities() {
           </TabsList>
 
           <TabsContent value="discover">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {suggestedCommunities.map(community => (
-                <CommunityCard key={community.id} community={community} />
-              ))}
+            <div className="relative mb-6">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <Input 
+                placeholder="Search communities..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-12 text-base"
+              />
             </div>
+
+            {suggestedCommunities.length === 0 && searchQuery ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No communities found matching "{searchQuery}"</p>
+                <Button 
+                  variant="link" 
+                  onClick={() => setSearchQuery('')}
+                  className="text-purple-600 mt-2"
+                >
+                  Clear Search
+                </Button>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {suggestedCommunities.map(community => (
+                  <CommunityCard key={community.id} community={community} />
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="my-communities">
