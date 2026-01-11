@@ -13,9 +13,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function VerifyPhoto() {
   const [myProfile, setMyProfile] = useState(null);
-  const [selfieUrl, setSelfieUrl] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [step, setStep] = useState('intro'); // intro, center, left, right, verifying, success, failed
+  const [captures, setCaptures] = useState({ center: null, left: null, right: null });
   const [verificationResult, setVerificationResult] = useState(null);
+  const videoRef = React.useRef(null);
+  const canvasRef = React.useRef(null);
+  const [stream, setStream] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -34,82 +37,123 @@ export default function VerifyPhoto() {
     fetchProfile();
   }, []);
 
-  const handleSelfieUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
+  // Camera handling
+  const startCamera = async () => {
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setSelfieUrl(file_url);
-    } catch (error) {
-      console.error('Upload failed:', error);
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user', width: 640, height: 640 } 
+      });
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      alert("Camera access denied. Please enable camera permissions to verify.");
     }
-    setIsUploading(false);
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+  };
+
+  useEffect(() => {
+    if (['center', 'left', 'right'].includes(step)) {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+    return () => stopCamera();
+  }, [step]);
+
+  const captureFrame = async (pose) => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Flip horizontally for user experience (mirror) -> Capture mirrored? 
+    // Usually better to capture raw, but users expect mirror. 
+    // Let's draw it normally for analysis.
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convert to blob
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      
+      // Temporary placeholder while uploading
+      const tempUrl = URL.createObjectURL(blob);
+      setCaptures(prev => ({ ...prev, [pose]: tempUrl }));
+
+      // Upload immediately
+      try {
+        // Convert blob to file
+        const file = new File([blob], `verification_${pose}.jpg`, { type: 'image/jpeg' });
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        
+        setCaptures(prev => ({ ...prev, [pose]: file_url }));
+        
+        // Advance step
+        if (pose === 'center') setStep('left');
+        else if (pose === 'left') setStep('right');
+        else if (pose === 'right') verifyMutation.mutate({ 
+            center: captures.center || file_url, // fallback if state update lag
+            left: captures.left, 
+            right: file_url 
+        });
+
+      } catch (error) {
+        console.error('Upload failed:', error);
+        alert('Failed to upload frame. Please try again.');
+      }
+    }, 'image/jpeg', 0.8);
   };
 
   const verifyMutation = useMutation({
-    mutationFn: async () => {
-      if (!selfieUrl || !myProfile) return;
+    mutationFn: async (finalCaptures) => {
+      setStep('verifying');
+      
+      // Ensure we have all URLs (passed from captureFrame or state)
+      const centerUrl = captures.center || finalCaptures.center;
+      const leftUrl = captures.left || finalCaptures.left;
+      const rightUrl = finalCaptures.right; // passed directly
 
-      // Use AI to compare selfie with profile photos with detailed face analysis
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a professional face verification AI. Carefully analyze both images and determine if they show the same person.
-
-CRITICAL ANALYSIS REQUIRED:
-1. FACIAL STRUCTURE: Compare bone structure, face shape, jawline, forehead, cheekbones
-2. FACIAL FEATURES: Eyes (shape, size, spacing), nose (shape, size), mouth, ears
-3. SKIN TONE: Consistency in skin color and texture
-4. AGE CONSISTENCY: Both photos should show similar age
-5. UNIQUE MARKERS: Moles, scars, birthmarks, facial hair patterns
-6. AUTHENTICITY: Check for signs of deepfakes, photo manipulation, or different people
-
-VERIFICATION STANDARDS:
-- Match ONLY if you're 80%+ confident it's the same person
-- Consider lighting and angle differences
-- Look for consistent unique facial characteristics
-- Flag if images show different people or manipulated photos
-
-Return:
-- is_match: true ONLY if 80%+ confident same person
-- confidence: Your confidence level 0-100
-- reason: Detailed explanation of why you made this determination`,
-        file_urls: [selfieUrl, myProfile.primary_photo],
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            is_match: { type: 'boolean' },
-            confidence: { type: 'number' },
-            reason: { type: 'string' },
-            facial_structure_match: { type: 'boolean' },
-            features_match: { type: 'boolean' },
-            authenticity_check: { type: 'boolean' }
-          }
-        }
+      const result = await base44.functions.invoke('verifyVideoIdentity', {
+        centerUrl,
+        leftUrl,
+        rightUrl
       });
 
-      // Update profile if verified (requires 80%+ confidence)
-      const isVerified = result.is_match && result.confidence >= 80 && result.facial_structure_match && result.features_match;
-      
-      if (isVerified) {
-        await base44.entities.UserProfile.update(myProfile.id, {
-          verification_status: {
-            ...myProfile.verification_status,
-            photo_verified: true
-          },
-          verification_selfie_url: selfieUrl,
-          ai_safety_score: result.confidence
-        });
-      }
-
-      return { ...result, verified: isVerified };
+      return result.data;
     },
     onSuccess: (data) => {
       setVerificationResult(data);
+      if (data.is_match) {
+        setStep('success');
+      } else {
+        setStep('failed');
+      }
+    },
+    onError: () => {
+      setStep('failed');
     }
   });
 
-  if (verificationResult?.verified) {
+  const resetVerification = () => {
+    setCaptures({ center: null, left: null, right: null });
+    setVerificationResult(null);
+    setStep('intro');
+  };
+
+  if (step === 'success') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <motion.div
@@ -120,12 +164,12 @@ Return:
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-xl">
             <CheckCircle size={48} className="text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Photo Verified! ✓</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Identity Verified! ✓</h2>
           <p className="text-gray-500 mb-2">
-            Thank you for verifying your identity.
+            Your video verification was successful.
           </p>
           <p className="text-sm text-gray-400 mb-8">
-            Confidence: {verificationResult.confidence}%
+            Confidence: {verificationResult?.confidence}%
           </p>
           <Link to={createPageUrl('Home')}>
             <Button className="bg-purple-600 hover:bg-purple-700 w-full">
@@ -147,144 +191,98 @@ Return:
               <ArrowLeft size={24} />
             </Button>
           </Link>
-          <h1 className="text-lg font-bold">Mandatory Verification</h1>
+          <h1 className="text-lg font-bold">Video Verification</h1>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6">
-        {/* Info */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-purple-100 rounded-full">
-                <Shield size={24} className="text-purple-600" />
+        {step === 'intro' && (
+          <Card className="mb-6">
+            <CardContent className="p-6 text-center">
+              <div className="w-20 h-20 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                <Camera size={40} className="text-purple-600" />
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Mandatory Verification</h3>
-                <p className="text-sm text-gray-600 mb-2">
-                  To ensure the safety of our community, we require all members to verify their photos after 30 minutes of joining.
-                </p>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Verify that your selfie matches your profile photos</li>
-                  <li>• Get the verified badge on your profile</li>
-                  <li>• Build trust with potential matches</li>
-                </ul>
+              <h2 className="text-xl font-bold mb-2">Let's verify it's really you</h2>
+              <p className="text-gray-600 mb-6">
+                We'll ask you to perform 3 simple head movements to confirm you're a real person.
+              </p>
+              
+              <div className="space-y-4 mb-8 text-left max-w-xs mx-auto">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold">1</div>
+                  <p>Center your face</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold">2</div>
+                  <p>Turn head Left</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold">3</div>
+                  <p>Turn head Right</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Profile Photo */}
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Your Profile Photo</h3>
-          <img
-            src={myProfile?.primary_photo || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400'}
-            alt="Profile"
-            className="w-32 h-32 rounded-2xl object-cover border-2 border-gray-200"
-          />
-        </div>
+              <Button onClick={() => setStep('center')} className="w-full py-6 text-lg bg-purple-600 hover:bg-purple-700">
+                Start Verification
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Selfie Upload */}
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Take a Selfie</h3>
-          
-          {!selfieUrl ? (
-            <label className="block">
-              <input
-                type="file"
-                accept="image/*"
-                capture="user"
-                onChange={handleSelfieUpload}
-                className="hidden"
-                disabled={isUploading}
+        {['center', 'left', 'right'].includes(step) && (
+          <div className="flex flex-col items-center">
+            <h2 className="text-2xl font-bold mb-4 text-center">
+              {step === 'center' && "Look Straight Ahead"}
+              {step === 'left' && "Turn Head Left ←"}
+              {step === 'right' && "Turn Head Right →"}
+            </h2>
+
+            <div className="relative w-64 h-80 bg-black rounded-3xl overflow-hidden shadow-xl mb-8 border-4 border-purple-600">
+              <video 
+                ref={videoRef} 
+                autoPlay 
+                playsInline 
+                muted 
+                className="w-full h-full object-cover transform -scale-x-100" // Mirror effect
               />
-              <div className="aspect-[3/4] max-w-xs rounded-2xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition">
-                {isUploading ? (
-                  <Loader2 size={48} className="text-purple-600 animate-spin mb-4" />
-                ) : (
-                  <>
-                    <Camera size={48} className="text-gray-400 mb-4" />
-                    <p className="text-gray-600 font-medium">Take Selfie</p>
-                    <p className="text-xs text-gray-400 mt-2 text-center px-4">
-                      Make sure your face is clearly visible
-                    </p>
-                  </>
-                )}
-              </div>
-            </label>
-          ) : (
-            <div className="relative inline-block">
-              <img
-                src={selfieUrl}
-                alt="Selfie"
-                className="w-48 h-64 rounded-2xl object-cover border-2 border-purple-200"
-              />
-              <button
-                onClick={() => setSelfieUrl(null)}
-                className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600"
-              >
-                ×
-              </button>
+              <canvas ref={canvasRef} className="hidden" />
+              
+              {/* Overlay Guide */}
+              <div className="absolute inset-0 border-2 border-white/50 rounded-full m-8 pointer-events-none" />
             </div>
-          )}
-        </div>
 
-        {/* Instructions */}
-        <Alert className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Tips for best results:</strong>
-            <ul className="mt-2 space-y-1 text-sm">
-              <li>• Face the camera directly</li>
-              <li>• Use good lighting</li>
-              <li>• Remove sunglasses and hats</li>
-              <li>• Match the pose of your profile photo</li>
-            </ul>
-          </AlertDescription>
-        </Alert>
+            <Button 
+              onClick={() => captureFrame(step)}
+              className="w-full max-w-xs py-6 text-lg bg-purple-600 hover:bg-purple-700"
+            >
+              <Camera className="mr-2" />
+              Capture & Continue
+            </Button>
+          </div>
+        )}
 
-        {/* Verify Button */}
-        <Button
-          onClick={() => verifyMutation.mutate()}
-          disabled={!selfieUrl || verifyMutation.isPending}
-          className="w-full py-6 text-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
-        >
-          {verifyMutation.isPending ? (
-            <>
-              <Loader2 size={24} className="animate-spin mr-2" />
-              Verifying...
-            </>
-          ) : (
-            <>
-              <Shield size={24} className="mr-2" />
-              Verify My Photo
-            </>
-          )}
-        </Button>
+        {step === 'verifying' && (
+          <div className="text-center py-12">
+            <Loader2 size={64} className="text-purple-600 animate-spin mx-auto mb-6" />
+            <h2 className="text-xl font-bold mb-2">Verifying Identity...</h2>
+            <p className="text-gray-500">Analyzing your movements and face match.</p>
+          </div>
+        )}
 
-        {/* Failed Verification */}
-        {verificationResult && !verificationResult.verified && (
+        {step === 'failed' && (
           <Alert className="mt-6 border-red-200 bg-red-50">
             <AlertCircle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
-              <strong>Verification Failed</strong>
-              <p className="mt-1 text-sm">
-                {verificationResult.reason || "We couldn't verify your photo. Please make sure your face is clearly visible and matches your profile photo."}
+              <strong className="text-lg block mb-2">Verification Failed</strong>
+              <p className="mb-4">
+                {verificationResult?.reason || "We couldn't verify your identity. Please make sure your face is clearly visible and you follow the movement instructions."}
               </p>
-              <div className="mt-3 flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSelfieUrl(null);
-                    setVerificationResult(null);
-                  }}
-                  className="bg-white hover:bg-gray-50 text-red-600 border-red-200"
-                >
-                  <Camera className="w-4 h-4 mr-2" />
-                  Retake Selfie
-                </Button>
-              </div>
+              <Button
+                onClick={resetVerification}
+                className="w-full bg-white hover:bg-gray-50 text-red-600 border border-red-200"
+              >
+                Try Again
+              </Button>
             </AlertDescription>
           </Alert>
         )}
