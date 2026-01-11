@@ -136,7 +136,7 @@ export default function VerifyPhoto() {
     },
     onSuccess: (data) => {
       setVerificationResult(data);
-      if (data.is_match) {
+      if (data.verified) {
         setStep('success');
       } else {
         setStep('failed');

@@ -82,7 +82,9 @@ RESPONSE FORMAT (JSON):
     });
 
     // Lowered threshold to account for webcam quality issues
-    if (result.is_match && result.confidence >= 65) {
+    const isVerified = result.is_match && result.confidence >= 65;
+
+    if (isVerified) {
       // Success - Update profile
       await base44.entities.UserProfile.update(profile.id, {
         verification_status: {
@@ -94,7 +96,7 @@ RESPONSE FORMAT (JSON):
       });
     }
 
-    return Response.json(result);
+    return Response.json({ ...result, verified: isVerified });
 
   } catch (error) {
     console.error('Video verification error:', error);
