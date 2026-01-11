@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Crown, Clock, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 export default function TrialExpiryBanner({ userProfile }) {
+  const { t } = useLanguage();
   // Check both premium status and date presence
   if (!userProfile?.is_premium || !userProfile?.premium_until) {
     return null;
@@ -55,15 +57,15 @@ export default function TrialExpiryBanner({ userProfile }) {
           <Crown className="h-5 w-5 text-amber-600" />
           <AlertDescription className="flex items-center justify-between">
             <div>
-              <p className="font-semibold text-gray-900">Your Premium trial has ended</p>
+              <p className="font-semibold text-gray-900">{t('admin.trial.ended')}</p>
               <p className="text-sm text-gray-600 mt-1">
-                Upgrade now to keep unlimited likes, profile boosts, and more!
+                {t('admin.trial.upgradeToKeep')}
               </p>
             </div>
             <Link to={createPageUrl('PricingPlans')}>
               <Button className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 ml-4">
                 <Sparkles size={16} className="mr-2" />
-                Upgrade
+                {t('admin.common.upgrade')}
               </Button>
             </Link>
           </AlertDescription>
@@ -84,16 +86,16 @@ export default function TrialExpiryBanner({ userProfile }) {
         <AlertDescription className="flex items-center justify-between">
           <div>
             <p className="font-semibold text-gray-900">
-              Premium trial ends in {hoursLeft < 24 ? `${hoursLeft} hours` : `${daysLeft} days`}
+              {t('admin.trial.endsIn')} {hoursLeft < 24 ? `${hoursLeft} ${t('admin.trial.hours')}` : `${daysLeft} ${t('admin.trial.days')}`}
             </p>
             <p className="text-sm text-gray-600 mt-1">
-              Don't lose access to unlimited likes and profile boosts!
+              {t('admin.trial.dontLose')}
             </p>
           </div>
           <Link to={createPageUrl('PricingPlans')}>
             <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 ml-4">
               <Crown size={16} className="mr-2" />
-              Upgrade Now
+              {t('admin.tierGate.upgradeNow')}
             </Button>
           </Link>
         </AlertDescription>

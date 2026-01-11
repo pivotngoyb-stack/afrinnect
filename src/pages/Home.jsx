@@ -30,10 +30,12 @@ import { useUpgradePrompts, UpgradePromptBanner } from '@/components/monetizatio
 import { ProfileCardSkeleton } from '@/components/shared/SkeletonLoader';
 import BannedScreen from '@/components/auth/BannedScreen';
 import TrialExpiryBanner from '@/components/monetization/TrialExpiryBanner';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 export default function Home() {
   usePerformanceMonitor('Home');
   const { trackEvent } = useConversionTracker();
+  const { t } = useLanguage();
   
   const [viewMode, setViewMode] = useState('swipe');
   const [discoveryMode, setDiscoveryMode] = useState('global');
@@ -640,13 +642,13 @@ export default function Home() {
       });
       
       if (superLikesThisWeek.length >= 1) {
-        alert('Free users get 1 Super Like per week. Upgrade to Premium for more!');
+        alert(t('admin.home.freeSuperLikeLimit'));
         return;
       }
-    } else if (tier === 'premium' && superLikesToday.length >= 5) {
-      alert('Premium users get 5 Super Likes per day. Upgrade to Elite for unlimited!');
+      } else if (tier === 'premium' && superLikesToday.length >= 5) {
+      alert(t('admin.home.premiumSuperLikeLimit'));
       return;
-    }
+      }
     
     // Haptic feedback
     if (navigator.vibrate) {
@@ -765,11 +767,11 @@ export default function Home() {
                 <TabsList className="bg-gray-100">
                   <TabsTrigger value="local" className="gap-1 text-xs sm:text-sm">
                     <MapPin size={14} />
-                    <span className="hidden sm:inline">Local</span>
+                    <span className="hidden sm:inline">{t('home.local')}</span>
                   </TabsTrigger>
                   <TabsTrigger value="global" className="gap-1 text-xs sm:text-sm">
                     <Globe size={14} />
-                    <span className="hidden sm:inline">Global</span>
+                    <span className="hidden sm:inline">{t('home.global')}</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -877,7 +879,7 @@ export default function Home() {
               <Button
                 onClick={handleRewind}
                 className="absolute left-4 top-1/2 -translate-y-1/2 z-10 rounded-full w-14 h-14 bg-amber-500 hover:bg-amber-600"
-                title="Rewind last swipe"
+                title={t('admin.home.rewindLastSwipe')}
               >
                 <RotateCcw size={24} />
               </Button>
@@ -990,7 +992,7 @@ export default function Home() {
             >
               <div className="text-center">
                 <div className="text-8xl mb-4">💕</div>
-                <h2 className="text-4xl font-bold text-white drop-shadow-lg">It's a Match!</h2>
+                <h2 className="text-4xl font-bold text-white drop-shadow-lg">{t('admin.home.itsAMatch')}</h2>
               </div>
             </motion.div>
           )}

@@ -27,8 +27,10 @@ import SpotifySection from '@/components/profile/SpotifySection';
 import ProfileBadges from '@/components/profile/ProfileBadges';
 import NotificationBell from '@/components/shared/NotificationBell';
 import { Share2, AlertTriangle } from 'lucide-react';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 export default function Profile() {
+  const { t } = useLanguage();
   const urlParams = new URLSearchParams(window.location.search);
   const profileId = urlParams.get('id');
   
@@ -170,7 +172,7 @@ export default function Profile() {
     } else {
       // Fallback: copy link
       navigator.clipboard.writeText(window.location.href);
-      alert('Profile link copied!');
+      alert(t('admin.home.linkCopied'));
     }
   };
 
@@ -280,12 +282,12 @@ export default function Profile() {
             <div className="flex gap-2 mt-3">
               <Button onClick={handleShareProfile} variant="outline" size="sm">
                 <Share2 size={14} className="mr-2" />
-                Share Profile
+                {t('admin.home.shareProfile')}
               </Button>
               <Link to={createPageUrl(`Report?userId=${profile.id}`)}>
                 <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">
                   <AlertTriangle size={14} className="mr-2" />
-                  Report
+                  {t('chat.report')}
                 </Button>
               </Link>
             </div>
@@ -308,16 +310,16 @@ export default function Profile() {
           <Card className="mb-6 border-amber-200 bg-gradient-to-r from-amber-50 to-purple-50">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Profile Completion</span>
+                <span className="text-sm font-medium text-gray-700">{t('admin.home.profileCompletion')}</span>
                 <span className="text-sm font-bold text-purple-600">{completion}%</span>
               </div>
               <Progress value={completion} className="h-2 mb-3" />
               <p className="text-xs text-gray-500">
-                Complete your profile to get more matches!
+                {t('profile.completeProfile')}
               </p>
               <Link to={createPageUrl('EditProfile')}>
                 <Button size="sm" className="mt-3 w-full bg-purple-600 hover:bg-purple-700">
-                  Complete Profile
+                  {t('admin.home.completeProfileBtn')}
                 </Button>
               </Link>
             </CardContent>
@@ -338,22 +340,22 @@ export default function Profile() {
 
         {/* Video Profile */}
         {profile?.video_profile_url && (
-          <Card className="mb-6 overflow-hidden border-0 shadow-lg">
-            <div className="bg-gradient-to-r from-pink-500 to-rose-600 p-4">
-              <div className="flex items-center gap-2 text-white">
-                <Video size={20} />
-                <h3 className="font-bold">Video Intro</h3>
-              </div>
-            </div>
-            <div className="bg-black aspect-[9/16] max-h-[500px] flex justify-center">
-              <video 
-                src={profile.video_profile_url} 
-                controls 
-                className="h-full w-full object-contain"
-                poster={profile.primary_photo}
-              />
-            </div>
-          </Card>
+        <Card className="mb-6 overflow-hidden border-0 shadow-lg">
+        <div className="bg-gradient-to-r from-pink-500 to-rose-600 p-4">
+          <div className="flex items-center gap-2 text-white">
+            <Video size={20} />
+            <h3 className="font-bold">{t('admin.home.videoIntro')}</h3>
+          </div>
+        </div>
+        <div className="bg-black aspect-[9/16] max-h-[500px] flex justify-center">
+          <video 
+            src={profile.video_profile_url} 
+            controls 
+            className="h-full w-full object-contain"
+            poster={profile.primary_photo}
+          />
+        </div>
+        </Card>
         )}
 
         {/* Quick Info Grid */}
@@ -365,7 +367,7 @@ export default function Profile() {
                   <Briefcase size={16} className="text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Work</p>
+                  <p className="text-xs text-gray-500">{t('profile.work')}</p>
                   <p className="text-sm font-medium text-gray-800">{profile.profession}</p>
                 </div>
               </CardContent>
@@ -379,7 +381,7 @@ export default function Profile() {
                   <GraduationCap size={16} className="text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Education</p>
+                  <p className="text-xs text-gray-500">{t('profile.education')}</p>
                   <p className="text-sm font-medium text-gray-800 capitalize">{profile.education?.replace('_', ' ')}</p>
                 </div>
               </CardContent>
@@ -393,7 +395,7 @@ export default function Profile() {
                   <Book size={16} className="text-green-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Religion</p>
+                  <p className="text-xs text-gray-500">{t('profile.religion')}</p>
                   <p className="text-sm font-medium text-gray-800 capitalize">{profile.religion?.replace('_', ' ')}</p>
                 </div>
               </CardContent>
@@ -407,7 +409,7 @@ export default function Profile() {
                   <Heart size={16} className="text-pink-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Looking For</p>
+                  <p className="text-xs text-gray-500">{t('profile.lookingFor')}</p>
                   <p className="text-sm font-medium text-gray-800 capitalize">{profile.relationship_goal?.replace('_', ' ')}</p>
                 </div>
               </CardContent>
@@ -501,16 +503,16 @@ export default function Profile() {
                 <Link to={createPageUrl('Analytics')}>
                   <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" size="lg">
                     <BarChart size={18} className="mr-2" />
-                    View Analytics
-                    <Badge className="ml-2 bg-amber-500 text-xs">Premium</Badge>
+                    {t('profile.viewAnalytics')}
+                    <Badge className="ml-2 bg-amber-500 text-xs">{t('common.premium')}</Badge>
                   </Button>
                 </Link>
 
                 <Link to={createPageUrl('ProfileOptimization')}>
                   <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" size="lg">
                     <Sparkles size={18} className="mr-2" />
-                    Optimize My Profile
-                    <Badge className="ml-2 bg-amber-500 text-xs">Premium</Badge>
+                    {t('profile.optimizeProfile')}
+                    <Badge className="ml-2 bg-amber-500 text-xs">{t('common.premium')}</Badge>
                   </Button>
                 </Link>
               </>
@@ -521,7 +523,7 @@ export default function Profile() {
               <Link to={createPageUrl('VerifyPhoto')}>
                 <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
                   <Shield size={18} className="mr-2" />
-                  Verify Your Photo
+                  {t('profile.verifyPhoto')}
                 </Button>
               </Link>
             )}
@@ -530,7 +532,7 @@ export default function Profile() {
               <Link to={createPageUrl('IDVerification')}>
                 <Button className="w-full bg-orange-600 hover:bg-orange-700" size="lg">
                   <IdCard size={18} className="mr-2" />
-                  Verify Your Age (18+)
+                  {t('profile.verifyAge')}
                 </Button>
               </Link>
             )}
@@ -538,7 +540,7 @@ export default function Profile() {
             <Link to={createPageUrl('SuccessStories')}>
               <Button className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700" size="lg">
                 <Heart size={18} className="mr-2" />
-                Success Stories
+                {t('profile.successStories')}
               </Button>
             </Link>
 
@@ -560,7 +562,7 @@ export default function Profile() {
               <Link to={createPageUrl('EditProfile')} className="flex-1">
                 <Button className="w-full bg-purple-600 hover:bg-purple-700" size="lg">
                   <Edit2 size={18} className="mr-2" />
-                  Edit Profile
+                  {t('profile.editProfile')}
                 </Button>
               </Link>
               <BoostProfileButton 
@@ -575,7 +577,7 @@ export default function Profile() {
                   className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" 
                   size="lg"
                   onClick={async () => {
-                    if (confirm('Are you sure you want to cancel your subscription? You will keep your benefits until the end of the current billing period.')) {
+                    if (confirm(t('admin.home.cancelWarning'))) {
                       try {
                         const res = await base44.functions.invoke('cancelSubscription', {});
                         if (res.data.success) {
@@ -591,26 +593,26 @@ export default function Profile() {
                   }}
                 >
                   <Crown size={18} className="mr-2" />
-                  Cancel Subscription
+                  {t('admin.home.cancelSubscription')}
                 </Button>
                 <p className="text-xs text-center text-gray-500">
-                  Billing continues until cancelled. 
+                  {t('admin.home.billingContinues')}
                 </p>
               </div>
             ) : (
               <Link to={createPageUrl('PricingPlans')}>
                 <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" size="lg">
                   <Crown size={18} className="mr-2" />
-                  Upgrade Membership
+                  {t('profile.upgradePremium')}
                 </Button>
               </Link>
             )}
 
             {/* Dynamic Features Section */}
             {[
-              { id: 'background_check', label: 'Request Background Check', icon: Shield, link: 'BackgroundCheckRequest', badge: 'Safety' },
-              { id: 'phone_verification', label: 'Verify Your Phone', icon: Shield, link: 'PhoneVerification', condition: !profile?.verification_status?.phone_verified },
-              { id: 'language_exchange', label: 'Language Exchange', icon: Languages, link: 'LanguageExchangeHub' },
+              { id: 'background_check', label: t('profile.backgroundCheck'), icon: Shield, link: 'BackgroundCheckRequest', badge: 'Safety' },
+              { id: 'phone_verification', label: t('profile.verifyPhone'), icon: Shield, link: 'PhoneVerification', condition: !profile?.verification_status?.phone_verified },
+              { id: 'language_exchange', label: t('profile.languageExchange'), icon: Languages, link: 'LanguageExchangeHub' },
               { id: 'referral_program', label: 'Referral Program', icon: Users, link: 'ReferralProgram', badge: 'Earn' },
               { id: 'marketplace', label: 'Marketplace', icon: Heart, link: 'Marketplace' }
             ].map((feature) => {
@@ -637,17 +639,17 @@ export default function Profile() {
               <div className="pt-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Separator className="flex-1" />
-                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Coming Soon</span>
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('admin.home.comingSoon')}</span>
                   <Separator className="flex-1" />
                 </div>
                 
                 <div className="space-y-3 opacity-70 grayscale">
                   {[
-                    { id: 'background_check', label: 'Request Background Check', icon: Shield },
-                    { id: 'phone_verification', label: 'Verify Your Phone', icon: Shield, condition: !profile?.verification_status?.phone_verified },
-                    { id: 'language_exchange', label: 'Language Exchange', icon: Languages },
-                    { id: 'referral_program', label: 'Referral Program', icon: Users },
-                    { id: 'marketplace', label: 'Marketplace', icon: Heart }
+                    { id: 'background_check', label: t('profile.backgroundCheck'), icon: Shield },
+                    { id: 'phone_verification', label: t('profile.verifyPhone'), icon: Shield, condition: !profile?.verification_status?.phone_verified },
+                    { id: 'language_exchange', label: t('profile.languageExchange'), icon: Languages },
+                    { id: 'referral_program', label: 'Referral Program', icon: Users }, // TODO: Add key
+                    { id: 'marketplace', label: 'Marketplace', icon: Heart } // TODO: Add key
                   ].map(feature => {
                     const isEnabled = isFeatureEnabled(feature.id);
                     if (isEnabled || feature.condition === false) return null;
@@ -658,7 +660,7 @@ export default function Profile() {
                           <feature.icon size={18} className="mr-2" />
                           {feature.label}
                         </div>
-                        <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">Coming Soon</Badge>
+                        <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">{t('admin.home.comingSoon')}</Badge>
                       </Button>
                     );
                   })}
@@ -674,7 +676,7 @@ export default function Profile() {
               onClick={handleLogout}
             >
               <LogOut size={18} className="mr-2" />
-              Log Out
+              {t('profile.logout')}
             </Button>
           </div>
         )}

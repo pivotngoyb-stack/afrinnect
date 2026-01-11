@@ -27,6 +27,8 @@ export function hasAccess(userTier, feature) {
   return requiredTiers.includes(tier);
 }
 
+import { useLanguage } from '@/components/i18n/LanguageContext';
+
 export default function TierGate({ 
   userTier, 
   requiredFeature, 
@@ -34,6 +36,7 @@ export default function TierGate({
   fallback = null,
   showUpgradePrompt = true 
 }) {
+  const { t } = useLanguage();
   const tier = userTier || 'free';
   const access = hasAccess(tier, requiredFeature);
 
@@ -47,6 +50,7 @@ export default function TierGate({
 
   const requiredTiers = TIER_FEATURES[requiredFeature] || [];
   const lowestTier = requiredTiers[0];
+  const tierName = lowestTier.charAt(0).toUpperCase() + lowestTier.slice(1);
 
   return (
     <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-purple-50">
@@ -54,14 +58,14 @@ export default function TierGate({
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
           <Crown size={32} className="text-white" />
         </div>
-        <h3 className="text-lg font-bold mb-2">Premium Feature</h3>
+        <h3 className="text-lg font-bold mb-2">{t('admin.tierGate.premiumFeature')}</h3>
         <p className="text-gray-600 mb-4">
-          Upgrade to {lowestTier.charAt(0).toUpperCase() + lowestTier.slice(1)} to unlock this feature
+          {t('admin.tierGate.upgradeToUnlock').replace('{tier}', tierName)}
         </p>
         <Link to={createPageUrl('PricingPlans')}>
           <Button className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700">
             <Crown size={18} className="mr-2" />
-            Upgrade Now
+            {t('admin.tierGate.upgradeNow')}
           </Button>
         </Link>
       </CardContent>
