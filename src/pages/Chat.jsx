@@ -591,15 +591,24 @@ export default function Chat() {
             isUploading={sendVoiceNoteMutation.isPending}
           />
 
-          <Input
+          <Textarea
             placeholder="Type a message..."
             value={messageText}
             onChange={(e) => {
               setMessageText(e.target.value);
               handleTyping();
+              // Auto-resize
+              e.target.style.height = 'auto';
+              e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
             }}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            className="flex-1"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            className="flex-1 min-h-[44px] max-h-[120px] py-3 resize-none"
+            rows={1}
           />
 
           <Button

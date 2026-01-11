@@ -17,9 +17,12 @@ export default function Landing() {
   const { t } = useLanguage();
   const { trackEvent } = useConversionTracker();
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     trackEvent(CONVERSION_EVENTS.LANDING_VIEW);
+    // Check login status
+    base44.auth.isAuthenticated().then(setIsLoggedIn).catch(() => {});
   }, []);
 
   // Auto-rotate testimonials
@@ -127,13 +130,24 @@ export default function Landing() {
           </div>
           <div className="flex items-center gap-2">
             <LanguageSelector />
-            <Button 
-              onClick={handleLogin}
-              variant="ghost" 
-              className="text-white hover:bg-white/20"
-            >
-              {t('landing.login')}
-            </Button>
+            {isLoggedIn ? (
+              <Link to={createPageUrl('Home')}>
+                <Button 
+                  variant="ghost" 
+                  className="text-white hover:bg-white/20 font-semibold"
+                >
+                  Go to App →
+                </Button>
+              </Link>
+            ) : (
+              <Button 
+                onClick={handleLogin}
+                variant="ghost" 
+                className="text-white hover:bg-white/20"
+              >
+                {t('landing.login')}
+              </Button>
+            )}
           </div>
         </div>
       </nav>
@@ -169,22 +183,36 @@ export default function Landing() {
             
             {/* CTA */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <Button 
-                onClick={handleGetStarted}
-                size="lg" 
-                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-10 py-6 text-lg rounded-full shadow-2xl"
-              >
-                {t('landing.getStarted')}
-                <ArrowRight size={20} className="ml-2" />
-              </Button>
-              <Button 
-                onClick={handleLogin}
-                size="lg" 
-                variant="outline"
-                className="bg-white/10 backdrop-blur-lg border-white/30 text-white hover:bg-white/20 px-10 py-6 text-lg rounded-full"
-              >
-                {t('landing.login')}
-              </Button>
+              {isLoggedIn ? (
+                <Link to={createPageUrl('Home')}>
+                  <Button 
+                    size="lg" 
+                    className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-10 py-6 text-lg rounded-full shadow-2xl"
+                  >
+                    Welcome Back! Go to App
+                    <ArrowRight size={20} className="ml-2" />
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Button 
+                    onClick={handleGetStarted}
+                    size="lg" 
+                    className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-10 py-6 text-lg rounded-full shadow-2xl"
+                  >
+                    {t('landing.getStarted')}
+                    <ArrowRight size={20} className="ml-2" />
+                  </Button>
+                  <Button 
+                    onClick={handleLogin}
+                    size="lg" 
+                    variant="outline"
+                    className="bg-white/10 backdrop-blur-lg border-white/30 text-white hover:bg-white/20 px-10 py-6 text-lg rounded-full"
+                  >
+                    {t('landing.login')}
+                  </Button>
+                </>
+              )}
             </div>
 
             <div className="flex items-center gap-6 text-white/80 text-sm">

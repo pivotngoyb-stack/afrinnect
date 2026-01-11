@@ -24,6 +24,7 @@ export default function Events() {
   const [eventType, setEventType] = useState('all');
   const [location, setLocation] = useState('all');
   const [timeFilter, setTimeFilter] = useState('upcoming');
+  const [activeTab, setActiveTab] = useState('discover');
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -131,6 +132,8 @@ export default function Events() {
     return true;
   });
 
+  const myEvents = events.filter(event => event.attendees?.includes(myProfile?.id));
+
   const canCreateEvent = myProfile && (
     myProfile.subscription_tier && myProfile.subscription_tier !== 'free' ||
     myProfile.verification_status?.photo_verified
@@ -163,16 +166,30 @@ export default function Events() {
             />
           </div>
 
-          {/* Filters */}
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            <Tabs value={timeFilter} onValueChange={setTimeFilter}>
-              <TabsList>
-                <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-                <TabsTrigger value="past">Past</TabsTrigger>
-              </TabsList>
-            </Tabs>
+          {/* Main Navigation */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="discover">Discover Events</TabsTrigger>
+              <TabsTrigger value="my_events">
+                My Events
+                {myEvents.length > 0 && (
+                  <Badge variant="secondary" className="ml-2 h-5 px-1.5 min-w-[20px]">{myEvents.length}</Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-            <Select value={eventType} onValueChange={setEventType}>
+          {/* Filters (Only show in Discover tab) */}
+          {activeTab === 'discover' && (
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <Tabs value={timeFilter} onValueChange={setTimeFilter}>
+                <TabsList>
+                  <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+                  <TabsTrigger value="past">Past</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <Select value={eventType} onValueChange={setEventType}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Event Type" />
               </SelectTrigger>
@@ -191,12 +208,12 @@ export default function Events() {
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Location" />
               </SelectTrigger>
-              <SelectContent>
                 <SelectItem value="all">All Locations</SelectItem>
                 <SelectItem value="local">Near Me</SelectItem>
               </SelectContent>
             </Select>
           </div>
+          )}
         </div>
       </header>
 
@@ -208,26 +225,27 @@ export default function Events() {
               <EventCardSkeleton key={idx} />
             ))}
           </div>
-        ) : filteredEvents.length === 0 ? (
-          <EmptyState
-            icon={Calendar}
-            title="No Events Found"
-            description="Try adjusting your filters or check back later for new events"
-            actionLabel="Reset Filters"
-            onAction={() => {
-              setEventType('all');
-              setLocation('all');
-              setSearchQuery('');
-            }}
-          />
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEvents.map((event, idx) => {
-              const isAttending = event.attendees?.includes(myProfile?.id);
-              const isFull = event.max_attendees && event.attendees?.length >= event.max_attendees;
+        ) : activeTab === 'discover' ? (
+          filteredEvents.length === 0 ? (
+            <EmptyState
+              icon={Calendar}
+              title="No Events Found"
+              description="Try adjusting your filters or check back later for new events"
+              actionLabel="Reset Filters"
+              onAction={() => {
+                setEventType('all');
+                setLocation('all');
+                setSearchQuery('');
+              }}
+            />
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredEvents.map((event, idx) => {
+                const isAttending = event.attendees?.includes(myProfile?.id);
+                const isFull = event.max_attendees && event.attendees?.length >= event.max_attendees;
 
-              return (
-                <motion.div
+                return (
+                  <motion.div
                   key={event.id}
                   ref={idx === filteredEvents.length - 1 ? lastEventRef : null}
                   initial={{ opacity: 0, y: 20 }}
@@ -314,15 +332,63 @@ export default function Events() {
               );
             })}
           </div>
+        ) : (
+          /* My Events Tab */
+          myEvents.length === 0 ? (
+            <EmptyState
+              icon={Calendar}
+              title="No Upcoming Events"
+              description="You haven't joined any events yet. Browse the Discover tab to find something fun!"
+              actionLabel="Browse Events"
+              onAction={() => setActiveTab('discover')}
+            />
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {myEvents.map((event, idx) => (
+                <motion.div
+                  key={event.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Link to={createPageUrl(`EventDetails?id=${event.id}`)}>
+                    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-l-purple-600">
+                      {/* Condensed card for "My Events" */}
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-bold text-lg leading-tight">{event.title}</h3>
+                          <Badge className="bg-green-100 text-green-700 hover:bg-green-200">Going</Badge>
+                        </div>
+                        
+                        <div className="space-y-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-2">
+                            <Clock size={16} className="text-purple-500" />
+                            <span className="font-medium text-gray-900">{format(new Date(event.start_date), 'PPp')}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MapPin size={16} className="text-gray-400" />
+                            <span className="line-clamp-1">{event.location_name || 'Virtual'}</span>
+                          </div>
+                        </div>
+                        
+                        <Button className="w-full mt-4 bg-white text-purple-600 border border-purple-200 hover:bg-purple-50">
+                          View Ticket & Details
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )
         )}
         
-        {isLoadingMore && (
+        {isLoadingMore && activeTab === 'discover' && (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-4 border-purple-600 border-t-transparent" />
           </div>
         )}
 
-        {!hasMore && events.length > 0 && (
+        {!hasMore && events.length > 0 && activeTab === 'discover' && (
           <p className="text-center text-gray-500 py-8">No more events</p>
         )}
       </main>
