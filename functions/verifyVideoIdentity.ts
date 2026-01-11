@@ -25,41 +25,41 @@ Deno.serve(async (req) => {
     // AI Analysis
     // We send: Reference (Profile Photo), Center, Left, Right
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a strict identity verification AI. You are verifying a user via a "video-like" check where they captured 3 specific frames: Center, Left, and Right.
-
-Your task is to compare these 3 frames against the user's Reference Profile Photo.
+      prompt: `You are an expert identity verification AI. Compare 3 video frames against a Reference Profile Photo.
 
 INPUTS:
-1. Reference Photo: User's primary profile photo.
-2. Center Frame: User looking straight at camera.
-3. Left Frame: User looking to their left.
-4. Right Frame: User looking to their right.
+1. Reference Photo: User's primary profile photo (Likely professional, good lighting, makeup, maybe filtered).
+2. Center Frame: Webcam/Phone capture (Raw, likely poor lighting, no makeup, lens distortion).
+3. Left Frame: Head turned left.
+4. Right Frame: Head turned right.
 
-VERIFICATION CRITERIA (Strict but reasonable):
-1. IDENTITY MATCH (Critical): Do all 3 frames match the Reference Photo? (Allow for lighting/makeup/beard changes, but bone structure must match).
-2. LIVENESS CHECK (Critical): 
-   - Is "Center" actually looking center?
-   - Is "Left" actually looking left?
-   - Is "Right" actually looking right?
-   - Are these 3 DISTINCT images (not just duplicates)?
-3. CONSISTENCY: Do the 3 frames look like they were taken in the same session (same clothes/lighting)?
+VERIFICATION RULES (Lenient on Quality, Strict on Anatomy):
+1. IDENTITY MATCH: Focus on BONE STRUCTURE (jawline, cheekbones, eye spacing, nose shape, ear placement). 
+   - IGNORE: Skin texture, blemishes, makeup, facial hair length, hair style/color changes, lighting differences, and camera quality.
+   - EXPECT: The "Reference" to look more polished/attractive than the "Frames". This is normal.
+   - REJECT ONLY IF: Facial geometry is fundamentally different (e.g., different person).
 
-STRICTNESS LEVEL:
-- Identity: STRICT. If it looks like a different person, reject.
-- Poses: MODERATE. As long as the head is turned in the correct general direction, approve. Don't demand exact 90 degrees.
-- Quality: MODERATE. Allow for some blur/grain, but face must be visible.
+2. LIVENESS CHECK:
+   - "Center": Looking roughly forward.
+   - "Left" & "Right": Head turned noticeably (doesn't need to be 90° profile, just turned).
+   - Must be 3 distinct moments (not identical duplicates).
+
+STRICTNESS:
+- Identity: MODERATE. Prioritize geometric matches over superficial ones.
+- Poses: LENIENT. Any noticeable turn is accepted.
+- Quality: LENIENT. Accept blur/grain/shadows if face is visible.
 
 RESPONSE FORMAT (JSON):
 {
-  "is_match": boolean, (true ONLY if identity matches AND poses are correct)
-  "confidence": number, (0-100)
+  "is_match": boolean, (true if likely the same person AND poses are valid)
+  "confidence": number, (0-100, be generous for poor lighting)
   "poses_valid": {
     "center": boolean,
     "left": boolean,
     "right": boolean
   },
   "identity_valid": boolean,
-  "reason": "Short explanation for the user (e.g., 'Face mismatch', 'Please turn head further left', 'Success')"
+  "reason": "Brief, helpful feedback for the user"
 }`,
       file_urls: [profile.primary_photo, centerUrl, leftUrl, rightUrl],
       response_json_schema: {
@@ -81,7 +81,8 @@ RESPONSE FORMAT (JSON):
       }
     });
 
-    if (result.is_match && result.confidence >= 75) {
+    // Lowered threshold to account for webcam quality issues
+    if (result.is_match && result.confidence >= 65) {
       // Success - Update profile
       await base44.entities.UserProfile.update(profile.id, {
         verification_status: {

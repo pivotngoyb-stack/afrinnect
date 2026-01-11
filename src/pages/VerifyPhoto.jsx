@@ -105,7 +105,7 @@ export default function VerifyPhoto() {
         if (pose === 'center') setStep('left');
         else if (pose === 'left') setStep('right');
         else if (pose === 'right') verifyMutation.mutate({ 
-            center: captures.center || file_url, // fallback if state update lag
+            center: captures.center, 
             left: captures.left, 
             right: file_url 
         });
