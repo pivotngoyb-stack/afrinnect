@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Crown, Clock, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { base44 } from '@/api/base44Client';
 
 export default function TrialExpiryBanner({ userProfile }) {
-  if (!userProfile?.subscription_tier === 'premium' || !userProfile?.premium_until) {
+  // Check both premium status and date presence
+  if (!userProfile?.is_premium || !userProfile?.premium_until) {
     return null;
   }
 
@@ -15,6 +17,26 @@ export default function TrialExpiryBanner({ userProfile }) {
   const now = new Date();
   const hoursLeft = Math.floor((expiresAt - now) / (1000 * 60 * 60));
   const daysLeft = Math.floor(hoursLeft / 24);
+
+  // Self-correction: If expired but still marked as premium in frontend prop, 
+  // trigger a backend check to force downgrade if needed.
+  useEffect(() => {
+    if (hoursLeft <= 0 && userProfile.is_premium) {
+      const verifyStatus = async () => {
+        try {
+          // This function will downgrade the user if expired
+          await base44.functions.invoke('checkMySubscription');
+          // We don't reload page here to avoid loops, 
+          // but the user will see the banner and the next fetch will show free tier.
+          // Or we could reload: window.location.reload(); 
+          // But better to just let the banner show "Expired"
+        } catch (e) {
+          console.error('Failed to verify subscription:', e);
+        }
+      };
+      verifyStatus();
+    }
+  }, [hoursLeft, userProfile.is_premium]);
   
   // Don't show if more than 24 hours left
   if (hoursLeft > 24) {

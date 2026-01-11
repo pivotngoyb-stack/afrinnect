@@ -5,10 +5,10 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Get all premium users whose trial has expired
+    // Get all premium users whose trial has expired (checking is_premium flag ensures we cover all tiers)
     const now = new Date().toISOString();
     const expiredTrials = await base44.asServiceRole.entities.UserProfile.filter({
-      subscription_tier: 'premium',
+      is_premium: true,
       premium_until: { $lt: now }
     });
 
