@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Send, Mic, Image, Languages, AlertTriangle, MoreVertical, Flag, Sparkles, Shield, Ban, Video, Gift } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { AutoResizeTextarea } from "@/components/ui/autosize-textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -591,15 +591,12 @@ export default function Chat() {
             isUploading={sendVoiceNoteMutation.isPending}
           />
 
-          <Textarea
+          <AutoResizeTextarea
             placeholder="Type a message..."
             value={messageText}
             onChange={(e) => {
               setMessageText(e.target.value);
               handleTyping();
-              // Auto-resize
-              e.target.style.height = 'auto';
-              e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -607,8 +604,9 @@ export default function Chat() {
                 handleSend();
               }
             }}
-            className="flex-1 min-h-[44px] max-h-[120px] py-3 resize-none"
-            rows={1}
+            className="flex-1 py-3"
+            minHeight={44}
+            maxHeight={120}
           />
 
           <Button

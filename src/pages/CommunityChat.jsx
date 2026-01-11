@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { ArrowLeft, Send, Loader2, Users, Shield, Image } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { AutoResizeTextarea } from "@/components/ui/autosize-textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -242,13 +242,9 @@ export default function CommunityChat() {
                   {uploading ? <Loader2 size={20} className="animate-spin" /> : <Image size={20} />}
                 </Button>
               </label>
-              <Textarea
+              <AutoResizeTextarea
                 value={message}
-                onChange={(e) => {
-                  setMessage(e.target.value);
-                  e.target.style.height = 'auto';
-                  e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-                }}
+                onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -256,8 +252,9 @@ export default function CommunityChat() {
                   }
                 }}
                 placeholder="Type a message..."
-                className="flex-1 min-h-[44px] max-h-[120px] py-3 resize-none"
-                rows={1}
+                className="flex-1 py-3"
+                minHeight={44}
+                maxHeight={120}
               />
               <Button
                 onClick={handleSendMessage}

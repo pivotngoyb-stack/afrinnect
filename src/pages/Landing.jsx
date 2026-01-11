@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Shield, Globe, Sparkles, Users, CheckCircle, Crown, ArrowRight, Star, MessageCircle } from 'lucide-react';
+import { Heart, Shield, Globe, Sparkles, Users, CheckCircle, Crown, ArrowRight, Star, MessageCircle, Download } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Logo from '@/components/shared/Logo';
@@ -577,8 +577,33 @@ export default function Landing() {
         </div>
         </section>
 
+      {/* Mobile Sticky CTA */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-gray-200 p-4 md:hidden safe-area-inset-bottom">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="font-bold text-gray-900 text-sm">Get the App</p>
+            <p className="text-xs text-gray-500">Better experience on mobile</p>
+          </div>
+          {isLoggedIn ? (
+            <Link to={createPageUrl('Home')}>
+              <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-6">
+                Open App
+              </Button>
+            </Link>
+          ) : (
+            <Button 
+              onClick={handleGetStarted}
+              size="sm" 
+              className="bg-gradient-to-r from-purple-600 to-amber-600 text-white rounded-full px-6"
+            >
+              Get Started
+            </Button>
+          )}
+        </div>
+      </div>
+
       {/* Footer */}
-      <footer className="relative z-10 bg-gray-900 text-white py-12">
+      <footer className="relative z-10 bg-gray-900 text-white py-12 pb-32 md:pb-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <Logo size="default" />
           <p className="text-gray-400 mt-4">

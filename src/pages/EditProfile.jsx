@@ -5,8 +5,10 @@ import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Camera, X, Loader2, Save, Check, Sparkles,
-  MapPin, Briefcase, GraduationCap, Heart, Globe, Users, Award, Video
+  MapPin, Briefcase, GraduationCap, Heart, Globe, Users, Award, Video, Eye
 } from 'lucide-react';
+import ProfileCard from '@/components/profile/ProfileCard';
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -332,6 +334,24 @@ export default function EditProfile() {
                 <p className="text-xs text-gray-500">{completion}% Complete</p>
               </div>
             </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="hidden md:flex gap-2 mr-2">
+                  <Eye size={18} />
+                  Preview
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md p-0 overflow-hidden bg-transparent border-0 shadow-none">
+                <div className="bg-white rounded-3xl overflow-hidden h-[600px] overflow-y-auto">
+                  <ProfileCard 
+                    profile={{ ...formData, id: 'preview', matchScore: 95 }} 
+                    previewMode 
+                    expanded
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <Button 
               onClick={handleSave} 
               disabled={saving}
