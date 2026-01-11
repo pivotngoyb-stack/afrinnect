@@ -333,7 +333,7 @@ export default function Events() {
               );
             })}
           </div>
-        ) : (
+        )) : (
           /* My Events Tab */
           myEvents.length === 0 ? (
             <EmptyState
