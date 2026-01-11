@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import {
   Settings, Edit2, Camera, Shield, Star, Crown, MapPin,
   Briefcase, GraduationCap, Book, Languages, Heart, ChevronRight,
-  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard, RotateCcw, Users, Zap, Video
+  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard, RotateCcw, Users, Zap, Video, MessageCircle
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import BoostProfileButton from '@/components/profile/BoostProfileButton';
@@ -37,6 +37,7 @@ export default function Profile() {
   const [myProfile, setMyProfile] = useState(null);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [socialProofData, setSocialProofData] = useState({ views: 0, likes: 0, percentile: 0 });
+  const [activeMatch, setActiveMatch] = useState(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -68,6 +69,25 @@ export default function Profile() {
     },
     enabled: !!profileId || !!myProfile
   });
+
+  // Check for existing match with this user
+  useEffect(() => {
+    const checkMatch = async () => {
+      if (!myProfile || !profile || isOwnProfile) return;
+      
+      const matches = await base44.entities.Match.filter({
+        $or: [
+          { user1_id: myProfile.id, user2_id: profile.id, is_match: true },
+          { user1_id: profile.id, user2_id: myProfile.id, is_match: true }
+        ]
+      });
+      
+      if (matches.length > 0) {
+        setActiveMatch(matches[0]);
+      }
+    };
+    checkMatch();
+  }, [myProfile, profile, isOwnProfile]);
 
   const { data: featureFlags = [] } = useQuery({
     queryKey: ['feature-flags'],
@@ -279,17 +299,27 @@ export default function Profile() {
           )}
 
           {!isOwnProfile && (
-            <div className="flex gap-2 mt-3">
-              <Button onClick={handleShareProfile} variant="outline" size="sm">
-                <Share2 size={14} className="mr-2" />
-                {t('admin.home.shareProfile')}
-              </Button>
-              <Link to={createPageUrl(`Report?userId=${profile.id}`)}>
-                <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">
-                  <AlertTriangle size={14} className="mr-2" />
-                  {t('chat.report')}
+            <div className="flex flex-col gap-2 mt-3">
+              {activeMatch && (
+                <Link to={createPageUrl(`Chat?matchId=${activeMatch.id}`)} className="w-full">
+                  <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-md">
+                    <MessageCircle size={18} className="mr-2" />
+                    Message {profile.display_name.split(' ')[0]}
+                  </Button>
+                </Link>
+              )}
+              <div className="flex gap-2 justify-center">
+                <Button onClick={handleShareProfile} variant="outline" size="sm">
+                  <Share2 size={14} className="mr-2" />
+                  {t('admin.home.shareProfile')}
                 </Button>
-              </Link>
+                <Link to={createPageUrl(`Report?userId=${profile.id}`)}>
+                  <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">
+                    <AlertTriangle size={14} className="mr-2" />
+                    {t('chat.report')}
+                  </Button>
+                </Link>
+              </div>
             </div>
           )}
         </div>

@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Send, Mic, Image, Languages, AlertTriangle, MoreVertical, Flag, Sparkles, Shield, Ban, Video, Gift } from 'lucide-react';
+import { ArrowLeft, Send, Mic, Image, Languages, AlertTriangle, MoreVertical, Flag, Sparkles, Shield, Ban, Video, Gift, Wand2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AutoResizeTextarea } from "@/components/ui/autosize-textarea";
@@ -54,6 +54,7 @@ export default function Chat() {
   const [showMessageLimitPaywall, setShowMessageLimitPaywall] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState('');
   const [showVideoCall, setShowVideoCall] = useState(false);
+  const [isGeneratingReply, setIsGeneratingReply] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const queryClient = useQueryClient();
@@ -380,6 +381,39 @@ export default function Chat() {
     }, 2000);
   };
 
+  const generateSmartReply = async () => {
+    const lastMessage = messages.find(m => m.sender_id === otherProfile.id);
+    if (!lastMessage) return;
+
+    setIsGeneratingReply(true);
+    try {
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `
+          Generate 3 short, flirty or engaging reply options to this message: "${lastMessage.content}".
+          Context: Dating app chat. Keep it casual and fun.
+          Return strictly valid JSON: { "options": ["option1", "option2", "option3"] }
+        `,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            options: { type: "array", items: { type: "string" } }
+          }
+        }
+      });
+      
+      // Just pick the best one or show a UI picker? For smoothness, let's insert the best one into the input
+      // or cycle them. Let's just insert the first one for now or open a small picker.
+      // Simpler: Insert into input so user can edit.
+      if (res.options && res.options.length > 0) {
+        setMessageText(res.options[0]);
+      }
+    } catch (e) {
+      console.error("Smart reply failed", e);
+    } finally {
+      setIsGeneratingReply(false);
+    }
+  };
+
   if (!otherProfile) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -564,10 +598,12 @@ export default function Chat() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setShowIceBreakers(true)}
-            title="Ice breakers"
+            onClick={generateSmartReply}
+            disabled={isGeneratingReply}
+            title="Magic Reply"
+            className={isGeneratingReply ? "animate-pulse" : ""}
           >
-            <Sparkles size={20} className="text-purple-600" />
+            <Wand2 size={20} className="text-amber-500" />
           </Button>
 
           <input

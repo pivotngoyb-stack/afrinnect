@@ -50,12 +50,34 @@ export default function Matches() {
         if (!myProfile) return [];
         // OPTIMIZED: Fetch with limits
         const [matches1, matches2] = await Promise.all([
-          base44.entities.Match.filter({ user1_id: myProfile.id, is_match: true, status: 'active' }, '-matched_at', 25),
-          base44.entities.Match.filter({ user2_id: myProfile.id, is_match: true, status: 'active' }, '-matched_at', 25)
+          base44.entities.Match.filter({ user1_id: myProfile.id, is_match: true, status: 'active' }, '-matched_at', 50),
+          base44.entities.Match.filter({ user2_id: myProfile.id, is_match: true, status: 'active' }, '-matched_at', 50)
         ]);
-        const allMatches = [...matches1, ...matches2];
-        // Sort combined results by matched_at descending to ensure correct order
-        return allMatches.sort((a, b) => 
+        
+        const rawMatches = [...matches1, ...matches2];
+        
+        // DEDUPLICATE: Ensure only one match per partner is shown
+        const uniqueMatches = new Map();
+        
+        rawMatches.forEach(m => {
+          const partnerId = m.user1_id === myProfile.id ? m.user2_id : m.user1_id;
+          
+          if (!uniqueMatches.has(partnerId)) {
+            uniqueMatches.set(partnerId, m);
+          } else {
+            // If duplicate exists, keep the most recent or robust one
+            const existing = uniqueMatches.get(partnerId);
+            const currentObjDate = new Date(m.matched_at || m.created_date);
+            const existingDate = new Date(existing.matched_at || existing.created_date);
+            
+            if (currentObjDate > existingDate) {
+              uniqueMatches.set(partnerId, m);
+            }
+          }
+        });
+
+        // Sort unique matches by date
+        return Array.from(uniqueMatches.values()).sort((a, b) => 
           new Date(b.matched_at || b.created_date) - new Date(a.matched_at || a.created_date)
         );
       } catch (error) {
