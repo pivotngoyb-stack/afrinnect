@@ -259,16 +259,14 @@ export default function Settings() {
               if (myProfile?.verification_status?.email_verified) return;
               
               setIsSendingCode(true);
-              const code = Math.floor(100000 + Math.random() * 900000).toString();
-              setEmailCode(code);
               
               try {
-                await base44.integrations.Core.SendEmail({
-                  to: myProfile?.created_by,
-                  subject: 'Afrinnect - Email Verification',
-                  body: `Your verification code is: ${code}`
-                });
-                setShowEmailVerifyDialog(true);
+                const res = await base44.functions.invoke('sendOTP', { email: myProfile?.created_by });
+                if (res.data.success) {
+                  setShowEmailVerifyDialog(true);
+                } else {
+                  alert(res.data.error || "Failed to send code");
+                }
               } catch (e) {
                 alert("Failed to send email. Please try again.");
               } finally {
@@ -559,14 +557,10 @@ export default function Settings() {
             }}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={async (e) => {
               e.preventDefault(); // Prevent auto-close
-              if (inputCode === emailCode) {
-                try {
-                  await base44.entities.UserProfile.update(myProfile.id, {
-                    verification_status: {
-                      ...myProfile.verification_status,
-                      email_verified: true
-                    }
-                  });
+              try {
+                const res = await base44.functions.invoke('verifyOTP', { code: inputCode, type: 'email' });
+                
+                if (res.data.success) {
                   setMyProfile({
                     ...myProfile,
                     verification_status: {
@@ -577,11 +571,11 @@ export default function Settings() {
                   alert("Email verified successfully!");
                   setShowEmailVerifyDialog(false);
                   setInputCode("");
-                } catch (err) {
-                  alert("Failed to update profile.");
+                } else {
+                  alert(res.data.error || "Invalid code");
                 }
-              } else {
-                alert("Invalid code. Please try again.");
+              } catch (err) {
+                alert("Verification failed. Please try again.");
               }
             }}>
               Verify

@@ -205,7 +205,7 @@ export default function Profile() {
             <img
               src={photo}
               alt={profile?.display_name}
-              className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-xl"
+              className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-xl bg-white"
             />
             {isOwnProfile && (
               <Link to={createPageUrl('EditProfile')}>
@@ -333,9 +333,46 @@ export default function Profile() {
         {profile?.bio && (
           <Card className="mb-4">
             <CardContent className="p-4">
-              <p className="text-gray-700">{profile.bio}</p>
+              <p className="text-gray-700 italic text-center">"{profile.bio}"</p>
             </CardContent>
           </Card>
+        )}
+
+        {/* Photo Gallery */}
+        {profile?.photos?.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-gray-900 mb-3 px-1">Photos</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {profile.photos.map((p, idx) => (
+                <div key={idx} className="aspect-square rounded-xl overflow-hidden shadow-sm">
+                  <img 
+                    src={p} 
+                    alt={`Photo ${idx + 1}`} 
+                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-500 cursor-pointer"
+                    onClick={() => window.open(p, '_blank')}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Mutual Interests (For Other Profiles) */}
+        {!isOwnProfile && myProfile && (
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-gray-900 mb-3 px-1">You Both Like</h3>
+            <div className="flex flex-wrap gap-2">
+              {profile.interests?.filter(i => myProfile.interests?.includes(i)).map((interest, idx) => (
+                <Badge key={idx} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 py-1.5 px-3">
+                  <Sparkles size={12} className="mr-1" />
+                  {interest}
+                </Badge>
+              ))}
+              {profile.interests?.filter(i => myProfile.interests?.includes(i)).length === 0 && (
+                <p className="text-sm text-gray-500 italic">No common interests yet. Be the first to introduce something new!</p>
+              )}
+            </div>
+          </div>
         )}
 
         {/* Video Profile */}
