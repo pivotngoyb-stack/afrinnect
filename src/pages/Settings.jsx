@@ -265,7 +265,7 @@ export default function Settings() {
               try {
                 await base44.integrations.Core.SendEmail({
                   to: myProfile?.created_by,
-                  subject: 'Ubuntu Dating - Email Verification',
+                  subject: 'Afrinnect - Email Verification',
                   body: `Your verification code is: ${code}`
                 });
                 setShowEmailVerifyDialog(true);
@@ -432,7 +432,7 @@ export default function Settings() {
                   <span className="text-white text-sm">✨</span>
                 </div>
                 <div>
-                  <span className="text-gray-900 font-medium block">Chat with Ubuntu AI</span>
+                  <span className="text-gray-900 font-medium block">Chat with Afrinnect AI</span>
                   <span className="text-xs text-purple-600">Get instant help & advice</span>
                 </div>
               </div>
@@ -529,7 +529,7 @@ export default function Settings() {
 
         {/* App Version */}
         <p className="text-center text-gray-400 text-xs">
-          Ubuntu Dating v1.0.0
+          Afrinnect v1.0.0
         </p>
       </main>
 

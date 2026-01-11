@@ -30,6 +30,7 @@ export default function Privacy() {
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
               <li><strong>Profile Information:</strong> Name, age, photos, location, interests, and preferences</li>
               <li><strong>Account Data:</strong> Email address, phone number (if verified)</li>
+              <li><strong>Third-Party Accounts:</strong> If you sign in with Google, Facebook, or other providers, we access basic profile info (Name, Email, Photo) authorized by you.</li>
               <li><strong>Usage Data:</strong> How you use the app, profiles viewed, matches made</li>
               <li><strong>Device Information:</strong> Device type, operating system, IP address</li>
               <li><strong>Location Data:</strong> With your permission, to show nearby matches</li>
