@@ -276,16 +276,15 @@ export default function AdminDashboard() {
   // Resolve report mutation
   const resolveReportMutation = useMutation({
     mutationFn: async ({ reportId, action, notes }) => {
-      await base44.entities.Report.update(reportId, {
-        status: 'resolved',
-        action_taken: action,
-        moderator_notes: notes || '',
-        resolved_by: currentUser.email,
-        resolved_at: new Date().toISOString()
-      });
+      const response = await base44.functions.invoke('resolveReport', { reportId, action, notes });
+      if (response.data?.error) throw new Error(response.data.error);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-reports']);
+      alert('Report resolved and user notified.');
+    },
+    onError: (error) => {
+      alert(`Failed to resolve report: ${error.message}`);
     }
   });
 

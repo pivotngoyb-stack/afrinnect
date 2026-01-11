@@ -38,18 +38,16 @@ Deno.serve(async (req) => {
              return Response.json({ error: 'You cannot message this user' }, { status: 403 });
         }
 
-        // 3. Rate Limiting
-        const recentMsgs = await base44.entities.Message.filter(
-            { sender_id: myProfile.id }, 
-            '-created_date', 
-            1
-        );
-        if (recentMsgs.length > 0) {
-            const lastTime = new Date(recentMsgs[0].created_date).getTime();
-            if (Date.now() - lastTime < 1000) { 
-                return Response.json({ error: 'You are sending too quickly' }, { status: 429 });
-            }
+        // 3. Scalable Rate Limiting (Deno KV)
+        const kv = await Deno.openKv();
+        const rateKey = ["msg_rate", myProfile.id];
+        const lastMsg = await kv.get(rateKey);
+        
+        const now = Date.now();
+        if (lastMsg.value && now - lastMsg.value < 1000) {
+             return Response.json({ error: 'You are sending too quickly' }, { status: 429 });
         }
+        await kv.set(rateKey, now);
 
         // 4. Subscription Limit
         if (myProfile.subscription_tier === 'free') {
