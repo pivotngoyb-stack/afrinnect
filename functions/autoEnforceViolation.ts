@@ -1,4 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import Stripe from 'npm:stripe@^14.14.0';
+
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+  apiVersion: '2023-10-16',
+});
 
 Deno.serve(async (req) => {
   try {
@@ -114,11 +119,41 @@ Deno.serve(async (req) => {
       const userProfiles = await base44.asServiceRole.entities.UserProfile.filter({ id: user_profile_id });
       if (userProfiles.length > 0) {
         const user = await base44.asServiceRole.auth.getUserById(userProfiles[0].user_id);
+        
+        // PAUSE SUBSCRIPTION (Suspend Billing)
+        try {
+            const activeSubs = await base44.asServiceRole.entities.Subscription.filter({
+                user_profile_id: user_profile_id,
+                status: 'active'
+            });
+            
+            if (activeSubs.length > 0) {
+                const sub = activeSubs[0];
+                if (sub.payment_provider === 'stripe' && sub.external_id) {
+                    await stripe.subscriptions.update(sub.external_id, {
+                        pause_collection: {
+                            behavior: 'void', // Don't charge, void invoices
+                            resumes_at: Math.floor(suspensionExpiry.getTime() / 1000) // Auto-resume when suspension ends
+                        }
+                    });
+                    
+                    // Update local status
+                    await base44.asServiceRole.entities.Subscription.update(sub.id, {
+                        status: 'paused'
+                    });
+                    
+                    console.log(`Paused subscription ${sub.id} until ${suspensionExpiry}`);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to pause subscription:', err);
+        }
+
         if (user) {
           await base44.integrations.Core.SendEmail({
             to: user.email,
             subject: 'Afrinnect Account Suspended',
-            body: `Your Afrinnect account has been suspended for ${suspensionDays} days due to violation of community guidelines: ${violation_type}. Your account will be automatically reactivated on ${suspensionExpiry.toLocaleDateString()}.`
+            body: `Your Afrinnect account has been suspended for ${suspensionDays} days due to violation of community guidelines: ${violation_type}. Your subscription billing has been paused and will resume automatically on ${suspensionExpiry.toLocaleDateString()}.`
           });
         }
       }
@@ -127,6 +162,32 @@ Deno.serve(async (req) => {
       updateData.is_banned = true;
       updateData.ban_reason = `${violation_type}: ${details || 'Serious community guidelines violation'}`;
       updateData.is_active = false;
+
+      // CANCEL SUBSCRIPTION IMMEDIATELY
+      try {
+          const activeSubs = await base44.asServiceRole.entities.Subscription.filter({
+              user_profile_id: user_profile_id,
+              status: 'active'
+          });
+          
+          if (activeSubs.length > 0) {
+              const sub = activeSubs[0];
+              if (sub.payment_provider === 'stripe' && sub.external_id) {
+                  // Immediate cancellation
+                  await stripe.subscriptions.cancel(sub.external_id);
+                  
+                  // Update local status
+                  await base44.asServiceRole.entities.Subscription.update(sub.id, {
+                      status: 'cancelled',
+                      auto_renew: false
+                  });
+                  
+                  console.log(`Cancelled subscription ${sub.id} due to ban`);
+              }
+          }
+      } catch (err) {
+          console.error('Failed to cancel subscription:', err);
+      }
 
       // Send ban notification
       await base44.asServiceRole.entities.Notification.create({
