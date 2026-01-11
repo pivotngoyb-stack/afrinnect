@@ -443,14 +443,14 @@ export default function Landing() {
                 title: t('landing.steps.step2.title'), 
                 desc: t('landing.steps.step2.desc'),
                 icon: Sparkles,
-                image: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/e32885cab_o1ocuxst.png"
+                image: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/65fc6c0a5_medium-shot-beautiful-african-woman-posing.jpg"
               },
               { 
                 step: "3", 
                 title: t('landing.steps.step3.title'), 
                 desc: t('landing.steps.step3.desc'),
                 icon: MessageCircle,
-                image: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/e32885cab_o1ocuxst.png"
+                image: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/61126ff23_premium_photo-1661281273104-150484122d32.jpg"
               },
               { 
                 step: "4", 
