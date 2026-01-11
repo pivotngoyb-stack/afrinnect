@@ -418,7 +418,7 @@ export default function Profile() {
         </div>
 
         {/* Languages */}
-        {profile?.languages?.length > 0 && (
+        {(profile?.languages?.length > 0 || isOwnProfile) && (
           <Card className="mb-4">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -427,19 +427,27 @@ export default function Profile() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="flex flex-wrap gap-2">
-                {profile.languages.map((lang, idx) => (
-                  <Badge key={idx} variant="secondary" className="bg-gray-100">
-                    {lang}
-                  </Badge>
-                ))}
-              </div>
+              {profile?.languages?.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {profile.languages.map((lang, idx) => (
+                    <Badge key={idx} variant="secondary" className="bg-gray-100">
+                      {lang}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <Link to={createPageUrl('EditProfile')}>
+                  <Button variant="ghost" size="sm" className="w-full border-2 border-dashed border-gray-200 text-gray-400 hover:text-purple-600 hover:border-purple-200">
+                    + Add Languages
+                  </Button>
+                </Link>
+              )}
             </CardContent>
           </Card>
         )}
 
         {/* Interests */}
-        {profile?.interests?.length > 0 && (
+        {(profile?.interests?.length > 0 || isOwnProfile) && (
           <Card className="mb-4">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -448,19 +456,27 @@ export default function Profile() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="flex flex-wrap gap-2">
-                {profile.interests.map((interest, idx) => (
-                  <Badge key={idx} variant="secondary" className="bg-purple-100 text-purple-700">
-                    {interest}
-                  </Badge>
-                ))}
-              </div>
+              {profile?.interests?.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {profile.interests.map((interest, idx) => (
+                    <Badge key={idx} variant="secondary" className="bg-purple-100 text-purple-700">
+                      {interest}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <Link to={createPageUrl('EditProfile')}>
+                  <Button variant="ghost" size="sm" className="w-full border-2 border-dashed border-gray-200 text-gray-400 hover:text-amber-600 hover:border-amber-200">
+                    + Add Interests
+                  </Button>
+                </Link>
+              )}
             </CardContent>
           </Card>
         )}
 
         {/* Cultural Values */}
-        {profile?.cultural_values?.length > 0 && (
+        {(profile?.cultural_values?.length > 0 || isOwnProfile) && (
           <Card className="mb-4">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -469,13 +485,21 @@ export default function Profile() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="flex flex-wrap gap-2">
-                {profile.cultural_values.map((value, idx) => (
-                  <Badge key={idx} variant="outline" className="border-amber-300 text-amber-700">
-                    {value}
-                  </Badge>
-                ))}
-              </div>
+              {profile?.cultural_values?.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {profile.cultural_values.map((value, idx) => (
+                    <Badge key={idx} variant="outline" className="border-amber-300 text-amber-700">
+                      {value}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <Link to={createPageUrl('EditProfile')}>
+                  <Button variant="ghost" size="sm" className="w-full border-2 border-dashed border-gray-200 text-gray-400 hover:text-green-600 hover:border-green-200">
+                    + Add Cultural Values
+                  </Button>
+                </Link>
+              )}
             </CardContent>
           </Card>
         )}
@@ -572,10 +596,10 @@ export default function Profile() {
             </div>
 
             {profile?.subscription_tier && profile?.subscription_tier !== 'free' ? (
-              <div className="space-y-2">
+              <div className="space-y-2 pt-2">
                 <Button 
-                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" 
-                  size="lg"
+                  variant="outline"
+                  className="w-full border-amber-200 text-amber-700 hover:bg-amber-50" 
                   onClick={async () => {
                     if (confirm(t('admin.home.cancelWarning'))) {
                       try {
@@ -592,11 +616,10 @@ export default function Profile() {
                     }
                   }}
                 >
-                  <Crown size={18} className="mr-2" />
                   {t('admin.home.cancelSubscription')}
                 </Button>
-                <p className="text-xs text-center text-gray-500">
-                  {t('admin.home.billingContinues')}
+                <p className="text-xs text-center text-gray-400">
+                  Current Plan: {profile.subscription_tier.charAt(0).toUpperCase() + profile.subscription_tier.slice(1)}
                 </p>
               </div>
             ) : (

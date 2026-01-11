@@ -89,6 +89,7 @@ export default function EditProfile() {
   });
   const [heightFeet, setHeightFeet] = useState('');
   const [heightInches, setHeightInches] = useState('');
+  const [measurementSystem, setMeasurementSystem] = useState('metric'); // 'metric' or 'imperial'
 
   useEffect(() => {
     loadProfile();
@@ -125,13 +126,20 @@ export default function EditProfile() {
           voice_intro_url: p.voice_intro_url || ''
         });
         
-        // Convert cm to feet and inches
+        // Set measurement system based on country
+        const imperialCountries = ['United States', 'United Kingdom', 'Liberia', 'Myanmar', 'USA'];
+        const system = imperialCountries.includes(p.current_country) ? 'imperial' : 'metric';
+        setMeasurementSystem(system);
+
+        // Convert cm to feet/inches if needed
         if (p.height_cm) {
-          const totalInches = p.height_cm / 2.54;
-          const feet = Math.floor(totalInches / 12);
-          const inches = Math.round(totalInches % 12);
-          setHeightFeet(feet.toString());
-          setHeightInches(inches.toString());
+          if (system === 'imperial') {
+            const totalInches = p.height_cm / 2.54;
+            const feet = Math.floor(totalInches / 12);
+            const inches = Math.round(totalInches % 12);
+            setHeightFeet(feet.toString());
+            setHeightInches(inches.toString());
+          }
         }
       }
       setLoading(false);
@@ -170,12 +178,17 @@ export default function EditProfile() {
 
     setSaving(true);
     try {
-      // Convert feet and inches to cm before saving
-      if (heightFeet || heightInches) {
-        const feet = parseInt(heightFeet) || 0;
-        const inches = parseInt(heightInches) || 0;
-        const totalInches = (feet * 12) + inches;
-        saveData.height_cm = Math.round(totalInches * 2.54);
+      // Handle Height Conversion
+      if (measurementSystem === 'imperial') {
+        if (heightFeet || heightInches) {
+          const feet = parseInt(heightFeet) || 0;
+          const inches = parseInt(heightInches) || 0;
+          const totalInches = (feet * 12) + inches;
+          saveData.height_cm = Math.round(totalInches * 2.54);
+        }
+      } else {
+        // Metric is already in formData.height_cm
+        saveData.height_cm = formData.height_cm ? parseInt(formData.height_cm) : null;
       }
       
       saveData.voice_intro_url = formData.voice_intro_url;
@@ -554,33 +567,65 @@ export default function EditProfile() {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2">Height</Label>
-                  <div className="flex gap-3">
-                    <div className="flex-1">
-                      <Input
-                        type="number"
-                        value={heightFeet}
-                        onChange={(e) => setHeightFeet(e.target.value)}
-                        placeholder="Feet"
-                        min="0"
-                        max="8"
-                        className="border-2 focus:border-purple-400 rounded-xl"
-                      />
-                      <p className="text-xs text-gray-500 mt-1 text-center">Feet</p>
-                    </div>
-                    <div className="flex-1">
-                      <Input
-                        type="number"
-                        value={heightInches}
-                        onChange={(e) => setHeightInches(e.target.value)}
-                        placeholder="Inches"
-                        min="0"
-                        max="11"
-                        className="border-2 focus:border-purple-400 rounded-xl"
-                      />
-                      <p className="text-xs text-gray-500 mt-1 text-center">Inches</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-sm font-semibold text-gray-700">Height</Label>
+                    <div className="flex bg-gray-100 rounded-lg p-1">
+                      <button
+                        onClick={() => setMeasurementSystem('imperial')}
+                        className={`text-xs px-2 py-1 rounded-md transition ${measurementSystem === 'imperial' ? 'bg-white shadow text-purple-600 font-medium' : 'text-gray-500'}`}
+                      >
+                        ft/in
+                      </button>
+                      <button
+                        onClick={() => setMeasurementSystem('metric')}
+                        className={`text-xs px-2 py-1 rounded-md transition ${measurementSystem === 'metric' ? 'bg-white shadow text-purple-600 font-medium' : 'text-gray-500'}`}
+                      >
+                        cm
+                      </button>
                     </div>
                   </div>
+                  
+                  {measurementSystem === 'imperial' ? (
+                    <div className="flex gap-3">
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          value={heightFeet}
+                          onChange={(e) => setHeightFeet(e.target.value)}
+                          placeholder="Feet"
+                          min="0"
+                          max="8"
+                          className="border-2 focus:border-purple-400 rounded-xl"
+                        />
+                        <p className="text-xs text-gray-500 mt-1 text-center">Feet</p>
+                      </div>
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          value={heightInches}
+                          onChange={(e) => setHeightInches(e.target.value)}
+                          placeholder="Inches"
+                          min="0"
+                          max="11"
+                          className="border-2 focus:border-purple-400 rounded-xl"
+                        />
+                        <p className="text-xs text-gray-500 mt-1 text-center">Inches</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <Input
+                        type="number"
+                        value={formData.height_cm || ''}
+                        onChange={(e) => setFormData({ ...formData, height_cm: e.target.value })}
+                        placeholder="Height in cm"
+                        min="50"
+                        max="300"
+                        className="border-2 focus:border-purple-400 rounded-xl"
+                      />
+                      <p className="text-xs text-gray-500 mt-1 text-center">Centimeters</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
