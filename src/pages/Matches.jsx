@@ -4,10 +4,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageCircle, Sparkles, Crown, Eye, Users } from 'lucide-react';
+import { Heart, MessageCircle, Sparkles, Crown, Eye, Users, Search, X } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ConversationItem from '@/components/messaging/ConversationItem';
 import ProfileMini from '@/components/profile/ProfileMini';
@@ -21,6 +22,7 @@ export default function Matches() {
   const [myProfile, setMyProfile] = useState(null);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [activeTab, setActiveTab] = useState('matches');
+  const [searchQuery, setSearchQuery] = useState('');
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -227,15 +229,21 @@ export default function Matches() {
     retryDelay: 5000
   });
 
+  // Filter function for search
+  const filterBySearch = (profile) => {
+    if (!searchQuery) return true;
+    return profile.display_name?.toLowerCase().includes(searchQuery.toLowerCase());
+  };
+
   // Separate new matches from active conversations
   const newMatches = matchedProfiles.filter(p => {
     const hasMessages = conversationData[p.match?.id]?.lastMessage;
-    return !hasMessages && !p.match?.is_expired;
+    return !hasMessages && !p.match?.is_expired && filterBySearch(p);
   });
   
   // Active conversations sorted by most recent message
   const conversations = matchedProfiles
-    .filter(p => conversationData[p.match?.id]?.lastMessage)
+    .filter(p => conversationData[p.match?.id]?.lastMessage && filterBySearch(p))
     .sort((a, b) => {
       const dateA = new Date(conversationData[a.match?.id]?.lastMessage?.created_date || 0);
       const dateB = new Date(conversationData[b.match?.id]?.lastMessage?.created_date || 0);
@@ -252,11 +260,6 @@ export default function Matches() {
               Connections
             </h1>
             <div className="flex items-center gap-2">
-              {likesReceived.length > 0 && (
-                <Badge className="bg-purple-600 text-white">
-                  {likesReceived.length} likes
-                </Badge>
-              )}
               <NotificationBell />
             </div>
           </div>
@@ -264,6 +267,25 @@ export default function Matches() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6 pb-24">
+        {/* Search Bar */}
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <Input
+            placeholder="Search matches & conversations..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 bg-white border-gray-200"
+          />
+          {searchQuery && (
+            <button 
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full grid grid-cols-3 mb-6">
             <TabsTrigger value="matches" className="gap-2">
