@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
         let isDeleted = false;
         let scamAnalysisData = null;
 
-        if (type === 'text' && content) {
+        if ((type === 'text' && content) || (type === 'image' && mediaUrl)) {
             try {
                 // Fetch recent context for this user to detect patterns (e.g. repeated messages)
                 const lastFewMsgs = await base44.entities.Message.filter(
@@ -80,25 +80,29 @@ Deno.serve(async (req) => {
 
                 const analysis = await base44.integrations.Core.InvokeLLM({
                     prompt: `
-                    Analyze this message for scam indicators and safety risks.
+                    Analyze this message for ZERO TOLERANCE violations, scams, and safety risks.
                     Sender Context: Account age ${(new Date() - new Date(myProfile.created_date)) / (1000 * 60 * 60 * 24)} days.
-                    Message Content: "${content}"
+                    Message Content: "${content || '[Image Attached]'}"
                     Recent History: "${msgHistory}"
 
-                    Detect:
-                    1. Money requests / Crypto scams
-                    2. Off-platform redirection (WhatsApp, Telegram) used aggressively
-                    3. Harassment / Hate speech
-                    4. Phishing links
-                    5. Urgent/Panic-inducing language
+                    STRICTLY DETECT (Zero Tolerance):
+                    1. Harassment, bullying, or threatening behavior
+                    2. Hate speech, racism, or discrimination
+                    3. Sexual harassment or unsolicited explicit content (including NSFW images)
+                    4. Fake profiles or catfishing indicators
+                    5. Scamming, money requests, or crypto scams
+                    6. Sharing others' private information (Doxing)
+                    7. Prostitution, trafficking, or solicitation
+                    8. Off-platform redirection (WhatsApp, Telegram) used aggressively
 
                     Return JSON: {
                         "is_safe": boolean,
                         "risk_score": number (0-100),
-                        "scam_type": "string" (money_request, crypto, phishing, off_platform, harassment, none),
+                        "scam_type": "string" (harassment, hate_speech, sexual_content, scam, doxing, trafficking, none),
                         "reasons": ["string"]
                     }
                     `,
+                    file_urls: mediaUrl ? [mediaUrl] : undefined,
                     response_json_schema: {
                         type: "object",
                         properties: {
