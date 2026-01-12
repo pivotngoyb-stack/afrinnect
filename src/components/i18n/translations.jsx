@@ -160,6 +160,8 @@ export const translations = {
         feet: "Feet",
         inches: "Inches",
         cm: "Centimeters",
+        ft_in: "ft/in",
+        cm_short: "cm",
         languages: "Languages",
         languagesSubtitle: "Select all that you speak",
         culturalValues: "Cultural Values",
@@ -181,7 +183,10 @@ export const translations = {
         deviceLimit: "Maximum 2 devices allowed per email. Please remove a device first.",
         realNameWarning: "⚠️ Use your real name. Fake names will prevent verification later and may result in account suspension.",
         ageWarning: "You must be at least 18 years old",
-        ageReq: "You must be 18+ to use Afrinnect"
+        ageReq: "You must be 18+ to use Afrinnect",
+        saveFailed: "Failed to save: ",
+        uploadVoiceFailed: "Failed to upload voice intro. Please try again.",
+        genericUploadFailed: "Upload failed. Please try again."
       },
       goal: {
         title: "What are you looking for?",
@@ -757,6 +762,8 @@ export const translations = {
         feet: "Pieds",
         inches: "Pouces",
         cm: "Centimètres",
+        ft_in: "pi/po",
+        cm_short: "cm",
         languages: "Langues",
         languagesSubtitle: "Sélectionnez toutes celles que vous parlez",
         culturalValues: "Valeurs Culturelles",
@@ -778,7 +785,10 @@ export const translations = {
         deviceLimit: "Maximum 2 appareils autorisés par email. Veuillez d'abord supprimer un appareil.",
         realNameWarning: "⚠️ Utilisez votre vrai nom. Les faux noms empêcheront la vérification ultérieure et peuvent entraîner la suspension du compte.",
         ageWarning: "Vous devez avoir au moins 18 ans",
-        ageReq: "Vous devez avoir 18 ans ou plus pour utiliser Afrinnect"
+        ageReq: "Vous devez avoir 18 ans ou plus pour utiliser Afrinnect",
+        saveFailed: "Échec de l'enregistrement : ",
+        uploadVoiceFailed: "Échec du téléchargement de l'intro vocale. Veuillez réessayer.",
+        genericUploadFailed: "Échec du téléchargement. Veuillez réessayer."
       },
       goal: {
         title: "Que recherchez-vous?",

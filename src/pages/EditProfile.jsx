@@ -208,7 +208,7 @@ export default function EditProfile() {
       window.location.href = createPageUrl('Profile');
     } catch (error) {
       console.error('Save error:', error);
-      alert('Failed to save: ' + error.message);
+      alert(t('errors.saveFailed') + error.message);
       setSaving(false);
     }
   };
@@ -240,7 +240,7 @@ export default function EditProfile() {
       });
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Upload failed. Please try again.');
+      alert(t('errors.genericUploadFailed'));
     } finally {
       setUploading(false);
       setImageToCrop(null);
@@ -277,7 +277,7 @@ export default function EditProfile() {
       setFormData(prev => ({ ...prev, voice_intro_url: file_url }));
     } catch (error) {
       console.error('Voice upload error:', error);
-      alert('Failed to upload voice intro. Please try again.');
+      alert(t('errors.uploadVoiceFailed'));
     } finally {
       setUploading(false);
     }
@@ -596,13 +596,13 @@ export default function EditProfile() {
                         onClick={() => setMeasurementSystem('imperial')}
                         className={`text-xs px-2 py-1 rounded-md transition ${measurementSystem === 'imperial' ? 'bg-white shadow text-purple-600 font-medium' : 'text-gray-500'}`}
                       >
-                        {t('editProfile.ft/in')}
+                        {t('editProfile.ft_in')}
                       </button>
                       <button
                         onClick={() => setMeasurementSystem('metric')}
                         className={`text-xs px-2 py-1 rounded-md transition ${measurementSystem === 'metric' ? 'bg-white shadow text-purple-600 font-medium' : 'text-gray-500'}`}
                       >
-                        {t('editProfile.cm')}
+                        {t('editProfile.cm_short')}
                       </button>
                     </div>
                   </div>
