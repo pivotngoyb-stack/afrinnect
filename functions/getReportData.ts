@@ -41,7 +41,11 @@ Deno.serve(async (req) => {
             totalEvents,
             totalStories,
             pendingReports,
-            activeSubscriptions
+            activeSubscriptions,
+            totalCommunities,
+            totalVideoProfiles,
+            pendingVerifications,
+            openTickets
         ] = await Promise.all([
             getCount('UserProfile', {}),
             getCount('UserProfile', { is_active: true }),
@@ -52,7 +56,11 @@ Deno.serve(async (req) => {
             getCount('Event', {}),
             getCount('SuccessStory', {}),
             getCount('Report', { status: 'pending' }),
-            base44.entities.Subscription.filter({ status: 'active' }, '-created_date', 1000).catch(() => [])
+            base44.entities.Subscription.filter({ status: 'active' }, '-created_date', 1000).catch(() => []),
+            getCount('Community', {}),
+            getCount('VideoProfile', {}),
+            getCount('VerificationRequest', { status: 'pending' }),
+            getCount('SupportTicket', { status: 'open' })
         ]);
 
         // Revenue Calculation
@@ -83,7 +91,11 @@ Deno.serve(async (req) => {
             msgsLast30,
             totalEvents,
             totalStories,
-            pendingReports
+            pendingReports,
+            totalCommunities,
+            totalVideoProfiles,
+            pendingVerifications,
+            openTickets
         };
 
         // 2. Generate AI Executive Summary with Fallback
@@ -107,7 +119,9 @@ Deno.serve(async (req) => {
                 - Growth: +${newUsersLast30} users last 30d (${Math.round(userGrowth)}% growth)
                 - Revenue: $${Math.round(mrr)} MRR
                 - Engagement: ${matchesLast30} matches, ${msgsLast30} messages
-                - Ecosystem: ${totalEvents} events, ${totalStories} success stories
+                - Ecosystem: ${totalEvents} events, ${totalStories} success stories, ${totalCommunities} communities
+                - Content Depth: ${totalVideoProfiles} video profiles
+                - Safety & Ops: ${pendingVerifications} pending verifications, ${openTickets} open support tickets, ${pendingReports} pending reports
                 
                 Return JSON: { summary, highlights (array), recommendation }
                 `,

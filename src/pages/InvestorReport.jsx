@@ -174,6 +174,26 @@ export default function InvestorReport() {
            </div>
         </section>
 
+        {/* Extended Stats Grid */}
+        <section className="grid grid-cols-4 gap-4 mb-12">
+           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-center">
+             <div className="text-2xl font-bold text-teal-600">{data?.stats?.totalCommunities || 0}</div>
+             <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Active Communities</div>
+           </div>
+           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-center">
+             <div className="text-2xl font-bold text-indigo-600">{data?.stats?.totalVideoProfiles || 0}</div>
+             <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Video Profiles</div>
+           </div>
+           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-center">
+             <div className="text-2xl font-bold text-orange-600">{data?.stats?.pendingVerifications || 0}</div>
+             <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Pending Verifications</div>
+           </div>
+           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-center">
+             <div className="text-2xl font-bold text-red-600">{data?.stats?.openTickets || 0}</div>
+             <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Open Support Tickets</div>
+           </div>
+        </section>
+
         {/* Charts Row */}
         <section className="grid grid-cols-2 gap-8 mb-12">
           <div>

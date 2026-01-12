@@ -21,6 +21,7 @@ import EventDetails from './pages/EventDetails';
 import Events from './pages/Events';
 import Home from './pages/Home';
 import IDVerification from './pages/IDVerification';
+import InvestorReport from './pages/InvestorReport';
 import Landing from './pages/Landing';
 import LanguageExchangeHub from './pages/LanguageExchangeHub';
 import LegalAcceptance from './pages/LegalAcceptance';
@@ -56,7 +57,6 @@ import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
-import InvestorReport from './pages/InvestorReport';
 import __Layout from './Layout.jsx';
 
 
@@ -84,6 +84,7 @@ export const PAGES = {
     "Events": Events,
     "Home": Home,
     "IDVerification": IDVerification,
+    "InvestorReport": InvestorReport,
     "Landing": Landing,
     "LanguageExchangeHub": LanguageExchangeHub,
     "LegalAcceptance": LegalAcceptance,
@@ -119,7 +120,6 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
     "WhoLikesYou": WhoLikesYou,
-    "InvestorReport": InvestorReport,
 }
 
 export const pagesConfig = {
