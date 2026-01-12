@@ -491,7 +491,7 @@ export default function EditProfile() {
                       <SelectValue placeholder="Where do you live?" />
                     </SelectTrigger>
                     <SelectContent>
-                      {ALL_COUNTRIES.map(c => (
+                      {['United States', 'Canada'].map(c => (
                         <SelectItem key={c} value={c}>{c}</SelectItem>
                       ))}
                     </SelectContent>
