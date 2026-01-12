@@ -135,10 +135,25 @@ export default function CommunityChat() {
     return memberProfiles.find(p => p.id === senderId);
   };
 
-  if (isLoading || !community) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="animate-spin text-purple-600" size={40} />
+      </div>
+    );
+  }
+
+  if (!community) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-4 text-center">
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+          <Users size={32} className="text-gray-400" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900">Community Not Found</h2>
+        <p className="text-gray-500 max-w-xs">This community may have been removed or doesn't exist.</p>
+        <Link to={createPageUrl('Communities')}>
+          <Button>Back to Communities</Button>
+        </Link>
       </div>
     );
   }

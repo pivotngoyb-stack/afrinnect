@@ -36,8 +36,8 @@ export default function LegalAcceptance() {
           setIsLoading(false);
         }
       } catch (e) {
-        // Not logged in - stay on loading, will be redirected by Base44 auth
-        setIsLoading(true);
+        // Not logged in - redirect to login
+        base44.auth.redirectToLogin(window.location.href);
       }
     };
     checkUser();
