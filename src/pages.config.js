@@ -56,6 +56,7 @@ import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
+import InvestorReport from './pages/InvestorReport';
 import __Layout from './Layout.jsx';
 
 
@@ -118,6 +119,7 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
     "WhoLikesYou": WhoLikesYou,
+    "InvestorReport": InvestorReport,
 }
 
 export const pagesConfig = {

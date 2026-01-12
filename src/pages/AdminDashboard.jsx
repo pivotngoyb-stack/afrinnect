@@ -55,6 +55,7 @@ import RateLimitMonitor from '@/components/admin/RateLimitMonitor';
 import DisputeManagement from '@/components/admin/DisputeManagement';
 import ErrorLogsDashboard from '@/components/admin/ErrorLogsDashboard';
 import QuickActions from '@/components/admin/QuickActions';
+import { FileText } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -64,6 +65,7 @@ export default function AdminDashboard() {
   const [actionDialog, setActionDialog] = useState({ open: false, type: null, user: null });
   const [messageDialog, setMessageDialog] = useState({ open: false, type: 'single', profile: null });
   const [messageText, setMessageText] = useState('');
+  const [reportGenerating, setReportGenerating] = useState(false);
   const [waitlistDialog, setWaitlistDialog] = useState(false);
   const [waitlistEmail, setWaitlistEmail] = useState({ 
     subject: "You're invited to Afrinnect! 🌍", 
@@ -557,6 +559,56 @@ export default function AdminDashboard() {
         return <DisputeManagement disputes={disputes} currentUser={currentUser} />;
       case 'error_logs':
         return <ErrorLogsDashboard />;
+      case 'reports':
+        return (
+          <div className="max-w-2xl mx-auto space-y-6">
+            <Card className="border-purple-200 bg-gradient-to-br from-white to-purple-50/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-purple-800">
+                  <FileText className="h-6 w-6" />
+                  AI Investor Report Bot
+                </CardTitle>
+                <CardDescription>
+                  Generate a professional, printable PDF-style report for investors and stakeholders. 
+                  Our AI will analyze your latest metrics and write an executive summary for you.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-white p-4 rounded-lg border border-purple-100 shadow-sm">
+                  <h4 className="font-semibold text-sm mb-2 text-gray-700">What's included:</h4>
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li className="flex items-center gap-2">✨ AI-written Executive Summary</li>
+                    <li className="flex items-center gap-2">📈 Growth & Revenue Charts</li>
+                    <li className="flex items-center gap-2">💰 Key Financial Metrics (MRR, ARPU)</li>
+                    <li className="flex items-center gap-2">🎯 Strategic Recommendations</li>
+                  </ul>
+                </div>
+                
+                <Button 
+                  className="w-full bg-purple-600 hover:bg-purple-700 h-12 text-lg shadow-md transition-all hover:scale-[1.02]"
+                  onClick={() => {
+                    setReportGenerating(true);
+                    // Simulate "Thinking" delay for effect, then redirect
+                    setTimeout(() => {
+                      window.open(createPageUrl('InvestorReport'), '_blank');
+                      setReportGenerating(false);
+                    }, 1500);
+                  }}
+                  disabled={reportGenerating}
+                >
+                  {reportGenerating ? (
+                    <>Generating Report...</>
+                  ) : (
+                    <>
+                      <Rocket className="mr-2 h-5 w-5" />
+                      Generate Investor Report
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        );
       default:
         return <AdminOverview stats={stats} />;
     }
