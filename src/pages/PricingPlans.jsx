@@ -327,6 +327,10 @@ export default function PricingPlans() {
         <div className="max-w-lg mx-auto">
           <Button
             onClick={() => {
+              if (!stripeConfig?.publicKey) {
+                  alert("Payment system is currently unavailable. Please try again later.");
+                  return;
+              }
               trackEvent(CONVERSION_EVENTS.PREMIUM_CLICK, {
                 tier: selectedTier,
                 billing: selectedBilling,

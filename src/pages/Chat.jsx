@@ -68,23 +68,9 @@ export default function Chat() {
     sendReadReceipt 
   } = useRealtimeMessages(matchId, myProfile?.id, !!myProfile && !!matchId);
 
-  // Screenshot detection
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden && otherProfile) {
-        // User potentially took screenshot
-        base44.entities.ScreenshotAlert.create({
-          user_profile_id: myProfile?.id,
-          screenshot_of_profile_id: otherProfile.id,
-          screenshot_location: 'chat',
-          alert_sent: false
-        });
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [myProfile, otherProfile]);
+  // Screenshot detection (removed unreliable visibility check)
+  // Web browsers cannot reliably detect screenshots. 
+  // The previous implementation using visibilitychange caused false positives when switching tabs.
 
   useEffect(() => {
     const fetchProfiles = async () => {
