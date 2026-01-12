@@ -26,6 +26,7 @@ import ImageCropper from '@/components/shared/ImageCropper';
 import VideoProfileRecorder from '@/components/profile/VideoProfileRecorder';
 import VoiceRecorder from '@/components/shared/VoiceRecorder';
 import { Mic } from 'lucide-react';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
@@ -60,6 +61,7 @@ const CULTURAL_VALUES = [
 ];
 
 export default function EditProfile() {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -307,7 +309,7 @@ export default function EditProfile() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-amber-50">
         <div className="text-center">
           <Loader2 className="animate-spin mx-auto mb-4 text-purple-600" size={48} />
-          <p className="text-gray-600">Loading your profile...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -330,15 +332,15 @@ export default function EditProfile() {
                 </Button>
               </Link>
               <div>
-                <h1 className="text-lg font-bold text-gray-900">Edit Profile</h1>
-                <p className="text-xs text-gray-500">{completion}% Complete</p>
+                <h1 className="text-lg font-bold text-gray-900">{t('editProfile.title')}</h1>
+                <p className="text-xs text-gray-500">{completion}% {t('profile.profileCompletion')}</p>
               </div>
             </div>
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline" className="hidden md:flex gap-2 mr-2">
                   <Eye size={18} />
-                  Preview
+                  {t('editProfile.preview')}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md p-0 overflow-hidden bg-transparent border-0 shadow-none">
@@ -360,12 +362,12 @@ export default function EditProfile() {
               {saving ? (
                 <>
                   <Loader2 className="animate-spin mr-2" size={18} />
-                  Saving...
+                  {t('editProfile.saving')}
                 </>
               ) : (
                 <>
                   <Save className="mr-2" size={18} />
-                  Save Changes
+                  {t('editProfile.saveChanges')}
                 </>
               )}
             </Button>
@@ -444,8 +446,8 @@ export default function EditProfile() {
                   <Globe size={24} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">Location & Heritage</h2>
-                  <p className="text-sm text-white/80">Your roots and where you are</p>
+                  <h2 className="text-xl font-bold">{t('editProfile.locationHeritage')}</h2>
+                  <p className="text-sm text-white/80">{t('editProfile.locationSubtitle')}</p>
                 </div>
               </div>
             </div>
@@ -453,13 +455,13 @@ export default function EditProfile() {
             <CardContent className="p-6 space-y-5">
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2">Country of Origin</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-2">{t('onboarding.location.heritage')}</Label>
                   <Select 
                     value={formData.country_of_origin || ''} 
                     onValueChange={(v) => setFormData({ ...formData, country_of_origin: v })}
                   >
                     <SelectTrigger className="border-2 rounded-xl">
-                      <SelectValue placeholder="Select country" />
+                      <SelectValue placeholder={t('onboarding.location.selectCountry')} />
                     </SelectTrigger>
                     <SelectContent>
                       {AFRICAN_COUNTRIES.map(c => (
@@ -470,7 +472,7 @@ export default function EditProfile() {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2">Tribe / Ethnicity</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-2">{t('editProfile.tribe')}</Label>
                   <Input
                     value={formData.tribe_ethnicity || ''}
                     onChange={(e) => setFormData({ ...formData, tribe_ethnicity: e.target.value })}
@@ -482,13 +484,13 @@ export default function EditProfile() {
 
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2">Current Country</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-2">{t('onboarding.location.currentCountry')}</Label>
                   <Select 
                     value={formData.current_country || ''} 
                     onValueChange={(v) => setFormData({ ...formData, current_country: v })}
                   >
                     <SelectTrigger className="border-2 rounded-xl">
-                      <SelectValue placeholder="Where do you live?" />
+                      <SelectValue placeholder={t('onboarding.location.whereDoYouLive')} />
                     </SelectTrigger>
                     <SelectContent>
                       {['United States', 'Canada'].map(c => (
@@ -499,11 +501,11 @@ export default function EditProfile() {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2">City</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-2">{t('onboarding.location.city')}</Label>
                   <Input
                     value={formData.current_city || ''}
                     onChange={(e) => setFormData({ ...formData, current_city: e.target.value })}
-                    placeholder="Your city"
+                    placeholder={t('onboarding.location.yourCity')}
                     className="border-2 focus:border-purple-400 rounded-xl"
                   />
                 </div>
@@ -525,8 +527,8 @@ export default function EditProfile() {
                   <Briefcase size={24} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">Work & Education</h2>
-                  <p className="text-sm text-white/80">Your professional life</p>
+                  <h2 className="text-xl font-bold">{t('editProfile.workEducation')}</h2>
+                  <p className="text-sm text-white/80">{t('editProfile.workSubtitle')}</p>
                 </div>
               </div>
             </div>
@@ -534,23 +536,23 @@ export default function EditProfile() {
             <CardContent className="p-6 space-y-5">
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2">Profession</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-2">{t('editProfile.profession')}</Label>
                   <Input
                     value={formData.profession || ''}
                     onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                    placeholder="What do you do?"
+                    placeholder={t('editProfile.whatDoYouDo')}
                     className="border-2 focus:border-purple-400 rounded-xl"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2">Education</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-2">{t('editProfile.education')}</Label>
                   <Select 
                     value={formData.education || ''} 
                     onValueChange={(v) => setFormData({ ...formData, education: v })}
                   >
                     <SelectTrigger className="border-2 rounded-xl">
-                      <SelectValue placeholder="Select education" />
+                      <SelectValue placeholder={t('editProfile.selectEducation')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="high_school">High School</SelectItem>
@@ -566,13 +568,13 @@ export default function EditProfile() {
 
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2">Religion</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-2">{t('profile.religion')}</Label>
                   <Select 
                     value={formData.religion || ''} 
                     onValueChange={(v) => setFormData({ ...formData, religion: v })}
                   >
                     <SelectTrigger className="border-2 rounded-xl">
-                      <SelectValue placeholder="Select religion" />
+                      <SelectValue placeholder={t('profile.religion')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="christianity">Christianity</SelectItem>
@@ -588,19 +590,19 @@ export default function EditProfile() {
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <Label className="text-sm font-semibold text-gray-700">Height</Label>
+                    <Label className="text-sm font-semibold text-gray-700">{t('editProfile.height')}</Label>
                     <div className="flex bg-gray-100 rounded-lg p-1">
                       <button
                         onClick={() => setMeasurementSystem('imperial')}
                         className={`text-xs px-2 py-1 rounded-md transition ${measurementSystem === 'imperial' ? 'bg-white shadow text-purple-600 font-medium' : 'text-gray-500'}`}
                       >
-                        ft/in
+                        {t('editProfile.ft/in')}
                       </button>
                       <button
                         onClick={() => setMeasurementSystem('metric')}
                         className={`text-xs px-2 py-1 rounded-md transition ${measurementSystem === 'metric' ? 'bg-white shadow text-purple-600 font-medium' : 'text-gray-500'}`}
                       >
-                        cm
+                        {t('editProfile.cm')}
                       </button>
                     </div>
                   </div>
@@ -612,24 +614,24 @@ export default function EditProfile() {
                           type="number"
                           value={heightFeet}
                           onChange={(e) => setHeightFeet(e.target.value)}
-                          placeholder="Feet"
+                          placeholder={t('editProfile.feet')}
                           min="0"
                           max="8"
                           className="border-2 focus:border-purple-400 rounded-xl"
                         />
-                        <p className="text-xs text-gray-500 mt-1 text-center">Feet</p>
+                        <p className="text-xs text-gray-500 mt-1 text-center">{t('editProfile.feet')}</p>
                       </div>
                       <div className="flex-1">
                         <Input
                           type="number"
                           value={heightInches}
                           onChange={(e) => setHeightInches(e.target.value)}
-                          placeholder="Inches"
+                          placeholder={t('editProfile.inches')}
                           min="0"
                           max="11"
                           className="border-2 focus:border-purple-400 rounded-xl"
                         />
-                        <p className="text-xs text-gray-500 mt-1 text-center">Inches</p>
+                        <p className="text-xs text-gray-500 mt-1 text-center">{t('editProfile.inches')}</p>
                       </div>
                     </div>
                   ) : (
@@ -638,12 +640,12 @@ export default function EditProfile() {
                         type="number"
                         value={formData.height_cm || ''}
                         onChange={(e) => setFormData({ ...formData, height_cm: e.target.value })}
-                        placeholder="Height in cm"
+                        placeholder={t('editProfile.cm')}
                         min="50"
                         max="300"
                         className="border-2 focus:border-purple-400 rounded-xl"
                       />
-                      <p className="text-xs text-gray-500 mt-1 text-center">Centimeters</p>
+                      <p className="text-xs text-gray-500 mt-1 text-center">{t('editProfile.cm')}</p>
                     </div>
                   )}
                 </div>
@@ -665,8 +667,8 @@ export default function EditProfile() {
                   <Globe size={24} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">Languages</h2>
-                  <p className="text-sm text-white/80">Select all that you speak</p>
+                  <h2 className="text-xl font-bold">{t('editProfile.languages')}</h2>
+                  <p className="text-sm text-white/80">{t('editProfile.languagesSubtitle')}</p>
                 </div>
               </div>
             </div>
@@ -706,8 +708,8 @@ export default function EditProfile() {
                   <Award size={24} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">Cultural Values</h2>
-                  <p className="text-sm text-white/80">What matters most to you?</p>
+                  <h2 className="text-xl font-bold">{t('editProfile.culturalValues')}</h2>
+                  <p className="text-sm text-white/80">{t('editProfile.valuesSubtitle')}</p>
                 </div>
               </div>
             </div>
@@ -747,8 +749,8 @@ export default function EditProfile() {
                   <Sparkles size={24} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">Interests & Hobbies</h2>
-                  <p className="text-sm text-white/80">What do you love doing?</p>
+                  <h2 className="text-xl font-bold">{t('editProfile.interests')}</h2>
+                  <p className="text-sm text-white/80">{t('editProfile.interestsSubtitle')}</p>
                 </div>
               </div>
             </div>
@@ -788,8 +790,8 @@ export default function EditProfile() {
                   <Video size={24} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">Video Profile</h2>
-                  <p className="text-sm text-white/80">Introduce yourself in 30 seconds</p>
+                  <h2 className="text-xl font-bold">{t('editProfile.videoProfile')}</h2>
+                  <p className="text-sm text-white/80">{t('editProfile.videoSubtitle')}</p>
                 </div>
               </div>
             </div>
@@ -815,8 +817,8 @@ export default function EditProfile() {
                   <Mic size={24} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">Voice Intro</h2>
-                  <p className="text-sm text-white/80">Let them hear your voice</p>
+                  <h2 className="text-xl font-bold">{t('editProfile.voiceIntro')}</h2>
+                  <p className="text-sm text-white/80">{t('editProfile.voiceSubtitle')}</p>
                 </div>
               </div>
             </div>
@@ -830,7 +832,7 @@ export default function EditProfile() {
                     onClick={() => setFormData({ ...formData, voice_intro_url: '' })}
                     className="text-red-500 mt-2 hover:bg-red-50"
                   >
-                    Remove Voice Intro
+                    {t('editProfile.removeVoice')}
                   </Button>
                 </div>
               )}
@@ -860,12 +862,12 @@ export default function EditProfile() {
             {saving ? (
               <>
                 <Loader2 className="animate-spin mr-2" size={24} />
-                Saving Your Profile...
+                {t('editProfile.savingProfile')}
               </>
             ) : (
               <>
                 <Save className="mr-2" size={24} />
-                Save All Changes
+                {t('editProfile.saveAll')}
               </>
             )}
           </Button>

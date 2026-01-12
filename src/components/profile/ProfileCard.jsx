@@ -10,8 +10,10 @@ import CountryFlag from '../shared/CountryFlag';
 import ProfileBadges from './ProfileBadges';
 import OptimizedImage from '../shared/OptimizedImage';
 import ProfileTierDecoration from './ProfileTierDecoration';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLike, onPass, onSuperLike, showActions = true, expanded = false }) {
+  const { t } = useLanguage();
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   
   // Swipe animation values
@@ -125,10 +127,10 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
   };
 
   const relationshipLabels = {
-    dating: 'Dating',
-    serious_relationship: 'Serious Relationship',
-    marriage: 'Marriage',
-    friendship: 'Friendship',
+    dating: t('onboarding.goal.dating.label'),
+    serious_relationship: t('onboarding.goal.serious.label'),
+    marriage: t('onboarding.goal.marriage.label'),
+    friendship: t('onboarding.goal.friendship.label'),
     networking: 'Networking'
   };
 
@@ -163,7 +165,7 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
               className="absolute top-10 left-8 z-50 pointer-events-none transform -rotate-12"
             >
               <div className="border-4 border-green-500 rounded-xl px-4 py-2 bg-black/20 backdrop-blur-sm">
-                <span className="text-4xl font-extrabold text-green-500 tracking-widest">LIKE</span>
+                <span className="text-4xl font-extrabold text-green-500 tracking-widest">{t('admin.common.like').toUpperCase()}</span>
               </div>
             </motion.div>
 
@@ -172,7 +174,7 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
               className="absolute top-10 right-8 z-50 pointer-events-none transform rotate-12"
             >
               <div className="border-4 border-red-500 rounded-xl px-4 py-2 bg-black/20 backdrop-blur-sm">
-                <span className="text-4xl font-extrabold text-red-500 tracking-widest">NOPE</span>
+                <span className="text-4xl font-extrabold text-red-500 tracking-widest">{t('admin.common.pass').toUpperCase()}</span>
               </div>
             </motion.div>
           </>
@@ -300,7 +302,7 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
                     <Mic size={20} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-semibold text-purple-900 mb-1">Voice Intro</p>
+                    <p className="text-xs font-semibold text-purple-900 mb-1">{t('editProfile.voiceIntro')}</p>
                     <audio controls src={profile.voice_intro_url} className="w-full h-8" />
                   </div>
                 </div>
@@ -337,7 +339,7 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
               {/* Cultural Values */}
               {profile?.cultural_values?.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Values</h3>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('editProfile.culturalValues')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {profile.cultural_values.map((value, idx) => (
                       <Badge key={idx} variant="outline" className="border-amber-300 text-amber-700 bg-amber-50">
@@ -351,7 +353,7 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
               {/* Interests */}
               {profile?.interests?.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Interests</h3>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('profile.interests')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {profile.interests.map((interest, idx) => (
                       <Badge key={idx} variant="secondary" className="bg-purple-100 text-purple-700">
