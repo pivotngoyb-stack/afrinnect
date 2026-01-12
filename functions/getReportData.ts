@@ -8,47 +8,59 @@ Deno.serve(async (req) => {
         try {
             user = await base44.auth.me();
         } catch (e) {
-            console.error("Auth check failed:", e);
             return Response.json({ error: 'Authentication failed' }, { status: 401 });
         }
         
         // Admin check
         if (!user || (user.role !== 'admin' && user.email !== 'pivotngoyb@gmail.com')) {
-            console.log("Unauthorized access attempt by:", user?.email);
             return Response.json({ error: 'Unauthorized' }, { status: 403 });
         }
 
-        console.log("Starting report generation for:", user.email);
-
-        // 1. Gather Metrics
         const now = new Date();
         const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
         const prevThirtyDays = new Date(now - 60 * 24 * 60 * 60 * 1000).toISOString();
 
-        // Helper for safe counting
-        const safeCount = async (entity, filter) => {
+        // Helper for robust fetching
+        const getCount = async (entity, filter = {}) => {
             try {
                 return await base44.entities[entity].count(filter);
             } catch (e) {
-                console.error(`Count failed for ${entity}:`, e);
+                console.error(`Error counting ${entity}:`, e);
                 return 0;
             }
         };
 
-        // Users
-        const totalUsers = await safeCount('UserProfile', {});
-        const activeUsers = await safeCount('UserProfile', { is_active: true });
-        const newUsersLast30 = await safeCount('UserProfile', { created_date: { $gte: thirtyDaysAgo } });
-        const newUsersPrev30 = await safeCount('UserProfile', { 
-            created_date: { $gte: prevThirtyDays, $lt: thirtyDaysAgo } 
-        });
+        // 1. Fetch ALL Metrics in Parallel (Connect to Everything)
+        const [
+            totalUsers,
+            activeUsers,
+            newUsersLast30,
+            newUsersPrev30,
+            matchesLast30,
+            msgsLast30,
+            totalEvents,
+            totalStories,
+            pendingReports,
+            activeSubscriptions
+        ] = await Promise.all([
+            getCount('UserProfile', {}),
+            getCount('UserProfile', { is_active: true }),
+            getCount('UserProfile', { created_date: { $gte: thirtyDaysAgo } }),
+            getCount('UserProfile', { created_date: { $gte: prevThirtyDays, $lt: thirtyDaysAgo } }),
+            getCount('Match', { created_date: { $gte: thirtyDaysAgo }, is_match: true }),
+            getCount('Message', { created_date: { $gte: thirtyDaysAgo } }),
+            getCount('Event', {}),
+            getCount('SuccessStory', {}),
+            getCount('Report', { status: 'pending' }),
+            base44.entities.Subscription.filter({ status: 'active' }, '-created_date', 1000).catch(() => [])
+        ]);
 
-        // Revenue
+        // Revenue Calculation
         let mrr = 0;
-        try {
-            const subs = await base44.entities.Subscription.filter({ status: 'active' });
-            mrr = subs.reduce((acc, sub) => {
+        if (Array.isArray(activeSubscriptions)) {
+            mrr = activeSubscriptions.reduce((acc, sub) => {
                 let amount = sub.amount_paid || 0;
+                // Estimate if manual/legacy
                 if (amount === 0) {
                     if (sub.plan_type?.includes('premium')) amount = 19.99;
                     if (sub.plan_type?.includes('elite')) amount = 39.99;
@@ -56,13 +68,7 @@ Deno.serve(async (req) => {
                 }
                 return acc + amount;
             }, 0);
-        } catch (e) {
-            console.error("Revenue calc failed:", e);
         }
-
-        // Engagement
-        const matchesLast30 = await safeCount('Match', { created_date: { $gte: thirtyDaysAgo }, is_match: true });
-        const msgsLast30 = await safeCount('Message', { created_date: { $gte: thirtyDaysAgo } });
 
         // Growth Calculation
         const userGrowth = newUsersPrev30 > 0 ? ((newUsersLast30 - newUsersPrev30) / newUsersPrev30) * 100 : 100;
@@ -74,33 +80,36 @@ Deno.serve(async (req) => {
             userGrowth: Math.round(userGrowth),
             mrr: Math.round(mrr),
             matchesLast30,
-            msgsLast30
+            msgsLast30,
+            totalEvents,
+            totalStories,
+            pendingReports
         };
 
-        console.log("Stats gathered:", JSON.stringify(stats));
-
-        // 2. Generate AI Executive Summary
+        // 2. Generate AI Executive Summary with Fallback
         let aiAnalysis = {
-            summary: "AI Analysis currently unavailable. Please check the metrics above.",
-            highlights: ["Metric analysis pending", "System operational"],
-            recommendation: "Focus on user acquisition and retention based on current trends."
+            summary: "Executive Summary generation pending. The platform is showing steady activity with " + totalUsers + " users and " + matchesLast30 + " recent matches.",
+            highlights: [
+                `User base reached ${totalUsers}`,
+                `Monthly Revenue at $${Math.round(mrr)}`,
+                `${matchesLast30} matches created in the last 30 days`
+            ],
+            recommendation: "Focus on converting active users to paid subscriptions."
         };
 
         try {
             const aiResponse = await base44.integrations.Core.InvokeLLM({
                 prompt: `
-                You are a startup CFO/CTO preparing a monthly investor report.
-                Write a professional, data-driven Executive Summary (2 paragraphs max).
+                Act as a Startup CFO. Write a brief Investor Report Summary for "Afrinnect".
                 
-                Metrics:
-                - Total Users: ${totalUsers}
-                - Active Users: ${activeUsers}
-                - New Users (Last 30d): ${newUsersLast30} (Growth: ${Math.round(userGrowth)}%)
-                - Monthly Recurring Revenue (MRR): $${Math.round(mrr)}
-                - Engagement: ${matchesLast30} matches & ${msgsLast30} messages this month.
-
-                Tone: Optimistic but realistic. Highlight the growth momentum and engagement quality.
-                Mention "Afrinnect" as the app name.
+                Data:
+                - Users: ${totalUsers} (${activeUsers} active)
+                - Growth: +${newUsersLast30} users last 30d (${Math.round(userGrowth)}% growth)
+                - Revenue: $${Math.round(mrr)} MRR
+                - Engagement: ${matchesLast30} matches, ${msgsLast30} messages
+                - Ecosystem: ${totalEvents} events, ${totalStories} success stories
+                
+                Return JSON: { summary, highlights (array), recommendation }
                 `,
                 response_json_schema: {
                     type: "object",
@@ -112,12 +121,11 @@ Deno.serve(async (req) => {
                 }
             });
             
-            if (aiResponse) {
+            if (aiResponse && typeof aiResponse === 'object') {
                 aiAnalysis = aiResponse;
             }
-        } catch (aiError) {
-            console.error("AI Generation failed:", aiError);
-            // Fallback is already set
+        } catch (e) {
+            console.error("AI Generation failed, using fallback", e);
         }
 
         return Response.json({
@@ -126,7 +134,7 @@ Deno.serve(async (req) => {
         });
 
     } catch (error) {
-        console.error("Critical report error:", error);
+        console.error("Report generation critical error:", error);
         return Response.json({ error: error.message }, { status: 500 });
     }
 });

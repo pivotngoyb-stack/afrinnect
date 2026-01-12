@@ -154,6 +154,26 @@ export default function InvestorReport() {
           </Card>
         </section>
 
+        {/* Ecosystem Stats */}
+        <section className="grid grid-cols-4 gap-4 mb-12">
+           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-center">
+             <div className="text-2xl font-bold text-purple-600">{data.stats.totalEvents || 0}</div>
+             <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Events Hosted</div>
+           </div>
+           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-center">
+             <div className="text-2xl font-bold text-pink-600">{data.stats.totalStories || 0}</div>
+             <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Success Stories</div>
+           </div>
+           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-center">
+             <div className="text-2xl font-bold text-blue-600">{data.stats.matchesLast30?.toLocaleString() || 0}</div>
+             <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">New Matches</div>
+           </div>
+           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-center">
+             <div className="text-2xl font-bold text-amber-600">{data.stats.msgsLast30?.toLocaleString() || 0}</div>
+             <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Messages Sent</div>
+           </div>
+        </section>
+
         {/* Charts Row */}
         <section className="grid grid-cols-2 gap-8 mb-12">
           <div>
