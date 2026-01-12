@@ -55,13 +55,11 @@ export default function CreateEvent() {
           const profile = profiles[0];
           setMyProfile(profile);
 
-          // Check if user can create events (Premium+ or verified)
-          const canCreate = 
-            profile.subscription_tier && profile.subscription_tier !== 'free' ||
-            profile.verification_status?.photo_verified;
+          // Check if user can create events (Elite+ only)
+          const canCreate = ['elite', 'vip'].includes(profile.subscription_tier);
 
           if (!canCreate) {
-            alert('Event creation is available for Premium members and verified users only.');
+            alert('Event creation is exclusive to Elite and VIP members.');
             window.location.href = createPageUrl('Events');
           }
 

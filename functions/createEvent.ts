@@ -26,12 +26,11 @@ Deno.serve(async (req) => {
     if (profiles.length === 0) return Response.json({ error: 'Profile not found' }, { status: 404 });
     const profile = profiles[0];
 
-    // Check Premium or Verified
-    const isPremium = profile.subscription_tier && profile.subscription_tier !== 'free';
-    const isVerified = profile.verification_status?.photo_verified;
+    // Check Elite or VIP
+    const isEliteOrUp = ['elite', 'vip'].includes(profile.subscription_tier);
 
-    if (!isPremium && !isVerified) {
-        return Response.json({ error: 'Event creation is restricted to Premium or Verified members.' }, { status: 403 });
+    if (!isEliteOrUp) {
+        return Response.json({ error: 'Event creation is restricted to Elite and VIP members.' }, { status: 403 });
     }
 
     // 2. Validate "Featured" Status (VIP Only)
