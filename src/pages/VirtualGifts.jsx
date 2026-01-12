@@ -109,7 +109,8 @@ export default function VirtualGifts() {
               amount: selectedGift.price,
               currency: 'usd',
               planType: 'virtual_gift',
-              billingPeriod: 'one_time'
+              billingPeriod: 'one_time',
+              giftType: selectedGift.type
           });
           
           if (response.data?.clientSecret) {
