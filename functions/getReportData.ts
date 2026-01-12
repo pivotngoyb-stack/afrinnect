@@ -121,8 +121,12 @@ Deno.serve(async (req) => {
                 }
             });
             
+            // Validate AI Response Structure
             if (aiResponse && typeof aiResponse === 'object') {
-                aiAnalysis = aiResponse;
+                // Ensure required fields exist, otherwise keep fallback
+                if (aiResponse.summary && Array.isArray(aiResponse.highlights) && aiResponse.recommendation) {
+                    aiAnalysis = aiResponse;
+                }
             }
         } catch (e) {
             console.error("AI Generation failed, using fallback", e);

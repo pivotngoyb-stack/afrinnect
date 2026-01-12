@@ -108,7 +108,7 @@ export default function InvestorReport() {
         <section className="mb-12">
           <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Executive Summary</h2>
           <div className="prose max-w-none text-gray-800 leading-relaxed bg-purple-50/50 p-6 rounded-lg border-l-4 border-purple-600">
-            <p className="whitespace-pre-line text-lg">{data.aiAnalysis.summary}</p>
+            <p className="whitespace-pre-line text-lg">{data?.aiAnalysis?.summary || "Summary not available."}</p>
           </div>
         </section>
 
@@ -120,9 +120,9 @@ export default function InvestorReport() {
                 <Users className="h-5 w-5" />
                 <span className="font-semibold text-sm uppercase">Total Users</span>
               </div>
-              <div className="text-4xl font-bold text-gray-900">{data.stats.totalUsers.toLocaleString()}</div>
+              <div className="text-4xl font-bold text-gray-900">{data?.stats?.totalUsers?.toLocaleString() || 0}</div>
               <div className="text-sm text-green-600 font-medium mt-1">
-                +{data.stats.userGrowth}% MoM
+                +{data?.stats?.userGrowth || 0}% MoM
               </div>
             </CardContent>
           </Card>
@@ -133,7 +133,7 @@ export default function InvestorReport() {
                 <DollarSign className="h-5 w-5" />
                 <span className="font-semibold text-sm uppercase">Monthly Revenue</span>
               </div>
-              <div className="text-4xl font-bold text-gray-900">${data.stats.mrr.toLocaleString()}</div>
+              <div className="text-4xl font-bold text-gray-900">${data?.stats?.mrr?.toLocaleString() || 0}</div>
               <div className="text-sm text-gray-500 mt-1">
                 Recurring (MRR)
               </div>
@@ -146,7 +146,7 @@ export default function InvestorReport() {
                 <Activity className="h-5 w-5" />
                 <span className="font-semibold text-sm uppercase">Engagement</span>
               </div>
-              <div className="text-4xl font-bold text-gray-900">{data.stats.activeUsers.toLocaleString()}</div>
+              <div className="text-4xl font-bold text-gray-900">{data?.stats?.activeUsers?.toLocaleString() || 0}</div>
               <div className="text-sm text-gray-500 mt-1">
                 Active Users (MAU)
               </div>
@@ -157,19 +157,19 @@ export default function InvestorReport() {
         {/* Ecosystem Stats */}
         <section className="grid grid-cols-4 gap-4 mb-12">
            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-center">
-             <div className="text-2xl font-bold text-purple-600">{data.stats.totalEvents || 0}</div>
+             <div className="text-2xl font-bold text-purple-600">{data?.stats?.totalEvents || 0}</div>
              <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Events Hosted</div>
            </div>
            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-center">
-             <div className="text-2xl font-bold text-pink-600">{data.stats.totalStories || 0}</div>
+             <div className="text-2xl font-bold text-pink-600">{data?.stats?.totalStories || 0}</div>
              <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Success Stories</div>
            </div>
            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-center">
-             <div className="text-2xl font-bold text-blue-600">{data.stats.matchesLast30?.toLocaleString() || 0}</div>
+             <div className="text-2xl font-bold text-blue-600">{data?.stats?.matchesLast30?.toLocaleString() || 0}</div>
              <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">New Matches</div>
            </div>
            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-center">
-             <div className="text-2xl font-bold text-amber-600">{data.stats.msgsLast30?.toLocaleString() || 0}</div>
+             <div className="text-2xl font-bold text-amber-600">{data?.stats?.msgsLast30?.toLocaleString() || 0}</div>
              <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Messages Sent</div>
            </div>
         </section>
@@ -218,7 +218,7 @@ export default function InvestorReport() {
           <div>
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Key Highlights</h3>
             <ul className="space-y-3">
-              {data.aiAnalysis.highlights?.map((highlight, i) => (
+              {data?.aiAnalysis?.highlights?.map((highlight, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-purple-600 mt-2 shrink-0" />
                   <span className="text-gray-700">{highlight}</span>
@@ -229,7 +229,7 @@ export default function InvestorReport() {
           <div>
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Strategic Focus</h3>
             <div className="bg-amber-50 p-6 rounded-lg border border-amber-100">
-              <p className="text-gray-800 italic">"{data.aiAnalysis.recommendation}"</p>
+              <p className="text-gray-800 italic">"{data?.aiAnalysis?.recommendation || "No recommendation available."}"</p>
             </div>
           </div>
         </section>
