@@ -71,10 +71,20 @@ export default function Onboarding() {
   const [user, setUser] = useState(null);
   const [showSafetyEducation, setShowSafetyEducation] = useState(false);
   const [formData, setFormData] = useState(() => {
+    // Check for referral code in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      localStorage.setItem('referral_code', refCode);
+    }
+
     // Load from localStorage if available
     const saved = localStorage.getItem('onboarding_data');
-    return saved ? JSON.parse(saved) : {
+    const savedRef = localStorage.getItem('referral_code');
+    
+    return saved ? { ...JSON.parse(saved), referred_by: savedRef } : {
       display_name: '',
+      referred_by: savedRef || '',
       birth_date: '',
       gender: '',
       looking_for: [],

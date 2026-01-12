@@ -147,8 +147,51 @@ Deno.serve(async (req) => {
     } catch (e) {}
 
     // Referral Logic
-    // (We handle this in backend to prevent tampering)
-    // ... logic would go here if needed ...
+    if (formData.referred_by && formData.referred_by !== user.id) {
+        try {
+            // Validate referrer
+            const referrers = await base44.asServiceRole.entities.User.filter({ id: formData.referred_by });
+            if (referrers.length > 0) {
+                // Create Referral Record
+                await base44.asServiceRole.entities.Referral.create({
+                    referrer_id: formData.referred_by,
+                    referred_id: user.id,
+                    referred_email: user.email,
+                    status: 'completed',
+                    reward_given: true,
+                    reward_claimed: true
+                });
+
+                // Award Referrer (Extend Premium by 3 days)
+                const referrerProfiles = await base44.asServiceRole.entities.UserProfile.filter({ user_id: formData.referred_by });
+                if (referrerProfiles.length > 0) {
+                    const rProfile = referrerProfiles[0];
+                    let newExpiry = new Date();
+                    if (rProfile.premium_until && new Date(rProfile.premium_until) > new Date()) {
+                        newExpiry = new Date(rProfile.premium_until);
+                    }
+                    newExpiry.setDate(newExpiry.getDate() + 3);
+                    
+                    await base44.asServiceRole.entities.UserProfile.update(rProfile.id, {
+                        is_premium: true,
+                        subscription_tier: rProfile.subscription_tier === 'free' ? 'premium' : rProfile.subscription_tier,
+                        premium_until: newExpiry.toISOString()
+                    });
+
+                    // Notify Referrer
+                    await base44.asServiceRole.entities.Notification.create({
+                        user_profile_id: rProfile.id,
+                        type: 'admin_message',
+                        title: 'Referral Reward! 🎁',
+                        message: `Your friend joined Afrinnect! You've earned 3 extra days of Premium access.`,
+                        is_read: false
+                    });
+                }
+            }
+        } catch (e) {
+            console.error('Referral processing failed:', e);
+        }
+    }
 
     return Response.json({ success: true, profile: newProfile });
 
