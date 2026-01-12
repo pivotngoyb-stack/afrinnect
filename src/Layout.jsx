@@ -20,6 +20,7 @@ import { GlobalErrorHandler } from '@/components/shared/GlobalErrorHandler';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import InstallPrompt from '@/components/mobile/InstallPrompt';
 import BannedScreen from '@/components/auth/BannedScreen';
+import FeatureReminders from '@/components/shared/FeatureReminders';
 
 const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories', 'EventDetails', 'CreateEvent', 'CompatibilityQuizzes', 'ReferralProgram', 'LanguageExchangeHub', 'VendorManagement', 'Marketplace', 'PasswordReset'];
 
@@ -239,6 +240,9 @@ function LayoutContent({ children, currentPageName }) {
 
       {/* Mobile Install Prompt */}
       <InstallPrompt />
+
+      {/* Feature Reminders */}
+      <FeatureReminders />
 
       {/* Cookie Consent */}
       <CookieConsent />
