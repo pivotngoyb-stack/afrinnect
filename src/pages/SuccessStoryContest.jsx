@@ -41,6 +41,14 @@ export default function SuccessStoryContest() {
     )
   });
 
+  const { data: contestConfig } = useQuery({
+    queryKey: ['contest-config', currentMonth],
+    queryFn: async () => {
+      const configs = await base44.entities.ContestPeriod.filter({ month: currentMonth });
+      return configs[0] || null;
+    }
+  });
+
   const submitMutation = useMutation({
     mutationFn: async () => {
       return base44.entities.SuccessStoryContest.create({
@@ -102,22 +110,42 @@ export default function SuccessStoryContest() {
         <Card className="mb-6 bg-gradient-to-br from-pink-600 to-purple-600 border-0 text-white">
           <CardContent className="p-6 text-center">
             <Trophy size={48} className="mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">December 2025 Contest</h2>
+            <h2 className="text-2xl font-bold mb-2">
+              {contestConfig?.theme ? `${contestConfig.theme} - ` : ''} 
+              {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })} Contest
+            </h2>
             <p className="text-white/90 mb-4">Share your love story and win amazing prizes!</p>
-            <div className="flex justify-center gap-4 text-sm">
-              <div>
-                <p className="font-bold text-2xl">$500</p>
-                <p>1st Prize</p>
+            {contestConfig ? (
+              <div className="flex justify-center gap-4 text-sm">
+                <div>
+                  <p className="font-bold text-2xl">{contestConfig.prizes?.first || '$500'}</p>
+                  <p>1st Prize</p>
+                </div>
+                <div>
+                  <p className="font-bold text-2xl">{contestConfig.prizes?.second || '$250'}</p>
+                  <p>2nd Prize</p>
+                </div>
+                <div>
+                  <p className="font-bold text-2xl">{contestConfig.prizes?.third || '$100'}</p>
+                  <p>3rd Prize</p>
+                </div>
               </div>
-              <div>
-                <p className="font-bold text-2xl">$250</p>
-                <p>2nd Prize</p>
+            ) : (
+              <div className="flex justify-center gap-4 text-sm">
+                <div>
+                  <p className="font-bold text-2xl">$500</p>
+                  <p>1st Prize</p>
+                </div>
+                <div>
+                  <p className="font-bold text-2xl">$250</p>
+                  <p>2nd Prize</p>
+                </div>
+                <div>
+                  <p className="font-bold text-2xl">$100</p>
+                  <p>3rd Prize</p>
+                </div>
               </div>
-              <div>
-                <p className="font-bold text-2xl">$100</p>
-                <p>3rd Prize</p>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 

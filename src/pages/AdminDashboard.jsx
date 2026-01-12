@@ -37,6 +37,7 @@ import FeatureFlags from '@/components/admin/FeatureFlags';
 import PricingManagement from '@/components/admin/PricingManagement';
 import VideoProfileManagement from '@/components/admin/VideoProfileManagement';
 import SuccessStoryModeration from '@/components/admin/SuccessStoryModeration';
+import ContestManagement from '@/components/admin/ContestManagement';
 import StoryManagement from '@/components/admin/StoryManagement';
 import CommunityManagement from '@/components/admin/CommunityManagement';
 import SubscriptionManagement from '@/components/admin/SubscriptionManagement';
@@ -542,6 +543,7 @@ export default function AdminDashboard() {
             <CommunityManagement />
             <PricingManagement plans={pricingPlans} />
             <VideoProfileManagement />
+            <ContestManagement />
             <SuccessStoryModeration />
           </div>
         );
