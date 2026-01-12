@@ -53,6 +53,9 @@ export default function Profile() {
         }
       } catch (e) {
         console.log('Not logged in');
+        if (!profileId) {
+          base44.auth.redirectToLogin(createPageUrl('Landing'));
+        }
       }
     };
     fetchMyProfile();

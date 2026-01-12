@@ -69,6 +69,7 @@ export default function Settings() {
         }
       } catch (e) {
         console.log('Not logged in');
+        base44.auth.redirectToLogin(createPageUrl('Landing'));
       }
     };
     fetchProfile();
