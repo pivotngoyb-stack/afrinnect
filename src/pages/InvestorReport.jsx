@@ -12,14 +12,34 @@ import Logo from '@/components/shared/Logo';
 
 export default function InvestorReport() {
   const [date] = useState(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
+  const [isAuthReady, setIsAuthReady] = useState(false);
+
+  // Ensure auth is ready before fetching
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        await base44.auth.me();
+        setIsAuthReady(true);
+      } catch (e) {
+        console.error("Not authenticated in this tab", e);
+        // Redirect if strictly needed, or let the error state handle it
+        window.location.href = '/login';
+      }
+    };
+    initAuth();
+  }, []);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['investor-report'],
     queryFn: async () => {
       const response = await base44.functions.invoke('getReportData', {});
+      // Check for 401/403 explicitly handled in response data if function returned 200 with error field
+      if (response.data?.error) throw new Error(response.data.error);
       return response.data;
     },
-    staleTime: 300000 // 5 mins
+    staleTime: 300000, // 5 mins
+    enabled: isAuthReady, // CRITICAL: Only run query when auth is confirmed
+    retry: 1
   });
 
   // Mock chart data (since we only have aggregates, we simulate a trend for the visual)
