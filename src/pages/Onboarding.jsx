@@ -515,36 +515,17 @@ export default function Onboarding() {
           )}
         </div>
 
+        {/* Country selection removed - strictly geolocation based */}
         <div>
-          <Label className="text-base">Where do you live now?</Label>
-          <Select value={formData.current_country} onValueChange={(v) => updateField('current_country', v)}>
-            <SelectTrigger className="mt-2 h-12">
-              <SelectValue placeholder="Select your current country" />
-            </SelectTrigger>
-            <SelectContent className="max-h-[300px]">
-              <div className="sticky top-0 bg-white p-2 border-b">
-                <Input
-                  placeholder="Type to search..."
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => {
-                    const search = e.target.value.toLowerCase();
-                    const items = document.querySelectorAll('[data-country]');
-                    items.forEach(item => {
-                      const country = item.getAttribute('data-country').toLowerCase();
-                      item.style.display = country.includes(search) ? '' : 'none';
-                    });
-                  }}
-                  className="h-9"
-                />
-              </div>
-              {RESIDENCE_COUNTRIES.map(country => (
-                <SelectItem key={country} value={country} data-country={country}>
-                  {country}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-gray-400 mt-1">Search to find your country</p>
+           {formData.current_country && (
+            <div className="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-100">
+              <p className="text-sm font-medium text-purple-900">Current Location:</p>
+              <p className="text-lg text-purple-700 font-bold flex items-center gap-2">
+                <MapPin size={18} />
+                {formData.current_city}, {formData.current_country}
+              </p>
+            </div>
+           )}
         </div>
 
         <div>
