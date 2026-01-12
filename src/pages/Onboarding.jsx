@@ -528,15 +528,7 @@ export default function Onboarding() {
            )}
         </div>
 
-        <div>
-          <Label className="text-base">City</Label>
-          <Input
-            value={formData.current_city}
-            onChange={(e) => updateField('current_city', e.target.value)}
-            placeholder="Your city"
-            className="mt-2 h-12"
-          />
-        </div>
+        {/* City input removed - strictly geolocation based */}
 
         <div className={`p-4 rounded-xl border-2 ${formData.location.lat ? 'border-green-500 bg-green-50' : 'border-red-300 bg-red-50'}`}>
           <div className="flex items-center justify-between">
