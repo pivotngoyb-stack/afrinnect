@@ -112,6 +112,39 @@ function LayoutContent({ children, currentPageName }) {
     checkProfile();
   }, [currentPageName]);
 
+  // Check Launch/Maintenance Mode
+  const { data: launchSettings } = useQuery({
+    queryKey: ['launch-settings'],
+    queryFn: async () => {
+      const settings = await base44.entities.SystemSettings.filter({ key: 'launch_configuration' });
+      return settings[0]?.value || { is_live: false };
+    },
+    staleTime: 60000 // Check every minute
+  });
+
+  useEffect(() => {
+    const checkLaunchStatus = async () => {
+      if (launchSettings && !launchSettings.is_live) {
+        // Allow public pages
+        const allowedPages = ['Landing', 'Waitlist', 'AdminDashboard', 'Terms', 'Privacy', 'CommunityGuidelines'];
+        if (allowedPages.includes(currentPageName)) return;
+
+        // Allow Admins
+        try {
+          const user = await base44.auth.me();
+          const isSuperAdmin = user?.email === 'pivotngoyb@gmail.com' || user?.role === 'admin';
+          if (isSuperAdmin) return;
+        } catch (e) {
+          // Not logged in
+        }
+
+        // Redirect everyone else to Waitlist
+        window.location.href = createPageUrl('Waitlist');
+      }
+    };
+    checkLaunchStatus();
+  }, [launchSettings, currentPageName]);
+
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications-count', myProfile?.id],
     queryFn: async () => {

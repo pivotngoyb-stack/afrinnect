@@ -36,12 +36,41 @@ export default function SystemSettings() {
     eventsEnabled: true,
     communitiesEnabled: true,
     videoCallsEnabled: true,
-    virtualGiftsEnabled: true
+    virtualGiftsEnabled: true,
+    isLive: false
   });
 
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const records = await base44.entities.SystemSettings.filter({ key: 'launch_configuration' });
+      if (records.length > 0) {
+        setSettings(prev => ({ ...prev, isLive: records[0].value.is_live }));
+      }
+    };
+    fetchSettings();
+  }, []);
+
   const handleSave = async () => {
-    // Save to database or backend
-    alert('Settings saved successfully!');
+    try {
+      // Save launch configuration
+      const records = await base44.entities.SystemSettings.filter({ key: 'launch_configuration' });
+      if (records.length > 0) {
+        await base44.entities.SystemSettings.update(records[0].id, {
+          value: { is_live: settings.isLive }
+        });
+      } else {
+        await base44.entities.SystemSettings.create({
+          key: 'launch_configuration',
+          type: 'general',
+          value: { is_live: settings.isLive },
+          is_enabled: true
+        });
+      }
+      alert('Settings saved successfully!');
+    } catch (error) {
+      console.error('Failed to save settings:', error);
+      alert('Failed to save settings');
+    }
   };
 
   return (
@@ -79,10 +108,26 @@ export default function SystemSettings() {
                   className="bg-white/10 border-white/20 text-white"
                 />
               </div>
+
+              <div className="flex items-center justify-between p-4 bg-purple-500/20 rounded-lg border border-purple-500/50">
+                <div>
+                  <Label className="text-white text-lg font-bold">GO LIVE / LAUNCH MODE</Label>
+                  <p className="text-sm text-gray-300">
+                    {settings.isLive 
+                      ? "APP IS LIVE! Users can access normally." 
+                      : "MAINTENANCE MODE. Users are redirected to Waitlist."}
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.isLive}
+                  onCheckedChange={(checked) => setSettings({...settings, isLive: checked})}
+                  className="data-[state=checked]:bg-green-500"
+                />
+              </div>
               
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-gray-300">Maintenance Mode</Label>
+                  <Label className="text-gray-300">Maintenance Mode (Legacy)</Label>
                   <p className="text-sm text-gray-400">Disable all user access</p>
                 </div>
                 <Switch

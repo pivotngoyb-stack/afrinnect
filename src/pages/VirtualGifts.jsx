@@ -13,12 +13,39 @@ import StripePaymentModal from '@/components/payment/StripePaymentModal';
 import { useQuery } from '@tanstack/react-query';
 
 const GIFTS = [
+  // Classics
   { type: 'rose', name: 'Rose', emoji: '🌹', price: 1.99 },
+  { type: 'chocolate', name: 'Chocolate', emoji: '🍫', price: 2.99 },
   { type: 'coffee', name: 'Coffee', emoji: '☕', price: 2.99 },
-  { type: 'star', name: 'Star', emoji: '⭐', price: 3.99 },
+  { type: 'cocktail', name: 'Cocktail', emoji: '🍸', price: 4.99 },
+  { type: 'heart', name: 'Love', emoji: '❤️', price: 1.99 },
+  { type: 'kiss', name: 'Kiss', emoji: '💋', price: 1.99 },
+  
+  // Luxury
+  { type: 'diamond', name: 'Diamond', emoji: '💎', price: 9.99 },
+  { type: 'ring', name: 'Ring', emoji: '💍', price: 14.99 },
   { type: 'crown', name: 'Crown', emoji: '👑', price: 4.99 },
-  { type: 'heart', name: 'Hearts', emoji: '💕', price: 2.99 },
-  { type: 'cultural_gift', name: 'Cultural Gift', emoji: '🎁', price: 9.99 }
+  { type: 'champagne', name: 'Champagne', emoji: '🍾', price: 19.99 },
+  { type: 'money_bag', name: 'Bag of Cash', emoji: '💰', price: 24.99 },
+  { type: 'airplane', name: 'Trip', emoji: '✈️', price: 49.99 },
+  { type: 'car', name: 'Sports Car', emoji: '🏎️', price: 29.99 },
+  { type: 'house', name: 'Mansion', emoji: '🏰', price: 99.99 },
+  
+  // Fun & Cute
+  { type: 'teddy', name: 'Teddy Bear', emoji: '🧸', price: 5.99 },
+  { type: 'balloon', name: 'Balloon', emoji: '🎈', price: 1.99 },
+  { type: 'party', name: 'Party', emoji: '🎉', price: 3.99 },
+  { type: 'fire', name: 'Hot', emoji: '🔥', price: 0.99 },
+  { type: 'star', name: 'Star', emoji: '⭐', price: 3.99 },
+  { type: 'trophy', name: 'Champion', emoji: '🏆', price: 4.99 },
+
+  // African Cultural
+  { type: 'kente', name: 'Kente Cloth', emoji: '🧣', price: 9.99 },
+  { type: 'drum', name: 'Djembe Drum', emoji: '🥁', price: 7.99 },
+  { type: 'beads', name: 'Waist Beads', emoji: '📿', price: 5.99 },
+  { type: 'kola', name: 'Kola Nuts', emoji: '🌰', price: 2.99 },
+  { type: 'fan', name: 'Hand Fan', emoji: '🪭', price: 4.99 },
+  { type: 'mask', name: 'Tribal Mask', emoji: '👺', price: 12.99 }
 ];
 
 export default function VirtualGifts() {
@@ -45,14 +72,8 @@ export default function VirtualGifts() {
         const user = await base44.auth.me();
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
         if (profiles.length > 0) {
-          const profile = profiles[0];
-          setMyProfile(profile);
-          
-          // Restrict to Elite and VIP only
-          const tier = profile.subscription_tier || 'free';
-          if (tier !== 'elite' && tier !== 'vip') {
-            window.location.href = createPageUrl('PricingPlans');
-          }
+        const profile = profiles[0];
+        setMyProfile(profile);
         }
       } catch (e) {}
     };
@@ -61,24 +82,17 @@ export default function VirtualGifts() {
 
   const sendGiftMutation = useMutation({
     mutationFn: async () => {
-      await base44.entities.VirtualGift.create({
-        gift_type: selectedGift.type,
-        gift_name: selectedGift.name,
-        gift_emoji: selectedGift.emoji,
-        price_usd: selectedGift.price,
-        sender_profile_id: myProfile.id,
+      // Use backend function to handle all logic (finding match, notification, etc.)
+      const response = await base44.functions.invoke('sendVirtualGift', {
         receiver_profile_id: profileId,
-        message: message,
-        is_seen: false
+        gift_type: selectedGift.type,
+        gift_emoji: selectedGift.emoji,
+        message: message
       });
-
-      await base44.entities.Notification.create({
-        user_profile_id: profileId,
-        type: 'gift',
-        title: `${selectedGift.emoji} Gift Received!`,
-        message: `${myProfile.display_name} sent you a ${selectedGift.name}${message ? ': ' + message : ''}`,
-        from_profile_id: myProfile.id
-      });
+      
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
     },
     onSuccess: () => {
       setShowPayment(false);
