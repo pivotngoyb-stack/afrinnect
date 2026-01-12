@@ -17,6 +17,7 @@ import Logo from '@/components/shared/Logo';
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import SafetyEducationModal from '@/components/safety/SafetyEducationModal';
 import { useConversionTracker, CONVERSION_EVENTS } from '@/components/shared/ConversionTracker';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
@@ -65,6 +66,7 @@ const INTERESTS = [
 
 export default function Onboarding() {
   const { trackEvent } = useConversionTracker();
+  const { t } = useLanguage();
   const [step, setStep] = useState(0);
   const [user, setUser] = useState(null);
   const [showSafetyEducation, setShowSafetyEducation] = useState(false);
@@ -140,7 +142,7 @@ export default function Onboarding() {
 
     // Validate max size (10MB)
     if (file.size > 10 * 1024 * 1024) {
-      alert('Photo must be less than 10MB');
+      alert(t('errors.photoSize'));
       return;
     }
 
@@ -153,7 +155,7 @@ export default function Onboarding() {
       }
     } catch (error) {
       console.error('Upload failed:', error);
-      alert('Upload failed. Please try a smaller photo or different format.');
+      alert(t('errors.uploadFailed'));
     } finally {
       setIsUploading(false);
     }
@@ -164,7 +166,7 @@ export default function Onboarding() {
       // CRITICAL: Check for existing profile (prevent duplicates)
       const existingProfiles = await base44.entities.UserProfile.filter({ user_id: user.id });
       if (existingProfiles.length > 0) {
-        throw new Error('You already have a profile. Redirecting to home...');
+        throw new Error(t('errors.existingProfile'));
       }
 
       // Get device fingerprint
@@ -175,7 +177,7 @@ export default function Onboarding() {
       if (phoneNumber) {
         const phoneCheck = await base44.entities.UserProfile.filter({ phone_number: phoneNumber });
         if (phoneCheck.length >= 2) {
-          throw new Error('This phone number is already registered on 2 devices. Maximum 2 devices per phone number.');
+          throw new Error(t('errors.phoneRegistered'));
         }
       }
 
@@ -184,7 +186,7 @@ export default function Onboarding() {
       if (!isAdmin) {
         const allUserProfiles = await base44.entities.UserProfile.filter({ created_by: user.email });
         if (allUserProfiles.length >= 2) {
-          throw new Error('Maximum 2 devices allowed per email. Please remove a device first.');
+          throw new Error(t('errors.deviceLimit'));
         }
       }
 
@@ -260,7 +262,7 @@ export default function Onboarding() {
             // Only allow USA and Canada (Bypass for Admin)
             const isAdmin = user?.role === 'admin' || user?.email === 'pivotngoyb@gmail.com';
             if (!isAdmin && (!country || (country !== 'United States' && country !== 'Canada' && country !== 'United States of America'))) {
-              alert('Sorry, Afrinnect is currently only available in the United States and Canada. Redirecting you to our waitlist...');
+              alert(t('location.notSupported'));
               window.location.href = createPageUrl('Waitlist');
               return;
             }
@@ -285,12 +287,12 @@ export default function Onboarding() {
           setGettingLocation(false);
         },
         (error) => {
-          alert('Please enable location access to continue. We need your location to find matches near you.');
+          alert(t('location.enableAccess'));
           setGettingLocation(false);
         }
       );
     } else {
-      alert('Geolocation is not supported by your browser');
+      alert(t('location.geoNotSupported'));
       setGettingLocation(false);
     }
   };
@@ -331,10 +333,10 @@ export default function Onboarding() {
     >
       <Logo size="large" />
       <h1 className="text-3xl font-bold text-gray-900 mt-8 mb-4">
-        Welcome to Afrinnect
+        {t('onboarding.welcome.title')}
       </h1>
       <p className="text-gray-500 text-lg mb-8">
-        Where African hearts connect worldwide
+        {t('onboarding.welcome.subtitle')}
       </p>
 
       <div className="grid grid-cols-3 gap-4 mb-8">
@@ -342,24 +344,24 @@ export default function Onboarding() {
           <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-100 flex items-center justify-center">
             <Globe size={24} className="text-purple-600" />
           </div>
-          <p className="text-sm text-gray-600">Global Community</p>
+          <p className="text-sm text-gray-600">{t('onboarding.welcome.global')}</p>
         </div>
         <div className="text-center p-4">
           <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-amber-100 flex items-center justify-center">
             <Users size={24} className="text-amber-600" />
           </div>
-          <p className="text-sm text-gray-600">Cultural Connection</p>
+          <p className="text-sm text-gray-600">{t('onboarding.welcome.cultural')}</p>
         </div>
         <div className="text-center p-4">
           <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-100 flex items-center justify-center">
             <Shield size={24} className="text-green-600" />
           </div>
-          <p className="text-sm text-gray-600">Safe & Secure</p>
+          <p className="text-sm text-gray-600">{t('onboarding.welcome.safe')}</p>
         </div>
       </div>
 
       <p className="text-sm text-gray-400">
-        By continuing, you agree to our Terms of Service and Privacy Policy
+        {t('onboarding.welcome.terms')}
       </p>
     </motion.div>,
 
@@ -370,27 +372,27 @@ export default function Onboarding() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Let's get to know you</h2>
-      <p className="text-gray-500 mb-8">What should we call you?</p>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.basic.title')}</h2>
+      <p className="text-gray-500 mb-8">{t('onboarding.basic.subtitle')}</p>
 
       <div className="space-y-6">
         <div>
-          <Label className="text-base">First Name</Label>
+          <Label className="text-base">{t('onboarding.basic.firstName')}</Label>
           <Input
             value={formData.display_name}
             onChange={(e) => updateField('display_name', e.target.value)}
-            placeholder="Your first name"
+            placeholder={t('onboarding.basic.firstNamePlaceholder')}
             className="mt-2 h-12 text-lg"
           />
           <div className="mt-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
             <p className="text-sm text-amber-900">
-              ⚠️ <strong>Use your real name.</strong> Fake names will prevent verification later and may result in account suspension.
+              {t('errors.realNameWarning')}
             </p>
           </div>
         </div>
 
         <div>
-          <Label className="text-base">Birthday</Label>
+          <Label className="text-base">{t('onboarding.basic.birthday')}</Label>
           <Input
             type="date"
             value={formData.birth_date}
@@ -398,9 +400,9 @@ export default function Onboarding() {
             max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
             className="mt-2 h-12 text-lg"
           />
-          <p className="text-xs text-gray-400 mt-2">You must be 18+ to use Afrinnect</p>
+          <p className="text-xs text-gray-400 mt-2">{t('errors.ageReq')}</p>
           {formData.birth_date && calculateAge(formData.birth_date) < 18 && (
-            <p className="text-xs text-red-500 mt-1">You must be at least 18 years old</p>
+            <p className="text-xs text-red-500 mt-1">{t('errors.ageWarning')}</p>
           )}
         </div>
       </div>
@@ -413,7 +415,7 @@ export default function Onboarding() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">I am a...</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.gender.iAm')}</h2>
       <div className="grid grid-cols-2 gap-3 mb-8">
         {['man', 'woman'].map(gender => (
           <button
@@ -427,13 +429,13 @@ export default function Onboarding() {
           >
             <span className="text-2xl mb-2 block">{gender === 'man' ? '👨' : '👩'}</span>
             <span className={`font-medium capitalize ${formData.gender === gender ? 'text-purple-600' : 'text-gray-700'}`}>
-              {gender}
+              {gender === 'man' ? t('onboarding.gender.man') : t('onboarding.gender.woman')}
             </span>
           </button>
         ))}
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Looking for...</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.gender.lookingFor')}</h2>
       <div className="grid grid-cols-2 gap-3">
         {['man', 'woman'].map(gender => (
           <button
@@ -447,7 +449,7 @@ export default function Onboarding() {
           >
             <span className="text-2xl mb-2 block">{gender === 'man' ? '👨' : '👩'}</span>
             <span className={`font-medium capitalize ${formData.looking_for.includes(gender) ? 'text-purple-600' : 'text-gray-700'}`}>
-              {gender === 'man' ? 'Men' : 'Women'}
+              {gender === 'man' ? t('onboarding.gender.men') : t('onboarding.gender.women')}
             </span>
             {formData.looking_for.includes(gender) && (
               <Check size={18} className="absolute top-2 right-2 text-purple-600" />
@@ -464,31 +466,31 @@ export default function Onboarding() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Heritage</h2>
-      <p className="text-gray-500 mb-6">Share your background with us</p>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.location.title')}</h2>
+      <p className="text-gray-500 mb-6">{t('onboarding.location.subtitle')}</p>
 
       <div className="space-y-6">
         <div>
-          <Label className="text-base">I am...</Label>
+          <Label className="text-base">{t('onboarding.location.iAm')}</Label>
           <Select value={formData.ethnicity} onValueChange={(v) => updateField('ethnicity', v)}>
             <SelectTrigger className="mt-2 h-12">
-              <SelectValue placeholder="Select your background" />
+              <SelectValue placeholder={t('onboarding.location.iAm')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="african">African (born in Africa)</SelectItem>
-              <SelectItem value="african_descent">Of African Descent (diaspora)</SelectItem>
-              <SelectItem value="non_african_interested">Interested in African culture/dating</SelectItem>
+              <SelectItem value="african">{t('onboarding.location.african')}</SelectItem>
+              <SelectItem value="african_descent">{t('onboarding.location.africanDescent')}</SelectItem>
+              <SelectItem value="non_african_interested">{t('onboarding.location.nonAfrican')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div>
           <Label className="text-base">
-            {formData.ethnicity === 'non_african_interested' ? 'Your Country' : 'Heritage Country'}
+            {formData.ethnicity === 'non_african_interested' ? t('onboarding.location.yourCountry') : t('onboarding.location.heritageCountry')}
           </Label>
           <Select value={formData.country_of_origin} onValueChange={(v) => updateField('country_of_origin', v)}>
             <SelectTrigger className="mt-2 h-12">
-              <SelectValue placeholder="Select country" />
+              <SelectValue placeholder={t('onboarding.location.selectCountry')} />
             </SelectTrigger>
             <SelectContent>
               {formData.ethnicity === 'non_african_interested' ? (
@@ -510,7 +512,7 @@ export default function Onboarding() {
           </Select>
           {formData.ethnicity === 'non_african_interested' && (
             <p className="text-xs text-purple-600 mt-2">
-              Welcome! Afrinnect connects people worldwide who appreciate African culture ❤️
+              {t('onboarding.location.welcome')}
             </p>
           )}
         </div>
@@ -519,7 +521,7 @@ export default function Onboarding() {
         <div>
            {formData.current_country && (
             <div className="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-100">
-              <p className="text-sm font-medium text-purple-900">Current Location:</p>
+              <p className="text-sm font-medium text-purple-900">{t('onboarding.location.currentLocation')}:</p>
               <p className="text-lg text-purple-700 font-bold flex items-center gap-2">
                 <MapPin size={18} />
                 {formData.current_city}, {formData.current_country}
@@ -536,12 +538,12 @@ export default function Onboarding() {
               <Globe size={24} className={formData.location.lat ? 'text-green-600' : 'text-red-600'} />
               <div>
                 <p className="font-semibold text-sm">
-                  {formData.location.lat ? '✓ Location Enabled' : '⚠️ Location Required'}
+                  {formData.location.lat ? t('onboarding.location.locationEnabled') : t('onboarding.location.locationRequired')}
                 </p>
                 <p className="text-xs text-gray-600">
                   {formData.location.lat 
-                    ? 'We can now find matches near you' 
-                    : 'Tap to enable your location'}
+                    ? t('onboarding.location.locationSuccess') 
+                    : t('onboarding.location.locationPrompt')}
                 </p>
               </div>
             </div>
@@ -552,7 +554,7 @@ export default function Onboarding() {
                 disabled={gettingLocation}
                 className="bg-purple-600"
               >
-                {gettingLocation ? 'Getting...' : 'Enable'}
+                {gettingLocation ? t('onboarding.location.gettingLocation') : t('onboarding.location.enableButton')}
               </Button>
             )}
           </div>
@@ -567,15 +569,15 @@ export default function Onboarding() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">What are you looking for?</h2>
-      <p className="text-gray-500 mb-8">Be honest - it helps find better matches</p>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.goal.title')}</h2>
+      <p className="text-gray-500 mb-8">{t('onboarding.goal.subtitle')}</p>
 
       <div className="space-y-3">
         {[
-          { value: 'dating', emoji: '💕', label: 'Dating', desc: 'Getting to know someone special' },
-          { value: 'serious_relationship', emoji: '❤️', label: 'Serious Relationship', desc: 'Looking for something long-term' },
-          { value: 'marriage', emoji: '💍', label: 'Marriage', desc: 'Ready to find a life partner' },
-          { value: 'friendship_community', emoji: '🤝', label: 'Friendship/Community', desc: 'Looking to connect and build community' },
+          { value: 'dating', emoji: '💕', label: t('onboarding.goal.dating.label'), desc: t('onboarding.goal.dating.desc') },
+          { value: 'serious_relationship', emoji: '❤️', label: t('onboarding.goal.serious.label'), desc: t('onboarding.goal.serious.desc') },
+          { value: 'marriage', emoji: '💍', label: t('onboarding.goal.marriage.label'), desc: t('onboarding.goal.marriage.desc') },
+          { value: 'friendship_community', emoji: '🤝', label: t('onboarding.goal.friendship.label'), desc: t('onboarding.goal.friendship.desc') },
           { value: 'networking', emoji: '🌐', label: 'Networking', desc: 'Professional connections' }
         ].map(goal => (
           <button
@@ -608,8 +610,8 @@ export default function Onboarding() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Add your photos</h2>
-      <p className="text-gray-500 mb-4">Show your best self! Add 4 photos ({formData.photos.length}/4)</p>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.photos.title')}</h2>
+      <p className="text-gray-500 mb-4">{t('onboarding.photos.subtitle')} ({formData.photos.length}/4)</p>
       <div className="mb-6 p-4 bg-purple-50 border-2 border-purple-200 rounded-xl">
         <p className="text-sm text-purple-800">
           💡 <strong>Pro tip:</strong> Keep important details (face, upper body) in the <strong>top half</strong> of your photos for best visibility
@@ -621,7 +623,7 @@ export default function Onboarding() {
           <div key={idx} className="relative aspect-[3/4] rounded-xl overflow-hidden">
             <img src={photo} alt="" className="w-full h-full object-cover" />
             {idx === 0 && (
-              <Badge className="absolute top-2 left-2 bg-purple-600 text-xs">Main</Badge>
+              <Badge className="absolute top-2 left-2 bg-purple-600 text-xs">{t('onboarding.photos.main')}</Badge>
             )}
           </div>
         ))}
@@ -640,7 +642,7 @@ export default function Onboarding() {
             ) : (
               <>
                 <Camera size={32} className="text-gray-400 mb-2" />
-                <span className="text-sm text-gray-500">Add Photo</span>
+                <span className="text-sm text-gray-500">{t('onboarding.photos.addPhoto')}</span>
               </>
             )}
           </label>
@@ -655,8 +657,8 @@ export default function Onboarding() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Interests</h2>
-      <p className="text-gray-500 mb-8">Select at least 3 interests ({formData.interests.length}/5)</p>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.interests.title')}</h2>
+      <p className="text-gray-500 mb-8">{t('onboarding.interests.subtitle')} ({formData.interests.length}/5)</p>
 
       <div className="flex flex-wrap gap-3">
         {INTERESTS.map(interest => (
@@ -689,7 +691,7 @@ export default function Onboarding() {
             <button onClick={() => setStep(step - 1)} className="p-2">
               <ArrowLeft size={24} className="text-gray-600" />
             </button>
-            <span className="text-sm text-gray-500">Step {step} of 6</span>
+            <span className="text-sm text-gray-500">{t('onboarding.navigation.step')} {step} {t('onboarding.navigation.of')} 6</span>
             <div className="w-10" />
           </div>
         </div>
@@ -720,11 +722,11 @@ export default function Onboarding() {
             ) : step === 6 ? (
               <>
                 <Sparkles size={20} className="mr-2" />
-                Start Matching
+                {t('onboarding.navigation.startMatching')}
               </>
             ) : (
               <>
-                Continue
+                {t('common.continue')}
                 <ArrowRight size={20} className="ml-2" />
               </>
             )}
