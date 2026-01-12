@@ -21,6 +21,7 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
     { id: 'disputes', label: 'User Appeals', icon: MessageCircle },
     { id: 'fake-profiles', label: 'Fake Profiles', icon: Shield },
     { id: 'revenue', label: 'Revenue', icon: DollarSign },
+    { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'ai-insights', label: 'AI Insights', icon: Brain },
     { id: 'automation', label: 'Automation', icon: Cog },
