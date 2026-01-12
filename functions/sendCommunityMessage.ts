@@ -26,6 +26,14 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Premium subscription required' }, { status: 403 });
     }
 
+    // Enforce Elite/VIP for Media
+    if (mediaUrl || (messageType !== 'text' && messageType !== 'ice_breaker')) {
+        const mediaTiers = ['elite', 'vip'];
+        if (!mediaTiers.includes(profile.subscription_tier)) {
+             return Response.json({ error: 'Media sharing requires Elite or VIP subscription' }, { status: 403 });
+        }
+    }
+
     // 2. AI Moderation (Text only)
     if (messageType === 'text' && content) {
         try {

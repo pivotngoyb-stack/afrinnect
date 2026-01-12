@@ -100,9 +100,10 @@ export default function CommunityChat() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check premium access
-    if (!hasAccess(myProfile?.subscription_tier, 'unlimited_likes')) {
-      alert('Photo uploads are available for Premium members. Upgrade now!');
+    // Check Elite access for media
+    const eliteTiers = ['elite', 'vip'];
+    if (!eliteTiers.includes(myProfile?.subscription_tier)) {
+      alert('Photo/Video uploads are exclusive to Elite & VIP members. Upgrade to share media!');
       return;
     }
 
