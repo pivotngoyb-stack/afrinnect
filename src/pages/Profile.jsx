@@ -178,7 +178,7 @@ export default function Profile() {
   };
 
   const handleLogout = async () => {
-    await base44.auth.logout(createPageUrl('Home'));
+    await base44.auth.logout(createPageUrl('Landing'));
   };
 
   const handleShareProfile = async () => {
