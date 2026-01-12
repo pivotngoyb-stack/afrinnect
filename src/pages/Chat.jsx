@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Send, Mic, Image, Languages, AlertTriangle, MoreVertical, Flag, Sparkles, Shield, Ban, Video, Gift, Wand2 } from 'lucide-react';
+import { ArrowLeft, Send, Mic, Image, Languages, AlertTriangle, MoreVertical, Flag, Sparkles, Shield, Ban, Video, Gift, Wand2, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AutoResizeTextarea } from "@/components/ui/autosize-textarea";
@@ -253,6 +253,9 @@ export default function Chat() {
     mutationFn: async (file) => {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       await sendMessageMutation.mutateAsync({ content: 'Image', type: 'image', mediaUrl: file_url });
+    },
+    onError: () => {
+      alert('Failed to upload image');
     }
   });
 
@@ -610,13 +613,18 @@ export default function Chat() {
             type="file"
             accept="image/*"
             onChange={handleImageSelect}
+            onClick={(e) => { e.target.value = null; }}
             className="hidden"
             id="image-input"
           />
           <label htmlFor="image-input">
-            <Button variant="ghost" size="icon" asChild>
+            <Button variant="ghost" size="icon" asChild disabled={sendImageMutation.isPending}>
               <span>
-                <Image size={20} />
+                {sendImageMutation.isPending ? (
+                  <Loader2 className="animate-spin text-purple-600" size={20} />
+                ) : (
+                  <Image size={20} />
+                )}
               </span>
             </Button>
           </label>

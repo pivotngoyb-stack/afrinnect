@@ -207,7 +207,7 @@ Deno.serve(async (req) => {
 
         // 7. Save Scam Analysis & Auto-Report to Admin
         if (scamAnalysisData) {
-            await base44.entities.ScamAnalysis.create({
+            await base44.asServiceRole.entities.ScamAnalysis.create({
                 message_id: message.id,
                 sender_id: myProfile.id,
                 ...scamAnalysisData
@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
             // Automatically file a formal Report if high risk (visible to Admin)
             if (scamAnalysisData.risk_score > 70) {
                  try {
-                     await base44.entities.Report.create({
+                     await base44.asServiceRole.entities.Report.create({
                         reporter_id: receiverId, // Filed on behalf of the victim
                         reported_id: myProfile.id,
                         report_type: 'scam',
@@ -233,7 +233,7 @@ Deno.serve(async (req) => {
 
         // 8. Notifications (only if not deleted)
         if (!isDeleted) {
-            await base44.entities.Notification.create({
+            await base44.asServiceRole.entities.Notification.create({
                 user_profile_id: receiverId,
                 type: 'message',
                 title: `Message from ${myProfile.display_name}`,
