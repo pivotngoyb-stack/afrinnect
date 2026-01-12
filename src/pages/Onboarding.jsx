@@ -260,8 +260,8 @@ export default function Onboarding() {
             // Only allow USA and Canada (Bypass for Admin)
             const isAdmin = user?.role === 'admin' || user?.email === 'pivotngoyb@gmail.com';
             if (!isAdmin && (!country || (country !== 'United States' && country !== 'Canada' && country !== 'United States of America'))) {
-              alert('Sorry, Afrinnect is currently only available in the United States and Canada. We\'ll notify you when we expand to your region!');
-              setGettingLocation(false);
+              alert('Sorry, Afrinnect is currently only available in the United States and Canada. Redirecting you to our waitlist...');
+              window.location.href = createPageUrl('Waitlist');
               return;
             }
 

@@ -18,6 +18,24 @@ export default function Waitlist() {
     full_name: '',
     reason: ''
   });
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await base44.auth.me();
+        if (user) {
+          setFormData(prev => ({
+            ...prev,
+            email: user.email || '',
+            full_name: user.full_name || ''
+          }));
+        }
+      } catch (e) {
+        // Not logged in, that's fine
+      }
+    };
+    fetchUser();
+  }, []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
