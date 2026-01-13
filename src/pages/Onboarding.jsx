@@ -194,12 +194,12 @@ export default function Onboarding() {
         }
       }
 
-      // Check device limit (max 2 devices per email) - Bypass for Admin
+      // Check account limit (strict 1 account per email) - Bypass for Admin
       const isAdmin = user?.role === 'admin' || user?.email === 'pivotngoyb@gmail.com';
       if (!isAdmin) {
         const allUserProfiles = await base44.entities.UserProfile.filter({ created_by: user.email });
-        if (allUserProfiles.length >= 2) {
-          throw new Error(t('errors.deviceLimit'));
+        if (allUserProfiles.length >= 1) {
+          throw new Error("You already have an account. Please log in.");
         }
       }
 
