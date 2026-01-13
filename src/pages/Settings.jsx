@@ -245,6 +245,11 @@ export default function Settings() {
                                   device_ids: newIds,
                                   device_info: newInfo
                                 });
+
+                                // CRITICAL: If removing current device, logout immediately to prevent auto-re-add
+                                if (isCurrentDevice) {
+                                  await base44.auth.logout(createPageUrl('Landing'));
+                                }
                               } catch (e) {
                                 console.error('Failed to remove device', e);
                                 // Revert on error (optional, but good practice)

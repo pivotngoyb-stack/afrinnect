@@ -26,8 +26,9 @@ Deno.serve(async (req) => {
     }
 
     const allUserProfiles = await base44.asServiceRole.entities.UserProfile.filter({ created_by: user.email });
-    if (allUserProfiles.length >= 2) {
-         return Response.json({ error: 'Account limit reached for this email' }, { status: 400 });
+    // Enforce strict one account per email policy
+    if (allUserProfiles.length >= 1) {
+         return Response.json({ error: 'An account with this email already exists.' }, { status: 400 });
     }
 
     // 3. Prepare Secure Data
