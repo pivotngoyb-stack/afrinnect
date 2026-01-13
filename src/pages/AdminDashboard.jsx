@@ -307,8 +307,6 @@ export default function AdminDashboard() {
   // Grant/revoke admin access mutation
   const toggleAdminMutation = useMutation({
     mutationFn: async ({ userId, grantAdmin }) => {
-      // Note: This requires backend support to update User.role
-      // For now, we'll show the UI but actual implementation needs backend
       await base44.entities.User.update(userId, {
         role: grantAdmin ? 'admin' : 'user'
       });
