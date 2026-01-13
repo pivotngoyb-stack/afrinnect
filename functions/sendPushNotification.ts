@@ -10,10 +10,7 @@ Deno.serve(async (req) => {
     // SECURITY: Verify admin or system-level call
     const user = await base44.auth.me();
     if (!user || user.role !== 'admin') {
-      // Allow system calls (no user context) for automated notifications
-      if (user) {
-        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-      }
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
     
     const { user_profile_id, title, body, link, type } = await req.json();
