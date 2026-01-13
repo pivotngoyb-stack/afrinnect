@@ -233,14 +233,25 @@ export default function Settings() {
                               const newIds = myProfile.device_ids.filter(id => id !== device.device_id);
                               const newInfo = myProfile.device_info.filter(d => d.device_id !== device.device_id);
                               
-                              await base44.entities.UserProfile.update(myProfile.id, {
+                              // Optimistic update
+                              setMyProfile({
+                                ...myProfile,
                                 device_ids: newIds,
                                 device_info: newInfo
                               });
                               
-                              // Refresh profile
-                              const updatedUser = await base44.entities.UserProfile.filter({ id: myProfile.id });
-                              if (updatedUser.length > 0) setMyProfile(updatedUser[0]);
+                              try {
+                                await base44.entities.UserProfile.update(myProfile.id, {
+                                  device_ids: newIds,
+                                  device_info: newInfo
+                                });
+                              } catch (e) {
+                                console.error('Failed to remove device', e);
+                                // Revert on error (optional, but good practice)
+                                const user = await base44.auth.me();
+                                const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+                                if (profiles.length > 0) setMyProfile(profiles[0]);
+                              }
                             }
                           }}
                           className="text-red-500 text-xs hover:underline whitespace-nowrap ml-2"

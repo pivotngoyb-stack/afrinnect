@@ -245,8 +245,9 @@ export default function Home() {
             }
           }
         } else {
-          // Stay on Home but show empty state instead of auto-redirecting
+          // No profile found - redirect to onboarding
           console.log("No profile found");
+          navigate(createPageUrl('Onboarding'));
         }
       } catch (e) {
         // Not logged in - do nothing, let them see landing
@@ -753,28 +754,7 @@ export default function Home() {
     );
   }
 
-  // Show "Complete Profile" if no profile found but logged in
-  if (!myProfile && !isCheckingAuth) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 flex items-center justify-center p-6">
-        <div className="text-center max-w-md bg-white p-8 rounded-2xl shadow-xl">
-          <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <User size={40} className="text-purple-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Profile</h2>
-          <p className="text-gray-600 mb-8">
-            You're almost there! Create your profile to start matching with amazing people.
-          </p>
-          <Button 
-            onClick={() => navigate(createPageUrl('Onboarding'))}
-            className="w-full py-6 text-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
-          >
-            Create Profile
-          </Button>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <PullToRefresh onRefresh={refetch}>
