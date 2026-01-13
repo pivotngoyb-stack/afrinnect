@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Grid3X3, Layers, Globe, MapPin, Sparkles, Crown, Heart as HeartIcon, RotateCcw } from 'lucide-react';
+import { Grid3X3, Layers, Globe, MapPin, Sparkles, Crown, Heart as HeartIcon, RotateCcw, User } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileCard from '@/components/profile/ProfileCard';
@@ -244,7 +244,8 @@ export default function Home() {
             }
           }
         } else {
-          navigate(createPageUrl('Onboarding'));
+          // Stay on Home but show empty state instead of auto-redirecting
+          console.log("No profile found");
         }
       } catch (e) {
         // Not logged in - do nothing, let them see landing
@@ -748,6 +749,29 @@ export default function Home() {
         banReason={myProfile.ban_reason || myProfile.suspension_reason || 'Violation of community guidelines'}
         userEmail={myProfile.created_by}
       />
+    );
+  }
+
+  // Show "Complete Profile" if no profile found but logged in
+  if (!myProfile && !isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 flex items-center justify-center p-6">
+        <div className="text-center max-w-md bg-white p-8 rounded-2xl shadow-xl">
+          <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <User size={40} className="text-purple-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Profile</h2>
+          <p className="text-gray-600 mb-8">
+            You're almost there! Create your profile to start matching with amazing people.
+          </p>
+          <Button 
+            onClick={() => navigate(createPageUrl('Onboarding'))}
+            className="w-full py-6 text-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+          >
+            Create Profile
+          </Button>
+        </div>
+      </div>
     );
   }
 

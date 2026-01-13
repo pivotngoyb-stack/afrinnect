@@ -83,11 +83,8 @@ function LayoutContent({ children, currentPageName }) {
 
           // Then check profile
           const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-          if (profiles.length === 0 && currentPageName !== 'Onboarding' && currentPageName !== 'LegalAcceptance') {
-            navigate(createPageUrl('Onboarding'));
-            return;
-          }
-
+          // Redirect removed to prevent loops - let pages handle missing profile states
+          
           if (profiles.length > 0) {
             const profile = profiles[0];
             setMyProfile(profile);
