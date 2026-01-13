@@ -12,6 +12,8 @@ export function GlobalErrorHandler() {
       try {
         const response = await originalFetch(...args);
         
+        // Sanitize response headers or data if needed (though we can't intercept stream easily here)
+        
         // Handle rate limiting
         if (response.status === 429) {
           toast.error('Too many requests', {
@@ -37,6 +39,11 @@ export function GlobalErrorHandler() {
         
         return response;
       } catch (error) {
+        // Filter out "base44" from error messages if possible
+        if (error.message && error.message.includes('base44')) {
+           error.message = error.message.replace(/base44/gi, 'Service');
+        }
+
         // Network error
         if (!navigator.onLine) {
           toast.error('No internet connection');

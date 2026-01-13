@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import GoogleMapsLocation from '@/components/shared/GoogleMapsLocation';
 import { compressImage, validateImageFile } from '@/components/shared/ImageCompressor';
@@ -59,7 +60,7 @@ export default function CreateEvent() {
           const canCreate = ['elite', 'vip'].includes(profile.subscription_tier);
 
           if (!canCreate) {
-            alert('Event creation is exclusive to Elite and VIP members.');
+            toast.error('Event creation is exclusive to Elite and VIP members.');
             window.location.href = createPageUrl('Events');
           }
 
@@ -122,10 +123,12 @@ export default function CreateEvent() {
       return { id: response.data.event_id };
     },
     onSuccess: (event) => {
+      toast.success('Event created successfully!');
       window.location.href = createPageUrl(`EventDetails?id=${event.id}`);
     },
     onError: (error) => {
-      alert(error.message);
+      const msg = error.message.replace(/base44/gi, 'Server');
+      toast.error(msg);
     }
   });
 
@@ -140,7 +143,7 @@ export default function CreateEvent() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file: compressed });
       setFormData({ ...formData, image_url: file_url });
     } catch (error) {
-      alert(error.message);
+      toast.error(error.message);
     } finally {
       setUploading(false);
     }
