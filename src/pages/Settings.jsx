@@ -206,7 +206,7 @@ export default function Settings() {
                 <div>
                   <span className="text-gray-700 block">Active Devices</span>
                   <span className="text-sm text-gray-500">
-                    {myProfile?.device_ids?.length || 0} / 2 devices used
+                    {myProfile?.device_ids?.length || 0} / 4 devices used
                   </span>
                 </div>
                 <Smartphone size={18} className="text-purple-600" />

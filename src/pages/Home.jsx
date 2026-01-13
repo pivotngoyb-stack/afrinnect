@@ -199,8 +199,8 @@ export default function Home() {
           
           if (!existingDeviceIds.includes(deviceId)) {
             // New device - check limit
-            if (existingDeviceIds.length >= 2) {
-              alert('Maximum 2 devices allowed. Please remove an old device from Settings.');
+            if (existingDeviceIds.length >= 4) {
+              alert('Maximum 4 devices allowed. Please remove an old device from Settings.');
               navigate(createPageUrl('Settings'));
               return;
             }
