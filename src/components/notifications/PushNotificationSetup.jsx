@@ -19,7 +19,13 @@ export default function PushNotificationSetup({ userProfile }) {
         // Get VAPID key from backend
         const { data: vapidKey } = await base44.functions.invoke('getVapidKey');
         
-        const messaging = getMessaging(app);
+        let messaging;
+        try {
+            messaging = getMessaging(app);
+        } catch (e) {
+            console.warn("Messaging not supported");
+            return;
+        }
         
         // Get FCM token
         const token = await getToken(messaging, {
