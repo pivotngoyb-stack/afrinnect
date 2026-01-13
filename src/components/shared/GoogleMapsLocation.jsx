@@ -86,15 +86,41 @@ export default function GoogleMapsLocation({
       });
 
       // Add click listener to map
-      mapInstance.addListener('click', (e) => {
-        const location = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+      mapInstance.addListener('click', async (e) => {
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
+        const location = { lat, lng };
         markerInstance.setPosition(location);
+        
+        try {
+          const geocoder = new window.google.maps.Geocoder();
+          const { results } = await geocoder.geocode({ location: { lat, lng } });
+          if (results[0]) {
+            location.address = results[0].formatted_address;
+          }
+        } catch (error) {
+          console.error('Reverse geocoding failed:', error);
+        }
+        
         onLocationSelect?.(location);
       });
 
       // Add drag listener to marker
-      markerInstance.addListener('dragend', (e) => {
-        const location = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+      markerInstance.addListener('dragend', async (e) => {
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
+        const location = { lat, lng };
+        
+        try {
+          const geocoder = new window.google.maps.Geocoder();
+          const { results } = await geocoder.geocode({ location: { lat, lng } });
+          if (results[0]) {
+            location.address = results[0].formatted_address;
+          }
+        } catch (error) {
+          console.error('Reverse geocoding failed:', error);
+        }
+
         onLocationSelect?.(location);
       });
 
@@ -116,7 +142,8 @@ export default function GoogleMapsLocation({
 
             const location = {
               lat: place.geometry.location.lat(),
-              lng: place.geometry.location.lng()
+              lng: place.geometry.location.lng(),
+              address: place.formatted_address
             };
 
             mapInstance.setCenter(location);

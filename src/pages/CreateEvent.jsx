@@ -394,11 +394,11 @@ export default function CreateEvent() {
                   <div className="mt-2 border rounded-lg overflow-hidden">
                     <GoogleMapsLocation
                       onLocationSelect={(location) => {
-                        setFormData({
-                          ...formData,
-                          location_address: location.address,
+                        setFormData(prev => ({
+                          ...prev,
+                          location_address: location.address || prev.location_address,
                           location: { lat: location.lat, lng: location.lng }
-                        });
+                        }));
                       }}
                       height="300px"
                     />
