@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Grid3X3, Layers, Globe, MapPin, Sparkles, Crown, Heart as HeartIcon, RotateCcw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -53,6 +53,7 @@ export default function Home() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { prompt: upgradePrompt, dismissPrompt } = useUpgradePrompts(myProfile);
 
   // Fetch AI Behavior Analysis Recommendations
@@ -130,7 +131,7 @@ export default function Home() {
         const isAuth = await base44.auth.isAuthenticated();
         if (!isAuth) {
           // Not logged in - redirect to landing page immediately
-          window.location.href = createPageUrl('Landing');
+          navigate(createPageUrl('Landing'));
           return;
         }
         
@@ -141,7 +142,7 @@ export default function Home() {
           if (banCheck.data?.banned) {
             alert(banCheck.data.reason);
             await base44.auth.logout();
-            window.location.href = createPageUrl('Landing');
+            navigate(createPageUrl('Landing'));
             return;
           }
         } catch (e) {
@@ -151,7 +152,7 @@ export default function Home() {
         setIsCheckingAuth(false);
       } catch (e) {
         // Not authenticated - redirect to landing
-        window.location.href = createPageUrl('Landing');
+        navigate(createPageUrl('Landing'));
       }
     };
     checkAuth();
@@ -166,7 +167,7 @@ export default function Home() {
         const user = await base44.auth.me();
         if (!user) {
           // Not logged in - redirect to landing
-          window.location.href = createPageUrl('Landing');
+          navigate(createPageUrl('Landing'));
           return;
         }
         
@@ -199,7 +200,7 @@ export default function Home() {
             // New device - check limit
             if (existingDeviceIds.length >= 2) {
               alert('Maximum 2 devices allowed. Please remove an old device from Settings.');
-              window.location.href = createPageUrl('Settings');
+              navigate(createPageUrl('Settings'));
               return;
             }
             
@@ -243,7 +244,7 @@ export default function Home() {
             }
           }
         } else {
-          window.location.href = createPageUrl('Onboarding');
+          navigate(createPageUrl('Onboarding'));
         }
       } catch (e) {
         // Not logged in - do nothing, let them see landing
