@@ -188,6 +188,15 @@ export default function UserManagement({
                       </p>
                     </div>
                   </div>
+                  
+                  {/* Streak Badge */}
+                  {profile.login_streak > 0 && (
+                    <div className="flex items-center gap-1 mr-4 text-orange-600 font-medium" title="Current Login Streak">
+                      <span className="text-lg">🔥</span>
+                      <span>{profile.login_streak}</span>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-2">
                     <Badge className={profile.is_active ? 'bg-green-600' : 'bg-red-600'}>
                       {profile.is_active ? 'Active' : 'Banned'}

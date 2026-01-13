@@ -39,6 +39,14 @@ export default function AdminOverview({ stats }) {
       icon: Heart,
       color: 'pink',
       subtext: `${stats.matchRate}% match rate • ${stats.usersWithMatches || 0} users matched`
+    },
+    {
+      title: 'Retention',
+      value: `${stats.avgStreak || 0} days`,
+      change: `${stats.streak7Plus || 0} users > 7 days`,
+      icon: TrendingUp,
+      color: 'purple',
+      subtext: `${stats.streak30Plus || 0} users on 30+ day streak`
     }
   ];
 

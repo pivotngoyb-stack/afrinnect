@@ -44,6 +44,14 @@ Deno.serve(async (req) => {
         const bannedUsersCount = profiles.filter(p => !p.is_active).length;
         const verifiedUsersCount = profiles.filter(p => p.verification_status?.photo_verified).length;
 
+        // Streak Analytics
+        const activeStreaks = profiles.filter(p => p.login_streak > 0);
+        const avgStreak = activeStreaks.length > 0 
+            ? (activeStreaks.reduce((sum, p) => sum + (p.login_streak || 0), 0) / activeStreaks.length).toFixed(1)
+            : 0;
+        const streak7Plus = profiles.filter(p => p.login_streak >= 7).length;
+        const streak30Plus = profiles.filter(p => p.login_streak >= 30).length;
+
         const freeUsers = profiles.filter(p => !p.subscription_tier || p.subscription_tier === 'free').length;
         const premiumUsers = profiles.filter(p => p.subscription_tier === 'premium').length;
         const eliteUsers = profiles.filter(p => p.subscription_tier === 'elite').length;
@@ -100,7 +108,12 @@ Deno.serve(async (req) => {
             totalEvents: events.length,
             upcomingEvents: events.filter(e => new Date(e.start_date) > today).length,
             
-            auditLogs: auditLogs.length
+            auditLogs: auditLogs.length,
+            
+            // Retention Stats
+            avgStreak,
+            streak7Plus,
+            streak30Plus
         };
 
         return Response.json(stats);
