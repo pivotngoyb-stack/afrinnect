@@ -45,10 +45,45 @@ const GIFTS = [
   { type: 'beads', name: 'Waist Beads', emoji: '📿', price: 5.99 },
   { type: 'kola', name: 'Kola Nuts', emoji: '🌰', price: 2.99 },
   { type: 'fan', name: 'Hand Fan', emoji: '🪭', price: 4.99 },
-  { type: 'mask', name: 'Tribal Mask', emoji: '👺', price: 12.99 }
+  { type: 'mask', name: 'Tribal Mask', emoji: '👺', price: 12.99 },
+  { type: 'calabash', name: 'Calabash', emoji: '🏺', price: 3.99 },
+  { type: 'shea', name: 'Shea Butter', emoji: '🧴', price: 4.99 },
+  
+  // Tech & Gadgets
+  { type: 'phone', name: 'Smartphone', emoji: '📱', price: 19.99 },
+  { type: 'laptop', name: 'Laptop', emoji: '💻', price: 29.99 },
+  { type: 'camera', name: 'Camera', emoji: '📸', price: 14.99 },
+  { type: 'headphones', name: 'Headphones', emoji: '🎧', price: 9.99 },
+  { type: 'watch', name: 'Smart Watch', emoji: '⌚', price: 12.99 },
+
+  // Food & Dining
+  { type: 'pizza', name: 'Pizza', emoji: '🍕', price: 4.99 },
+  { type: 'sushi', name: 'Sushi', emoji: '🍣', price: 6.99 },
+  { type: 'burger', name: 'Burger', emoji: '🍔', price: 3.99 },
+  { type: 'wine', name: 'Fine Wine', emoji: '🍷', price: 8.99 },
+  { type: 'beer', name: 'Beer', emoji: '🍺', price: 2.99 },
+  { type: 'cake', name: 'Cake', emoji: '🎂', price: 5.99 },
+  
+  // Nature & Flowers
+  { type: 'bouquet', name: 'Bouquet', emoji: '💐', price: 6.99 },
+  { type: 'sunflower', name: 'Sunflower', emoji: '🌻', price: 2.99 },
+  { type: 'tulip', name: 'Tulip', emoji: '🌷', price: 2.99 },
+  { type: 'hibiscus', name: 'Hibiscus', emoji: '🌺', price: 2.99 },
+  { type: 'palm', name: 'Palm Tree', emoji: '🌴', price: 4.99 }
+];
+
+const CATEGORIES = [
+  { id: 'all', label: 'All' },
+  { id: 'popular', label: 'Popular' },
+  { id: 'luxury', label: 'Luxury' },
+  { id: 'cultural', label: 'African' },
+  { id: 'food', label: 'Food & Drink' },
+  { id: 'tech', label: 'Tech' },
+  { id: 'nature', label: 'Flowers' }
 ];
 
 export default function VirtualGifts() {
+  const [activeCategory, setActiveCategory] = useState('all');
   const [myProfile, setMyProfile] = useState(null);
   const [selectedGift, setSelectedGift] = useState(null);
   const [message, setMessage] = useState('');
@@ -137,8 +172,34 @@ export default function VirtualGifts() {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6">
+        {/* Categories */}
+        <div className="flex gap-2 overflow-x-auto pb-4 mb-2 scrollbar-hide">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                activeCategory === cat.id
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-white text-gray-600 hover:bg-purple-50'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-3 gap-4 mb-6">
-          {GIFTS.map(gift => (
+          {GIFTS.filter(gift => {
+            if (activeCategory === 'all') return true;
+            if (activeCategory === 'popular') return ['rose', 'chocolate', 'heart', 'kiss'].includes(gift.type);
+            if (activeCategory === 'luxury') return ['diamond', 'ring', 'crown', 'champagne', 'money_bag', 'car', 'house', 'airplane'].includes(gift.type);
+            if (activeCategory === 'cultural') return ['kente', 'drum', 'beads', 'kola', 'fan', 'mask', 'calabash', 'shea'].includes(gift.type);
+            if (activeCategory === 'food') return ['pizza', 'sushi', 'burger', 'wine', 'beer', 'cake', 'coffee', 'cocktail', 'chocolate'].includes(gift.type);
+            if (activeCategory === 'tech') return ['phone', 'laptop', 'camera', 'headphones', 'watch'].includes(gift.type);
+            if (activeCategory === 'nature') return ['bouquet', 'sunflower', 'tulip', 'hibiscus', 'palm', 'rose'].includes(gift.type);
+            return true;
+          }).map(gift => (
             <motion.div
               key={gift.type}
               whileHover={{ scale: 1.05 }}
@@ -147,15 +208,15 @@ export default function VirtualGifts() {
               <Card
                 className={`cursor-pointer transition-all ${
                   selectedGift?.type === gift.type
-                    ? 'ring-2 ring-purple-600 shadow-lg'
-                    : 'hover:shadow-md'
+                    ? 'ring-2 ring-purple-600 shadow-lg border-purple-200'
+                    : 'hover:shadow-md border-transparent'
                 }`}
                 onClick={() => setSelectedGift(gift)}
               >
                 <CardContent className="p-4 text-center">
-                  <div className="text-5xl mb-2">{gift.emoji}</div>
-                  <p className="font-semibold text-sm">{gift.name}</p>
-                  <p className="text-xs text-gray-500">${gift.price}</p>
+                  <div className="text-5xl mb-2 filter drop-shadow-sm">{gift.emoji}</div>
+                  <p className="font-semibold text-sm truncate">{gift.name}</p>
+                  <p className="text-xs text-purple-600 font-bold">${gift.price}</p>
                 </CardContent>
               </Card>
             </motion.div>

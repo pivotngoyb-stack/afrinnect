@@ -42,9 +42,22 @@ export default function SystemSettings() {
 
   useEffect(() => {
     const fetchSettings = async () => {
+      // Use list to debug if filter is failing, but filter should work
       const records = await base44.entities.SystemSettings.filter({ key: 'launch_configuration' });
       if (records.length > 0) {
         setSettings(prev => ({ ...prev, isLive: records[0].value.is_live }));
+      } else {
+        // Create default if missing
+        try {
+          await base44.entities.SystemSettings.create({
+            key: 'launch_configuration',
+            type: 'general',
+            value: { is_live: false },
+            is_enabled: true
+          });
+        } catch (e) {
+          console.error("Failed to init settings", e);
+        }
       }
     };
     fetchSettings();
