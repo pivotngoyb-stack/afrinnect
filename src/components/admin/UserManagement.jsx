@@ -46,6 +46,40 @@ export default function UserManagement({
     return matchesSearch && matchesCountry && matchesStatus && matchesSubscription;
   });
 
+  const handleExportCSV = () => {
+    const headers = ['User ID', 'Display Name', 'Email', 'Country', 'Gender', 'Status', 'Tier', 'Login Streak', 'Last Active', 'Created Date'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredProfiles.map(p => {
+        const u = users.find(user => user.id === p.user_id);
+        return [
+          p.user_id,
+          `"${p.display_name || ''}"`,
+          u?.email || '',
+          `"${p.current_country || ''}"`,
+          p.gender || '',
+          p.is_active ? 'Active' : 'Banned',
+          p.subscription_tier || 'free',
+          p.login_streak || 0,
+          p.last_active || '',
+          p.created_date || ''
+        ].join(',');
+      })
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `users_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   const countries = [...new Set(profiles.map(p => p.current_country).filter(Boolean))];
 
   return (
@@ -92,7 +126,7 @@ export default function UserManagement({
               <Filter size={20} />
               Filters & Search
             </span>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleExportCSV}>
               <Download size={16} className="mr-2" />
               Export CSV
             </Button>

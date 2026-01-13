@@ -60,8 +60,16 @@ Deno.serve(async (req) => {
             getCount('Community', {}),
             getCount('VideoProfile', {}),
             getCount('VerificationRequest', { status: 'pending' }),
-            getCount('SupportTicket', { status: 'open' })
+            getCount('SupportTicket', { status: 'open' }),
+            base44.entities.UserProfile.list('-last_active', 1000).catch(() => []) // Fetch profiles for retention calc
         ]);
+
+        // Retention / Streak Calc
+        const profiles = arguments[14] || []; // The last item from Promise.all
+        const activeStreaks = profiles.filter(p => p.login_streak > 0);
+        const avgStreak = activeStreaks.length > 0 
+            ? Math.round(activeStreaks.reduce((sum, p) => sum + (p.login_streak || 0), 0) / activeStreaks.length)
+            : 0;
 
         // Revenue Calculation
         let mrr = 0;
@@ -95,7 +103,8 @@ Deno.serve(async (req) => {
             totalCommunities,
             totalVideoProfiles,
             pendingVerifications,
-            openTickets
+            openTickets,
+            avgStreak
         };
 
         // 2. Generate AI Executive Summary with Fallback
@@ -119,6 +128,7 @@ Deno.serve(async (req) => {
                 - Growth: +${newUsersLast30} users last 30d (${Math.round(userGrowth)}% growth)
                 - Revenue: $${Math.round(mrr)} MRR
                 - Engagement: ${matchesLast30} matches, ${msgsLast30} messages
+                - Retention: Average User Streak is ${avgStreak} days
                 - Ecosystem: ${totalEvents} events, ${totalStories} success stories, ${totalCommunities} communities
                 - Content Depth: ${totalVideoProfiles} video profiles
                 - Safety & Ops: ${pendingVerifications} pending verifications, ${openTickets} open support tickets, ${pendingReports} pending reports
