@@ -221,7 +221,9 @@ function LayoutContent({ children, currentPageName }) {
           userEmail={myProfile.created_by}
         />
       ) : (
-        children
+        <div className={showNav ? "pb-16" : ""}>
+          {children}
+        </div>
       )}
 
       {/* Screenshot Alert Notifications */}
@@ -260,7 +262,7 @@ function LayoutContent({ children, currentPageName }) {
                 <Link
                   key={item.name}
                   to={createPageUrl(item.name)}
-                  className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all ${
+                  className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all ${
                     isActive 
                       ? 'text-purple-600' 
                       : 'text-gray-400 hover:text-gray-600'
@@ -268,31 +270,24 @@ function LayoutContent({ children, currentPageName }) {
                 >
                   <div className="relative">
                     <Icon 
-                      size={24} 
+                      size={20} 
                       className={isActive ? 'fill-purple-100' : ''}
                       strokeWidth={isActive ? 2.5 : 2}
                     />
                     {item.badge > 0 && (
-                      <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-purple-600 text-white text-xs">
+                      <Badge className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center bg-purple-600 text-white text-[10px]">
                         {item.badge}
                       </Badge>
                     )}
                   </div>
-                  <span className={`text-xs ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                  <span className={`text-[10px] ${isActive ? 'font-semibold' : 'font-medium'}`}>
                     {item.label}
                   </span>
-                  {isActive && (
-                    <div className="absolute bottom-1 w-1 h-1 bg-purple-600 rounded-full" />
-                  )}
                 </Link>
               );
             })}
-          </div>
-          {/* Copyright Footer */}
-          <div className="bg-gray-50 border-t border-gray-100 py-2 text-center">
-            <p className="text-xs text-gray-500">© 2025 Afrinnect. All rights reserved.</p>
-          </div>
-        </nav>
+            </div>
+            </nav>
         )}
         </div>
         </>
