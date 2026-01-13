@@ -14,8 +14,10 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 Deno.serve(async (req) => {
-    // Use Deno KV for distributed rate limiting (replaces local Map)
-    const kv = await Deno.openKv();
+    // In-memory rate limiting for discovery (expensive operation)
+    // NOTE: In a distributed system, this should use Redis. 
+    // Here we rely on Deno isolate persistence which works per-instance.
+    const rateLimitMap = new Map();
     
     try {
         const base44 = createClientFromRequest(req);
@@ -25,28 +27,15 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Distributed Rate Limit Check: 30 requests per minute
-        // Key format: discovery_limit:userId
-        const limitKey = ["discovery_limit", user.id];
-        const atomic = kv.atomic();
-        const res = await kv.get(limitKey);
-        
-        // Count represents number of requests in current window
-        let count = res.value?.count || 0;
-        const lastReset = res.value?.reset || Date.now();
+        // Rate Limit Check: 20 requests per minute
         const now = Date.now();
+        const userRequests = rateLimitMap.get(user.id) || [];
+        const recentRequests = userRequests.filter(time => now - time < 60000);
         
-        // Reset window if > 1 minute passed
-        if (now - lastReset > 60000) {
-            count = 1;
-            await kv.set(limitKey, { count: 1, reset: now });
-        } else {
-            if (count >= 30) {
-                return Response.json({ error: 'Rate limit exceeded. Please slow down.' }, { status: 429 });
-            }
-            count++;
-            await kv.set(limitKey, { count, reset: lastReset });
+        if (recentRequests.length >= 20) {
+             return Response.json({ error: 'Rate limit exceeded. Please slow down.' }, { status: 429 });
         }
+        rateLimitMap.set(user.id, [...recentRequests, now]);
 
         const { filters = {}, mode = 'global', limit = 20, myProfileId } = await req.json();
 

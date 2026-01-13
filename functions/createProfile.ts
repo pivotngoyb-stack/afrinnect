@@ -104,12 +104,10 @@ Deno.serve(async (req) => {
         interests: formData.interests,
         prompts: formData.prompts,
         push_token: formData.push_token,
-        phone_number: formData.phone_number,
-        location: formData.location
+        phone_number: formData.phone_number
     };
 
-    // Use service role to create profile to allow setting system fields like is_premium
-    const newProfile = await base44.asServiceRole.entities.UserProfile.create({
+    const newProfile = await base44.entities.UserProfile.create({
         ...allowedFields,
         user_id: user.id,
         // Force critical fields (User cannot override these)

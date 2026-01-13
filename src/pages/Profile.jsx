@@ -45,8 +45,7 @@ export default function Profile() {
       try {
         const user = await base44.auth.me();
         if (user) {
-          // Use list() to rely on RLS which automatically filters to current user
-          const profiles = await base44.entities.UserProfile.list();
+          const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
           if (profiles.length > 0) {
             setMyProfile(profiles[0]);
             setIsOwnProfile(!profileId || profileId === profiles[0].id);
