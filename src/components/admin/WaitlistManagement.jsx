@@ -59,6 +59,7 @@ export default function WaitlistManagement({ onSendEmail }) {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
+                    <TableHead>Location</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Reason</TableHead>
@@ -69,6 +70,7 @@ export default function WaitlistManagement({ onSendEmail }) {
                     <TableRow key={entry.id}>
                       <TableCell className="font-medium">{entry.full_name}</TableCell>
                       <TableCell>{entry.email}</TableCell>
+                      <TableCell>{entry.location || '-'}</TableCell>
                       <TableCell>
                         <Badge variant={
                           entry.status === 'joined' ? 'success' :

@@ -16,6 +16,7 @@ export default function Waitlist() {
   const [formData, setFormData] = useState({
     email: '',
     full_name: '',
+    location: '',
     reason: ''
   });
 
@@ -57,6 +58,7 @@ export default function Waitlist() {
       await base44.entities.WaitlistEntry.create({
         email: formData.email,
         full_name: formData.full_name,
+        location: formData.location,
         reason: formData.reason,
         status: 'pending'
       });
@@ -164,7 +166,21 @@ export default function Waitlist() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="location">Where do you live? (City, Country)</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 text-gray-400" size={18} />
+                  <Input 
+                    id="location"
+                    placeholder="Lagos, Ghana" 
+                    className="pl-10"
+                    value={formData.location}
+                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                  />
+                </div>
+                </div>
+
+                <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 text-gray-400" size={18} />
                     <Input 
