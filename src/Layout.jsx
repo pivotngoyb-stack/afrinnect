@@ -82,8 +82,8 @@ function LayoutContent({ children, currentPageName }) {
           }
 
           // Then check profile
-          const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-          // Redirect removed to prevent loops - let pages handle missing profile states
+          // Use list() to rely on RLS (Row Level Security) which automatically filters to current user
+          const profiles = await base44.entities.UserProfile.list();
           
           if (profiles.length > 0) {
             const profile = profiles[0];
