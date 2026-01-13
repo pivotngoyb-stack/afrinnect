@@ -41,7 +41,7 @@ export default function FeedbackWidget() {
 
   return (
     <>
-      <div className="fixed bottom-20 right-4 z-40 md:bottom-8">
+      <div className="fixed bottom-28 right-4 z-40 md:bottom-12">
         <Button
           onClick={() => setIsOpen(true)}
           className="rounded-full h-12 w-12 shadow-lg bg-white hover:bg-gray-100 text-purple-600 border border-purple-100"
