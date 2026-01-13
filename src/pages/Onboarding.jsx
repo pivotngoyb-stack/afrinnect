@@ -114,7 +114,7 @@ export default function Onboarding() {
         setUser(currentUser);
         
         // Check if user already has profile
-        const profiles = await base44.entities.UserProfile.list();
+        const profiles = await base44.entities.UserProfile.filter({ user_id: currentUser.id });
         if (profiles.length > 0) {
           navigate(createPageUrl('Home'));
         }
@@ -177,7 +177,7 @@ export default function Onboarding() {
   const createProfileMutation = useMutation({
   mutationFn: async () => {
     // CRITICAL: Check for existing profile (prevent duplicates)
-    const existingProfiles = await base44.entities.UserProfile.list();
+    const existingProfiles = await base44.entities.UserProfile.filter({ user_id: user.id });
     if (existingProfiles.length > 0) {
       throw new Error(t('errors.existingProfile'));
     }

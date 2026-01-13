@@ -175,8 +175,8 @@ export default function Home() {
           setIsAdmin(true);
         }
 
-        // Use list() to rely on RLS which automatically returns only the user's profile
-        const profiles = await base44.entities.UserProfile.list();
+        // Use filter to securely get only the current user's profile
+        const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
         if (profiles.length > 0) {
           const profile = profiles[0];
 

@@ -82,8 +82,7 @@ function LayoutContent({ children, currentPageName }) {
           }
 
           // Then check profile
-          // Use list() to rely on RLS (Row Level Security) which automatically filters to current user
-          const profiles = await base44.entities.UserProfile.list();
+          const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
           
           if (profiles.length > 0) {
             const profile = profiles[0];
