@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { Home, Heart, Calendar, User, MessageCircle, Compass, Sparkles, Bell } from 'lucide-react';
@@ -26,6 +26,7 @@ import FeedbackWidget from '@/components/shared/FeedbackWidget';
 const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories', 'EventDetails', 'CreateEvent', 'CompatibilityQuizzes', 'ReferralProgram', 'LanguageExchangeHub', 'VendorManagement', 'Marketplace', 'PasswordReset'];
 
 function LayoutContent({ children, currentPageName }) {
+  const navigate = useNavigate();
   const [myProfile, setMyProfile] = useState(null);
   const [hasProfile, setHasProfile] = useState(true);
   const { t } = useLanguage();
@@ -75,7 +76,7 @@ function LayoutContent({ children, currentPageName }) {
           if (currentPageName !== 'LegalAcceptance') {
             const acceptances = await base44.entities.LegalAcceptance.filter({ user_id: user.id });
             if (acceptances.length === 0) {
-              window.location.href = createPageUrl('LegalAcceptance');
+              navigate(createPageUrl('LegalAcceptance'));
               return;
             }
           }
@@ -83,7 +84,7 @@ function LayoutContent({ children, currentPageName }) {
           // Then check profile
           const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
           if (profiles.length === 0 && currentPageName !== 'Onboarding' && currentPageName !== 'LegalAcceptance') {
-            window.location.href = createPageUrl('Onboarding');
+            navigate(createPageUrl('Onboarding'));
             return;
           }
 
@@ -99,7 +100,7 @@ function LayoutContent({ children, currentPageName }) {
               const diffMinutes = (now - createdDate) / 1000 / 60;
 
               if (diffMinutes > 30 && !profile.verification_status?.photo_verified) {
-                window.location.href = createPageUrl('VerifyPhoto');
+                navigate(createPageUrl('VerifyPhoto'));
                 return;
               }
             }
@@ -141,11 +142,11 @@ function LayoutContent({ children, currentPageName }) {
         }
 
         // Redirect everyone else to Waitlist
-        window.location.href = createPageUrl('Waitlist');
+        navigate(createPageUrl('Waitlist'));
       }
     };
     checkLaunchStatus();
-  }, [launchSettings, currentPageName]);
+  }, [launchSettings, currentPageName, navigate]);
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications-count', myProfile?.id],
