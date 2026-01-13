@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight, ArrowLeft, Camera, Loader2, Check, Heart,
@@ -65,6 +66,7 @@ const INTERESTS = [
 ];
 
 export default function Onboarding() {
+  const navigate = useNavigate();
   const { trackEvent } = useConversionTracker();
   const { t } = useLanguage();
   const [step, setStep] = useState(0);
@@ -114,15 +116,16 @@ export default function Onboarding() {
         // Check if user already has profile
         const profiles = await base44.entities.UserProfile.filter({ user_id: currentUser.id });
         if (profiles.length > 0) {
-          window.location.href = createPageUrl('Home');
+          navigate(createPageUrl('Home'));
         }
         } catch (e) {
-        // Not logged in - stay on loading, will be handled by Base44
+        // Not logged in - redirect to login
         console.log('User not authenticated');
+        base44.auth.redirectToLogin(window.location.href);
       }
     };
     checkUser();
-  }, []);
+  }, [navigate]);
 
   const updateField = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -245,12 +248,12 @@ export default function Onboarding() {
     onError: (error) => {
       alert(error.message);
       if (error.message.includes('already have a profile')) {
-        setTimeout(() => {
-          window.location.href = createPageUrl('Home');
-        }, 2000);
+      setTimeout(() => {
+      navigate(createPageUrl('Home'));
+      }, 2000);
       }
-    }
-  });
+      }
+      });
 
   const getLocation = async () => {
     setGettingLocation(true);
@@ -750,7 +753,7 @@ export default function Onboarding() {
         onClose={() => setShowSafetyEducation(false)}
         onComplete={() => {
           setShowSafetyEducation(false);
-          window.location.href = createPageUrl('Home');
+          navigate(createPageUrl('Home'));
         }}
       />
     </div>
