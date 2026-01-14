@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, Volume2, VolumeX, Pause, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
@@ -11,24 +11,65 @@ export default function StoryViewer({ stories, currentIndex, onClose, onNext, on
   const [progress, setProgress] = useState(0);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [isPaused, setIsPaused] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [videoDuration, setVideoDuration] = useState(null);
+  
+  const videoRef = React.useRef(null);
   const story = stories[currentIndex];
-  const DURATION = 5000; // 5 seconds per story
+  const DEFAULT_DURATION = 5000; // 5 seconds for photos
   const queryClient = useQueryClient();
 
+  // Reset state on story change
   useEffect(() => {
     setProgress(0);
+    setVideoDuration(null);
+    setIsPaused(false);
+  }, [currentIndex]);
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight') onNext();
+      if (e.key === 'ArrowLeft') onPrev();
+      if (e.key === 'Escape') onClose();
+      if (e.key === ' ') setIsPaused(prev => !prev);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onNext, onPrev, onClose]);
+
+  // Progress timer
+  useEffect(() => {
+    if (isPaused || showComments) return;
+
+    // If video, let video events handle progress
+    if (story?.media_type === 'video' && videoRef.current) return;
+
     const interval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
           onNext();
           return 0;
         }
-        return prev + (100 / (DURATION / 100));
+        return prev + (100 / (DEFAULT_DURATION / 100));
       });
     }, 100);
 
     return () => clearInterval(interval);
-  }, [currentIndex, onNext]);
+  }, [currentIndex, isPaused, showComments, onNext, story?.media_type]);
+
+  const handleVideoTimeUpdate = () => {
+    if (videoRef.current && videoRef.current.duration) {
+      const current = videoRef.current.currentTime;
+      const total = videoRef.current.duration;
+      setProgress((current / total) * 100);
+    }
+  };
+
+  const handleVideoEnded = () => {
+    onNext();
+  };
 
   useEffect(() => {
     // Mark story as viewed
@@ -128,27 +169,59 @@ export default function StoryViewer({ stories, currentIndex, onClose, onNext, on
       </div>
 
       {/* Story content */}
-      <div className="relative w-full h-full flex items-center justify-center">
+      <div 
+        className="relative w-full h-full flex items-center justify-center bg-black"
+        onMouseDown={() => setIsPaused(true)}
+        onMouseUp={() => setIsPaused(false)}
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setIsPaused(false)}
+      >
         {story.media_type === 'photo' ? (
           <img
             src={story.media_url}
             alt="Story"
-            className="max-w-full max-h-full object-contain"
+            className="max-w-full max-h-full object-contain pointer-events-none select-none"
+            draggable={false}
           />
         ) : (
           <video
+            ref={videoRef}
             src={story.media_url}
             autoPlay
-            className="max-w-full max-h-full object-contain"
+            playsInline
+            muted={isMuted}
+            onTimeUpdate={handleVideoTimeUpdate}
+            onEnded={handleVideoEnded}
+            onLoadedMetadata={(e) => setVideoDuration(e.target.duration)}
+            className="max-w-full max-h-full object-contain pointer-events-none select-none"
           />
         )}
         
         {story.caption && (
-          <div className="absolute bottom-20 left-0 right-0 px-6">
-            <p className="text-white text-center text-lg">{story.caption}</p>
+          <div className="absolute bottom-24 left-0 right-0 px-6 z-20">
+            <div className="bg-black/40 backdrop-blur-sm p-4 rounded-xl inline-block max-w-full">
+              <p className="text-white text-center text-lg font-medium">{story.caption}</p>
+            </div>
           </div>
         )}
       </div>
+
+      {/* Video Controls */}
+      {story.media_type === 'video' && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}
+          className="absolute top-20 right-4 z-30 bg-black/30 p-2 rounded-full hover:bg-black/50 transition"
+        >
+          {isMuted ? <VolumeX className="text-white" size={20} /> : <Volume2 className="text-white" size={20} />}
+        </button>
+      )}
+
+      {/* Pause Indicator */}
+      {isPaused && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 bg-black/30 p-4 rounded-full">
+          <Pause className="text-white w-8 h-8" />
+        </div>
+      )}
 
       {/* Navigation */}
       <button
