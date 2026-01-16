@@ -23,10 +23,31 @@ Deno.serve(async (req) => {
         // Helper for robust fetching
         const getCount = async (entity, filter = {}) => {
             try {
+                if (!base44.entities?.[entity]) return 0;
                 return await base44.entities[entity].count(filter);
             } catch (e) {
                 console.error(`Error counting ${entity}:`, e);
                 return 0;
+            }
+        };
+
+        const getList = async (entity, ...args) => {
+            try {
+                if (!base44.entities?.[entity]) return [];
+                // Use filter with empty query instead of list for maximum compatibility
+                return await base44.entities[entity].filter({}, ...args);
+            } catch (e) {
+                console.error(`Error listing ${entity}:`, e);
+                return [];
+            }
+        };
+        
+        const getSubscriptions = async () => {
+            try {
+                if (!base44.entities?.Subscription) return [];
+                return await base44.entities.Subscription.filter({ status: 'active' }, '-created_date', 1000);
+            } catch (e) {
+                return [];
             }
         };
 
@@ -57,12 +78,12 @@ Deno.serve(async (req) => {
             getCount('Event', {}),
             getCount('SuccessStory', {}),
             getCount('Report', { status: 'pending' }),
-            base44.entities.Subscription.filter({ status: 'active' }, '-created_date', 1000).catch(() => []),
+            getSubscriptions(),
             getCount('Community', {}),
             getCount('VideoProfile', {}),
             getCount('VerificationRequest', { status: 'pending' }),
             getCount('SupportTicket', { status: 'open' }),
-            base44.entities.UserProfile.list('-last_active', 1000).catch(() => []) // Fetch profiles for retention calc
+            getList('UserProfile', '-last_active', 1000)
         ]);
 
         // Retention / Streak Calc
