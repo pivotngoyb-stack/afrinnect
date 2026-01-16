@@ -45,7 +45,8 @@ Deno.serve(async (req) => {
             totalCommunities,
             totalVideoProfiles,
             pendingVerifications,
-            openTickets
+            openTickets,
+            retentionProfiles
         ] = await Promise.all([
             getCount('UserProfile', {}),
             getCount('UserProfile', { is_active: true }),
@@ -65,7 +66,7 @@ Deno.serve(async (req) => {
         ]);
 
         // Retention / Streak Calc
-        const profiles = arguments[14] || []; // The last item from Promise.all
+        const profiles = retentionProfiles || [];
         const activeStreaks = profiles.filter(p => p.login_streak > 0);
         const avgStreak = activeStreaks.length > 0 
             ? Math.round(activeStreaks.reduce((sum, p) => sum + (p.login_streak || 0), 0) / activeStreaks.length)
