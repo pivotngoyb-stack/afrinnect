@@ -140,7 +140,7 @@ export default function Waitlist() {
               Limited Spots Available
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
-              Join the Movement
+              Join the Waitlist
             </h1>
             <p className="text-lg text-gray-600">
               Be among the first to experience the future of African connection.
