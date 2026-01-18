@@ -139,11 +139,12 @@ export default function Waitlist() {
               <Sparkles size={16} className="mr-2" />
               Limited Spots Available
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
-              Join the Waitlist
+            <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 tracking-tight leading-none drop-shadow-sm">
+              SECURE YOUR VIP SPOT <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-amber-600">BEFORE WE LAUNCH!</span>
             </h1>
-            <p className="text-lg text-gray-600">
-              Be among the first to experience the future of African connection.
+            <p className="text-xl font-bold text-gray-700 mb-2">
+              Don't Miss The Love Revolution – <span className="text-red-600">Spots Are Vanishing Fast!</span>
             </p>
           </div>
 
