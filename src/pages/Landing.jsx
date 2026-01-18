@@ -165,7 +165,7 @@ export default function Landing() {
             {/* Logo */}
             <div className="mb-8">
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/f08d25426_ChatGPTImageDec16202511_09_07AM.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/539bcd82a_EA8B1C93-B120-4D4F-A79F-9725395A9A37.png"
                 alt="Afrinnect"
                 className="h-24 md:h-32 w-auto"
               />
