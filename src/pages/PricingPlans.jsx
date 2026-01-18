@@ -5,7 +5,7 @@ import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, Crown, Heart, Eye, Filter, Sparkles, Zap, Globe, Shield, 
-  Check, Star, Infinity, Users, MessageCircle, Award, Verified, HelpCircle, X
+  Check, Star, Infinity, Users, MessageCircle, Award, BadgeCheck as Verified, CircleHelp as HelpCircle, X
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useConversionTracker, CONVERSION_EVENTS, trackRevenue } from '@/components/shared/ConversionTracker';
