@@ -139,12 +139,12 @@ export default function Waitlist() {
               <Sparkles size={16} className="mr-2" />
               Limited Spots Available
             </div>
-            <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 tracking-tight leading-none drop-shadow-sm">
-              SECURE YOUR VIP SPOT <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-amber-600">BEFORE WE LAUNCH!</span>
+            <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 tracking-tight leading-none drop-shadow-sm uppercase">
+              Warning: VIP Access <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-amber-600">Is Closing Soon!</span>
             </h1>
-            <p className="text-xl font-bold text-gray-700 mb-2">
-              Don't Miss The Love Revolution – <span className="text-red-600">Spots Are Vanishing Fast!</span>
+            <p className="text-xl font-bold text-gray-700 mb-4">
+              Only 47 Spots Left. <span className="text-red-600 bg-red-50 px-2 py-1 rounded">Don't Let The Love Of Your Life Slip Away.</span>
             </p>
           </div>
 
