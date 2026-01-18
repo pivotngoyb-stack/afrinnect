@@ -26,7 +26,12 @@ Deno.serve(async (req) => {
         const getCount = async (entity, filter = {}) => {
             try {
                 if (!base44.entities?.[entity]) return 0;
-                return await base44.entities[entity].count(filter);
+                // Fallback to filter if count is not available (SDK difference)
+                if (typeof base44.entities[entity].count === 'function') {
+                    return await base44.entities[entity].count(filter);
+                }
+                const items = await base44.entities[entity].filter(filter);
+                return items.length;
             } catch (e) {
                 console.error(`Error counting ${entity}:`, e);
                 return 0;
