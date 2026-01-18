@@ -135,6 +135,9 @@ export default function Waitlist() {
           className="max-w-lg w-full"
         >
           <div className="text-center mb-8">
+            <p className="text-sm md:text-base font-bold text-purple-600 uppercase tracking-widest mb-4">
+              Finally a dating app for African people living abroad
+            </p>
             <div className="inline-flex items-center justify-center p-2 bg-purple-100 text-purple-700 rounded-full mb-4 px-4 text-sm font-medium">
               <Sparkles size={16} className="mr-2" />
               Limited Spots Available
