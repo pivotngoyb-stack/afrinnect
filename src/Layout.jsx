@@ -64,7 +64,7 @@ function LayoutContent({ children, currentPageName }) {
   useEffect(() => {
     const checkProfile = async () => {
       // Skip all auth checks for public pages
-      const publicPages = ['Home', 'Landing', 'Terms', 'Privacy', 'CommunityGuidelines'];
+      const publicPages = ['Landing', 'Terms', 'Privacy', 'CommunityGuidelines'];
       if (publicPages.includes(currentPageName)) {
         return;
       }
