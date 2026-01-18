@@ -117,9 +117,11 @@ Deno.serve(async (req) => {
     let interval = 'month';
     let interval_count = 1;
 
+    let trialDays = null;
     if (billingPeriod === 'yearly') {
         interval = 'year';
         totalAmount = selectedPlan.price_usd * 12; // Assuming price_usd is monthly rate
+        trialDays = 3;
     } else if (billingPeriod === 'quarterly') {
         interval_count = 3;
         totalAmount = selectedPlan.price_usd * 3;
@@ -146,7 +148,8 @@ Deno.serve(async (req) => {
       }],
       payment_behavior: 'default_incomplete',
       payment_settings: { save_default_payment_method: 'on_subscription' },
-      expand: ['latest_invoice.payment_intent'],
+      trial_period_days: trialDays,
+      expand: ['latest_invoice.payment_intent', 'pending_setup_intent'],
       metadata: {
         userId: user.id,
         userEmail: user.email,
@@ -156,14 +159,28 @@ Deno.serve(async (req) => {
       },
     });
 
-    if (!subscription.latest_invoice?.payment_intent?.client_secret) {
+    let clientSecret = subscription.latest_invoice?.payment_intent?.client_secret;
+    
+    // If trial, we might have a setup intent instead of a payment intent
+    if (!clientSecret && subscription.pending_setup_intent?.client_secret) {
+        clientSecret = subscription.pending_setup_intent.client_secret;
+    }
+
+    if (!clientSecret) {
+        // Fallback: If status is active/trialing and no intent needed (rare with default_incomplete)
+        if (subscription.status === 'trialing' || subscription.status === 'active') {
+             // Maybe return success immediately? But we want to collect card.
+             // With default_incomplete, we should have one of the intents.
+             throw new Error('Failed to generate payment or setup intent');
+        }
         throw new Error('Failed to generate payment intent');
     }
 
     return Response.json({
-      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+      clientSecret: clientSecret,
       subscriptionId: subscription.id,
-      customerId: customerId
+      customerId: customerId,
+      isTrial: !!trialDays
     });
 
   } catch (error) {

@@ -63,14 +63,30 @@ const CheckoutForm = ({ amount, planName, onSuccess, onCancel }) => {
 
     setIsLoading(true);
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        // Return URL where the user is redirected after the payment
-        return_url: window.location.href,
-      },
-      redirect: 'if_required' // Don't redirect if not needed (e.g. card payments often don't need 3DS)
-    });
+    // Check if it's a Setup Intent (for trials) or Payment Intent
+    const isSetup = elements._commonOptions.clientSecret.startsWith('seti_');
+    
+    let result;
+    
+    if (isSetup) {
+        result = await stripe.confirmSetup({
+            elements,
+            confirmParams: {
+                return_url: window.location.href,
+            },
+            redirect: 'if_required'
+        });
+    } else {
+        result = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: window.location.href,
+            },
+            redirect: 'if_required'
+        });
+    }
+
+    const { error, paymentIntent, setupIntent } = result;
 
     if (error) {
       if (error.type === "card_error" || error.type === "validation_error") {
@@ -79,9 +95,12 @@ const CheckoutForm = ({ amount, planName, onSuccess, onCancel }) => {
         setMessage("An unexpected error occurred.");
       }
       setIsLoading(false);
-    } else if (paymentIntent && paymentIntent.status === "succeeded") {
-       setMessage("Payment succeeded!");
-       onSuccess(paymentIntent);
+    } else if (
+        (paymentIntent && paymentIntent.status === "succeeded") || 
+        (setupIntent && setupIntent.status === "succeeded")
+    ) {
+       setMessage("Success!");
+       onSuccess(paymentIntent || setupIntent);
        setIsLoading(false);
     } else {
         setIsLoading(false);
