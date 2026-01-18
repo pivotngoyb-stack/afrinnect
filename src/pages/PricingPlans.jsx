@@ -330,7 +330,7 @@ export default function PricingPlans() {
                     onClick={() => handleSubscribe(key)}
                     className={`w-full py-6 text-base font-semibold rounded-xl shadow-lg transition-all active:scale-95 ${tier.buttonColor}`}
                   >
-                    {billingCycle === 'yearly' ? 'Start 7-Day Free Trial' : 'Get Started'}
+                    {billingCycle === 'yearly' ? 'Start 3-Day Free Trial' : 'Get Started'}
                   </Button>
                   <p className="text-center text-xs text-gray-400 mt-4">
                     Total ${price.total} • Cancel anytime
