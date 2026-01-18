@@ -117,11 +117,10 @@ Deno.serve(async (req) => {
     let interval = 'month';
     let interval_count = 1;
 
-    let trialDays = null;
+    let trialDays = 3; // All users get 3 days trial
     if (billingPeriod === 'yearly') {
         interval = 'year';
         totalAmount = selectedPlan.price_usd * 12; // Assuming price_usd is monthly rate
-        trialDays = 3;
     } else if (billingPeriod === 'quarterly') {
         interval_count = 3;
         totalAmount = selectedPlan.price_usd * 3;
