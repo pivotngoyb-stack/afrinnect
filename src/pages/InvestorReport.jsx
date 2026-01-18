@@ -7,7 +7,7 @@ import {
 } from 'recharts';
 import { 
   Loader2, Printer, Download, TrendingUp, Users, DollarSign, Activity, 
-  Shield, CheckCircle, AlertTriangle, Server, Code, Globe, Heart
+  Shield, CheckCircle, AlertTriangle, Server, Code, Globe, Heart, Database, Brain
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
