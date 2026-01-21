@@ -350,7 +350,7 @@ export default function UserManagement({
                   </div>
                 </div>
               );
-            })
+            }).filter(Boolean)
           )}
           </div>
         </CardContent>
