@@ -5,27 +5,32 @@ import { base44 } from '@/api/base44Client';
 export function useConversionTracker() {
   const trackEvent = async (eventName, properties = {}) => {
     try {
-      // Check if user is authenticated first
-      const isAuth = await base44.auth.isAuthenticated();
-      
-      if (isAuth) {
-        const user = await base44.auth.me();
-        const profile = user ? (await base44.entities.UserProfile.filter({ user_id: user.id }))[0] : null;
-
-        // Log conversion event for authenticated users
-        await base44.entities.ProfileAnalytics.create({
-          user_profile_id: profile?.id || 'anonymous',
-          event_type: eventName,
-          event_data: properties,
-          timestamp: new Date().toISOString()
-        });
-      }
-
-      // Track via Google Analytics for all users (authenticated or not)
+      // Track via Base44 analytics for all users (works for anonymous too)
       base44.analytics.track({
         eventName: eventName,
         properties: properties
       });
+
+      // Only log to ProfileAnalytics for authenticated users with a profile
+      const isAuth = await base44.auth.isAuthenticated();
+      
+      if (isAuth) {
+        const user = await base44.auth.me();
+        if (user) {
+          const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+          const profile = profiles[0];
+          
+          // Only create if user has a profile
+          if (profile?.id) {
+            await base44.entities.ProfileAnalytics.create({
+              user_profile_id: profile.id,
+              event_type: eventName,
+              event_data: properties,
+              date: new Date().toISOString().split('T')[0]
+            });
+          }
+        }
+      }
     } catch (e) {
       // Silently fail for tracking - don't disrupt user experience
       console.debug('Conversion tracking skipped:', eventName);
