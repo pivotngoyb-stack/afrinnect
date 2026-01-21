@@ -196,7 +196,8 @@ export default function UserManagement({
                 />
             ) : (
                 profiles.map(profile => {
-              const user = users.find(u => u.id === profile.user_id);
+              const user = users?.find(u => u.id === profile.user_id);
+              if (!user) return null; // Skip profiles without matching user
               const isUserAdmin = user?.role === 'admin' || user?.email === 'pivotngoyb@gmail.com';
               
               return (
