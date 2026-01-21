@@ -33,12 +33,15 @@ export default function PushNotificationSetup({ userProfile }) {
         });
 
         if (token) {
-          // Save token to user profile
-          await base44.entities.UserProfile.update(userProfile.id, {
-            push_token: token
-          });
-
-          console.log('Push token saved:', token);
+          // Save token to user profile via backend function
+          try {
+            await base44.functions.invoke('updateUserProfile', {
+              push_token: token
+            });
+            console.log('Push token saved');
+          } catch (e) {
+            console.warn('Failed to save push token:', e);
+          }
         }
 
         // Listen for foreground messages

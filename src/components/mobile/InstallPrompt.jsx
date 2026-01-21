@@ -60,7 +60,7 @@ export default function InstallPrompt() {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="fixed bottom-20 left-4 right-4 z-50 md:left-auto md:right-4 md:w-96"
+        className="fixed bottom-20 left-4 right-4 z-40 md:left-auto md:right-4 md:w-96"
       >
         <div className="bg-white rounded-xl shadow-xl p-4 border border-purple-100">
           <div className="flex items-start justify-between">
