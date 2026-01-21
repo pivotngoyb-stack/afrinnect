@@ -72,12 +72,16 @@ export default function StoryViewer({ stories, currentIndex, onClose, onNext, on
   };
 
   useEffect(() => {
-    // Mark story as viewed
-    if (story && myProfileId && !story.views?.includes(myProfileId)) {
+    // Mark story as viewed (only if not my own story)
+    if (story && myProfileId && story.user_profile_id !== myProfileId && !story.views?.includes(myProfileId)) {
       const markViewed = async () => {
-        await base44.entities.Story.update(story.id, {
-          views: [...(story.views || []), myProfileId]
-        });
+        try {
+          await base44.entities.Story.update(story.id, {
+            views: [...(story.views || []), myProfileId]
+          });
+        } catch (e) {
+          console.warn('Failed to mark story as viewed:', e);
+        }
       };
       markViewed();
     }
