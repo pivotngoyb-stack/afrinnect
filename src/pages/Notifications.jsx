@@ -8,6 +8,7 @@ import { ArrowLeft, Heart, Users, MessageCircle, Crown, Shield, Trash2, CheckChe
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import EmptyState from '@/components/shared/EmptyState';
 
 export default function Notifications() {
   const [myProfile, setMyProfile] = useState(null);
@@ -149,14 +150,12 @@ export default function Notifications() {
         <div className="p-4 space-y-2">
           <AnimatePresence>
             {notifications.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <Users size={64} className="text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No notifications yet</p>
-              </motion.div>
+              <EmptyState
+                icon={Users}
+                title="No notifications yet"
+                description="We'll let you know when you get likes, matches, or messages"
+                className="py-8"
+              />
             ) : (
               notifications.map((notif, idx) => {
                 // Check if this is a like notification and user needs premium

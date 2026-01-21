@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Filter, Eye, Ban, Trash2, Send, Shield, Crown, CheckCircle, Download, Award, Star, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, Filter, Eye, Ban, Trash2, Send, Shield, Crown, CheckCircle, Download, Award, Star, ChevronLeft, ChevronRight, Loader2, Users } from 'lucide-react';
+import EmptyState from '@/components/shared/EmptyState';
 
 export default function UserManagement({ 
   profiles, 
@@ -182,7 +183,17 @@ export default function UserManagement({
         <CardContent>
           <div className="space-y-2 max-h-[600px] overflow-y-auto">
             {profiles.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">No users found.</div>
+                <EmptyState
+                  icon={Users}
+                  title="No users found"
+                  description={searchTerm ? `No users match "${searchTerm}"` : "No users found with current filters"}
+                  actionLabel="Clear Filters"
+                  onAction={() => {
+                    onSearchChange('');
+                    setFilters({ status: 'all', tier: 'all', country: 'all' });
+                  }}
+                  className="py-4"
+                />
             ) : (
                 profiles.map(profile => {
               const user = users.find(u => u.id === profile.user_id);

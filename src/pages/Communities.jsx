@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from "@/components/ui/input";
 import { Search } from 'lucide-react';
 import { ListItemSkeleton } from '@/components/shared/SkeletonLoader';
+import EmptyState from '@/components/shared/EmptyState';
 
 export default function Communities() {
   const [myProfile, setMyProfile] = useState(null);
@@ -197,17 +198,14 @@ export default function Communities() {
               />
             </div>
 
-            {suggestedCommunities.length === 0 && searchQuery ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No communities found matching "{searchQuery}"</p>
-                <Button 
-                  variant="link" 
-                  onClick={() => setSearchQuery('')}
-                  className="text-purple-600 mt-2"
-                >
-                  Clear Search
-                </Button>
-              </div>
+            {suggestedCommunities.length === 0 ? (
+              <EmptyState
+                icon={Users}
+                title={searchQuery ? "No communities found" : "No communities available"}
+                description={searchQuery ? `We couldn't find any communities matching "${searchQuery}"` : "There are no communities to join right now. Check back later!"}
+                actionLabel={searchQuery ? "Clear Search" : "Refresh"}
+                onAction={searchQuery ? () => setSearchQuery('') : refetch}
+              />
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {suggestedCommunities.map(community => (
@@ -219,16 +217,13 @@ export default function Communities() {
 
           <TabsContent value="my-communities">
             {myCommunities.length === 0 ? (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <Users size={48} className="mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-semibold mb-2">No communities yet</h3>
-                  <p className="text-gray-600 mb-4">Join communities to connect with others</p>
-                  <Button onClick={() => document.querySelector('[value="discover"]').click()}>
-                    Discover Communities
-                  </Button>
-                </CardContent>
-              </Card>
+              <EmptyState
+                icon={Users}
+                title="No communities yet"
+                description="Join communities to connect with like-minded people"
+                actionLabel="Discover Communities"
+                onAction={() => document.querySelector('[value="discover"]').click()}
+              />
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {myCommunities.map(community => (

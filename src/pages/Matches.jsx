@@ -16,6 +16,7 @@ import ProfileCard from '@/components/profile/ProfileCard';
 import CountdownTimer from '@/components/shared/CountdownTimer';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import NotificationBell from '@/components/shared/NotificationBell';
+import EmptyState from '@/components/shared/EmptyState';
 
 export default function Matches() {
   
@@ -391,24 +392,13 @@ export default function Matches() {
             )}
 
             {matchedProfiles.length === 0 && !loadingMatches && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-16"
-              >
-                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-100 to-amber-100 flex items-center justify-center">
-                  <Users size={40} className="text-purple-600" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-800 mb-2">No matches yet</h2>
-                <p className="text-gray-500 mb-6">
-                  Keep swiping to find your perfect match!
-                </p>
-                <Link to={createPageUrl('Home')}>
-                  <Button className="bg-gradient-to-r from-purple-600 to-purple-700">
-                    Discover People
-                  </Button>
-                </Link>
-              </motion.div>
+              <EmptyState
+                icon={Users}
+                title="No matches yet"
+                description="Keep swiping to find your perfect match!"
+                actionLabel="Discover People"
+                onAction={() => window.location.href = createPageUrl('Home')}
+              />
             )}
           </TabsContent>
 
@@ -459,25 +449,14 @@ export default function Matches() {
                   />
                 ))}
                 {likerProfiles.length === 0 && !loadingLikes && (
-                  <div className="col-span-full text-center py-16">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                      <Heart size={32} className="text-gray-400" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900">No new likes yet</h3>
-                    <p className="text-gray-500 mb-6 max-w-xs mx-auto">
-                      Boost your profile to get up to 10x more visibility!
-                    </p>
-                    <div className="flex justify-center gap-3">
-                      <Link to={createPageUrl('Home')}>
-                        <Button variant="outline">Keep Swiping</Button>
-                      </Link>
-                      <Link to={createPageUrl('PricingPlans')}>
-                        <Button className="bg-gradient-to-r from-purple-600 to-amber-600 border-0">
-                          <Sparkles size={16} className="mr-2" />
-                          Boost Profile
-                        </Button>
-                      </Link>
-                    </div>
+                  <div className="col-span-full">
+                    <EmptyState
+                      icon={Heart}
+                      title="No new likes yet"
+                      description="Boost your profile to get up to 10x more visibility!"
+                      actionLabel="Boost Profile"
+                      onAction={() => window.location.href = createPageUrl('PricingPlans')}
+                    />
                   </div>
                 )}
               </div>
@@ -506,11 +485,14 @@ export default function Matches() {
                   </div>
                 </ScrollArea>
               ) : (
-                <div className="text-center py-16">
-                  <MessageCircle size={48} className="mx-auto text-gray-300 mb-4" />
-                  <p className="text-gray-500 font-medium">No conversations yet</p>
-                  <p className="text-gray-400 text-sm mt-2">Match with someone to start chatting!</p>
-                </div>
+                <EmptyState
+                  icon={MessageCircle}
+                  title="No conversations yet"
+                  description="Match with someone to start chatting!"
+                  actionLabel="Find Matches"
+                  onAction={() => setActiveTab('matches')}
+                  className="py-8"
+                />
               )}
             </div>
           </TabsContent>
