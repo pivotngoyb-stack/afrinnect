@@ -16,7 +16,7 @@ import { base44 } from "@/api/base44Client";
 // Wait, the user set STRIPE_PUBLISHABLE_KEY secret. I can't access it in frontend directly unless I expose it via a function.
 // I'll create a function `getStripeConfig` to safe-expose the public key.
 
-const CheckoutForm = ({ amount, planName, onSuccess, onCancel, clientSecret }) => {
+const CheckoutForm = ({ amount, planName, onSuccess, onCancel, clientSecret, isTrial }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [message, setMessage] = useState(null);
@@ -114,9 +114,10 @@ const CheckoutForm = ({ amount, planName, onSuccess, onCancel, clientSecret }) =
             <span className="font-semibold text-gray-900">{planName}</span>
         </div>
         <div className="flex justify-between items-center text-lg font-bold">
-            <span>Total</span>
-            <span>${amount}</span>
+            <span>{isTrial ? 'Due Today' : 'Total'}</span>
+            <span>${isTrial ? '0.00' : amount}</span>
         </div>
+        {isTrial && <p className="text-xs text-right text-gray-500 mt-1">After 3-day trial: ${amount}</p>}
       </div>
 
       <PaymentElement id="payment-element" options={{layout: "tabs"}} />
@@ -145,7 +146,7 @@ const CheckoutForm = ({ amount, planName, onSuccess, onCancel, clientSecret }) =
             ) : (
                 <>
                     <Lock className="mr-2 h-4 w-4" />
-                    Pay Now
+                    {isTrial ? 'Start Free Trial' : 'Pay Now'}
                 </>
             )}
           </Button>
@@ -160,7 +161,7 @@ const CheckoutForm = ({ amount, planName, onSuccess, onCancel, clientSecret }) =
   );
 };
 
-export default function StripePaymentModal({ isOpen, onClose, clientSecret, amount, planName, onSuccess, stripePublicKey }) {
+export default function StripePaymentModal({ isOpen, onClose, clientSecret, amount, planName, onSuccess, stripePublicKey, isTrial }) {
   const [stripePromise, setStripePromise] = useState(null);
 
   useEffect(() => {
@@ -186,7 +187,7 @@ export default function StripePaymentModal({ isOpen, onClose, clientSecret, amou
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
         <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-                <h2 className="text-xl font-bold mb-6 text-center">Complete Payment</h2>
+                <h2 className="text-xl font-bold mb-6 text-center">{isTrial ? 'Start Free Trial' : 'Complete Payment'}</h2>
                 <Elements options={options} stripe={stripePromise}>
                     <CheckoutForm 
                         amount={amount} 
@@ -194,6 +195,7 @@ export default function StripePaymentModal({ isOpen, onClose, clientSecret, amou
                         onSuccess={onSuccess} 
                         onCancel={onClose}
                         clientSecret={clientSecret}
+                        isTrial={isTrial}
                     />
                 </Elements>
             </div>

@@ -95,6 +95,7 @@ export default function PricingPlans() {
   const [selectedPlan, setSelectedPlan] = useState(null); // { tier, price }
   const [stripeConfig, setStripeConfig] = useState(null);
   const [clientSecret, setClientSecret] = useState(null);
+  const [isTrial, setIsTrial] = useState(false);
   const [pricingData, setPricingData] = useState(null);
 
   useEffect(() => {
@@ -185,7 +186,10 @@ export default function PricingPlans() {
                     planType: `${selectedPlan.tier}_${actualPeriod}`,
                     billingPeriod: actualPeriod
                 });
-                if (response.data?.clientSecret) setClientSecret(response.data.clientSecret);
+                if (response.data?.clientSecret) {
+                    setClientSecret(response.data.clientSecret);
+                    setIsTrial(!!response.data.isTrial);
+                }
             } catch (e) {
                 console.error("Payment intent error", e);
             }
@@ -397,8 +401,9 @@ export default function PricingPlans() {
 
       <StripePaymentModal
         isOpen={showPayment}
-        onClose={() => { setShowPayment(false); setClientSecret(null); }}
+        onClose={() => { setShowPayment(false); setClientSecret(null); setIsTrial(false); }}
         clientSecret={clientSecret}
+        isTrial={isTrial}
         amount={selectedPlan?.price?.total || 0}
         planName={`${PRICING_TIERS[selectedPlan?.tier]?.name || 'Plan'} (${selectedPlan?.period})`}
         stripePublicKey={stripeConfig?.publicKey}
