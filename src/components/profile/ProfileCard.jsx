@@ -182,7 +182,7 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
 
       {/* Photo Section */}
       <div 
-        className="relative aspect-[4/5] overflow-hidden cursor-pointer"
+        className="relative aspect-[4/5] overflow-hidden cursor-pointer group"
         style={{ maxHeight: '60vh' }}
         onClick={() => setShowDetails(!showDetails)}
       >
@@ -204,30 +204,47 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
           </motion.div>
         </AnimatePresence>
 
-        {/* Photo Navigation */}
+        {/* Photo Navigation - Mobile Optimized */}
         {photos.length > 1 && (
           <>
-            <div className="absolute top-4 left-0 right-0 flex justify-center gap-1 px-4">
+            {/* Progress Dots */}
+            <div className="absolute top-3 left-0 right-0 flex justify-center gap-1.5 px-4 z-10">
               {photos.map((_, idx) => (
-                <div 
+                <button 
                   key={idx}
-                  className={`h-1 flex-1 rounded-full transition-all ${
-                    idx === currentPhotoIndex ? 'bg-white' : 'bg-white/40'
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentPhotoIndex(idx);
+                  }}
+                  className={`h-1 rounded-full transition-all ${
+                    idx === currentPhotoIndex ? 'bg-white w-6' : 'bg-white/40 w-4'
                   }`}
                 />
               ))}
             </div>
+            
+            {/* Tap Zones for Mobile */}
+            <div 
+              className="absolute left-0 top-0 w-1/3 h-full z-10"
+              onClick={prevPhoto}
+            />
+            <div 
+              className="absolute right-0 top-0 w-1/3 h-full z-10"
+              onClick={nextPhoto}
+            />
+            
+            {/* Arrow Buttons (visible on hover for desktop) */}
             <button 
               onClick={prevPhoto}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-black/20 rounded-full backdrop-blur-sm hover:bg-black/40 transition"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 sm:flex hidden items-center justify-center bg-black/30 rounded-full backdrop-blur-sm hover:bg-black/50 transition opacity-0 group-hover:opacity-100"
             >
-              <ChevronLeft className="text-white" />
+              <ChevronLeft className="text-white" size={24} />
             </button>
             <button 
               onClick={nextPhoto}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-black/20 rounded-full backdrop-blur-sm hover:bg-black/40 transition"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 sm:flex hidden items-center justify-center bg-black/30 rounded-full backdrop-blur-sm hover:bg-black/50 transition opacity-0 group-hover:opacity-100"
             >
-              <ChevronRight className="text-white" />
+              <ChevronRight className="text-white" size={24} />
             </button>
           </>
         )}

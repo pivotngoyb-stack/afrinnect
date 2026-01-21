@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import VerificationBadge from '@/components/shared/VerificationBadge';
 import CountryFlag from '@/components/shared/CountryFlag';
 import AfricanPattern from '@/components/shared/AfricanPattern';
+import MobilePhotoGallery from '@/components/shared/MobilePhotoGallery';
 import StreakBadge from '@/components/shared/StreakBadge';
 import SocialProofBanner from '@/components/shared/SocialProofBanner';
 import SpotifySection from '@/components/profile/SpotifySection';
@@ -390,18 +391,7 @@ export default function Profile() {
         {profile?.photos?.length > 0 && (
           <div className="mb-6">
             <h3 className="text-sm font-bold text-gray-900 mb-3 px-1">Photos</h3>
-            <div className="grid grid-cols-3 gap-2">
-              {profile.photos.map((p, idx) => (
-                <div key={idx} className="aspect-square rounded-xl overflow-hidden shadow-sm">
-                  <img 
-                    src={p} 
-                    alt={`Photo ${idx + 1}`} 
-                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-500 cursor-pointer"
-                    onClick={() => window.open(p, '_blank')}
-                  />
-                </div>
-              ))}
-            </div>
+            <MobilePhotoGallery photos={profile.photos} />
           </div>
         )}
 
