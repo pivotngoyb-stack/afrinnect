@@ -10,6 +10,16 @@ import { AutoResizeTextarea } from "@/components/ui/autosize-textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import IceBreakerPrompts from '@/components/chat/IceBreakerPrompts';
@@ -56,6 +66,7 @@ export default function Chat() {
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [isGeneratingReply, setIsGeneratingReply] = useState(false);
   const [translatingId, setTranslatingId] = useState(null);
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const queryClient = useQueryClient();
@@ -476,11 +487,10 @@ export default function Chat() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem 
-              onClick={() => blockMutation.mutate()} 
+              onClick={() => setShowBlockConfirm(true)} 
               className="text-red-600"
-              disabled={blockMutation.isPending}
             >
-              {blockMutation.isPending ? <Loader2 size={16} className="animate-spin mr-2" /> : <Ban size={16} className="mr-2" />}
+              <Ban size={16} className="mr-2" />
               Block User
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -777,6 +787,35 @@ export default function Chat() {
             </div>
           </div>
         )}
+
+        {/* Block User Confirmation */}
+        <AlertDialog open={showBlockConfirm} onOpenChange={setShowBlockConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Block {otherProfile?.display_name}?</AlertDialogTitle>
+              <AlertDialogDescription>
+                They won't be able to see your profile or contact you. This action can be undone later from Settings → Blocked Users.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => blockMutation.mutate()}
+                disabled={blockMutation.isPending}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {blockMutation.isPending ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin mr-2" />
+                    Blocking...
+                  </>
+                ) : (
+                  'Block User'
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Video Call Overlay */}
         <AnimatePresence>

@@ -3,13 +3,24 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { ArrowLeft, Ban, UserX } from 'lucide-react';
+import { ArrowLeft, Ban, UserX, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function BlockedUsers() {
   const [myProfile, setMyProfile] = useState(null);
+  const [userToUnblock, setUserToUnblock] = useState(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -88,8 +99,7 @@ export default function BlockedUsers() {
                       </div>
                     </div>
                     <Button
-                      onClick={() => unblockMutation.mutate(profile.id)}
-                      disabled={unblockMutation.isPending}
+                      onClick={() => setUserToUnblock(profile)}
                       variant="outline"
                       size="sm"
                     >
@@ -102,6 +112,37 @@ export default function BlockedUsers() {
           </div>
         )}
       </main>
+
+      {/* Unblock Confirmation Dialog */}
+      <AlertDialog open={!!userToUnblock} onOpenChange={(open) => !open && setUserToUnblock(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unblock {userToUnblock?.display_name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              They will be able to see your profile and contact you again. You can block them again anytime.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                unblockMutation.mutate(userToUnblock.id);
+                setUserToUnblock(null);
+              }}
+              disabled={unblockMutation.isPending}
+            >
+              {unblockMutation.isPending ? (
+                <>
+                  <Loader2 size={16} className="animate-spin mr-2" />
+                  Unblocking...
+                </>
+              ) : (
+                'Unblock'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
