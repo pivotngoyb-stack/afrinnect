@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Grid3X3, Layers, Globe, MapPin, Sparkles, Crown, Heart as HeartIcon, RotateCcw, User, Loader2 } from 'lucide-react';
+import { Grid3X3, Layers, Globe, MapPin, Sparkles, Crown, Heart as HeartIcon, RotateCcw, User, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileCard from '@/components/profile/ProfileCard';
@@ -883,7 +883,7 @@ export default function Home() {
               {recommendations.map((rec, idx) => (
                 <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-purple-100 flex items-start gap-3">
                   <div className="p-2 bg-purple-50 rounded-lg shrink-0">
-                    {rec.type === 'safety_alert' ? <Shield size={20} className="text-red-500" /> :
+                    {rec.type === 'safety_alert' ? <AlertTriangle size={20} className="text-red-500" /> :
                      rec.type === 'match_tip' ? <HeartIcon size={20} className="text-pink-500" /> :
                      <Sparkles size={20} className="text-purple-600" />}
                   </div>
