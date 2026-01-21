@@ -144,30 +144,8 @@ function LayoutContent({ children, currentPageName }) {
     checkLaunchStatus();
   }, [launchSettings, currentPageName, navigate]);
 
-  const { data: notifications = [] } = useQuery({
-    queryKey: ['notifications-count', myProfile?.id],
-    queryFn: async () => {
-      if (!myProfile?.id) return [];
-      try {
-        return await base44.entities.Notification.filter(
-          { user_profile_id: myProfile.id, is_read: false },
-          '-created_date',
-          20
-        );
-      } catch (error) {
-        console.error('Failed to fetch notifications:', error);
-        return [];
-      }
-    },
-    enabled: !!myProfile?.id,
-    refetchInterval: false, // Disable polling
-    refetchOnWindowFocus: true, // Only refresh on focus
-    staleTime: 300000, // Cache for 5 minutes
-    retry: 1,
-    retryDelay: 5000
-  });
-
-  const unreadNotifications = notifications.length;
+  // Notification count is handled by NotificationBell component
+  // Removed duplicate query that was causing unnecessary API calls
 
   const showNav = !PAGES_WITHOUT_NAV.includes(currentPageName);
 
