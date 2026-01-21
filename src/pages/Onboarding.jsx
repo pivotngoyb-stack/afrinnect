@@ -344,17 +344,6 @@ export default function Onboarding() {
       exit={{ opacity: 0, y: -20 }}
       className="text-center relative"
     >
-      <div className="absolute top-0 right-0">
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={() => base44.auth.logout(createPageUrl('Landing'))}
-          className="text-gray-500 hover:text-red-600"
-        >
-          Sign Out
-        </Button>
-      </div>
-      
       <Logo size="large" />
       <h1 className="text-3xl font-bold text-gray-900 mt-8 mb-4">
         {t('onboarding.welcome.title')}
@@ -708,20 +697,41 @@ export default function Onboarding() {
       <AfricanPattern className="text-purple-600" opacity={0.03} />
 
       {/* Progress Bar */}
-      {step > 0 && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg">
-          <Progress value={progress} className="h-1 rounded-none" />
-          <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-            <button onClick={() => setStep(step - 1)} className="p-2">
-              <ArrowLeft size={24} className="text-gray-600" />
-            </button>
-            <span className="text-sm text-gray-500">{t('onboarding.navigation.step')} {step} {t('onboarding.navigation.of')} 6</span>
-            <div className="w-10" />
-          </div>
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg">
+        {step > 0 && <Progress value={progress} className="h-1 rounded-none" />}
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+          <button 
+            onClick={() => {
+              if (step === 0) {
+                // Exit onboarding - go back to landing
+                if (confirm('Are you sure you want to exit? Your progress will be saved.')) {
+                  navigate(createPageUrl('Landing'));
+                }
+              } else {
+                setStep(step - 1);
+              }
+            }} 
+            className="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition"
+          >
+            <ArrowLeft size={24} className="text-gray-600" />
+          </button>
+          <span className="text-sm text-gray-500">
+            {step === 0 ? 'Get Started' : `${t('onboarding.navigation.step')} ${step} ${t('onboarding.navigation.of')} 6`}
+          </span>
+          <button 
+            onClick={() => {
+              if (confirm('Exit onboarding? Your progress will be saved.')) {
+                navigate(createPageUrl('Landing'));
+              }
+            }}
+            className="text-sm text-gray-500 hover:text-red-600 transition px-2 py-1"
+          >
+            Exit
+          </button>
         </div>
-      )}
+      </div>
 
-      <main className={`max-w-lg mx-auto px-6 pb-32 ${step > 0 ? 'pt-24' : 'pt-16'}`}>
+      <main className="max-w-lg mx-auto px-6 pb-32 pt-24">
         <AnimatePresence mode="wait">
           {steps[step]}
         </AnimatePresence>
