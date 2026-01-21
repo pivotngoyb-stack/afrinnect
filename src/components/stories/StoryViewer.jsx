@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, Volume2, VolumeX, Pause, Play } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, Volume2, VolumeX, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
@@ -300,7 +300,7 @@ export default function StoryViewer({ stories, currentIndex, onClose, onNext, on
               <Input
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && commentMutation.mutate()}
+                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && commentText.trim() && commentMutation.mutate()}
                 placeholder="Add a comment..."
                 className="flex-1"
               />
