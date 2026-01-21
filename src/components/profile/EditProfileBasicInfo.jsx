@@ -38,12 +38,17 @@ export default function EditProfileBasicInfo({ formData, onChange }) {
           <Label className="text-sm font-semibold text-gray-700 mb-2">Bio</Label>
           <Textarea
             value={formData.bio || ''}
-            onChange={(e) => onChange({ ...formData, bio: e.target.value })}
+            onChange={(e) => {
+              if (e.target.value.length <= 500) {
+                onChange({ ...formData, bio: e.target.value });
+              }
+            }}
             placeholder="Share something interesting about yourself..."
             rows={4}
+            maxLength={500}
             className="border-2 focus:border-purple-400 rounded-xl resize-none"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className={`text-xs mt-1 ${(formData.bio?.length || 0) >= 450 ? 'text-amber-600' : 'text-gray-500'}`}>
             {formData.bio?.length || 0}/500 characters
           </p>
         </div>
