@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
   ArrowLeft, Bell, Lock, Eye, Shield, Globe, Moon, Sun,
-  HelpCircle, FileText, LogOut, Trash2, ChevronRight, Download, Smartphone
+  HelpCircle, FileText, LogOut, Trash2, ChevronRight, Download, Smartphone, Loader2
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,6 +57,7 @@ export default function Settings() {
   const [inputCode, setInputCode] = useState("");
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [deviceToRemove, setDeviceToRemove] = useState(null);
+  const [isRemovingDevice, setIsRemovingDevice] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -485,9 +486,15 @@ export default function Settings() {
             >
               <div>
                 <span className="text-gray-700 block">Download My Data</span>
-                <span className="text-xs text-gray-500">GDPR compliant data export</span>
+                <span className="text-xs text-gray-500">
+                  {exportDataMutation.isPending ? 'Preparing download...' : 'GDPR compliant data export'}
+                </span>
               </div>
-              <ChevronRight size={20} className="text-gray-400" />
+              {exportDataMutation.isPending ? (
+                <Loader2 size={20} className="text-purple-600 animate-spin" />
+              ) : (
+                <ChevronRight size={20} className="text-gray-400" />
+              )}
             </button>
           </CardContent>
         </Card>
@@ -606,15 +613,22 @@ export default function Settings() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={async () => {
+              disabled={isRemovingDevice}
+              onClick={async (e) => {
+                e.preventDefault(); // Prevent auto-close
                 if (!deviceToRemove) return;
+                
+                setIsRemovingDevice(true);
                 const device = deviceToRemove;
                 const isCurrentDevice = localStorage.getItem('device_id') === device.device_id;
                 
+                // Store previous state for revert
+                const previousProfile = { ...myProfile };
+                
+                // Optimistic update
                 const newIds = myProfile.device_ids.filter(id => id !== device.device_id);
                 const newInfo = myProfile.device_info.filter(d => d.device_id !== device.device_id);
                 
-                // Optimistic update
                 setMyProfile({
                   ...myProfile,
                   device_ids: newIds,
@@ -630,18 +644,24 @@ export default function Settings() {
                   if (isCurrentDevice) {
                     await base44.auth.logout(createPageUrl('Landing'));
                   }
+                  setDeviceToRemove(null);
                 } catch (e) {
                   console.error('Failed to remove device', e);
-                  // Revert
-                  const user = await base44.auth.me();
-                  const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-                  if (profiles.length > 0) setMyProfile(profiles[0]);
+                  setMyProfile(previousProfile); // Revert local state
+                } finally {
+                  setIsRemovingDevice(false);
                 }
-                setDeviceToRemove(null);
               }}
               className="bg-red-600 hover:bg-red-700"
             >
-              Remove
+              {isRemovingDevice ? (
+                <>
+                  <Loader2 size={16} className="animate-spin mr-2" />
+                  Removing...
+                </>
+              ) : (
+                'Remove'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

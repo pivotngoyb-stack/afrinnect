@@ -682,7 +682,14 @@ export default function Chat() {
               disabled={!reportReason || reportMutation.isPending}
               className="w-full bg-red-600 hover:bg-red-700"
             >
-              Submit Report
+              {reportMutation.isPending ? (
+                <>
+                  <Loader2 size={18} className="animate-spin mr-2" />
+                  Submitting...
+                </>
+              ) : (
+                'Submit Report'
+              )}
             </Button>
           </div>
         </DialogContent>
