@@ -63,28 +63,13 @@ const CheckoutForm = ({ amount, planName, onSuccess, onCancel }) => {
 
     setIsLoading(true);
 
-    // Check if it's a Setup Intent (for trials) or Payment Intent
-    const isSetup = elements._commonOptions.clientSecret.startsWith('seti_');
-    
-    let result;
-    
-    if (isSetup) {
-        result = await stripe.confirmSetup({
-            elements,
-            confirmParams: {
-                return_url: window.location.href,
-            },
-            redirect: 'if_required'
-        });
-    } else {
-        result = await stripe.confirmPayment({
-            elements,
-            confirmParams: {
-                return_url: window.location.href,
-            },
-            redirect: 'if_required'
-        });
-    }
+    const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+            return_url: window.location.href,
+        },
+        redirect: 'if_required'
+    });
 
     const { error, paymentIntent, setupIntent } = result;
 
