@@ -54,6 +54,7 @@ Deno.serve(async (req) => {
       // Fallback: Just create in-app notification
       await base44.asServiceRole.entities.Notification.create({
         user_profile_id,
+        user_id: profile[0].user_id,
         type: type || 'admin_message',
         title,
         message: body,
@@ -94,6 +95,7 @@ Deno.serve(async (req) => {
       // Also create in-app notification
       await base44.asServiceRole.entities.Notification.create({
         user_profile_id,
+        user_id: profile[0].user_id,
         type: type || 'admin_message',
         title,
         message: body,
@@ -110,6 +112,7 @@ Deno.serve(async (req) => {
       // No push token, just in-app
       await base44.asServiceRole.entities.Notification.create({
         user_profile_id,
+        user_id: profile[0].user_id,
         type: type || 'admin_message',
         title,
         message: body,

@@ -33,8 +33,11 @@ Deno.serve(async (req) => {
         const receiverId = match.user1_id === myProfile.id ? match.user2_id : match.user1_id;
 
         // Check blocking
-        const receiverProfile = await base44.entities.UserProfile.filter({ id: receiverId });
-        if (receiverProfile.length > 0 && receiverProfile[0].blocked_users?.includes(myProfile.id)) {
+        const receiverProfiles = await base44.entities.UserProfile.filter({ id: receiverId });
+        if (!receiverProfiles.length) return Response.json({ error: 'Receiver not found' }, { status: 404 });
+        const receiverProfile = receiverProfiles[0];
+
+        if (receiverProfile.blocked_users?.includes(myProfile.id)) {
              return Response.json({ error: 'You cannot message this user' }, { status: 403 });
         }
 
@@ -197,6 +200,8 @@ Deno.serve(async (req) => {
             match_id: matchId,
             sender_id: myProfile.id,
             receiver_id: receiverId,
+            sender_user_id: myProfile.user_id,
+            receiver_user_id: receiverProfile.user_id,
             content: content,
             message_type: type,
             media_url: mediaUrl,
@@ -235,6 +240,7 @@ Deno.serve(async (req) => {
         if (!isDeleted) {
             await base44.asServiceRole.entities.Notification.create({
                 user_profile_id: receiverId,
+                user_id: receiverProfile.user_id,
                 type: 'message',
                 title: `Message from ${myProfile.display_name}`,
                 message: content.substring(0, 50),

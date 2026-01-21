@@ -419,10 +419,17 @@ export default function Home() {
         daily_likes_reset_date: today
       });
       
-      // Create like record
+      // Fetch liked profile to get user_id
+      const likedProfiles = await base44.entities.UserProfile.filter({ id: likedId });
+      if (!likedProfiles.length) throw new Error('Profile not found');
+      const likedProfile = likedProfiles[0];
+
+      // Create like record with security fields
       await base44.entities.Like.create({
         liker_id: myProfile.id,
         liked_id: likedId,
+        liker_user_id: myProfile.user_id,
+        liked_user_id: likedProfile.user_id,
         is_super_like: isSuperLike,
         is_seen: false
       });
@@ -442,6 +449,8 @@ export default function Home() {
             match_id: existingMatch[0].id,
             sender_id: myProfile.id,
             receiver_id: likedId,
+            sender_user_id: myProfile.user_id,
+            receiver_user_id: likedProfile.user_id,
             content: likeNote,
             message_type: 'text',
             like_note: likeNote
@@ -484,10 +493,12 @@ export default function Home() {
             await base44.entities.Like.update(myNewLike[0].id, { is_seen: true });
           }
 
-          // Create match (only once)
+          // Create match (only once) with security fields
           await base44.entities.Match.create({
             user1_id: myProfile.id,
             user2_id: likedId,
+            user1_user_id: myProfile.user_id,
+            user2_user_id: likedProfile.user_id,
             user1_liked: true,
             user2_liked: true,
             is_match: true,
@@ -500,6 +511,7 @@ export default function Home() {
           if (likedProfiles.length > 0) {
           await base44.entities.Notification.create({
             user_profile_id: likedId,
+            user_id: likedProfile.user_id,
             type: 'match',
             title: "It's a Match! 💕",
             message: `You and ${myProfile.display_name} liked each other!`,
@@ -522,6 +534,7 @@ export default function Home() {
 
           await base44.entities.Notification.create({
             user_profile_id: myProfile.id,
+            user_id: myProfile.user_id,
             type: 'match',
             title: "It's a Match! 💕",
             message: `You and ${likedProfiles[0].display_name} liked each other!`,
@@ -552,6 +565,7 @@ export default function Home() {
         // Send like notification
         await base44.entities.Notification.create({
           user_profile_id: likedId,
+          user_id: likedProfile.user_id,
           type: isSuperLike ? 'super_like' : 'like',
           title: isSuperLike ? "You got a Super Like! ⭐" : "Someone likes you!",
           message: `${myProfile.display_name} ${isSuperLike ? 'super liked' : 'liked'} your profile`,
