@@ -133,15 +133,8 @@ export default function Profile() {
         percentile: profile.profile_performance_percentile || 50
       });
 
-      // Send notification
-      if (views.length > 5) {
-        await base44.entities.Notification.create({
-          user_profile_id: profile.id,
-          type: 'profile_performance',
-          title: `${views.length} people viewed your profile today! 🔥`,
-          message: 'Keep your profile fresh to get even more matches!'
-        });
-      }
+      // Note: Notifications for profile performance should be handled by a backend scheduled task
+      // to avoid creating duplicates on every page load
     };
 
     fetchSocialProof();
