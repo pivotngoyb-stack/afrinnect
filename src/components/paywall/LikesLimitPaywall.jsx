@@ -32,7 +32,7 @@ export default function LikesLimitPaywall({ onClose }) {
               Out of Likes
             </h2>
             <p className="text-gray-500 mb-6">
-              You've used your 10 daily likes. Upgrade to Premium for unlimited likes!
+              You've used your 15 daily likes. Upgrade to Premium for unlimited likes!
             </p>
 
             <div className="bg-gradient-to-br from-purple-50 to-amber-50 rounded-xl p-4 mb-6">
