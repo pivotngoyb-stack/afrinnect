@@ -77,28 +77,29 @@ export default function Terms() {
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">7. Subscriptions and Payments</h3>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
-              <li>Premium subscriptions automatically renew unless canceled</li>
-              <li>You can cancel anytime from Settings - cancellation takes effect at the end of your billing period</li>
+              <li>Premium subscriptions automatically renew unless canceled at least 24 hours before the renewal date</li>
+              <li>You can cancel anytime from Settings → Subscription & Pricing - cancellation takes effect at the end of your billing period</li>
+              <li>For iOS: Manage subscriptions in your Apple ID settings</li>
+              <li>For Android: Manage subscriptions in Google Play Store settings</li>
               <li>Prices may change with 30 days notice</li>
-              <li>Payment processing is handled securely by Braintree/PayPal</li>
+              <li>Payment processing is handled securely by Stripe and app store payment systems</li>
             </ul>
           </section>
 
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">8. Refund Policy</h3>
             <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded">
-              <p className="font-semibold text-amber-900 mb-2">No Refunds - All Sales Final</p>
+              <p className="font-semibold text-amber-900 mb-2">Refund Policy</p>
               <p className="text-gray-700 text-sm">
-                All subscription purchases are final and non-refundable. We do not offer refunds or credits for:
+                Subscription purchases are generally non-refundable. We do not typically offer refunds or credits for:
               </p>
               <ul className="list-disc pl-6 mt-2 space-y-1 text-gray-700 text-sm">
                 <li>Partial subscription periods</li>
                 <li>Unused premium features</li>
                 <li>Account terminations or suspensions due to violations</li>
-                <li>Duplicate purchases or accidental subscriptions</li>
               </ul>
               <p className="text-gray-700 text-sm mt-2">
-                <strong>Exceptions:</strong> Refunds may be granted at our sole discretion for technical errors that prevented service delivery.
+                <strong>Exceptions:</strong> Refunds may be granted for technical errors that prevented service delivery, duplicate charges, or where required by applicable law. For App Store and Google Play purchases, refund requests should be directed to Apple or Google respectively. Contact support@afrinnect.com for other refund inquiries.
               </p>
             </div>
           </section>
