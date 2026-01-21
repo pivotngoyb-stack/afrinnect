@@ -22,7 +22,7 @@ export default function Terms() {
         <div className="bg-white rounded-xl p-8 shadow-sm space-y-6">
           <div>
             <h2 className="text-2xl font-bold mb-2">Afrinnect Terms of Service</h2>
-            <p className="text-sm text-gray-500">Last Updated: December 16, 2025</p>
+            <p className="text-sm text-gray-500">Last Updated: January 21, 2026</p>
           </div>
 
           <section className="space-y-4">
@@ -143,7 +143,7 @@ export default function Terms() {
 
           {/* Copyright Notice */}
           <div className="pt-6 border-t text-center">
-            <p className="text-sm text-gray-600">© 2025 Afrinnect. All rights reserved.</p>
+            <p className="text-sm text-gray-600">© {new Date().getFullYear()} Afrinnect. All rights reserved.</p>
             <p className="text-xs text-gray-500 mt-1">
               Unauthorized reproduction or distribution of this copyrighted work is illegal.
             </p>

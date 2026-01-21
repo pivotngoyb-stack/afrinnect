@@ -22,7 +22,7 @@ export default function Privacy() {
         <div className="bg-white rounded-xl p-8 shadow-sm space-y-6">
           <div>
             <h2 className="text-2xl font-bold mb-2">Afrinnect Privacy Policy</h2>
-            <p className="text-sm text-gray-500">Last Updated: December 16, 2025</p>
+            <p className="text-sm text-gray-500">Last Updated: January 21, 2026</p>
           </div>
 
           <section className="space-y-4">
@@ -121,14 +121,30 @@ export default function Privacy() {
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold">10. Changes to Privacy Policy</h3>
+            <h3 className="text-xl font-semibold">10. California Privacy Rights (CCPA)</h3>
+            <p className="text-gray-700">
+              If you are a California resident, you have additional rights under the California Consumer Privacy Act (CCPA):
+            </p>
+            <ul className="list-disc pl-6 space-y-2 text-gray-700">
+              <li><strong>Right to Know:</strong> Request what personal information we collect, use, and disclose</li>
+              <li><strong>Right to Delete:</strong> Request deletion of your personal information</li>
+              <li><strong>Right to Opt-Out:</strong> We do not sell personal information</li>
+              <li><strong>Right to Non-Discrimination:</strong> We will not discriminate against you for exercising your rights</li>
+            </ul>
+            <p className="text-sm text-gray-600 mt-3">
+              To exercise your CCPA rights, email privacy@afrinnect.com with "CCPA Request" in the subject line.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h3 className="text-xl font-semibold">11. Changes to Privacy Policy</h3>
             <p className="text-gray-700">
               We may update this policy. You'll be notified of significant changes via email or app notification.
             </p>
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold">11. Contact Us</h3>
+            <h3 className="text-xl font-semibold">12. Contact Us</h3>
             <p className="text-gray-700">
               Questions about privacy? Email privacy@afrinnect.com
             </p>
@@ -136,7 +152,7 @@ export default function Privacy() {
 
           {/* Copyright Notice */}
           <div className="pt-6 border-t text-center">
-            <p className="text-sm text-gray-600">© 2025 Afrinnect. All rights reserved.</p>
+            <p className="text-sm text-gray-600">© {new Date().getFullYear()} Afrinnect. All rights reserved.</p>
             <p className="text-xs text-gray-500 mt-1">
               This document and all content are protected by copyright law.
             </p>

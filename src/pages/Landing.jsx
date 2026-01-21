@@ -616,7 +616,7 @@ export default function Landing() {
           </div>
           {/* Copyright Notice */}
           <div className="mt-8 pt-8 border-t border-gray-800">
-            <p className="text-sm text-gray-400">© 2025 Afrinnect. All rights reserved.</p>
+            <p className="text-sm text-gray-400">© {new Date().getFullYear()} Afrinnect. All rights reserved.</p>
             <p className="text-xs text-gray-500 mt-2">
               Afrinnect and the Afrinnect logo are trademarks of Afrinnect. Unauthorized use is prohibited.
             </p>

@@ -147,7 +147,7 @@ export default function Waitlist() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-amber-600">Is Closing Soon!</span>
             </h1>
             <p className="text-xl font-bold text-gray-700 mb-4">
-              Only 47 Spots Left. <span className="text-red-600 bg-red-50 px-2 py-1 rounded">Don't Let The Love Of Your Life Slip Away.</span>
+              Join our growing community. <span className="text-purple-600 bg-purple-50 px-2 py-1 rounded">Find meaningful connections.</span>
             </p>
           </div>
 
@@ -224,7 +224,10 @@ export default function Waitlist() {
                 </Button>
                 
                 <p className="text-xs text-center text-gray-500 mt-4">
-                  We verify all signups to ensure community safety.
+                  By joining, you agree to our{' '}
+                  <Link to={createPageUrl('Terms')} className="text-purple-600 underline">Terms</Link>
+                  {' '}and{' '}
+                  <Link to={createPageUrl('Privacy')} className="text-purple-600 underline">Privacy Policy</Link>.
                 </p>
               </form>
             </CardContent>
