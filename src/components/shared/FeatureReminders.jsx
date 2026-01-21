@@ -78,9 +78,10 @@ export default function FeatureReminders() {
         
         const randomReminder = candidates[Math.floor(Math.random() * candidates.length)];
         
+        const Icon = randomReminder.icon;
         toast(randomReminder.title, {
           description: randomReminder.message,
-          icon: <randomReminder.icon className="w-5 h-5 text-purple-600" />,
+          icon: <Icon className="w-5 h-5 text-purple-600" />,
           action: {
             label: randomReminder.actionLabel,
             onClick: () => navigate(createPageUrl(randomReminder.path))
