@@ -390,14 +390,12 @@ export default function Chat() {
         }
       });
       
-      // Just pick the best one or show a UI picker? For smoothness, let's insert the best one into the input
-      // or cycle them. Let's just insert the first one for now or open a small picker.
-      // Simpler: Insert into input so user can edit.
       if (res.options && res.options.length > 0) {
         setMessageText(res.options[0]);
       }
     } catch (e) {
       console.error("Smart reply failed", e);
+      alert("Could not generate a reply at this time. Please try again.");
     } finally {
       setIsGeneratingReply(false);
     }

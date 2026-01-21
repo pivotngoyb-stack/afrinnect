@@ -270,6 +270,13 @@ export default function EditProfile() {
 
   const handleVoiceUpload = async (audioBlob) => {
     if (!audioBlob) return;
+    
+    // Check file size (max 5MB)
+    if (audioBlob.size > 5 * 1024 * 1024) {
+      alert("Audio file is too large. Please keep it under 5MB.");
+      return;
+    }
+
     setUploading(true);
     try {
       const file = new File([audioBlob], "voice_intro.webm", { type: "audio/webm" });

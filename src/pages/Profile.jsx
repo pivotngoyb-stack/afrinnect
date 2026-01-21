@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import {
   Settings, Edit2, Camera, Shield, Star, Crown, MapPin,
   Briefcase, GraduationCap, Book, Languages, Heart, ChevronRight,
-  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard, RotateCcw, Users, Zap, Video, MessageCircle
+  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard, RotateCcw, Users, Zap, Video, MessageCircle, Mic
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import BoostProfileButton from '@/components/profile/BoostProfileButton';
@@ -367,6 +367,21 @@ export default function Profile() {
           <Card className="mb-4">
             <CardContent className="p-4">
               <p className="text-gray-700 italic text-center">"{profile.bio}"</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Voice Intro */}
+        {profile?.voice_intro_url && (
+          <Card className="mb-4">
+            <CardContent className="p-4 flex flex-col items-center">
+              <div className="flex items-center gap-2 mb-2 text-purple-600">
+                <div className="p-2 bg-purple-100 rounded-full">
+                  <Mic size={16} />
+                </div>
+                <span className="text-sm font-medium">Voice Intro</span>
+              </div>
+              <audio controls src={profile.voice_intro_url} className="w-full" />
             </CardContent>
           </Card>
         )}

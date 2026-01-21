@@ -17,9 +17,9 @@ export default function CountdownTimer({ expiresAt, onExpire }) {
         return false;
       }
 
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      const hours = Math.max(0, Math.floor(diff / (1000 * 60 * 60)));
+      const minutes = Math.max(0, Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+      const seconds = Math.max(0, Math.floor((diff % (1000 * 60)) / 1000));
 
       setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
       return true;

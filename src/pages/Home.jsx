@@ -387,15 +387,17 @@ export default function Home() {
     if (isAdmin) return true; // Admins get unlimited likes
     // Premium/Elite/VIP get unlimited likes
     if (hasAccess(myProfile?.subscription_tier, 'unlimited_likes')) return true;
-    
-    const today = new Date().toISOString().split('T')[0];
+
+    // Use local date string for comparisons
+    const now = new Date();
+    const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     const resetDate = myProfile?.daily_likes_reset_date;
     const likesUsed = myProfile?.daily_likes_count || 0;
-    
+
     if (resetDate !== today) {
       return true; // New day, reset
     }
-    
+
     return likesUsed < 15; // Free users get 15 likes per day
   };
 
@@ -408,12 +410,13 @@ export default function Home() {
       if (!canLike()) {
         throw new Error('daily_limit_reached');
       }
-      
+
       // Update like count
-      const today = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
       const resetDate = myProfile.daily_likes_reset_date;
       const shouldReset = resetDate !== today;
-      
+
       await base44.entities.UserProfile.update(myProfile.id, {
         daily_likes_count: shouldReset ? 1 : (myProfile.daily_likes_count || 0) + 1,
         daily_likes_reset_date: today
@@ -631,13 +634,16 @@ export default function Home() {
 
   const handleSuperLike = async (profile) => {
     const tier = myProfile?.subscription_tier || 'free';
-    
-    // Check super like limits by tier
-    const today = new Date().toISOString().split('T')[0];
+
+    // Check super like limits by tier - Use local start of day
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const startOfDayISO = now.toISOString();
+
     const superLikesToday = await base44.entities.Like.filter({
       liker_id: myProfile.id,
       is_super_like: true,
-      created_date: { $gte: `${today}T00:00:00.000Z` }
+      created_date: { $gte: startOfDayISO }
     });
     
     // Free: 1 per week, Premium: 5 per day, Elite/VIP: unlimited
