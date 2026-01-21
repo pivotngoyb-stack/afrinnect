@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
-import { Send, Rocket } from 'lucide-react';
+import { Send, Rocket, Loader2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -70,6 +70,7 @@ export default function AdminDashboard() {
   const [messageDialog, setMessageDialog] = useState({ open: false, type: 'single', profile: null });
   const [messageText, setMessageText] = useState('');
   const [reportGenerating, setReportGenerating] = useState(false);
+  const [processingAction, setProcessingAction] = useState({ id: null, type: null });
   const [waitlistDialog, setWaitlistDialog] = useState(false);
   const [waitlistEmail, setWaitlistEmail] = useState({ 
     subject: "You're invited to Afrinnect! 🌍", 
@@ -346,18 +347,23 @@ export default function AdminDashboard() {
   // Grant/revoke admin access mutation
   const toggleAdminMutation = useMutation({
     mutationFn: async ({ userId, grantAdmin }) => {
+      setProcessingAction({ id: userId, type: 'admin' });
       await base44.entities.User.update(userId, {
         role: grantAdmin ? 'admin' : 'user'
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['admin-users']);
+    },
+    onSettled: () => {
+      setProcessingAction({ id: null, type: null });
     }
   });
 
   // Change user tier mutation
   const changeTierMutation = useMutation({
     mutationFn: async ({ profileId, tier }) => {
+      setProcessingAction({ id: profileId, type: 'tier' });
       // Update profile
       await base44.entities.UserProfile.update(profileId, {
         subscription_tier: tier,
@@ -411,6 +417,9 @@ export default function AdminDashboard() {
       queryClient.invalidateQueries(['admin-profiles']);
       queryClient.invalidateQueries(['admin-subscriptions']);
       queryClient.invalidateQueries(['admin-audit-logs']);
+    },
+    onSettled: () => {
+      setProcessingAction({ id: null, type: null });
     }
   });
 
@@ -515,6 +524,7 @@ export default function AdminDashboard() {
             onMessageUser={(profile) => setMessageDialog({ open: true, type: 'single', profile })}
             onToggleAdmin={(userId, grantAdmin) => toggleAdminMutation.mutate({ userId, grantAdmin })}
             onChangeTier={(profileId, tier) => changeTierMutation.mutate({ profileId, tier })}
+            processingAction={processingAction}
           />
         );
       case 'moderation':
@@ -701,7 +711,9 @@ export default function AdminDashboard() {
             <AlertDialogCancel className="bg-white/10 text-white border-white/20">Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-600 hover:bg-red-700"
-              onClick={() => {
+              disabled={deleteUserMutation.isPending || banUserMutation.isPending}
+              onClick={(e) => {
+                e.preventDefault(); // Prevent auto-close
                 if (actionDialog.type === 'delete') {
                   deleteUserMutation.mutate(actionDialog.user?.user_id);
                 } else {
@@ -709,7 +721,14 @@ export default function AdminDashboard() {
                 }
               }}
             >
-              Confirm
+              {(deleteUserMutation.isPending || banUserMutation.isPending) ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                'Confirm'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

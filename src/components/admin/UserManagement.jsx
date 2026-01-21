@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Filter, Eye, Ban, Trash2, Send, Shield, Crown, CheckCircle, Download, Award, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Filter, Eye, Ban, Trash2, Send, Shield, Crown, CheckCircle, Download, Award, Star, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 export default function UserManagement({ 
   profiles, 
@@ -23,7 +23,8 @@ export default function UserManagement({
   setPage,
   filters,
   setFilters,
-  hasMore
+  hasMore,
+  processingAction = { id: null, type: null }
 }) {
 
   // Export only current view as we don't have all on client
@@ -235,27 +236,40 @@ export default function UserManagement({
                     </Badge>
                     
                     {/* Tier Selector */}
-                    <Select
-                      value={profile.subscription_tier || 'free'}
-                      onValueChange={(tier) => onChangeTier(profile.id, tier)}
-                    >
-                      <SelectTrigger className="w-28 h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="free">Free</SelectItem>
-                        <SelectItem value="premium">Premium</SelectItem>
-                        <SelectItem value="elite">Elite</SelectItem>
-                        <SelectItem value="vip">VIP</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="relative">
+                      {processingAction?.id === profile.id && processingAction?.type === 'tier' && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
+                          <Loader2 size={16} className="animate-spin text-purple-600" />
+                        </div>
+                      )}
+                      <Select
+                        value={profile.subscription_tier || 'free'}
+                        onValueChange={(tier) => onChangeTier(profile.id, tier)}
+                        disabled={processingAction?.id === profile.id && processingAction?.type === 'tier'}
+                      >
+                        <SelectTrigger className="w-28 h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="free">Free</SelectItem>
+                          <SelectItem value="premium">Premium</SelectItem>
+                          <SelectItem value="elite">Elite</SelectItem>
+                          <SelectItem value="vip">VIP</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     {user?.email !== 'pivotngoyb@gmail.com' && (
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => onToggleAdmin(user.id, !isUserAdmin)}
+                        disabled={processingAction?.id === user.id && processingAction?.type === 'admin'}
                       >
-                        <Shield size={16} />
+                        {processingAction?.id === user.id && processingAction?.type === 'admin' ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <Shield size={16} className={isUserAdmin ? "text-purple-600 fill-purple-100" : ""} />
+                        )}
                       </Button>
                     )}
                     <TooltipProvider>
