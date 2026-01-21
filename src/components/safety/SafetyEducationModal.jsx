@@ -100,8 +100,20 @@ export default function SafetyEducationModal({ open, onClose, onComplete }) {
             className="space-y-6 py-6"
           >
             {/* Icon */}
-            <div className={`w-20 h-20 mx-auto rounded-full bg-${currentStepData.color}-100 flex items-center justify-center`}>
-              <Icon size={40} className={`text-${currentStepData.color}-600`} />
+            <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${
+              currentStepData.color === 'blue' ? 'bg-blue-100' :
+              currentStepData.color === 'green' ? 'bg-green-100' :
+              currentStepData.color === 'amber' ? 'bg-amber-100' :
+              currentStepData.color === 'red' ? 'bg-red-100' :
+              'bg-purple-100'
+            }`}>
+              <Icon size={40} className={
+                currentStepData.color === 'blue' ? 'text-blue-600' :
+                currentStepData.color === 'green' ? 'text-green-600' :
+                currentStepData.color === 'amber' ? 'text-amber-600' :
+                currentStepData.color === 'red' ? 'text-red-600' :
+                'text-purple-600'
+              } />
             </div>
 
             {/* Content */}
