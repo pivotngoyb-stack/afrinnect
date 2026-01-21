@@ -198,6 +198,9 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Create Profile Error:', error);
+    if (error.message?.includes('unique') || error.message?.includes('duplicate')) {
+      return Response.json({ error: 'Profile already exists' }, { status: 409 });
+    }
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
