@@ -174,7 +174,8 @@ export default function LegalAcceptance() {
             </Button>
 
             <p className="text-center text-white/60 text-xs">
-              By continuing, you confirm you're 18+ and agree to these policies
+              By continuing, you confirm you are at least 18 years old and agree to these policies.
+              You can withdraw consent or delete your account at any time in Settings.
             </p>
           </CardContent>
         </Card>
