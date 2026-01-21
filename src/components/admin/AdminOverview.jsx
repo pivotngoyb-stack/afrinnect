@@ -70,13 +70,37 @@ export default function AdminOverview({ stats }) {
             <TooltipProvider key={idx}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Card className={`bg-gradient-to-br from-${kpi.color}-500/10 to-${kpi.color}-600/5 border-${kpi.color}-500/20 cursor-help transition-transform hover:scale-105`}>
+                  <Card className={`cursor-help transition-transform hover:scale-105 ${
+                    kpi.color === 'blue' ? 'bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20' :
+                    kpi.color === 'amber' ? 'bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20' :
+                    kpi.color === 'green' ? 'bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20' :
+                    kpi.color === 'pink' ? 'bg-gradient-to-br from-pink-500/10 to-pink-600/5 border-pink-500/20' :
+                    'bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20'
+                  }`}>
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className={`p-3 rounded-xl bg-${kpi.color}-500/20`}>
-                          <Icon size={24} className={`text-${kpi.color}-500`} />
+                        <div className={`p-3 rounded-xl ${
+                          kpi.color === 'blue' ? 'bg-blue-500/20' :
+                          kpi.color === 'amber' ? 'bg-amber-500/20' :
+                          kpi.color === 'green' ? 'bg-green-500/20' :
+                          kpi.color === 'pink' ? 'bg-pink-500/20' :
+                          'bg-purple-500/20'
+                        }`}>
+                          <Icon size={24} className={
+                            kpi.color === 'blue' ? 'text-blue-500' :
+                            kpi.color === 'amber' ? 'text-amber-500' :
+                            kpi.color === 'green' ? 'text-green-500' :
+                            kpi.color === 'pink' ? 'text-pink-500' :
+                            'text-purple-500'
+                          } />
                         </div>
-                        <Badge className={`bg-${kpi.color}-500/20 text-${kpi.color}-700`}>
+                        <Badge className={
+                          kpi.color === 'blue' ? 'bg-blue-500/20 text-blue-700' :
+                          kpi.color === 'amber' ? 'bg-amber-500/20 text-amber-700' :
+                          kpi.color === 'green' ? 'bg-green-500/20 text-green-700' :
+                          kpi.color === 'pink' ? 'bg-pink-500/20 text-pink-700' :
+                          'bg-purple-500/20 text-purple-700'
+                        }>
                           {kpi.change}
                         </Badge>
                       </div>
