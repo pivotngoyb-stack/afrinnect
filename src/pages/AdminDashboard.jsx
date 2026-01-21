@@ -63,6 +63,9 @@ export default function AdminDashboard() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentView, setCurrentView] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState({ status: 'all', tier: 'all', country: 'all' });
+  const PAGE_SIZE = 20;
   const [actionDialog, setActionDialog] = useState({ open: false, type: null, user: null });
   const [messageDialog, setMessageDialog] = useState({ open: false, type: 'single', profile: null });
   const [messageText, setMessageText] = useState('');
@@ -105,19 +108,55 @@ export default function AdminDashboard() {
   // Conditional Data Fetching based on Active View
   
   // Users View
-  const { data: users = [] } = useQuery({
-    queryKey: ['admin-users'],
-    queryFn: () => base44.entities.User.list('-created_date', 500),
-    enabled: isAdmin && currentView === 'users'
-  });
-
   const { data: profiles = [] } = useQuery({
-    queryKey: ['admin-profiles'],
+    queryKey: ['admin-profiles', currentView, page, searchTerm, filters],
     queryFn: async () => {
-      // Use filtered list for management view if possible, or just fetch list
+      if (currentView === 'users') {
+        const query = {};
+        
+        // Status Filter
+        if (filters.status === 'active') query.is_active = true;
+        if (filters.status === 'banned') query.is_active = false; // Note: is_active=false usually means banned/suspended/inactive
+
+        // Tier Filter
+        if (filters.tier === 'premium') query.is_premium = true;
+        if (filters.tier === 'free') query.is_premium = false;
+
+        // Country Filter
+        if (filters.country !== 'all') query.current_country = filters.country;
+
+        // Search
+        if (searchTerm) {
+          query.$or = [
+             { display_name: { $regex: searchTerm, $options: 'i' } },
+             { user_id: searchTerm }
+          ];
+        }
+
+        const skip = (page - 1) * PAGE_SIZE;
+        return base44.entities.UserProfile.filter(query, '-created_date', PAGE_SIZE, skip);
+      }
+      
+      // Fallback for other views that need "all" (capped at 500 for now)
       return base44.entities.UserProfile.list('-created_date', 500);
     },
-    enabled: isAdmin && (currentView === 'users' || currentView === 'revenue' || currentView === 'verification' || currentView === 'messaging')
+    enabled: isAdmin && (currentView === 'users' || currentView === 'revenue' || currentView === 'verification' || currentView === 'messaging'),
+    keepPreviousData: true
+  });
+
+  const { data: users = [] } = useQuery({
+    queryKey: ['admin-users', profiles],
+    queryFn: async () => {
+      if (currentView === 'users') {
+        const userIds = profiles.map(p => p.user_id).filter(Boolean);
+        if (userIds.length === 0) return [];
+        // Fetch only the users for the current page of profiles
+        // We use $in operator if possible, or we might iterate if $in not supported, but $in is standard.
+        return base44.entities.User.filter({ id: { $in: userIds } });
+      }
+      return base44.entities.User.list('-created_date', 500);
+    },
+    enabled: isAdmin && (currentView === 'users' || currentView === 'verification') // verification might need user email
   });
 
   // Moderation View
@@ -463,7 +502,13 @@ export default function AdminDashboard() {
             profiles={profiles}
             users={users}
             searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
+            onSearchChange={(term) => { setSearchTerm(term); setPage(1); }}
+            stats={stats}
+            page={page}
+            setPage={setPage}
+            filters={filters}
+            setFilters={(newFilters) => { setFilters(newFilters); setPage(1); }}
+            hasMore={profiles.length === PAGE_SIZE}
             onViewUser={(id) => window.open(createPageUrl(`Profile?id=${id}`), '_blank')}
             onBanUser={(user) => setActionDialog({ open: true, type: 'ban', user })}
             onDeleteUser={(user) => setActionDialog({ open: true, type: 'delete', user })}

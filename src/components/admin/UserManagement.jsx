@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Filter, Eye, Ban, Trash2, Send, Shield, Crown, CheckCircle, Download, Award, Star } from 'lucide-react';
+import { Search, Filter, Eye, Ban, Trash2, Send, Shield, Crown, CheckCircle, Download, Award, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function UserManagement({ 
   profiles, 
@@ -17,40 +17,21 @@ export default function UserManagement({
   onDeleteUser,
   onMessageUser,
   onToggleAdmin,
-  onChangeTier
+  onChangeTier,
+  stats,
+  page,
+  setPage,
+  filters,
+  setFilters,
+  hasMore
 }) {
-  const [filterCountry, setFilterCountry] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterSubscription, setFilterSubscription] = useState('all');
 
-  // Group profiles by user_id to prevent duplicates
-  const uniqueProfiles = profiles.reduce((acc, profile) => {
-    // Keep the most recently updated profile for each user
-    if (!acc[profile.user_id] || new Date(profile.updated_date) > new Date(acc[profile.user_id].updated_date)) {
-      acc[profile.user_id] = profile;
-    }
-    return acc;
-  }, {});
-
-  const filteredProfiles = Object.values(uniqueProfiles).filter(p => {
-    const matchesSearch = p.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         p.user_id?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCountry = filterCountry === 'all' || p.current_country === filterCountry;
-    const matchesStatus = filterStatus === 'all' || 
-                         (filterStatus === 'active' && p.is_active) ||
-                         (filterStatus === 'banned' && !p.is_active);
-    const matchesSubscription = filterSubscription === 'all' ||
-                               (filterSubscription === 'premium' && p.is_premium) ||
-                               (filterSubscription === 'free' && !p.is_premium);
-    
-    return matchesSearch && matchesCountry && matchesStatus && matchesSubscription;
-  });
-
+  // Export only current view as we don't have all on client
   const handleExportCSV = () => {
     const headers = ['User ID', 'Display Name', 'Email', 'Country', 'Gender', 'Status', 'Tier', 'Login Streak', 'Last Active', 'Created Date'];
     const csvContent = [
       headers.join(','),
-      ...filteredProfiles.map(p => {
+      ...profiles.map(p => {
         const u = users.find(user => user.id === p.user_id);
         return [
           p.user_id,
@@ -80,39 +61,37 @@ export default function UserManagement({
     }
   };
 
-  const countries = [...new Set(profiles.map(p => p.current_country).filter(Boolean))];
-
   return (
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
-            <p className="text-2xl font-bold">{profiles.length}</p>
+            <p className="text-2xl font-bold">{stats?.totalUsers || 0}</p>
             <p className="text-sm text-gray-600">Total Users</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-2xl font-bold text-green-600">{profiles.filter(p => p.is_active).length}</p>
+            <p className="text-2xl font-bold text-green-600">{stats?.activeUsers || 0}</p>
             <p className="text-sm text-gray-600">Active</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-2xl font-bold text-amber-600">{profiles.filter(p => p.is_premium).length}</p>
+            <p className="text-2xl font-bold text-amber-600">{stats?.premiumUsers || 0}</p>
             <p className="text-sm text-gray-600">Premium</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-2xl font-bold text-blue-600">{profiles.filter(p => p.verification_status?.photo_verified).length}</p>
+            <p className="text-2xl font-bold text-blue-600">{stats?.verifiedUsers || 0}</p>
             <p className="text-sm text-gray-600">Verified</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-2xl font-bold text-red-600">{profiles.filter(p => !p.is_active).length}</p>
+            <p className="text-2xl font-bold text-red-600">{stats?.bannedUsers || 0}</p>
             <p className="text-sm text-gray-600">Banned</p>
           </CardContent>
         </Card>
@@ -128,7 +107,7 @@ export default function UserManagement({
             </span>
             <Button variant="outline" size="sm" onClick={handleExportCSV}>
               <Download size={16} className="mr-2" />
-              Export CSV
+              Export Page CSV
             </Button>
           </CardTitle>
         </CardHeader>
@@ -143,18 +122,15 @@ export default function UserManagement({
                 className="pl-10"
               />
             </div>
-            <Select value={filterCountry} onValueChange={setFilterCountry}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Countries" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Countries</SelectItem>
-                {countries.map(country => (
-                  <SelectItem key={country} value={country}>{country}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
+            
+            {/* Simplified Country Filter - Just an Input for now as we paginate */}
+            <Input
+                placeholder="Filter by Country"
+                value={filters.country === 'all' ? '' : filters.country}
+                onChange={(e) => setFilters({ ...filters, country: e.target.value || 'all' })}
+            />
+
+            <Select value={filters.status} onValueChange={(val) => setFilters({ ...filters, status: val })}>
               <SelectTrigger>
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
@@ -164,7 +140,7 @@ export default function UserManagement({
                 <SelectItem value="banned">Banned</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={filterSubscription} onValueChange={setFilterSubscription}>
+            <Select value={filters.tier} onValueChange={(val) => setFilters({ ...filters, tier: val })}>
               <SelectTrigger>
                 <SelectValue placeholder="All Tiers" />
               </SelectTrigger>
@@ -180,12 +156,34 @@ export default function UserManagement({
 
       {/* Users Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Users ({filteredProfiles.length})</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Users List</CardTitle>
+          <div className="flex items-center gap-2">
+            <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+            >
+                <ChevronLeft size={16} /> Previous
+            </Button>
+            <span className="text-sm font-medium">Page {page}</span>
+            <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setPage(p => p + 1)}
+                disabled={!hasMore}
+            >
+                Next <ChevronRight size={16} />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-2 max-h-[600px] overflow-y-auto">
-            {filteredProfiles.map(profile => {
+            {profiles.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">No users found.</div>
+            ) : (
+                profiles.map(profile => {
               const user = users.find(u => u.id === profile.user_id);
               const isUserAdmin = user?.role === 'admin' || user?.email === 'pivotngoyb@gmail.com';
               
