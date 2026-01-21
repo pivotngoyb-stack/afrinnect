@@ -342,8 +342,19 @@ export default function Onboarding() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="text-center"
+      className="text-center relative"
     >
+      <div className="absolute top-0 right-0">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => base44.auth.logout(createPageUrl('Landing'))}
+          className="text-gray-500 hover:text-red-600"
+        >
+          Sign Out
+        </Button>
+      </div>
+      
       <Logo size="large" />
       <h1 className="text-3xl font-bold text-gray-900 mt-8 mb-4">
         {t('onboarding.welcome.title')}

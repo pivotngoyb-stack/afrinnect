@@ -47,22 +47,22 @@ export default function EditProfilePhotos({
                   className="w-full h-full object-cover" 
                 />
                 
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-2">
+                {/* Overlay - Always visible on mobile touch, hover on desktop */}
+                <div className="absolute inset-0 bg-black/40 md:bg-black/50 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-2">
                   <Button
                     size="sm"
                     variant="secondary"
                     onClick={() => onSetPrimary(photo)}
-                    className="rounded-full"
+                    className="rounded-full h-8 px-3 text-xs"
                   >
-                    <Sparkles size={14} className="mr-1" />
-                    Primary
+                    <Sparkles size={12} className="mr-1" />
+                    Main
                   </Button>
                   <Button
                     size="sm"
                     variant="destructive"
                     onClick={() => onRemovePhoto(idx)}
-                    className="rounded-full"
+                    className="rounded-full h-8 w-8 p-0"
                   >
                     <X size={14} />
                   </Button>
@@ -70,9 +70,9 @@ export default function EditProfilePhotos({
                 
                 {/* Primary Badge */}
                 {photo === primaryPhoto && (
-                  <Badge className="absolute top-3 left-3 bg-amber-500 text-white border-0 shadow-lg">
-                    <Sparkles size={12} className="mr-1" />
-                    Primary
+                  <Badge className="absolute top-2 left-2 bg-amber-500 text-white border-0 shadow-lg z-10">
+                    <Sparkles size={10} className="mr-1" />
+                    Main
                   </Badge>
                 )}
               </motion.div>

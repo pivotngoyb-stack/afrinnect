@@ -56,6 +56,7 @@ export default function Settings() {
   const [emailCode, setEmailCode] = useState("");
   const [inputCode, setInputCode] = useState("");
   const [isSendingCode, setIsSendingCode] = useState(false);
+  const [deviceToRemove, setDeviceToRemove] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -228,37 +229,7 @@ export default function Settings() {
                           </p>
                         </div>
                         <button 
-                          onClick={async () => {
-                            if (confirm('Remove this device? You will need to log in again on that device.')) {
-                              const newIds = myProfile.device_ids.filter(id => id !== device.device_id);
-                              const newInfo = myProfile.device_info.filter(d => d.device_id !== device.device_id);
-                              
-                              // Optimistic update
-                              setMyProfile({
-                                ...myProfile,
-                                device_ids: newIds,
-                                device_info: newInfo
-                              });
-                              
-                              try {
-                                await base44.entities.UserProfile.update(myProfile.id, {
-                                  device_ids: newIds,
-                                  device_info: newInfo
-                                });
-
-                                // CRITICAL: If removing current device, logout immediately to prevent auto-re-add
-                                if (isCurrentDevice) {
-                                  await base44.auth.logout(createPageUrl('Landing'));
-                                }
-                              } catch (e) {
-                                console.error('Failed to remove device', e);
-                                // Revert on error (optional, but good practice)
-                                const user = await base44.auth.me();
-                                const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-                                if (profiles.length > 0) setMyProfile(profiles[0]);
-                              }
-                            }
-                          }}
+                          onClick={() => setDeviceToRemove(device)}
                           className="text-red-500 text-xs hover:underline whitespace-nowrap ml-2"
                         >
                           Remove
@@ -612,11 +583,65 @@ export default function Settings() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
+            <Button
+              variant="destructive"
               onClick={() => deleteAccountMutation.mutate()}
+              disabled={deleteAccountMutation.isPending}
+            >
+              {deleteAccountMutation.isPending ? "Deleting..." : "Delete Account"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Remove Device Dialog */}
+      <AlertDialog open={!!deviceToRemove} onOpenChange={(open) => !open && setDeviceToRemove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Device?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove "{deviceToRemove?.device_name}"? You will be logged out on that device.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (!deviceToRemove) return;
+                const device = deviceToRemove;
+                const isCurrentDevice = localStorage.getItem('device_id') === device.device_id;
+                
+                const newIds = myProfile.device_ids.filter(id => id !== device.device_id);
+                const newInfo = myProfile.device_info.filter(d => d.device_id !== device.device_id);
+                
+                // Optimistic update
+                setMyProfile({
+                  ...myProfile,
+                  device_ids: newIds,
+                  device_info: newInfo
+                });
+                
+                try {
+                  await base44.entities.UserProfile.update(myProfile.id, {
+                    device_ids: newIds,
+                    device_info: newInfo
+                  });
+
+                  if (isCurrentDevice) {
+                    await base44.auth.logout(createPageUrl('Landing'));
+                  }
+                } catch (e) {
+                  console.error('Failed to remove device', e);
+                  // Revert
+                  const user = await base44.auth.me();
+                  const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+                  if (profiles.length > 0) setMyProfile(profiles[0]);
+                }
+                setDeviceToRemove(null);
+              }}
               className="bg-red-600 hover:bg-red-700"
             >
-              Delete Account
+              Remove
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
