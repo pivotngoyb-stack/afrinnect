@@ -55,6 +55,7 @@ export default function Chat() {
   const [upgradeFeature, setUpgradeFeature] = useState('');
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [isGeneratingReply, setIsGeneratingReply] = useState(false);
+  const [translatingId, setTranslatingId] = useState(null);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const queryClient = useQueryClient();
@@ -248,6 +249,7 @@ export default function Chat() {
   // Translation mutation
   const translateMessageMutation = useMutation({
     mutationFn: async ({ messageId, targetLang }) => {
+      setTranslatingId(messageId);
       const message = messages.find(m => m.id === messageId);
       if (!message) return;
 
@@ -269,6 +271,9 @@ export default function Chat() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['messages', matchId]);
+    },
+    onSettled: () => {
+      setTranslatingId(null);
     }
   });
 
@@ -470,8 +475,12 @@ export default function Chat() {
                 Report User
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => blockMutation.mutate()} className="text-red-600">
-              <Ban size={16} className="mr-2" />
+            <DropdownMenuItem 
+              onClick={() => blockMutation.mutate()} 
+              className="text-red-600"
+              disabled={blockMutation.isPending}
+            >
+              {blockMutation.isPending ? <Loader2 size={16} className="animate-spin mr-2" /> : <Ban size={16} className="mr-2" />}
               Block User
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -559,8 +568,13 @@ export default function Chat() {
                     size="sm"
                     className="mt-1 h-6 text-xs"
                     onClick={() => setShowTranslate(msg.id)}
+                    disabled={translatingId === msg.id}
                   >
-                    <Languages size={12} className="mr-1" />
+                    {translatingId === msg.id ? (
+                      <Loader2 size={12} className="animate-spin mr-1" />
+                    ) : (
+                      <Languages size={12} className="mr-1" />
+                    )}
                     Translate
                   </Button>
                 )}

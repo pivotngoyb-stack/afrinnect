@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Grid3X3, Layers, Globe, MapPin, Sparkles, Crown, Heart as HeartIcon, RotateCcw, User } from 'lucide-react';
+import { Grid3X3, Layers, Globe, MapPin, Sparkles, Crown, Heart as HeartIcon, RotateCcw, User, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileCard from '@/components/profile/ProfileCard';
@@ -684,28 +684,39 @@ export default function Home() {
     await refetch();
   };
 
-  const handlePass = async () => {
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(30);
-    }
-    
-    // Record the pass so they don't see this person again
-    try {
+  // Pass mutation
+  const passMutation = useMutation({
+    mutationFn: async () => {
+      // Haptic feedback
+      if (navigator.vibrate) {
+        navigator.vibrate(30);
+      }
+      
+      // Record the pass so they don't see this person again
       await base44.entities.Pass.create({
         passer_id: myProfile.id,
         passed_id: currentProfile.id
       });
+    },
+    onSuccess: async () => {
       console.log('Pass recorded:', currentProfile.id);
-    } catch (error) {
+      setSwipeHistory([...swipeHistory, { profile: currentProfile, action: 'pass', index: currentIndex }]);
+      setCurrentIndex(prev => prev + 1);
+      
+      // CRITICAL FIX: Force immediate cache refresh after swipe
+      await refetch();
+    },
+    onError: (error) => {
       console.error('Failed to record pass:', error);
+      // Still advance on error to avoid getting stuck? Or maybe show error.
+      // For now, let's assume we advance to keep flow smooth, but maybe log it.
+      setSwipeHistory([...swipeHistory, { profile: currentProfile, action: 'pass', index: currentIndex }]);
+      setCurrentIndex(prev => prev + 1);
     }
-    
-    setSwipeHistory([...swipeHistory, { profile: currentProfile, action: 'pass', index: currentIndex }]);
-    setCurrentIndex(prev => prev + 1);
-    
-    // CRITICAL FIX: Force immediate cache refresh after swipe
-    await refetch();
+  });
+
+  const handlePass = () => {
+    passMutation.mutate();
   };
 
   const handleRewind = async () => {
@@ -920,6 +931,9 @@ export default function Home() {
                   onLike={() => handleLike(currentProfile)}
                   onPass={handlePass}
                   onSuperLike={() => handleSuperLike(currentProfile)}
+                  isLiking={likeMutation.isPending && !likeMutation.variables?.isSuperLike}
+                  isPassing={passMutation.isPending}
+                  isSuperLiking={likeMutation.isPending && likeMutation.variables?.isSuperLike}
                   matchScore={currentProfile.matchScore}
                   matchReasons={[
                     `${Math.round(currentProfile.matchScore * 0.3)}% cultural compatibility`,

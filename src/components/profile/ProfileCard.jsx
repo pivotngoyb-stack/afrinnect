@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { MapPin, Briefcase, GraduationCap, Heart, ChevronLeft, ChevronRight, Languages, Book, Sparkles, Mic } from 'lucide-react';
+import { MapPin, Briefcase, GraduationCap, Heart, ChevronLeft, ChevronRight, Languages, Book, Sparkles, Mic, Loader2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import VerificationBadge from '../shared/VerificationBadge';
 import SafetyBadge from '../safety/SafetyBadge';
@@ -12,7 +12,7 @@ import OptimizedImage from '../shared/OptimizedImage';
 import ProfileTierDecoration from './ProfileTierDecoration';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
-const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLike, onPass, onSuperLike, showActions = true, expanded = false }) {
+const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLike, onPass, onSuperLike, showActions = true, expanded = false, isLiking = false, isPassing = false, isSuperLiking = false }) {
   const { t } = useLanguage();
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   
@@ -400,18 +400,20 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
               }
               if (onPass) onPass();
             }}
-            className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center border-2 border-gray-200 hover:border-gray-400 transition"
+            disabled={isPassing || isLiking || isSuperLiking}
+            className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center border-2 border-gray-200 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span className="text-xl">✕</span>
+            {isPassing ? <Loader2 size={24} className="animate-spin text-gray-400" /> : <span className="text-xl">✕</span>}
           </motion.button>
 
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={onSuperLike}
-            className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg flex items-center justify-center"
+            disabled={isPassing || isLiking || isSuperLiking}
+            className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Sparkles className="text-white" size={18} />
+            {isSuperLiking ? <Loader2 size={18} className="animate-spin text-white" /> : <Sparkles className="text-white" size={18} />}
           </motion.button>
 
           <motion.button
@@ -431,9 +433,10 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
               }
               if (onLike) onLike();
             }}
-            className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg flex items-center justify-center"
+            disabled={isPassing || isLiking || isSuperLiking}
+            className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Heart className="text-white fill-white" size={24} />
+            {isLiking ? <Loader2 size={24} className="animate-spin text-white" /> : <Heart className="text-white fill-white" size={24} />}
           </motion.button>
         </div>
       )}
