@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
         country_of_origin, current_country, current_city, tribe_ethnicity,
         languages, religion, education, profession, relationship_goal,
         height_cm, lifestyle, cultural_values, interests, looking_for,
-        video_profile_url
+        video_profile_url, push_token
     } = await req.json();
 
     // 1. Get existing profile
@@ -53,6 +53,7 @@ Deno.serve(async (req) => {
         interests,
         looking_for,
         video_profile_url,
+        push_token,
         // Helper fields
         is_active: true,
         last_active: new Date().toISOString()
