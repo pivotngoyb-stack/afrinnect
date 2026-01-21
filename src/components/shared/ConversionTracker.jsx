@@ -5,21 +5,30 @@ import { base44 } from '@/api/base44Client';
 export function useConversionTracker() {
   const trackEvent = async (eventName, properties = {}) => {
     try {
-      const user = await base44.auth.me();
-      const profile = user ? (await base44.entities.UserProfile.filter({ user_id: user.id }))[0] : null;
+      // Check if user is authenticated first
+      const isAuth = await base44.auth.isAuthenticated();
+      
+      if (isAuth) {
+        const user = await base44.auth.me();
+        const profile = user ? (await base44.entities.UserProfile.filter({ user_id: user.id }))[0] : null;
 
-      // Log conversion event
-      await base44.entities.ProfileAnalytics.create({
-        user_profile_id: profile?.id || 'anonymous',
-        event_type: eventName,
-        event_data: properties,
-        timestamp: new Date().toISOString()
+        // Log conversion event for authenticated users
+        await base44.entities.ProfileAnalytics.create({
+          user_profile_id: profile?.id || 'anonymous',
+          event_type: eventName,
+          event_data: properties,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Track via Google Analytics for all users (authenticated or not)
+      base44.analytics.track({
+        eventName: eventName,
+        properties: properties
       });
-
-      // Also log to console for debugging
-      console.log('🎯 Conversion Event:', eventName, properties);
     } catch (e) {
-      console.error('Failed to track conversion:', e);
+      // Silently fail for tracking - don't disrupt user experience
+      console.debug('Conversion tracking skipped:', eventName);
     }
   };
 
