@@ -78,13 +78,16 @@ export default function RetentionRewards({ userProfile }) {
           });
         }
       } else if (reward.type === 'premium') {
-        // Grant temporary premium
-        const premiumUntil = new Date(Date.now() + reward.value * 24 * 60 * 60 * 1000);
-        await base44.entities.UserProfile.update(userProfile.id, {
-          subscription_tier: 'premium',
-          is_premium: true,
-          premium_until: premiumUntil.toISOString()
-        });
+        // Grant temporary premium via backend function
+        try {
+          await base44.functions.invoke('updateUserProfile', {
+            subscription_tier: 'premium',
+            is_premium: true,
+            premium_until: new Date(Date.now() + reward.value * 24 * 60 * 60 * 1000).toISOString()
+          });
+        } catch (e) {
+          console.error('Failed to grant premium reward:', e);
+        }
       }
 
       // Confetti celebration
