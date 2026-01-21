@@ -51,7 +51,7 @@ export default function Settings() {
 
   const [settings, setSettings] = useState(loadSettings());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [exportingData, setExportingData] = useState(false);
+  const [_exportingData, _setExportingData] = useState(false); // Reserved for future use
   const [showEmailVerifyDialog, setShowEmailVerifyDialog] = useState(false);
   const [emailCode, setEmailCode] = useState("");
   const [inputCode, setInputCode] = useState("");
@@ -99,7 +99,7 @@ export default function Settings() {
     if (settings.darkMode) {
       document.documentElement.classList.add('dark');
     }
-  }, []);
+  }, [settings.darkMode]);
 
   const handleLogout = async () => {
     await base44.auth.logout(createPageUrl('Landing'));

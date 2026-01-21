@@ -464,9 +464,7 @@ export default function Onboarding() {
             <span className={`font-medium capitalize ${formData.looking_for.includes(gender) ? 'text-purple-600' : 'text-gray-700'}`}>
               {gender === 'man' ? t('onboarding.gender.men') : t('onboarding.gender.women')}
             </span>
-            {formData.looking_for.includes(gender) && (
-              <Check size={18} className="absolute top-2 right-2 text-purple-600" />
-            )}
+
           </button>
         ))}
       </div>

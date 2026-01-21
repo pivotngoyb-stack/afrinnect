@@ -114,7 +114,7 @@ export default function FilterDrawer({ filters, onFiltersChange, isPremium = fal
     if (JSON.stringify(debouncedFilters) !== JSON.stringify(filters)) {
       onFiltersChange(debouncedFilters);
     }
-  }, [debouncedFilters]);
+  }, [debouncedFilters, filters, onFiltersChange]);
 
   const updateFilter = (key, value) => {
     setLocalFilters(prev => ({ ...prev, [key]: value }));
