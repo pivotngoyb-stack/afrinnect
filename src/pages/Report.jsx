@@ -13,6 +13,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const REPORT_TYPES = [
   { value: 'fake_profile', label: 'Fake Profile', icon: User, description: 'This person is pretending to be someone else' },
@@ -33,6 +43,7 @@ export default function Report() {
   const [reportType, setReportType] = useState('');
   const [description, setDescription] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -208,7 +219,7 @@ export default function Report() {
 
         {/* Submit Button */}
         <Button
-          onClick={() => submitMutation.mutate()}
+          onClick={() => setShowConfirmDialog(true)}
           disabled={!reportType || !description || submitMutation.isPending}
           className="w-full bg-red-600 hover:bg-red-700"
           size="lg"
@@ -222,6 +233,27 @@ export default function Report() {
             'Submit Report'
           )}
         </Button>
+
+        {/* Confirmation Dialog */}
+        <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Submit Report?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You're about to report {reportedProfile?.display_name || 'this user'} for {REPORT_TYPES.find(t => t.value === reportType)?.label?.toLowerCase() || 'a violation'}. Our safety team will review this within 24 hours.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => submitMutation.mutate()}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Submit Report
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <p className="text-center text-gray-500 text-xs mt-4">
           False reports may result in action against your account
