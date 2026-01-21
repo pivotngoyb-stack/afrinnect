@@ -97,7 +97,8 @@ export default function EditProfile() {
 
   useEffect(() => {
     loadProfile();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadProfile = async () => {
     try {

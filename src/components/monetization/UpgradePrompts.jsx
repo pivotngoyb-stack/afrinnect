@@ -66,7 +66,7 @@ export function useUpgradePrompts(userProfile) {
         break;
       }
     }
-  }, [userProfile]);
+  }, [userProfile, trackEvent]);
 
   const dismissPrompt = () => {
     trackEvent('upgrade_prompt_dismissed', { feature: prompt?.feature });
