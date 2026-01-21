@@ -57,10 +57,10 @@ export default function Landing() {
   ];
 
   const stats = [
-    { number: "10K+", label: t('landing.stats.members') },
-    { number: "50+", label: t('landing.stats.countries') },
-    { number: "85%", label: t('landing.stats.matchRate') },
-    { number: "4.9★", label: t('landing.stats.rating') }
+    { number: "10K+", label: t('landing.stats.members'), disclaimer: true },
+    { number: "50+", label: t('landing.stats.countries'), disclaimer: true },
+    { number: "85%", label: t('landing.stats.matchRate'), disclaimer: true },
+    { number: "4.9★", label: t('landing.stats.rating'), disclaimer: true }
   ];
 
   const testimonials = [
@@ -317,6 +317,9 @@ export default function Landing() {
             </Card>
           ))}
         </motion.div>
+        <p className="text-center text-white/40 text-xs mt-4">
+          *Statistics are approximate and subject to change
+        </p>
       </section>
 
       {/* Features Section */}

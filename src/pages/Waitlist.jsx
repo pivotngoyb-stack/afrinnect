@@ -42,11 +42,21 @@ export default function Waitlist() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Rate limiting - prevent spam (30 second cooldown)
+    const now = Date.now();
+    if (now - lastSubmitTime < 30000) {
+      setError('Please wait before submitting again.');
+      return;
+    }
+    
     setIsSubmitting(true);
     setError('');
+    setLastSubmitTime(now);
 
     try {
       // Check if already on waitlist
