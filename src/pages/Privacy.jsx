@@ -89,8 +89,14 @@ export default function Privacy() {
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">6. Data Retention</h3>
             <p className="text-gray-700">
-              We retain your data while your account is active. After deletion, we keep minimal information for legal compliance and safety (30 days), then permanently delete.
+              We retain your data while your account is active. After account deletion:
             </p>
+            <ul className="list-disc pl-6 space-y-2 text-gray-700 mt-2">
+              <li>Profile data is anonymized immediately</li>
+              <li>Personal identifiers are deleted within 30 days</li>
+              <li>Some data may be retained for legal compliance, fraud prevention, or safety (up to 7 years for financial records)</li>
+              <li>Aggregated, anonymized analytics data may be retained indefinitely</li>
+            </ul>
           </section>
 
           <section className="space-y-4">

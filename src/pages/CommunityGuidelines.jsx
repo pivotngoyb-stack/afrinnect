@@ -122,7 +122,7 @@ export default function CommunityGuidelines() {
 
           {/* Copyright Notice */}
           <div className="pt-6 border-t text-center">
-            <p className="text-sm text-gray-600">© 2025 Afrinnect. All rights reserved.</p>
+            <p className="text-sm text-gray-600">© {new Date().getFullYear()} Afrinnect. All rights reserved.</p>
             <p className="text-xs text-gray-500 mt-1">
               These guidelines are proprietary to Afrinnect and protected by copyright.
             </p>

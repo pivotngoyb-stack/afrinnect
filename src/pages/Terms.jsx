@@ -105,10 +105,22 @@ export default function Terms() {
           </section>
 
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold">9. Account Termination</h3>
+            <h3 className="text-xl font-semibold">9. Account Termination & Deletion</h3>
             <p className="text-gray-700">
-              We reserve the right to suspend or terminate accounts that violate these terms. You may delete your account at any time through settings.
+              We reserve the right to suspend or terminate accounts that violate these terms.
             </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-3">
+              <p className="font-semibold text-blue-900 mb-2">Your Right to Delete Your Account</p>
+              <p className="text-gray-700 text-sm">
+                You may delete your account at any time through <strong>Settings → Account Deletion</strong>. Upon deletion:
+              </p>
+              <ul className="list-disc pl-6 mt-2 space-y-1 text-gray-700 text-sm">
+                <li>Your profile will be immediately deactivated and hidden from other users</li>
+                <li>Your personal data will be anonymized or deleted within 30 days</li>
+                <li>Some data may be retained for legal compliance (fraud prevention, legal disputes)</li>
+                <li>This action is permanent and cannot be undone</li>
+              </ul>
+            </div>
           </section>
 
           <section className="space-y-4">
