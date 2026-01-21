@@ -16,7 +16,7 @@ import { base44 } from "@/api/base44Client";
 // Wait, the user set STRIPE_PUBLISHABLE_KEY secret. I can't access it in frontend directly unless I expose it via a function.
 // I'll create a function `getStripeConfig` to safe-expose the public key.
 
-const CheckoutForm = ({ amount, planName, onSuccess, onCancel }) => {
+const CheckoutForm = ({ amount, planName, onSuccess, onCancel, clientSecret }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [message, setMessage] = useState(null);
@@ -63,13 +63,27 @@ const CheckoutForm = ({ amount, planName, onSuccess, onCancel }) => {
 
     setIsLoading(true);
 
-    const result = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-            return_url: window.location.href,
-        },
-        redirect: 'if_required'
-    });
+    const isSetup = clientSecret && clientSecret.startsWith('seti_');
+    
+    let result;
+    
+    if (isSetup) {
+        result = await stripe.confirmSetup({
+            elements,
+            confirmParams: {
+                return_url: window.location.href,
+            },
+            redirect: 'if_required'
+        });
+    } else {
+        result = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: window.location.href,
+            },
+            redirect: 'if_required'
+        });
+    }
 
     const { error, paymentIntent, setupIntent } = result;
 
@@ -179,6 +193,7 @@ export default function StripePaymentModal({ isOpen, onClose, clientSecret, amou
                         planName={planName} 
                         onSuccess={onSuccess} 
                         onCancel={onClose}
+                        clientSecret={clientSecret}
                     />
                 </Elements>
             </div>
