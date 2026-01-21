@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import Logo from '@/components/shared/Logo';
 
@@ -19,6 +20,7 @@ export default function Waitlist() {
     location: '',
     reason: ''
   });
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -210,6 +212,23 @@ export default function Waitlist() {
                   />
                 </div>
 
+                {/* GDPR Consent Checkbox */}
+                <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                  <Checkbox
+                    id="terms"
+                    checked={agreedToTerms}
+                    onCheckedChange={setAgreedToTerms}
+                    className="mt-0.5"
+                  />
+                  <Label htmlFor="terms" className="text-sm text-gray-600 leading-tight cursor-pointer">
+                    I agree to the{' '}
+                    <Link to={createPageUrl('Terms')} className="text-purple-600 underline" target="_blank">Terms of Service</Link>
+                    {' '}and{' '}
+                    <Link to={createPageUrl('Privacy')} className="text-purple-600 underline" target="_blank">Privacy Policy</Link>
+                    , and consent to the processing of my personal data.
+                  </Label>
+                </div>
+
                 {error && (
                   <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>
                 )}
@@ -217,17 +236,14 @@ export default function Waitlist() {
                 <Button 
                   type="submit" 
                   className="w-full bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white shadow-lg py-6 text-lg"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !agreedToTerms}
                 >
                   {isSubmitting ? 'Joining...' : 'Join Waitlist'}
                   {!isSubmitting && <Send size={18} className="ml-2" />}
                 </Button>
                 
                 <p className="text-xs text-center text-gray-500 mt-4">
-                  By joining, you agree to our{' '}
-                  <Link to={createPageUrl('Terms')} className="text-purple-600 underline">Terms</Link>
-                  {' '}and{' '}
-                  <Link to={createPageUrl('Privacy')} className="text-purple-600 underline">Privacy Policy</Link>.
+                  We respect your privacy and will never share your data.
                 </p>
               </form>
             </CardContent>

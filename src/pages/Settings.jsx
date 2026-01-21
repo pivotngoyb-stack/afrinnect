@@ -499,7 +499,30 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Logout & Delete */}
+        {/* Delete Account - Apple App Store Requirement (Prominent Placement) */}
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2 text-red-700">
+              <Trash2 size={18} />
+              Account Deletion
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-red-600 mb-4">
+              Permanently delete your account and all associated data. This action cannot be undone.
+            </p>
+            <Button
+              onClick={() => setShowDeleteDialog(true)}
+              variant="destructive"
+              className="w-full"
+            >
+              <Trash2 size={18} className="mr-2" />
+              Delete My Account
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Logout */}
         <div className="space-y-3">
           <Button
             onClick={handleLogout}
@@ -508,15 +531,6 @@ export default function Settings() {
           >
             <LogOut size={18} className="mr-2" />
             Log Out
-          </Button>
-
-          <Button
-            onClick={() => setShowDeleteDialog(true)}
-            variant="ghost"
-            className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            <Trash2 size={18} className="mr-2" />
-            Delete Account
           </Button>
         </div>
 
