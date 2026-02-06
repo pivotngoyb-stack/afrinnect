@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-// AI-powered profile optimization suggestions
+// AI-powered profile optimization suggestions v2
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
