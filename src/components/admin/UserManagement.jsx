@@ -340,7 +340,7 @@ export default function UserManagement({
                             variant="outline"
                             className="text-red-600"
                             onClick={() => onDeleteUser(profile)}
-                            disabled={user?.email === 'pivotngoyb@gmail.com'}
+                            disabled={userEmail === 'pivotngoyb@gmail.com'}
                           >
                             <Trash2 size={16} />
                           </Button>
