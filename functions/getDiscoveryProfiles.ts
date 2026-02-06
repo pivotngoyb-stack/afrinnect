@@ -13,6 +13,20 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c; 
 }
 
+function calculateAge(birthDate) {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+}
+
+function formatEnum(value) {
+    if (!value) return '';
+    return value.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
+
 Deno.serve(async (req) => {
     // In-memory rate limiting for discovery (expensive operation)
     // NOTE: In a distributed system, this should use Redis. 
@@ -107,29 +121,117 @@ Deno.serve(async (req) => {
         // Fetch 50 candidates to allow for further in-memory filtering (distance, complex arrays)
         const candidates = await base44.entities.UserProfile.filter(query, '-last_active', 50);
 
-        // 5. Score & Refine
+        // 4.5 Get user's ML profile for personalized scoring
+        const mlProfiles = await base44.asServiceRole.entities.UserMLProfile.filter({ user_id: myProfile.id });
+        const mlProfile = mlProfiles[0] || {
+            preference_weights: {
+                cultural_background: 1.0, religion: 1.0, interests: 1.0, location: 1.0,
+                education: 1.0, lifestyle: 1.0, relationship_goal: 1.0, age_proximity: 1.0
+            },
+            liked_patterns: { countries: [], religions: [], interests: [] }
+        };
+        const weights = mlProfile.preference_weights || {};
+        const likedPatterns = mlProfile.liked_patterns || {};
+
+        // 5. Score & Refine with ML-enhanced algorithm
         let results = candidates.map(p => {
-             // Calculate Match Score
              let score = 0;
-             // Cultural (25pts)
-             if (myProfile.country_of_origin === p.country_of_origin) score += 10;
-             if (myProfile.tribe_ethnicity && p.tribe_ethnicity && myProfile.tribe_ethnicity === p.tribe_ethnicity) score += 8;
-             if (myProfile.languages?.some(l => p.languages?.includes(l))) score += 7;
-             
-             // Values (20pts)
-             const sharedValues = myProfile.cultural_values?.filter(v => p.cultural_values?.includes(v))?.length || 0;
-             score += Math.min(sharedValues * 4, 20);
-             
-             // Goals/Religion (20pts)
-             if (myProfile.religion === p.religion) score += 10;
-             if (myProfile.relationship_goal === p.relationship_goal) score += 10;
-             
-             // Interests (15pts)
-             const sharedInterests = myProfile.interests?.filter(i => p.interests?.includes(i))?.length || 0;
-             score += Math.min(sharedInterests * 3, 15);
-             
-             // Location (10pts)
-             if (myProfile.current_city === p.current_city) score += 5;
+             const reasons = [];
+             const breakdown = {};
+
+             // 1. Cultural Background (base: 25 points, ML-weighted)
+             let culturalScore = 0;
+             if (myProfile.country_of_origin === p.country_of_origin) {
+                 culturalScore += 15;
+                 reasons.push(`Both from ${p.country_of_origin}`);
+             }
+             if (myProfile.tribe_ethnicity && p.tribe_ethnicity && myProfile.tribe_ethnicity === p.tribe_ethnicity) {
+                 culturalScore += 10;
+                 reasons.push(`Shared heritage: ${p.tribe_ethnicity}`);
+             }
+             // ML boost: user historically likes this country
+             if (likedPatterns.countries?.includes(p.country_of_origin)) {
+                 culturalScore += 5;
+             }
+             breakdown.cultural = culturalScore;
+             score += culturalScore * (weights.cultural_background || 1.0);
+
+             // 2. Religion (base: 15 points, ML-weighted)
+             let religionScore = 0;
+             if (myProfile.religion === p.religion) {
+                 religionScore = 15;
+                 reasons.push(`Shared faith: ${formatEnum(p.religion)}`);
+             }
+             if (likedPatterns.religions?.includes(p.religion)) {
+                 religionScore += 3;
+             }
+             breakdown.religion = religionScore;
+             score += religionScore * (weights.religion || 1.0);
+
+             // 3. Shared Interests (base: 20 points, ML-weighted)
+             let interestScore = 0;
+             const sharedInterests = myProfile.interests?.filter(i => p.interests?.includes(i)) || [];
+             interestScore = Math.min(sharedInterests.length * 4, 20);
+             if (sharedInterests.length > 0) {
+                 reasons.push(`${sharedInterests.length} shared interests: ${sharedInterests.slice(0, 2).join(', ')}`);
+             }
+             // ML boost for preferred interests
+             const boostedInterests = sharedInterests.filter(i => likedPatterns.interests?.includes(i));
+             interestScore += boostedInterests.length * 2;
+             breakdown.interests = interestScore;
+             score += interestScore * (weights.interests || 1.0);
+
+             // 4. Location (base: 10 points, ML-weighted)
+             let locationScore = 0;
+             if (myProfile.current_city === p.current_city) {
+                 locationScore = 10;
+                 reasons.push(`Both in ${p.current_city}`);
+             } else if (myProfile.current_state === p.current_state) {
+                 locationScore = 5;
+             }
+             breakdown.location = locationScore;
+             score += locationScore * (weights.location || 1.0);
+
+             // 5. Relationship Goal (base: 15 points, ML-weighted)
+             let goalScore = 0;
+             if (myProfile.relationship_goal === p.relationship_goal) {
+                 goalScore = 15;
+                 reasons.push(`Both seeking ${formatEnum(p.relationship_goal)}`);
+             }
+             breakdown.relationship_goal = goalScore;
+             score += goalScore * (weights.relationship_goal || 1.0);
+
+             // 6. Lifestyle Compatibility (base: 10 points, ML-weighted)
+             let lifestyleScore = 0;
+             if (myProfile.lifestyle && p.lifestyle) {
+                 if (myProfile.lifestyle.smoking === p.lifestyle.smoking) lifestyleScore += 2;
+                 if (myProfile.lifestyle.drinking === p.lifestyle.drinking) lifestyleScore += 2;
+                 if (myProfile.lifestyle.fitness === p.lifestyle.fitness) lifestyleScore += 3;
+                 if (myProfile.lifestyle.diet === p.lifestyle.diet) lifestyleScore += 3;
+             }
+             if (lifestyleScore >= 6) reasons.push('Compatible lifestyle');
+             breakdown.lifestyle = lifestyleScore;
+             score += lifestyleScore * (weights.lifestyle || 1.0);
+
+             // 7. Languages (bonus)
+             const sharedLanguages = myProfile.languages?.filter(l => p.languages?.includes(l)) || [];
+             if (sharedLanguages.length > 1) {
+                 score += sharedLanguages.length * 2;
+                 reasons.push(`${sharedLanguages.length} shared languages`);
+             }
+
+             // 8. Age Proximity (ML-weighted)
+             let ageScore = 0;
+             if (myProfile.birth_date && p.birth_date) {
+                 const myAge = calculateAge(myProfile.birth_date);
+                 const theirAge = calculateAge(p.birth_date);
+                 const ageDiff = Math.abs(myAge - theirAge);
+                 if (ageDiff <= 3) ageScore = 5;
+                 else if (ageDiff <= 5) ageScore = 3;
+                 else if (ageDiff <= 10) ageScore = 1;
+             }
+             breakdown.age = ageScore;
+             score += ageScore * (weights.age_proximity || 1.0);
 
              // TIER PRIORITY (Passive Ranking)
              if (p.subscription_tier === 'vip') score += 50;
@@ -139,7 +241,7 @@ Deno.serve(async (req) => {
              if (p.profile_boost_active && p.boost_expires_at) {
                  const expiry = new Date(p.boost_expires_at);
                  if (expiry > new Date()) {
-                     score += 500; // Pushes them to the top of any list
+                     score += 500;
                  }
              }
 
@@ -149,7 +251,16 @@ Deno.serve(async (req) => {
                  distance = calculateDistance(myProfile.location.lat, myProfile.location.lng, p.location.lat, p.location.lng);
              }
 
-             return { ...p, matchScore: Math.min(score, 100), distance };
+             // Normalize score to 0-100
+             const normalizedScore = Math.min(Math.round(score), 100);
+
+             return { 
+                 ...p, 
+                 matchScore: normalizedScore, 
+                 matchReasons: reasons.slice(0, 4),
+                 matchBreakdown: breakdown,
+                 distance 
+             };
         });
 
         // 6. Complex Filtering (In-Memory)
