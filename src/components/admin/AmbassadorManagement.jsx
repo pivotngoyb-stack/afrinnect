@@ -637,6 +637,53 @@ export default function AmbassadorManagement() {
         </DialogContent>
       </Dialog>
 
+      {/* Payout Dialog */}
+      <Dialog open={showPayoutDialog} onOpenChange={setShowPayoutDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Process Payout</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Payout Method</Label>
+              <Select value={payoutMethod} onValueChange={setPayoutMethod}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paypal">PayPal (Automatic)</SelectItem>
+                  <SelectItem value="bank_transfer">Bank Transfer (Manual)</SelectItem>
+                  <SelectItem value="mobile_money">Mobile Money (Manual)</SelectItem>
+                  <SelectItem value="crypto">Crypto (Manual)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {payoutMethod === 'paypal' && (
+              <p className="text-sm text-gray-500">
+                The payout will be sent automatically to the ambassador's PayPal email address.
+              </p>
+            )}
+            {payoutMethod !== 'paypal' && (
+              <p className="text-sm text-amber-600">
+                You'll need to process this payment manually and then enter the transaction ID.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPayoutDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={handleProcessPayout}
+              disabled={createPayoutMutation.isPending || processPayPalPayoutMutation.isPending}
+            >
+              {(createPayoutMutation.isPending || processPayPalPayoutMutation.isPending) && (
+                <Loader2 className="animate-spin mr-2" size={16} />
+              )}
+              {payoutMethod === 'paypal' ? 'Send PayPal Payout' : 'Create Payout Record'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Create Campaign Dialog */}
       <Dialog open={showCreateCampaignDialog} onOpenChange={setShowCreateCampaignDialog}>
         <DialogContent>
