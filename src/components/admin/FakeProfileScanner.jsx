@@ -219,7 +219,8 @@ export default function FakeProfileScanner() {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => banProfileMutation.mutate(profile.id)}
+                        onClick={() => banProfileMutation.mutate({ profileId: profile.id, detectionId: detection.id })}
+                        disabled={banProfileMutation.isPending}
                       >
                         <Ban size={16} className="mr-1" />
                         Ban
