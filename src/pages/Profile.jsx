@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import VerificationBadge from '@/components/shared/VerificationBadge';
 import CountryFlag from '@/components/shared/CountryFlag';
 import AfricanPattern from '@/components/shared/AfricanPattern';
+import FoundingMemberBadge from '@/components/profile/FoundingMemberBadge';
 import MobilePhotoGallery from '@/components/shared/MobilePhotoGallery';
 import StreakBadge from '@/components/shared/StreakBadge';
 import SocialProofBanner from '@/components/shared/SocialProofBanner';
@@ -289,7 +290,13 @@ export default function Profile() {
             </div>
           )}
 
-          {profile?.badges && profile.badges.length > 0 && (
+          {profile?.is_founding_member && (
+            <div className="mt-3">
+              <FoundingMemberBadge profile={profile} size="default" />
+            </div>
+          )}
+
+          {profile?.badges && profile.badges.length > 0 && !profile?.is_founding_member && (
             <div className="mt-3">
               <ProfileBadges badges={profile.badges} />
             </div>
