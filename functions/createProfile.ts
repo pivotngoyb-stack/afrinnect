@@ -183,9 +183,10 @@ Deno.serve(async (req) => {
         last_active: new Date().toISOString(),
         daily_likes_count: 0,
         daily_likes_reset_date: new Date().toISOString().split('T')[0],
-        is_premium: true,
-        subscription_tier: 'premium',
-        premium_until: trialExpiresAt,
+        // Set subscription based on founder status
+        is_premium: grantPremiumTrial,
+        subscription_tier: grantPremiumTrial ? 'premium' : 'free',
+        premium_until: trialExpiresAt, // null if not a founder
         verification_status: {
           email_verified: true, // Auto-verify email on signup as they own the account
           phone_verified: false,
