@@ -11,6 +11,7 @@ Deno.serve(async (req) => {
     }
     
     // Get all active matches
+    const activeMatches = await base44.asServiceRole.entities.Match.filter({
       status: 'active',
       is_match: true
     });
