@@ -57,6 +57,7 @@ import DisputeManagement from '@/components/admin/DisputeManagement';
 import ErrorLogsDashboard from '@/components/admin/ErrorLogsDashboard';
 import QuickActions from '@/components/admin/QuickActions';
 import FounderProgramManagement from '@/components/admin/FounderProgramManagement';
+import AmbassadorManagement from '@/components/admin/AmbassadorManagement';
 import { FileText } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -563,6 +564,8 @@ export default function AdminDashboard() {
         return <WaitlistManagement onSendEmail={() => setWaitlistDialog(true)} />;
       case 'founder_program':
         return <FounderProgramManagement />;
+      case 'ambassadors':
+        return <AmbassadorManagement />;
       case 'messaging':
         return (
           <div className="space-y-6">

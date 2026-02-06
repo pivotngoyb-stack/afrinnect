@@ -14,6 +14,7 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
   const menuItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'founder_program', label: 'Founding Members', icon: Crown, badge: stats?.totalFounders },
+    { id: 'ambassadors', label: 'Ambassadors', icon: Users, badge: stats?.totalAmbassadors },
     { id: 'users', label: 'Users', icon: Users, badge: stats?.totalProfiles },
     { id: 'verification', label: 'Verification', icon: Shield, badge: stats?.verifiedUsers },
     { id: 'moderation', label: 'Moderation', icon: AlertTriangle, badge: stats?.pendingReports, alert: stats?.pendingReports > 0 },
