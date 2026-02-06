@@ -187,7 +187,7 @@ export default function BannedScreen({ userProfile, banReason, userEmail }) {
 
         {/* Copyright */}
         <p className="text-center mt-6 text-sm text-gray-600">
-          © 2025 Afrinnect. All rights reserved.
+          © {new Date().getFullYear()} Afrinnect. All rights reserved.
         </p>
       </div>
     </div>
