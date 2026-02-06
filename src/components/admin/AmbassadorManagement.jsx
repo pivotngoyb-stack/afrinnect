@@ -130,18 +130,85 @@ export default function AmbassadorManagement() {
     }
   });
 
-  const processPayoutMutation = useMutation({
+  const [showPayoutDialog, setShowPayoutDialog] = useState(false);
+  const [payoutAmbassadorId, setPayoutAmbassadorId] = useState(null);
+  const [payoutMethod, setPayoutMethod] = useState('paypal');
+
+  const createPayoutMutation = useMutation({
     mutationFn: async (ambassador_id) => {
       const response = await base44.functions.invoke('ambassadorAdmin', { action: 'process_payout', ambassador_id });
       if (response.data.error) throw new Error(response.data.error);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['ambassadors-list'] });
-      toast.success('Payout processed');
+      toast.success('Payout record created');
+      return data.payout;
     },
     onError: (error) => toast.error(error.message)
   });
+
+  const processPayPalPayoutMutation = useMutation({
+    mutationFn: async (payout_id) => {
+      const response = await base44.functions.invoke('processAmbassadorPayout', { 
+        payout_id, 
+        action: 'process_paypal' 
+      });
+      if (response.data.error) throw new Error(response.data.error);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ambassadors-list'] });
+      queryClient.invalidateQueries({ queryKey: ['ambassador-admin-stats'] });
+      setShowPayoutDialog(false);
+      toast.success('PayPal payout sent successfully!');
+    },
+    onError: (error) => toast.error(error.message)
+  });
+
+  const markManualPaidMutation = useMutation({
+    mutationFn: async ({ payout_id, transaction_id }) => {
+      const response = await base44.functions.invoke('processAmbassadorPayout', { 
+        payout_id, 
+        action: 'mark_manual_paid',
+        transaction_id
+      });
+      if (response.data.error) throw new Error(response.data.error);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ambassadors-list'] });
+      queryClient.invalidateQueries({ queryKey: ['ambassador-admin-stats'] });
+      setShowPayoutDialog(false);
+      toast.success('Payout marked as paid');
+    },
+    onError: (error) => toast.error(error.message)
+  });
+
+  const handleInitiatePayout = async (ambassador_id) => {
+    setPayoutAmbassadorId(ambassador_id);
+    setShowPayoutDialog(true);
+  };
+
+  const handleProcessPayout = async () => {
+    try {
+      // First create the payout record
+      const result = await createPayoutMutation.mutateAsync(payoutAmbassadorId);
+      
+      if (payoutMethod === 'paypal') {
+        // Process via PayPal
+        await processPayPalPayoutMutation.mutateAsync(result.payout?.id);
+      } else {
+        // Show manual transaction ID input
+        const txId = prompt('Enter transaction ID for manual payout:');
+        if (txId) {
+          await markManualPaidMutation.mutateAsync({ payout_id: result.payout?.id, transaction_id: txId });
+        }
+      }
+    } catch (error) {
+      console.error('Payout error:', error);
+    }
+  };
 
   const createPlanMutation = useMutation({
     mutationFn: async (plan) => {
