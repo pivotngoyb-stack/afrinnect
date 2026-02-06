@@ -271,7 +271,7 @@ export default function UserManagement({
                         </SelectContent>
                       </Select>
                     </div>
-                    {user?.email !== 'pivotngoyb@gmail.com' && (
+                    {user && userEmail !== 'pivotngoyb@gmail.com' && (
                       <Button
                         size="sm"
                         variant="outline"
