@@ -605,8 +605,8 @@ export default function Chat() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* AI Conversation Helper */}
-      {myProfile && otherProfile && (
+      {/* AI Conversation Helper - Only show if no messages yet or conversation is stale */}
+      {myProfile && otherProfile && messages.length < 5 && (
         <AIConversationHelper
           matchId={matchId}
           myProfileId={myProfile.id}
