@@ -49,6 +49,7 @@
  */
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLaunchChecklist from './pages/AdminLaunchChecklist';
+import AmbassadorPortal from './pages/AmbassadorPortal';
 import Analytics from './pages/Analytics';
 import AuthFlowTest from './pages/AuthFlowTest';
 import BackgroundCheckRequest from './pages/BackgroundCheckRequest';
@@ -106,13 +107,13 @@ import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
-import AmbassadorPortal from './pages/AmbassadorPortal';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AdminDashboard": AdminDashboard,
     "AdminLaunchChecklist": AdminLaunchChecklist,
+    "AmbassadorPortal": AmbassadorPortal,
     "Analytics": Analytics,
     "AuthFlowTest": AuthFlowTest,
     "BackgroundCheckRequest": BackgroundCheckRequest,
@@ -170,7 +171,6 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
     "WhoLikesYou": WhoLikesYou,
-    "AmbassadorPortal": AmbassadorPortal,
 }
 
 export const pagesConfig = {

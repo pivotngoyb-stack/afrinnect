@@ -28,6 +28,7 @@ import SocialProofBanner from '@/components/shared/SocialProofBanner';
 import SpotifySection from '@/components/profile/SpotifySection';
 import ProfileBadges from '@/components/profile/ProfileBadges';
 import NotificationBell from '@/components/shared/NotificationBell';
+import VideoProfilePlayer from '@/components/profile/VideoProfilePlayer';
 import { Share2, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
