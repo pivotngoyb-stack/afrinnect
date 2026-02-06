@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { MapPin, Briefcase, GraduationCap, Heart, ChevronLeft, ChevronRight, Languages, Book, Sparkles, Mic, Loader2 } from 'lucide-react';
+import { MapPin, Briefcase, GraduationCap, Heart, ChevronLeft, ChevronRight, Languages, Book, Sparkles, Mic, Loader2, Crown } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import VerificationBadge from '../shared/VerificationBadge';
 import SafetyBadge from '../safety/SafetyBadge';
@@ -258,6 +258,12 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
             <h2 className="text-2xl font-bold">{profile?.display_name}</h2>
             {age && <span className="text-xl font-light">{age}</span>}
             <VerificationBadge verification={profile?.verification_status} />
+            {profile?.is_founding_member && (
+              <div className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+                <Crown size={10} />
+                <span>Founder</span>
+              </div>
+            )}
             <TrustScoreIndicator profile={profile} />
           </div>
 
