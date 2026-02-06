@@ -34,66 +34,69 @@ Deno.serve(async (req) => {
     // 3. Prepare Secure Data
     const deviceId = formData.device_id || `web_${Date.now()}`;
     
-    // 3.1 Check Founding Member Program Status
+    // Check Founding Member Program Settings
     let isFoundingMember = false;
-    let founderTrialEndsAt = null;
-    let founderSource = null;
-    let founderCodeUsed = null;
-    let trialDays = 3; // Default 3-day trial
-    
-    const founderSettingsRecords = await base44.asServiceRole.entities.SystemSettings.filter({ key: 'founder_program' });
-    const founderSettings = founderSettingsRecords[0]?.value || {
-      founders_mode_enabled: false,
-      auto_assign_new_users: false,
-      trial_days: 183
-    };
-    
-    // Check if user provided an invite code
-    if (formData.invite_code) {
-      const codes = await base44.asServiceRole.entities.FounderInviteCode.filter({ 
-        code: formData.invite_code.toUpperCase(),
-        is_active: true
-      });
-      
-      if (codes.length > 0) {
-        const code = codes[0];
-        const codeExpired = code.expires_at && new Date(code.expires_at) < new Date();
-        const codeMaxed = code.current_redemptions >= code.max_redemptions;
-        
-        if (!codeExpired && !codeMaxed) {
-          isFoundingMember = true;
-          trialDays = code.trial_days || founderSettings.trial_days || 183;
-          founderSource = 'invite_code';
-          founderCodeUsed = code.code;
-          
-          // Increment redemption count
-          await base44.asServiceRole.entities.FounderInviteCode.update(code.id, {
-            current_redemptions: (code.current_redemptions || 0) + 1
-          });
-          
-          // Record redemption
-          await base44.asServiceRole.entities.FounderCodeRedemption.create({
-            code_id: code.id,
-            code: code.code,
-            user_id: user.id,
-            user_email: user.email,
-            device_id: deviceId
-          });
+    let foundingTrialEndsAt = null;
+    let foundingMemberSource = null;
+    let trialExpiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(); // Default 3-day trial
+
+    try {
+        const settingsRecords = await base44.asServiceRole.entities.SystemSettings.filter({ key: 'founder_program' });
+        const founderSettings = settingsRecords[0]?.value || {
+            founders_mode_enabled: false,
+            auto_assign_new_users: false,
+            trial_days: 183
+        };
+
+        // Check if user provided an invite code
+        if (formData.founder_invite_code) {
+            const codes = await base44.asServiceRole.entities.FounderInviteCode.filter({ 
+                code: formData.founder_invite_code.toUpperCase(),
+                is_active: true
+            });
+
+            if (codes.length > 0) {
+                const code = codes[0];
+                const now = new Date();
+                
+                // Validate code
+                const isExpired = code.expires_at && new Date(code.expires_at) < now;
+                const isMaxed = code.current_redemptions >= code.max_redemptions;
+
+                if (!isExpired && !isMaxed) {
+                    isFoundingMember = true;
+                    foundingMemberSource = 'invite_code';
+                    const trialDays = code.trial_days || founderSettings.trial_days || 183;
+                    foundingTrialEndsAt = new Date(now.getTime() + (trialDays * 24 * 60 * 60 * 1000)).toISOString();
+                    trialExpiresAt = foundingTrialEndsAt;
+
+                    // Record redemption
+                    await base44.asServiceRole.entities.FounderCodeRedemption.create({
+                        code_id: code.id,
+                        code: code.code,
+                        user_id: user.id,
+                        user_email: user.email,
+                        device_id: deviceId
+                    });
+
+                    // Increment redemption count
+                    await base44.asServiceRole.entities.FounderInviteCode.update(code.id, {
+                        current_redemptions: (code.current_redemptions || 0) + 1
+                    });
+                }
+            }
         }
-      }
-    }
-    
-    // Auto-assign if founders mode is enabled and auto-assign is on
-    if (!isFoundingMember && founderSettings.founders_mode_enabled && founderSettings.auto_assign_new_users) {
-      isFoundingMember = true;
-      trialDays = founderSettings.trial_days || 183;
-      founderSource = 'global_toggle';
-    }
-    
-    // Calculate trial end date
-    const trialExpiresAt = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000).toISOString();
-    if (isFoundingMember) {
-      founderTrialEndsAt = trialExpiresAt;
+        // Auto-assign if founders mode is on and auto-assign is enabled
+        else if (founderSettings.founders_mode_enabled && founderSettings.auto_assign_new_users) {
+            isFoundingMember = true;
+            foundingMemberSource = 'global_toggle';
+            const trialDays = founderSettings.trial_days || 183;
+            foundingTrialEndsAt = new Date(Date.now() + (trialDays * 24 * 60 * 60 * 1000)).toISOString();
+            trialExpiresAt = foundingTrialEndsAt;
+        }
+    } catch (e) {
+        console.error('Founder program check failed:', e);
+        // Continue with default trial
     }
 
     // 2.1 Validate Age (Server-side Enforcement)
@@ -168,7 +171,7 @@ Deno.serve(async (req) => {
         phone_number: formData.phone_number
     };
 
-    const newProfile = await base44.entities.UserProfile.create({
+    const profileData = {
         ...allowedFields,
         user_id: user.id,
         // Force critical fields (User cannot override these)
@@ -179,15 +182,6 @@ Deno.serve(async (req) => {
         is_premium: true,
         subscription_tier: 'premium',
         premium_until: trialExpiresAt,
-        // Founding Member Fields
-        is_founding_member: isFoundingMember,
-        founding_member_granted_at: isFoundingMember ? new Date().toISOString() : null,
-        founding_member_trial_ends_at: founderTrialEndsAt,
-        founding_member_source: founderSource,
-        founding_member_code_used: founderCodeUsed,
-        founding_member_eligible: !isFoundingMember, // If they're a founder, they've used their eligibility
-        founding_trial_consumed: isFoundingMember,
-        badges: isFoundingMember ? ['founding_member'] : [],
         verification_status: {
           email_verified: true, // Auto-verify email on signup as they own the account
           phone_verified: false,
@@ -205,7 +199,24 @@ Deno.serve(async (req) => {
         warning_count: 0,
         is_banned: false,
         is_suspended: false
-    });
+    };
+
+    // Add Founding Member fields if applicable
+    if (isFoundingMember) {
+        profileData.is_founding_member = true;
+        profileData.founding_member_granted_at = new Date().toISOString();
+        profileData.founding_member_trial_ends_at = foundingTrialEndsAt;
+        profileData.founding_member_source = foundingMemberSource;
+        profileData.founding_member_code_used = formData.founder_invite_code?.toUpperCase() || null;
+        profileData.founding_member_eligible = false;
+        profileData.founding_trial_consumed = true;
+        profileData.badges = ['founding_member'];
+    } else {
+        profileData.founding_member_eligible = true;
+        profileData.founding_trial_consumed = false;
+    }
+
+    const newProfile = await base44.entities.UserProfile.create(profileData);
 
     // 4. Post-Creation Actions (Async)
     // Welcome Email
