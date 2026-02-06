@@ -228,7 +228,7 @@ export default function UserManagement({
                           <Badge className="bg-red-600">Admin</Badge>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600">{user?.email}</p>
+                      <p className="text-sm text-gray-600">{userEmail}</p>
                       <p className="text-xs text-gray-500">
                         {profile.current_city}, {profile.current_country} • {profile.gender} • Created {new Date(profile.created_date).toLocaleDateString()}
                       </p>
