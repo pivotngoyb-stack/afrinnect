@@ -128,22 +128,7 @@ Deno.serve(async (req) => {
             commissionType = 'recurring_share';
           }
 
-          // Also apply CPA if hybrid
-          if (plan.plan_type === 'hybrid' && plan.cpa_amount) {
-            await base44.asServiceRole.entities.AmbassadorCommission.create({
-              ambassador_id: ambassador.id,
-              referral_id: referral.id,
-              user_id,
-              subscription_id,
-              commission_type: 'cpa',
-              original_amount: plan.cpa_amount,
-              amount: plan.cpa_amount * tierMultiplier,
-              tier_multiplier: tierMultiplier,
-              currency,
-              status: 'pending',
-              hold_until: holdUntil.toISOString()
-            });
-          }
+          // CPA bonus removed - hybrid plan now only uses revenue_share + recurring_share
 
           if (commissionAmount > 0) {
             await base44.asServiceRole.entities.AmbassadorCommission.create({
