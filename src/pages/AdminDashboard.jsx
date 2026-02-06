@@ -561,6 +561,8 @@ export default function AdminDashboard() {
         return <VendorManagement />;
       case 'waitlist':
         return <WaitlistManagement onSendEmail={() => setWaitlistDialog(true)} />;
+      case 'founder_program':
+        return <FounderProgramManagement />;
       case 'messaging':
         return (
           <div className="space-y-6">
@@ -615,8 +617,6 @@ export default function AdminDashboard() {
         return <DisputeManagement disputes={disputes} currentUser={currentUser} />;
       case 'error_logs':
         return <ErrorLogsDashboard />;
-      case 'founders':
-        return <FounderProgramManagement />;
       case 'reports':
         return (
           <div className="max-w-2xl mx-auto space-y-6">
