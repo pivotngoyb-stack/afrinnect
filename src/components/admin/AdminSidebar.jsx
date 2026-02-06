@@ -28,6 +28,7 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
     { id: 'events', label: 'Events', icon: Calendar, badge: stats?.totalEvents },
     { id: 'vendors', label: 'Vendors', icon: Briefcase },
     { id: 'waitlist', label: 'Waitlist', icon: Users },
+    { id: 'founder_program', label: 'Founder Program', icon: Crown },
     { id: 'messaging', label: 'Broadcast', icon: MessageCircle },
     { id: 'support', label: 'Support', icon: Bell },
     { id: 'compliance', label: 'Compliance', icon: FileText },

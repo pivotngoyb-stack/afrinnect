@@ -5,8 +5,9 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
   ArrowLeft, Bell, Lock, Eye, Shield, Globe, Moon, Sun,
-  HelpCircle, FileText, LogOut, Trash2, ChevronRight, Download, Smartphone, Loader2
+  HelpCircle, FileText, LogOut, Trash2, ChevronRight, Download, Smartphone, Loader2, Crown
 } from 'lucide-react';
+import FoundingMemberStatus from '@/components/subscription/FoundingMemberStatus';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -170,6 +171,11 @@ export default function Settings() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        {/* Founding Member Status */}
+        {myProfile?.is_founding_member && (
+          <FoundingMemberStatus profile={myProfile} />
+        )}
+
         {/* Account */}
         <Card>
           <CardHeader className="pb-2">
