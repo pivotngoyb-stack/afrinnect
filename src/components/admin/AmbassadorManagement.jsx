@@ -132,7 +132,7 @@ export default function AmbassadorManagement() {
 
   const [showPayoutDialog, setShowPayoutDialog] = useState(false);
   const [payoutAmbassadorId, setPayoutAmbassadorId] = useState(null);
-  const [payoutMethod, setPayoutMethod] = useState('paypal');
+  const [payoutMethod, setPayoutMethod] = useState('stripe');
 
   const createPayoutMutation = useMutation({
     mutationFn: async (ambassador_id) => {
@@ -148,11 +148,11 @@ export default function AmbassadorManagement() {
     onError: (error) => toast.error(error.message)
   });
 
-  const processPayPalPayoutMutation = useMutation({
+  const processStripePayoutMutation = useMutation({
     mutationFn: async (payout_id) => {
       const response = await base44.functions.invoke('processAmbassadorPayout', { 
         payout_id, 
-        action: 'process_paypal' 
+        action: 'process_stripe' 
       });
       if (response.data.error) throw new Error(response.data.error);
       return response.data;
@@ -161,7 +161,7 @@ export default function AmbassadorManagement() {
       queryClient.invalidateQueries({ queryKey: ['ambassadors-list'] });
       queryClient.invalidateQueries({ queryKey: ['ambassador-admin-stats'] });
       setShowPayoutDialog(false);
-      toast.success('PayPal payout sent successfully!');
+      toast.success('Stripe payout sent successfully!');
     },
     onError: (error) => toast.error(error.message)
   });
@@ -195,9 +195,9 @@ export default function AmbassadorManagement() {
       // First create the payout record
       const result = await createPayoutMutation.mutateAsync(payoutAmbassadorId);
       
-      if (payoutMethod === 'paypal') {
-        // Process via PayPal
-        await processPayPalPayoutMutation.mutateAsync(result.payout?.id);
+      if (payoutMethod === 'stripe') {
+        // Process via Stripe Connect
+        await processStripePayoutMutation.mutateAsync(result.payout?.id);
       } else {
         // Show manual transaction ID input
         const txId = prompt('Enter transaction ID for manual payout:');
@@ -651,19 +651,19 @@ export default function AmbassadorManagement() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="paypal">PayPal (Automatic)</SelectItem>
+                  <SelectItem value="stripe">Stripe Connect (Automatic)</SelectItem>
                   <SelectItem value="bank_transfer">Bank Transfer (Manual)</SelectItem>
                   <SelectItem value="mobile_money">Mobile Money (Manual)</SelectItem>
                   <SelectItem value="crypto">Crypto (Manual)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            {payoutMethod === 'paypal' && (
+            {payoutMethod === 'stripe' && (
               <p className="text-sm text-gray-500">
-                The payout will be sent automatically to the ambassador's PayPal email address.
+                The payout will be sent automatically via Stripe Connect. Ambassador must have a connected Stripe account.
               </p>
             )}
-            {payoutMethod !== 'paypal' && (
+            {payoutMethod !== 'stripe' && (
               <p className="text-sm text-amber-600">
                 You'll need to process this payment manually and then enter the transaction ID.
               </p>
@@ -673,12 +673,12 @@ export default function AmbassadorManagement() {
             <Button variant="outline" onClick={() => setShowPayoutDialog(false)}>Cancel</Button>
             <Button 
               onClick={handleProcessPayout}
-              disabled={createPayoutMutation.isPending || processPayPalPayoutMutation.isPending}
+              disabled={createPayoutMutation.isPending || processStripePayoutMutation.isPending}
             >
-              {(createPayoutMutation.isPending || processPayPalPayoutMutation.isPending) && (
+              {(createPayoutMutation.isPending || processStripePayoutMutation.isPending) && (
                 <Loader2 className="animate-spin mr-2" size={16} />
               )}
-              {payoutMethod === 'paypal' ? 'Send PayPal Payout' : 'Create Payout Record'}
+              {payoutMethod === 'stripe' ? 'Send Stripe Payout' : 'Create Payout Record'}
             </Button>
           </DialogFooter>
         </DialogContent>
