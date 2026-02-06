@@ -25,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import IceBreakerPrompts from '@/components/chat/IceBreakerPrompts';
 import AIConversationStarters from '@/components/chat/AIConversationStarters';
+import AIConversationHelper from '@/components/chat/AIConversationHelper';
 import { AnimatePresence } from 'framer-motion';
 import TypingIndicator from '@/components/shared/TypingIndicator';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
@@ -603,6 +604,18 @@ export default function Chat() {
 
         <div ref={messagesEndRef} />
       </div>
+
+      {/* AI Conversation Helper */}
+      {myProfile && otherProfile && (
+        <AIConversationHelper
+          matchId={matchId}
+          myProfileId={myProfile.id}
+          theirProfile={otherProfile}
+          lastMessage={messages.find(m => m.sender_id === otherProfile?.id)?.content}
+          onSelectMessage={(msg) => setMessageText(msg)}
+          isNewMatch={messages.length === 0}
+        />
+      )}
 
       {/* Input */}
       <div className="bg-white border-t p-4">

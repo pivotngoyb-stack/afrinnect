@@ -11,8 +11,9 @@ import ProfileBadges from './ProfileBadges';
 import OptimizedImage from '../shared/OptimizedImage';
 import ProfileTierDecoration from './ProfileTierDecoration';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import MatchExplanation from '../matching/MatchExplanation';
 
-const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLike, onPass, onSuperLike, showActions = true, expanded = false, isLiking = false, isPassing = false, isSuperLiking = false }) {
+const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLike, onPass, onSuperLike, showActions = true, expanded = false, isLiking = false, isPassing = false, isSuperLiking = false, matchScore, matchReasons, matchBreakdown }) {
   const { t } = useLanguage();
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   
@@ -310,6 +311,16 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
             className="overflow-hidden"
           >
             <div className="p-6 space-y-4">
+              {/* AI Match Explanation */}
+              {(matchScore || profile?.matchScore) && (
+                <MatchExplanation 
+                  score={matchScore || profile?.matchScore || 0}
+                  reasons={matchReasons || profile?.matchReasons || []}
+                  breakdown={matchBreakdown || profile?.matchBreakdown || {}}
+                  confidence="good"
+                />
+              )}
+
               {/* Bio */}
               {profile?.bio && (
                 <div>

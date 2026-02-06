@@ -31,6 +31,8 @@ import { ProfileCardSkeleton } from '@/components/shared/SkeletonLoader';
 import BannedScreen from '@/components/auth/BannedScreen';
 import TrialExpiryBanner from '@/components/monetization/TrialExpiryBanner';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import FeedbackModal from '@/components/matching/FeedbackModal';
+import ProfileSuggestions from '@/components/matching/ProfileSuggestions';
 
 export default function Home() {
   usePerformanceMonitor('Home');
@@ -52,6 +54,10 @@ export default function Home() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackProfile, setFeedbackProfile] = useState(null);
+  const [profileViewStartTime, setProfileViewStartTime] = useState(Date.now());
+  const [photosViewedCount, setPhotosViewedCount] = useState(0);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { prompt: upgradePrompt, dismissPrompt } = useUpgradePrompts(myProfile);
@@ -697,19 +703,47 @@ export default function Home() {
         passer_id: myProfile.id,
         passed_id: currentProfile.id
       });
+
+      // Record interaction for ML learning
+      const timeSpent = Date.now() - profileViewStartTime;
+      try {
+        await base44.functions.invoke('mlMatchingEngine', {
+          action: 'record_interaction',
+          payload: {
+            userId: myProfile.id,
+            targetProfileId: currentProfile.id,
+            actionType: 'pass',
+            metadata: {
+              timeSpent,
+              photosViewed: photosViewedCount,
+              bioExpanded: false
+            }
+          }
+        });
+      } catch (e) {
+        console.log('ML tracking skipped:', e);
+      }
     },
     onSuccess: async () => {
       console.log('Pass recorded:', currentProfile.id);
       setSwipeHistory([...swipeHistory, { profile: currentProfile, action: 'pass', index: currentIndex }]);
+      
+      // Show feedback modal occasionally (every 5th pass)
+      const passCount = swipeHistory.filter(s => s.action === 'pass').length;
+      if (passCount > 0 && passCount % 5 === 0) {
+        setFeedbackProfile(currentProfile);
+        setShowFeedbackModal(true);
+      }
+      
       setCurrentIndex(prev => prev + 1);
+      setProfileViewStartTime(Date.now());
+      setPhotosViewedCount(0);
       
       // CRITICAL FIX: Force immediate cache refresh after swipe
       await refetch();
     },
     onError: (error) => {
       console.error('Failed to record pass:', error);
-      // Still advance on error to avoid getting stuck? Or maybe show error.
-      // For now, let's assume we advance to keep flow smooth, but maybe log it.
       setSwipeHistory([...swipeHistory, { profile: currentProfile, action: 'pass', index: currentIndex }]);
       setCurrentIndex(prev => prev + 1);
     }
@@ -925,22 +959,19 @@ export default function Home() {
             <AnimatePresence mode="wait">
               {hasMoreProfiles && currentProfile ? (
                 <ProfileCard
-                  key={currentProfile.id}
-                  profile={currentProfile}
-                  myLocation={myProfile?.location}
-                  onLike={() => handleLike(currentProfile)}
-                  onPass={handlePass}
-                  onSuperLike={() => handleSuperLike(currentProfile)}
-                  isLiking={likeMutation.isPending && !likeMutation.variables?.isSuperLike}
-                  isPassing={passMutation.isPending}
-                  isSuperLiking={likeMutation.isPending && likeMutation.variables?.isSuperLike}
-                  matchScore={currentProfile.matchScore}
-                  matchReasons={[
-                    `${Math.round(currentProfile.matchScore * 0.3)}% cultural compatibility`,
-                    `${Math.round(currentProfile.matchScore * 0.3)}% values alignment`,
-                    `${Math.round(currentProfile.matchScore * 0.2)}% location match`
-                  ]}
-                />
+                    key={currentProfile.id}
+                    profile={currentProfile}
+                    myLocation={myProfile?.location}
+                    onLike={() => handleLike(currentProfile)}
+                    onPass={handlePass}
+                    onSuperLike={() => handleSuperLike(currentProfile)}
+                    isLiking={likeMutation.isPending && !likeMutation.variables?.isSuperLike}
+                    isPassing={passMutation.isPending}
+                    isSuperLiking={likeMutation.isPending && likeMutation.variables?.isSuperLike}
+                    matchScore={currentProfile.matchScore}
+                    matchReasons={currentProfile.matchReasons || []}
+                    matchBreakdown={currentProfile.matchBreakdown || {}}
+                  />
               ) : (
                 <div className="flex flex-col items-center justify-center h-full max-w-md mx-auto text-center px-4">
                   <div className="w-24 h-24 bg-purple-50 rounded-full flex items-center justify-center mb-6 animate-pulse">
@@ -1065,8 +1096,23 @@ export default function Home() {
             setShowMessageModal(false);
             setPendingLikeProfile(null);
           }}
-          />
-          </main>
+        />
+
+        {/* Feedback Modal for ML Learning */}
+        <FeedbackModal
+          open={showFeedbackModal}
+          onClose={() => {
+            setShowFeedbackModal(false);
+            setFeedbackProfile(null);
+          }}
+          profile={feedbackProfile}
+          actionType="pass"
+          myProfileId={myProfile?.id}
+          onSubmit={(reasons) => {
+            console.log('Feedback submitted:', reasons);
+          }}
+        />
+        </main>
 
           {/* Ubuntu AI Button */}
           <UbuntuAIButton />
