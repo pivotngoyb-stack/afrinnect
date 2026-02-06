@@ -1,35 +1,52 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 
-const GA_ID = 'G-PLACEHOLDER'; // Will be replaced with your actual GA4 ID
+// GA ID is loaded dynamically from backend
+const GA_ID = null;
 
 export default function GoogleAnalytics() {
   const location = useLocation();
+  const [gaId, setGaId] = useState(null);
 
   useEffect(() => {
-    // Load GA script
-    if (typeof window !== 'undefined' && !window.gtag) {
-      const script = document.createElement('script');
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
-      script.async = true;
-      document.head.appendChild(script);
+    // Fetch GA ID from backend
+    const loadGA = async () => {
+      try {
+        const response = await fetch('/api/getGoogleAnalyticsId');
+        const data = await response.json();
+        if (data.ga_id) {
+          setGaId(data.ga_id);
+          
+          // Load GA script
+          if (typeof window !== 'undefined' && !window.gtag) {
+            const script = document.createElement('script');
+            script.src = `https://www.googletagmanager.com/gtag/js?id=${data.ga_id}`;
+            script.async = true;
+            document.head.appendChild(script);
 
-      window.dataLayer = window.dataLayer || [];
-      function gtag() { window.dataLayer.push(arguments); }
-      window.gtag = gtag;
-      gtag('js', new Date());
-      gtag('config', GA_ID);
-    }
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { window.dataLayer.push(arguments); }
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', data.ga_id);
+          }
+        }
+      } catch (e) {
+        // GA not configured, fail silently
+      }
+    };
+    loadGA();
   }, []);
 
   // Track page views on route change
   useEffect(() => {
-    if (window.gtag) {
-      window.gtag('config', GA_ID, {
+    if (window.gtag && gaId) {
+      window.gtag('config', gaId, {
         page_path: location.pathname + location.search,
       });
     }
-  }, [location]);
+  }, [location, gaId]);
 
   return null;
 }
