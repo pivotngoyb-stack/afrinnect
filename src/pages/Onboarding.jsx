@@ -73,10 +73,11 @@ export default function Onboarding() {
   const [user, setUser] = useState(null);
   const [showSafetyEducation, setShowSafetyEducation] = useState(false);
   const [formData, setFormData] = useState(() => {
-    // Check for referral code in URL
+    // Check for referral code, founder code, and ambassador code in URL
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
     const founderCode = urlParams.get('founder') || urlParams.get('code');
+    const ambassadorCode = urlParams.get('a') || urlParams.get('ambassador') || urlParams.get('r');
     
     if (refCode) {
       localStorage.setItem('referral_code', refCode);
@@ -84,16 +85,21 @@ export default function Onboarding() {
     if (founderCode) {
       localStorage.setItem('founder_invite_code', founderCode);
     }
+    if (ambassadorCode) {
+      localStorage.setItem('ambassador_code', ambassadorCode);
+    }
 
     // Load from localStorage if available
     const saved = localStorage.getItem('onboarding_data');
     const savedRef = localStorage.getItem('referral_code');
     const savedFounderCode = localStorage.getItem('founder_invite_code');
+    const savedAmbassadorCode = localStorage.getItem('ambassador_code');
     
-    return saved ? { ...JSON.parse(saved), referred_by: savedRef, founder_invite_code: savedFounderCode } : {
+    return saved ? { ...JSON.parse(saved), referred_by: savedRef, founder_invite_code: savedFounderCode, ambassador_code: savedAmbassadorCode } : {
       display_name: '',
       referred_by: savedRef || '',
       founder_invite_code: savedFounderCode || '',
+      ambassador_code: savedAmbassadorCode || '',
       birth_date: '',
       gender: '',
       looking_for: [],
