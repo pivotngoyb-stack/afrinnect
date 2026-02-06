@@ -421,6 +421,37 @@ export default function Onboarding() {
           </button>
         </div>
       )}
+
+      {/* Ambassador/Referral Code Input */}
+      {formData.ambassador_code ? (
+        <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-200 rounded-full">
+              <Users size={18} className="text-purple-700" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-purple-800 text-sm">Referred by a Creator!</p>
+              <p className="text-xs text-purple-600">Code: {formData.ambassador_code}</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3">
+          <button
+            onClick={() => {
+              const code = prompt('Enter your referral code (from a creator/ambassador):');
+              if (code) {
+                updateField('ambassador_code', code.toUpperCase());
+                localStorage.setItem('ambassador_code', code.toUpperCase());
+              }
+            }}
+            className="text-xs text-gray-500 hover:text-purple-600 flex items-center gap-1 mx-auto"
+          >
+            <Users size={14} />
+            Have a referral code?
+          </button>
+        </div>
+      )}
     </motion.div>,
 
     // Step 1: Basic Info

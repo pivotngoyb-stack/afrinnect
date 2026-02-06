@@ -328,22 +328,23 @@ export default function AmbassadorPortal() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Referral Link</label>
+                  <label className="text-sm font-medium text-gray-700">Referral Link (with code)</label>
                   <div className="flex gap-2 mt-1">
                     <input 
                       type="text" 
                       readOnly 
-                      value={ambassador.referral_link}
-                      className="flex-1 px-3 py-2 border rounded-lg bg-gray-50"
+                      value={`https://afrinnect.com/Onboarding?a=${ambassador.referral_code}`}
+                      className="flex-1 px-3 py-2 border rounded-lg bg-gray-50 text-sm"
                     />
-                    <Button onClick={() => copyToClipboard(ambassador.referral_link, 'Link')}>
+                    <Button onClick={() => copyToClipboard(`https://afrinnect.com/Onboarding?a=${ambassador.referral_code}`, 'Link')}>
                       <Copy size={16} className="mr-2" /> Copy
                     </Button>
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">Share this link - the code is automatically applied!</p>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Referral Code</label>
+                  <label className="text-sm font-medium text-gray-700">Referral Code (manual entry)</label>
                   <div className="flex gap-2 mt-1">
                     <input 
                       type="text" 
@@ -355,6 +356,7 @@ export default function AmbassadorPortal() {
                       <Copy size={16} className="mr-2" /> Copy
                     </Button>
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">Users can enter this code during signup</p>
                 </div>
 
                 {ambassador.qr_code_url && (
