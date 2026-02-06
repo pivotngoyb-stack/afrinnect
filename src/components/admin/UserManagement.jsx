@@ -323,7 +323,7 @@ export default function UserManagement({
                             variant="outline"
                             className="text-red-600"
                             onClick={() => onBanUser(profile)}
-                            disabled={user?.email === 'pivotngoyb@gmail.com'}
+                            disabled={userEmail === 'pivotngoyb@gmail.com'}
                           >
                             <Ban size={16} />
                           </Button>
