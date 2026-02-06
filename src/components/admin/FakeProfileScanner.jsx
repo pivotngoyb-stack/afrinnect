@@ -94,18 +94,23 @@ export default function FakeProfileScanner() {
   });
 
   const banProfileMutation = useMutation({
-    mutationFn: async (profileId) => {
+    mutationFn: async ({ profileId, detectionId }) => {
       await base44.entities.UserProfile.update(profileId, {
-        is_active: false
+        is_banned: true,
+        is_active: false,
+        ban_reason: 'Flagged as fake/suspicious profile by admin'
       });
 
-      await base44.entities.FakeProfileDetection.update(profileId, {
-        status: 'banned',
-        reviewed_by_human: true
-      });
+      if (detectionId) {
+        await base44.entities.FakeProfileDetection.update(detectionId, {
+          status: 'banned',
+          reviewed_by_human: true
+        });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['fake-profile-detections']);
+      queryClient.invalidateQueries(['all-profiles-scan']);
     }
   });
 
