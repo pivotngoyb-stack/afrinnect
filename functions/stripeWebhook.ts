@@ -1,4 +1,22 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+
+// Helper to process ambassador commission events
+async function processAmbassadorEvent(base44, eventType, userId, subscriptionId, amount) {
+    try {
+        const referrals = await base44.asServiceRole.entities.AmbassadorReferral.filter({ user_id: userId });
+        if (referrals.length === 0) return;
+
+        await base44.functions.invoke('ambassadorProcessEvent', {
+            event_type: eventType,
+            user_id: userId,
+            subscription_id: subscriptionId,
+            amount: amount,
+            currency: 'USD'
+        });
+    } catch (e) {
+        console.error('Ambassador event processing failed:', e);
+    }
+}
 import Stripe from 'npm:stripe@^14.14.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
