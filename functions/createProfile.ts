@@ -274,6 +274,89 @@ Deno.serve(async (req) => {
         }
     }
 
+    // Ambassador Referral Attribution
+    if (formData.ambassador_code) {
+        try {
+            const ambassadors = await base44.asServiceRole.entities.Ambassador.filter({
+                referral_code: formData.ambassador_code.toUpperCase(),
+                status: 'active'
+            });
+
+            if (ambassadors.length > 0) {
+                const ambassador = ambassadors[0];
+                
+                // Anti-fraud: Check for self-referral
+                if (ambassador.user_id !== user.id && ambassador.email !== user.email) {
+                    const now = new Date();
+                    const attributionExpiry = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+
+                    // Create referral record
+                    await base44.asServiceRole.entities.AmbassadorReferral.create({
+                        ambassador_id: ambassador.id,
+                        user_id: user.id,
+                        user_profile_id: newProfile.id,
+                        attribution_source: 'code',
+                        referral_code_used: formData.ambassador_code.toUpperCase(),
+                        attributed_at: now.toISOString(),
+                        signup_at: now.toISOString(),
+                        attribution_expires_at: attributionExpiry.toISOString(),
+                        status: 'signed_up',
+                        device_id: deviceId,
+                        is_founding_member: isFoundingMember,
+                        founding_trial_ends_at: foundingTrialEndsAt,
+                        referral_history: [{
+                            ambassador_id: ambassador.id,
+                            source: 'code',
+                            timestamp: now.toISOString()
+                        }]
+                    });
+
+                    // Record signup event
+                    await base44.asServiceRole.entities.AmbassadorReferralEvent.create({
+                        ambassador_id: ambassador.id,
+                        user_id: user.id,
+                        event_type: 'signup',
+                        device_id: deviceId,
+                        metadata: { referral_code: formData.ambassador_code }
+                    });
+
+                    // Update ambassador stats
+                    await base44.asServiceRole.entities.Ambassador.update(ambassador.id, {
+                        stats: {
+                            ...ambassador.stats,
+                            total_signups: (ambassador.stats?.total_signups || 0) + 1
+                        }
+                    });
+
+                    // Check for signup bonus
+                    const plan = ambassador.commission_plan_id 
+                        ? (await base44.asServiceRole.entities.AmbassadorCommissionPlan.filter({ id: ambassador.commission_plan_id }))[0]
+                        : (await base44.asServiceRole.entities.AmbassadorCommissionPlan.filter({ is_default: true, is_active: true }))[0];
+
+                    if (plan?.signup_bonus > 0) {
+                        const tierMultiplier = plan.tier_multipliers?.[ambassador.tier] || 1;
+                        const holdUntil = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000));
+
+                        await base44.asServiceRole.entities.AmbassadorCommission.create({
+                            ambassador_id: ambassador.id,
+                            user_id: user.id,
+                            commission_type: 'signup_bonus',
+                            original_amount: plan.signup_bonus,
+                            amount: plan.signup_bonus * tierMultiplier,
+                            tier_multiplier: tierMultiplier,
+                            currency: 'USD',
+                            status: 'pending',
+                            hold_until: holdUntil.toISOString()
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Ambassador attribution failed:', e);
+            // Don't fail profile creation
+        }
+    }
+
     return Response.json({ success: true, profile: newProfile });
 
   } catch (error) {
