@@ -18,7 +18,7 @@ const PASS_REASONS = [
 const UNMATCH_REASONS = [
   { id: 'no_response', label: 'They never responded', icon: MessageSquare },
   { id: 'conversation_died', label: 'Conversation fizzled out', icon: ThumbsDown },
-  { id: 'not_compatible', label: 'We're not compatible', icon: Heart },
+  { id: 'not_compatible', label: 'Not compatible', icon: Heart },
   { id: 'uncomfortable', label: 'They made me uncomfortable', icon: AlertCircle },
   { id: 'met_someone', label: 'I met someone else', icon: UserX },
   { id: 'fake_profile', label: 'Fake or misleading profile', icon: Camera },
