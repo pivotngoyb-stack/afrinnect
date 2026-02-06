@@ -416,22 +416,18 @@ export default function Profile() {
 
         {/* Video Profile */}
         {profile?.video_profile_url && (
-        <Card className="mb-6 overflow-hidden border-0 shadow-lg">
-        <div className="bg-gradient-to-r from-pink-500 to-rose-600 p-4">
-          <div className="flex items-center gap-2 text-white">
-            <Video size={20} />
-            <h3 className="font-bold">{t('admin.home.videoIntro')}</h3>
-          </div>
-        </div>
-        <div className="bg-black aspect-[9/16] max-h-[500px] flex justify-center">
-          <video 
-            src={profile.video_profile_url} 
-            controls 
-            className="h-full w-full object-contain"
-            poster={profile.primary_photo}
-          />
-        </div>
-        </Card>
+          <Card className="mb-6 overflow-hidden border-0 shadow-lg">
+            <div className="bg-gradient-to-r from-pink-500 to-rose-600 p-4">
+              <div className="flex items-center gap-2 text-white">
+                <Video size={20} />
+                <h3 className="font-bold">{t('admin.home.videoIntro')}</h3>
+              </div>
+            </div>
+            <VideoProfilePlayer 
+              videoUrl={profile.video_profile_url} 
+              className="aspect-[9/16] max-h-[500px]"
+            />
+          </Card>
         )}
 
         {/* Quick Info Grid */}
