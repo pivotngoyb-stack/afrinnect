@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-// AI-powered profile optimization suggestions v2
+// AI-powered profile optimization suggestions
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
@@ -10,7 +10,8 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { userId } = await req.json();
+        const body = await req.json().catch(() => ({}));
+        const userId = body.userId;
 
         // Get user's profile
         const profiles = await base44.entities.UserProfile.filter({ user_id: userId || user.id });
@@ -44,7 +45,7 @@ Deno.serve(async (req) => {
         // Analyze what successful profiles have
         const successfulTraits = analyzeSuccessfulProfiles(successfulProfiles);
 
-        // Generate AI suggestions
+        // Generate suggestions
         const suggestions = await generateSuggestions(base44, myProfile, {
             viewToLikeRate,
             likeToMatchRate,
@@ -174,7 +175,7 @@ async function generateSuggestions(base44, profile, stats) {
         suggestions.push({
             suggestion_type: 'bio',
             title: 'Expand your bio',
-            description: `Your bio is shorter than average. Consider mentioning your cultural heritage, career aspirations, or what you're looking for in a partner.`,
+            description: 'Your bio is shorter than average. Consider mentioning your cultural heritage, career aspirations, or what you are looking for in a partner.',
             priority: 7,
             potential_impact: 'medium',
             action_link: 'EditProfile'
@@ -199,7 +200,7 @@ async function generateSuggestions(base44, profile, stats) {
         suggestions.push({
             suggestion_type: 'verification',
             title: 'Verify your profile',
-            description: 'Verified profiles get 3x more matches! It shows you're real and builds trust with potential matches.',
+            description: 'Verified profiles get 3x more matches! It shows you are real and builds trust with potential matches.',
             priority: 9,
             potential_impact: 'high',
             action_link: 'VerifyPhoto'
@@ -235,7 +236,7 @@ async function generateSuggestions(base44, profile, stats) {
         suggestions.push({
             suggestion_type: 'activity',
             title: 'Be more active in discovery',
-            description: 'You're getting likes but not matching. Spend more time exploring profiles - your perfect match might be waiting!',
+            description: 'You are getting likes but not matching. Spend more time exploring profiles - your perfect match might be waiting!',
             priority: 7,
             potential_impact: 'medium',
             action_link: 'Home'
