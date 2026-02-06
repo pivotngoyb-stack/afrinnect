@@ -38,7 +38,8 @@ Deno.serve(async (req) => {
     let isFoundingMember = false;
     let foundingTrialEndsAt = null;
     let foundingMemberSource = null;
-    let trialExpiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(); // Default 3-day trial
+    let grantPremiumTrial = false; // Only true if founder code or auto-assign
+    let trialExpiresAt = null;
 
     try {
         const settingsRecords = await base44.asServiceRole.entities.SystemSettings.filter({ key: 'founder_program' });
@@ -65,6 +66,7 @@ Deno.serve(async (req) => {
 
                 if (!isExpired && !isMaxed) {
                     isFoundingMember = true;
+                    grantPremiumTrial = true;
                     foundingMemberSource = 'invite_code';
                     const trialDays = code.trial_days || founderSettings.trial_days || 183;
                     foundingTrialEndsAt = new Date(now.getTime() + (trialDays * 24 * 60 * 60 * 1000)).toISOString();
@@ -89,14 +91,16 @@ Deno.serve(async (req) => {
         // Auto-assign if founders mode is on and auto-assign is enabled
         else if (founderSettings.founders_mode_enabled && founderSettings.auto_assign_new_users) {
             isFoundingMember = true;
+            grantPremiumTrial = true;
             foundingMemberSource = 'global_toggle';
             const trialDays = founderSettings.trial_days || 183;
             foundingTrialEndsAt = new Date(Date.now() + (trialDays * 24 * 60 * 60 * 1000)).toISOString();
             trialExpiresAt = foundingTrialEndsAt;
         }
+        // If founder mode is OFF and no code provided, user starts as FREE (no trial)
     } catch (e) {
         console.error('Founder program check failed:', e);
-        // Continue with default trial
+        // Continue with free tier (no premium)
     }
 
     // 2.1 Validate Age (Server-side Enforcement)
