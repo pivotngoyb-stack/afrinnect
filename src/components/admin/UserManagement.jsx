@@ -199,6 +199,7 @@ export default function UserManagement({
               const user = users?.find(u => u.id === profile.user_id);
               // Show profile even if user record not found (display email as N/A)
               const isUserAdmin = user?.role === 'admin' || user?.email === 'pivotngoyb@gmail.com';
+              const userEmail = user?.email || profile.created_by || 'N/A';
               
               return (
                 <div key={profile.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition border">
