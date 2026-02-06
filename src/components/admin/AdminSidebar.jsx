@@ -13,7 +13,7 @@ import Logo from '@/components/shared/Logo';
 export default function AdminSidebar({ currentView, onViewChange, stats, onLogout, userEmail }) {
   const menuItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'founders', label: 'Founding Members', icon: Crown, badge: stats?.totalFounders },
+    { id: 'founder_program', label: 'Founding Members', icon: Crown, badge: stats?.totalFounders },
     { id: 'users', label: 'Users', icon: Users, badge: stats?.totalProfiles },
     { id: 'verification', label: 'Verification', icon: Shield, badge: stats?.verifiedUsers },
     { id: 'moderation', label: 'Moderation', icon: AlertTriangle, badge: stats?.pendingReports, alert: stats?.pendingReports > 0 },
