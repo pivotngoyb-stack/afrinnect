@@ -428,6 +428,33 @@ export default function Landing() {
             </div>
           </div>
 
+          {/* Featured Members */}
+          <div className="mb-16">
+            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">Meet Our Members</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {[
+                "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/3a1a2d64b_hf_20260205_233951_9c93cfee-36d8-40bf-b74c-aa7d976a55e6.png",
+                "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/d7dbbca92_hf_20260205_233951_f5202b10-c373-421f-a6a5-526594516b69.png",
+                "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/9010d2015_hf_20260205_043404_dec0a2af-faf2-4bb2-a530-2294bac33faa.png"
+              ].map((photo, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: idx * 0.15 }}
+                  viewport={{ once: true }}
+                  className="rounded-3xl overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300"
+                >
+                  <img
+                    src={photo}
+                    alt={`Featured member ${idx + 1}`}
+                    className="w-full h-[400px] md:h-[450px] object-cover"
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
           {/* Community Photo Grid */}
           <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
             {communityPhotos.map((photo, idx) => (
