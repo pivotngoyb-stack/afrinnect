@@ -147,6 +147,9 @@ Deno.serve(async (req) => {
                         title: 'Subscription Renewed',
                         message: `Your ${tierName} subscription has been automatically renewed.`
                     });
+                    
+                    // Process ambassador renewal commission
+                    await processAmbassadorEvent(base44, 'renew', userId, subscriptionId, invoice.amount_paid / 100);
                 } else if (invoice.billing_reason === 'subscription_create') {
                      await base44.asServiceRole.entities.Notification.create({
                         user_profile_id: profileId,
@@ -154,6 +157,29 @@ Deno.serve(async (req) => {
                         title: 'Upgrade Successful! 🌟',
                         message: `Welcome to ${tierName.charAt(0).toUpperCase() + tierName.slice(1)}! You now have access to all exclusive features.`
                     });
+                    
+                    // Process ambassador subscription commission
+                    await processAmbassadorEvent(base44, 'subscribe', userId, subscriptionId, invoice.amount_paid / 100);
+                }
+            }
+        }
+    }
+
+    // Handle Refunds
+    if (event.type === 'charge.refunded') {
+        const charge = event.data.object;
+        const invoiceId = charge.invoice;
+        
+        if (invoiceId) {
+            const invoice = await stripe.invoices.retrieve(invoiceId);
+            const subscriptionId = invoice.subscription;
+            
+            if (subscriptionId) {
+                const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+                const { userId, profileId } = subscription.metadata;
+                
+                if (userId) {
+                    await processAmbassadorEvent(base44, 'refund', userId, subscriptionId, charge.amount_refunded / 100);
                 }
             }
         }
