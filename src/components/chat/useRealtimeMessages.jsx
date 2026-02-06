@@ -1,154 +1,95 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 export function useRealtimeMessages(matchId, myProfileId, enabled = true) {
   const [isConnected, setIsConnected] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
-  const socketRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const typingStateRef = useRef(null);
   const queryClient = useQueryClient();
 
+  // Use Base44's entity subscriptions for real-time updates
   useEffect(() => {
     if (!enabled || !matchId || !myProfileId) return;
 
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
-    const reconnectDelay = 3000;
-    let heartbeatInterval;
+    setIsConnected(true);
 
-    // Create WebSocket connection with advanced reconnection
-    const connectWebSocket = () => {
-      if (reconnectAttempts >= maxReconnectAttempts) {
-        console.error('Max reconnection attempts reached');
-        return;
-      }
-
-      try {
-        // Check if WebSocket is supported
-        if (!('WebSocket' in window)) {
-          console.warn('WebSocket not supported, falling back to polling');
-          return;
+    // Subscribe to new messages in this match
+    const unsubscribeMessages = base44.entities.Message.subscribe((event) => {
+      if (event.data?.match_id === matchId) {
+        if (event.type === 'create' && event.data.sender_id !== myProfileId) {
+          // New message from other user
+          queryClient.invalidateQueries({ queryKey: ['messages', matchId] });
+        } else if (event.type === 'update') {
+          // Message updated (read receipt)
+          queryClient.invalidateQueries({ queryKey: ['messages', matchId] });
         }
-        
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/api/functions/realtimeChat`;
-        const ws = new WebSocket(wsUrl);
-
-        ws.onopen = () => {
-          console.log('WebSocket connected');
-          setIsConnected(true);
-          reconnectAttempts = 0;
-          
-          // Authenticate
-          ws.send(JSON.stringify({
-            type: 'auth',
-            userId: myProfileId,
-            matchId: matchId
-          }));
-
-          // Send heartbeat every 30 seconds to keep connection alive
-          heartbeatInterval = setInterval(() => {
-            if (ws.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({ type: 'ping' }));
-            }
-          }, 30000);
-        };
-
-        ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-
-            // Handle typing indicator
-            if (data.type === 'user_typing') {
-              setOtherUserTyping(data.isTyping);
-              if (data.isTyping) {
-                clearTimeout(typingTimeoutRef.current);
-                typingTimeoutRef.current = setTimeout(() => {
-                  setOtherUserTyping(false);
-                }, 3000);
-              }
-            }
-
-            // Handle new message
-            if (data.type === 'new_message') {
-              queryClient.invalidateQueries(['messages', matchId]);
-            }
-
-            // Handle read receipt
-            if (data.type === 'message_read') {
-              queryClient.invalidateQueries(['messages', matchId]);
-            }
-          } catch (error) {
-            console.error('WebSocket message parse error:', error);
-          }
-        };
-
-        ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-          setIsConnected(false);
-        };
-
-        ws.onclose = (event) => {
-          console.log('WebSocket closed:', event.code, event.reason);
-          setIsConnected(false);
-          clearInterval(heartbeatInterval);
-          
-          // Only reconnect if it wasn't a clean close
-          if (event.code !== 1000) {
-            reconnectAttempts++;
-            const delay = Math.min(reconnectDelay * reconnectAttempts, 30000);
-            console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts})`);
-            setTimeout(connectWebSocket, delay);
-          }
-        };
-
-        socketRef.current = ws;
-      } catch (error) {
-        console.error('WebSocket connection error:', error);
-        reconnectAttempts++;
-        setTimeout(connectWebSocket, reconnectDelay);
       }
-    };
+    });
 
-    connectWebSocket();
+    // Subscribe to typing indicators via a lightweight entity
+    // We'll use Match entity updates for typing status
+    const unsubscribeMatch = base44.entities.Match.subscribe((event) => {
+      if (event.data?.id === matchId && event.type === 'update') {
+        const typingUser = event.data.typing_user_id;
+        if (typingUser && typingUser !== myProfileId) {
+          setOtherUserTyping(true);
+          clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = setTimeout(() => {
+            setOtherUserTyping(false);
+          }, 3000);
+        } else if (!typingUser) {
+          setOtherUserTyping(false);
+        }
+      }
+    });
 
     return () => {
-      reconnectAttempts = maxReconnectAttempts; // Prevent reconnection on unmount
-      clearInterval(heartbeatInterval);
-      if (socketRef.current) {
-        socketRef.current.close(1000, 'Component unmounted');
-      }
+      setIsConnected(false);
+      unsubscribeMessages();
+      unsubscribeMatch();
       clearTimeout(typingTimeoutRef.current);
     };
   }, [matchId, myProfileId, enabled, queryClient]);
 
-  const sendTypingIndicator = (isTyping) => {
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({
-        type: 'typing',
-        userId: myProfileId,
-        isTyping
-      }));
-    }
-  };
+  // Debounced typing indicator
+  const sendTypingIndicator = useCallback(async (isTyping) => {
+    if (!matchId || !myProfileId) return;
+    
+    // Debounce typing updates
+    if (typingStateRef.current === isTyping) return;
+    typingStateRef.current = isTyping;
 
-  const notifyNewMessage = (message) => {
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({
-        type: 'message',
-        message
-      }));
+    try {
+      await base44.entities.Match.update(matchId, {
+        typing_user_id: isTyping ? myProfileId : null
+      });
+    } catch (e) {
+      // Silently fail typing indicators
+      console.debug('Typing indicator update failed:', e);
     }
-  };
+  }, [matchId, myProfileId]);
 
-  const sendReadReceipt = (messageId) => {
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({
-        type: 'read',
-        messageId
-      }));
+  // No-op for WebSocket compatibility - messages are created directly
+  const notifyNewMessage = useCallback((message) => {
+    // Messages are created via sendMessage function
+    // Real-time updates happen via entity subscription
+    queryClient.invalidateQueries({ queryKey: ['messages', matchId] });
+  }, [matchId, queryClient]);
+
+  // Send read receipt by updating messages
+  const sendReadReceipt = useCallback(async (messageId) => {
+    if (!messageId) return;
+    try {
+      await base44.entities.Message.update(messageId, {
+        is_read: true,
+        read_at: new Date().toISOString()
+      });
+    } catch (e) {
+      console.debug('Read receipt failed:', e);
     }
-  };
+  }, []);
 
   return {
     isConnected,
