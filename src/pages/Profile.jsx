@@ -29,6 +29,7 @@ import SpotifySection from '@/components/profile/SpotifySection';
 import ProfileBadges from '@/components/profile/ProfileBadges';
 import NotificationBell from '@/components/shared/NotificationBell';
 import VideoProfilePlayer from '@/components/profile/VideoProfilePlayer';
+import ProfileSuggestions from '@/components/matching/ProfileSuggestions';
 import { Share2, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
@@ -359,6 +360,13 @@ export default function Profile() {
               </Link>
             </CardContent>
           </Card>
+        )}
+
+        {/* AI Profile Suggestions (Own profile only) */}
+        {isOwnProfile && profile && (
+          <div className="mb-6">
+            <ProfileSuggestions userProfile={profile} />
+          </div>
         )}
 
         {/* Spotify/IG Section */}
