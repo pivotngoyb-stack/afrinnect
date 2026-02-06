@@ -391,7 +391,7 @@ export default function AmbassadorManagement() {
                       )}
                       {amb.status === 'active' && (
                         <>
-                          <Button size="sm" variant="outline" onClick={() => processPayoutMutation.mutate(amb.id)}>
+                          <Button size="sm" variant="outline" onClick={() => handleInitiatePayout(amb.id)}>
                             Payout
                           </Button>
                           <Button size="sm" variant="ghost" onClick={() => suspendAmbassadorMutation.mutate({ ambassador_id: amb.id, reason: 'Admin action' })}>
