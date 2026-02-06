@@ -151,10 +151,13 @@ export default function AdminDashboard() {
     queryKey: ['admin-users', profiles],
     queryFn: async () => {
       if (currentView === 'users') {
-        const userIds = profiles.map(p => p.user_id).filter(Boolean);
+        // Filter to only valid MongoDB ObjectIds (24 hex chars)
+        const validObjectIdRegex = /^[a-f\d]{24}$/i;
+        const userIds = profiles
+          .map(p => p.user_id)
+          .filter(id => id && validObjectIdRegex.test(id));
         if (userIds.length === 0) return [];
         // Fetch only the users for the current page of profiles
-        // We use $in operator if possible, or we might iterate if $in not supported, but $in is standard.
         return base44.entities.User.filter({ id: { $in: userIds } });
       }
       return base44.entities.User.list('-created_date', 500);
