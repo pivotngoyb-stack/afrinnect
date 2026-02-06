@@ -13,6 +13,7 @@ import Logo from '@/components/shared/Logo';
 export default function AdminSidebar({ currentView, onViewChange, stats, onLogout, userEmail }) {
   const menuItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'founders', label: 'Founding Members', icon: Crown, badge: stats?.totalFounders },
     { id: 'users', label: 'Users', icon: Users, badge: stats?.totalProfiles },
     { id: 'verification', label: 'Verification', icon: Shield, badge: stats?.verifiedUsers },
     { id: 'moderation', label: 'Moderation', icon: AlertTriangle, badge: stats?.pendingReports, alert: stats?.pendingReports > 0 },
@@ -28,7 +29,6 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
     { id: 'events', label: 'Events', icon: Calendar, badge: stats?.totalEvents },
     { id: 'vendors', label: 'Vendors', icon: Briefcase },
     { id: 'waitlist', label: 'Waitlist', icon: Users },
-    { id: 'founder_program', label: 'Founder Program', icon: Crown },
     { id: 'messaging', label: 'Broadcast', icon: MessageCircle },
     { id: 'support', label: 'Support', icon: Bell },
     { id: 'compliance', label: 'Compliance', icon: FileText },

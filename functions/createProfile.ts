@@ -33,8 +33,68 @@ Deno.serve(async (req) => {
 
     // 3. Prepare Secure Data
     const deviceId = formData.device_id || `web_${Date.now()}`;
-    // 3-Day Trial (Server-side enforced)
-    const trialExpiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+    
+    // 3.1 Check Founding Member Program Status
+    let isFoundingMember = false;
+    let founderTrialEndsAt = null;
+    let founderSource = null;
+    let founderCodeUsed = null;
+    let trialDays = 3; // Default 3-day trial
+    
+    const founderSettingsRecords = await base44.asServiceRole.entities.SystemSettings.filter({ key: 'founder_program' });
+    const founderSettings = founderSettingsRecords[0]?.value || {
+      founders_mode_enabled: false,
+      auto_assign_new_users: false,
+      trial_days: 183
+    };
+    
+    // Check if user provided an invite code
+    if (formData.invite_code) {
+      const codes = await base44.asServiceRole.entities.FounderInviteCode.filter({ 
+        code: formData.invite_code.toUpperCase(),
+        is_active: true
+      });
+      
+      if (codes.length > 0) {
+        const code = codes[0];
+        const codeExpired = code.expires_at && new Date(code.expires_at) < new Date();
+        const codeMaxed = code.current_redemptions >= code.max_redemptions;
+        
+        if (!codeExpired && !codeMaxed) {
+          isFoundingMember = true;
+          trialDays = code.trial_days || founderSettings.trial_days || 183;
+          founderSource = 'invite_code';
+          founderCodeUsed = code.code;
+          
+          // Increment redemption count
+          await base44.asServiceRole.entities.FounderInviteCode.update(code.id, {
+            current_redemptions: (code.current_redemptions || 0) + 1
+          });
+          
+          // Record redemption
+          await base44.asServiceRole.entities.FounderCodeRedemption.create({
+            code_id: code.id,
+            code: code.code,
+            user_id: user.id,
+            user_email: user.email,
+            device_id: deviceId
+          });
+        }
+      }
+    }
+    
+    // Auto-assign if founders mode is enabled and auto-assign is on
+    if (!isFoundingMember && founderSettings.founders_mode_enabled && founderSettings.auto_assign_new_users) {
+      isFoundingMember = true;
+      trialDays = founderSettings.trial_days || 183;
+      founderSource = 'global_toggle';
+    }
+    
+    // Calculate trial end date
+    const trialExpiresAt = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000).toISOString();
+    if (isFoundingMember) {
+      founderTrialEndsAt = trialExpiresAt;
+    }
 
     // 2.1 Validate Age (Server-side Enforcement)
     if (formData.birth_date) {
@@ -119,6 +179,15 @@ Deno.serve(async (req) => {
         is_premium: true,
         subscription_tier: 'premium',
         premium_until: trialExpiresAt,
+        // Founding Member Fields
+        is_founding_member: isFoundingMember,
+        founding_member_granted_at: isFoundingMember ? new Date().toISOString() : null,
+        founding_member_trial_ends_at: founderTrialEndsAt,
+        founding_member_source: founderSource,
+        founding_member_code_used: founderCodeUsed,
+        founding_member_eligible: !isFoundingMember, // If they're a founder, they've used their eligibility
+        founding_trial_consumed: isFoundingMember,
+        badges: isFoundingMember ? ['founding_member'] : [],
         verification_status: {
           email_verified: true, // Auto-verify email on signup as they own the account
           phone_verified: false,

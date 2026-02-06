@@ -56,6 +56,7 @@ import RateLimitMonitor from '@/components/admin/RateLimitMonitor';
 import DisputeManagement from '@/components/admin/DisputeManagement';
 import ErrorLogsDashboard from '@/components/admin/ErrorLogsDashboard';
 import QuickActions from '@/components/admin/QuickActions';
+import FounderProgramManagement from '@/components/admin/FounderProgramManagement';
 import { FileText } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -614,6 +615,8 @@ export default function AdminDashboard() {
         return <DisputeManagement disputes={disputes} currentUser={currentUser} />;
       case 'error_logs':
         return <ErrorLogsDashboard />;
+      case 'founders':
+        return <FounderProgramManagement />;
       case 'reports':
         return (
           <div className="max-w-2xl mx-auto space-y-6">
