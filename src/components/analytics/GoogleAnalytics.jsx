@@ -13,8 +13,8 @@ export default function GoogleAnalytics() {
     // Fetch GA ID from backend
     const loadGA = async () => {
       try {
-        const response = await fetch('/api/getGoogleAnalyticsId');
-        const data = await response.json();
+        const response = await base44.functions.invoke('getGoogleAnalyticsId', {});
+        const data = response.data;
         if (data.ga_id) {
           setGaId(data.ga_id);
           
