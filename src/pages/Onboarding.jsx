@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight, ArrowLeft, Camera, Loader2, Check, Heart,
-  Globe, Users, Shield, Sparkles, MapPin
+  Globe, Users, Shield, Sparkles, MapPin, Crown, Gift
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,17 +76,24 @@ export default function Onboarding() {
     // Check for referral code in URL
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
+    const founderCode = urlParams.get('founder') || urlParams.get('code');
+    
     if (refCode) {
       localStorage.setItem('referral_code', refCode);
+    }
+    if (founderCode) {
+      localStorage.setItem('founder_invite_code', founderCode);
     }
 
     // Load from localStorage if available
     const saved = localStorage.getItem('onboarding_data');
     const savedRef = localStorage.getItem('referral_code');
+    const savedFounderCode = localStorage.getItem('founder_invite_code');
     
-    return saved ? { ...JSON.parse(saved), referred_by: savedRef } : {
+    return saved ? { ...JSON.parse(saved), referred_by: savedRef, founder_invite_code: savedFounderCode } : {
       display_name: '',
       referred_by: savedRef || '',
+      founder_invite_code: savedFounderCode || '',
       birth_date: '',
       gender: '',
       looking_for: [],
@@ -376,6 +383,38 @@ export default function Onboarding() {
       <p className="text-sm text-gray-400">
         {t('onboarding.welcome.terms')}
       </p>
+
+      {/* Founding Member Code Input */}
+      {formData.founder_invite_code ? (
+        <div className="mt-6 p-4 bg-gradient-to-r from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-amber-200 rounded-full">
+              <Crown size={20} className="text-amber-700" />
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-amber-800">Founding Member Code Applied!</p>
+              <p className="text-sm text-amber-700">Code: {formData.founder_invite_code}</p>
+              <p className="text-xs text-amber-600 mt-1">You'll receive 6 months of Premium free!</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-6">
+          <button
+            onClick={() => {
+              const code = prompt('Enter your Founding Member invite code:');
+              if (code) {
+                updateField('founder_invite_code', code.toUpperCase());
+                localStorage.setItem('founder_invite_code', code.toUpperCase());
+              }
+            }}
+            className="text-sm text-purple-600 hover:text-purple-800 flex items-center gap-2 mx-auto"
+          >
+            <Gift size={16} />
+            Have an invite code?
+          </button>
+        </div>
+      )}
     </motion.div>,
 
     // Step 1: Basic Info
