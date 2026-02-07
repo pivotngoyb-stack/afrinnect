@@ -3,6 +3,37 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    
+    const body = await req.json();
+    
+    // Check if this is an admin/system call with profile_id and updates
+    if (body.profile_id && body.updates) {
+      // System-level update (from other functions like checkExpiredTrials)
+      const { profile_id, updates } = body;
+      
+      // Whitelist allowed system updates
+      const allowedSystemFields = [
+        'is_premium', 'subscription_tier', 'premium_until',
+        'is_banned', 'is_suspended', 'suspension_expires_at', 'suspension_reason', 'ban_reason',
+        'violation_count', 'warning_count', 'is_active',
+        'founding_member_converted', 'founding_member_converted_at'
+      ];
+      
+      const safeUpdates = {};
+      for (const key of Object.keys(updates)) {
+        if (allowedSystemFields.includes(key)) {
+          safeUpdates[key] = updates[key];
+        }
+      }
+      
+      if (Object.keys(safeUpdates).length > 0) {
+        await base44.asServiceRole.entities.UserProfile.update(profile_id, safeUpdates);
+      }
+      
+      return Response.json({ success: true, updated_fields: Object.keys(safeUpdates) });
+    }
+    
+    // Regular user update flow
     const user = await base44.auth.me();
 
     if (!user) {
@@ -15,7 +46,7 @@ Deno.serve(async (req) => {
         languages, religion, education, profession, relationship_goal,
         height_cm, lifestyle, cultural_values, interests, looking_for,
         video_profile_url, push_token
-    } = await req.json();
+    } = body;
 
     // 1. Get existing profile
     const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
