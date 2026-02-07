@@ -1,12 +1,12 @@
-import { createClient } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 // Check and downgrade expired premium trials
-// NOTE: This runs as a scheduled automation, so we use service role directly
+// NOTE: This runs as a scheduled automation with service-level access
 Deno.serve(async (req) => {
   try {
-    const base44 = createClient({
-      appId: Deno.env.get('BASE44_APP_ID')
-    });
+    const base44 = createClientFromRequest(req);
+    
+    // Skip auth check - this runs as scheduled automation with service role
     
     // Get all premium users whose trial has expired
     const now = new Date().toISOString();
