@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
             }
         }
 
-        // 5. ROBUST AI SCAM & SAFETY ANALYSIS & AUTOMATIC ENFORCEMENT
+        // 6. ROBUST AI SCAM & SAFETY ANALYSIS & AUTOMATIC ENFORCEMENT
         let isFlagged = false;
         let isDeleted = false;
         let scamAnalysisData = null;
