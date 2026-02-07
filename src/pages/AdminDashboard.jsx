@@ -58,6 +58,7 @@ import ErrorLogsDashboard from '@/components/admin/ErrorLogsDashboard';
 import QuickActions from '@/components/admin/QuickActions';
 import FounderProgramManagement from '@/components/admin/FounderProgramManagement';
 import AmbassadorManagement from '@/components/admin/AmbassadorManagement';
+import PageVisitsAnalytics from '@/components/admin/PageVisitsAnalytics';
 import { FileText } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -623,6 +624,8 @@ export default function AdminDashboard() {
         return <DisputeManagement disputes={disputes} currentUser={currentUser} />;
       case 'error_logs':
         return <ErrorLogsDashboard />;
+      case 'page_visits':
+        return <PageVisitsAnalytics />;
       case 'reports':
         return (
           <div className="max-w-2xl mx-auto space-y-6">
