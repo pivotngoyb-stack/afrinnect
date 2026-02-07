@@ -51,18 +51,23 @@ Deno.serve(async (req) => {
           // Has active subscription - don't downgrade, just update premium_until
           const activeSub = subscriptions[0];
           if (activeSub.end_date) {
-            await base44.asServiceRole.entities.UserProfile.update(profile.id, {
-              premium_until: activeSub.end_date
+            // Use updateUserProfile function for reliable updates
+            await base44.functions.invoke('updateUserProfile', {
+              profile_id: profile.id,
+              updates: { premium_until: activeSub.end_date }
             });
           }
           continue;
         }
         
-        // Downgrade to free tier using service role
-        await base44.asServiceRole.entities.UserProfile.update(profile.id, {
-          is_premium: false,
-          subscription_tier: 'free',
-          premium_until: null
+        // Downgrade to free tier using updateUserProfile function
+        await base44.functions.invoke('updateUserProfile', {
+          profile_id: profile.id,
+          updates: {
+            is_premium: false,
+            subscription_tier: 'free',
+            premium_until: null
+          }
         });
 
         // Send notification
