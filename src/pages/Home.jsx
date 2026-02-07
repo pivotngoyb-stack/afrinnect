@@ -165,6 +165,15 @@ export default function Home() {
           console.log('Subscription revalidation skipped:', e);
         }
         
+        // Track login event
+        try {
+          await base44.functions.invoke('trackAnalytics', {
+            eventType: 'user_login',
+            userId: user.id,
+            properties: { source: 'home_page' }
+          });
+        } catch (e) {}
+        
         setIsCheckingAuth(false);
       } catch (e) {
         // Not authenticated - redirect to landing
