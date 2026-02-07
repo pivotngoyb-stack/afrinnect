@@ -25,6 +25,7 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
     { id: 'revenue', label: 'Revenue', icon: DollarSign },
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'page_visits', label: 'Page Visits', icon: Eye },
     { id: 'ai-insights', label: 'AI Insights', icon: Brain },
     { id: 'automation', label: 'Automation', icon: Cog },
     { id: 'events', label: 'Events', icon: Calendar, badge: stats?.totalEvents },
