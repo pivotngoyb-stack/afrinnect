@@ -16,7 +16,13 @@ Deno.serve(async (req) => {
     let downgraded = 0;
     
     for (const profile of expiredTrials) {
-      // Downgrade to free tier
+      // Skip Founding Members - they have separate trial logic
+      if (profile.is_founding_member && profile.founding_member_trial_ends_at) {
+        const trialEnd = new Date(profile.founding_member_trial_ends_at);
+        if (trialEnd > new Date()) continue; // Still in founding trial
+      }
+      
+      // Downgrade to free tier using service role
       await base44.asServiceRole.entities.UserProfile.update(profile.id, {
         is_premium: false,
         subscription_tier: 'free',
