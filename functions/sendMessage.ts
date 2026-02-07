@@ -196,16 +196,12 @@ Deno.serve(async (req) => {
         }
 
         // 6. Create Message with Idempotency Check
-        // Generate idempotency key from content hash + timestamp window (5 second window)
-        const timeWindow = Math.floor(Date.now() / 5000); // 5-second windows
-        const contentHash = content ? content.substring(0, 50) : mediaUrl?.substring(0, 50) || '';
-        const idempotencyKey = `${myProfile.id}_${matchId}_${contentHash}_${timeWindow}`;
-        
-        // Check for duplicate message in last 10 seconds
+        // Check for duplicate message using configurable window from SystemSettings
+        const duplicateWindowMs = rateLimits.duplicate_window_ms || 10000;
         const recentMessages = await base44.entities.Message.filter({
             match_id: matchId,
             sender_id: myProfile.id,
-            created_date: { $gte: new Date(Date.now() - 10000).toISOString() }
+            created_date: { $gte: new Date(Date.now() - duplicateWindowMs).toISOString() }
         });
         
         const isDuplicate = recentMessages.some(m => 
