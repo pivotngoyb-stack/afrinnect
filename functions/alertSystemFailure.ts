@@ -55,21 +55,29 @@ Check the Admin Dashboard > Error Logs for more details.
       });
     }
 
-    // Create admin notification
-    const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
-    for (const admin of admins) {
-      const adminProfiles = await base44.asServiceRole.entities.UserProfile.filter({ user_id: admin.id });
-      if (adminProfiles.length > 0) {
-        await base44.asServiceRole.entities.Notification.create({
-          user_profile_id: adminProfiles[0].id,
-          user_id: admin.id,
-          type: 'admin_message',
-          title: `⚠️ System Alert: ${error_type}`,
-          message: error_message.substring(0, 100),
-          link_to: 'AdminDashboard',
-          is_admin: true
-        });
+    // Create admin notifications (with error handling for RLS)
+    try {
+      const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+      for (const admin of admins) {
+        const adminProfiles = await base44.asServiceRole.entities.UserProfile.filter({ user_id: admin.id });
+        if (adminProfiles.length > 0) {
+          try {
+            await base44.asServiceRole.entities.Notification.create({
+              user_profile_id: adminProfiles[0].id,
+              user_id: admin.id,
+              type: 'admin_message',
+              title: `⚠️ System Alert: ${error_type}`,
+              message: error_message.substring(0, 100),
+              link_to: 'AdminDashboard',
+              is_admin: true
+            });
+          } catch (notifErr) {
+            console.log('Notification creation skipped due to RLS:', notifErr.message);
+          }
+        }
       }
+    } catch (adminErr) {
+      console.log('Admin lookup skipped:', adminErr.message);
     }
 
     return Response.json({ success: true, logged: true, alerted: severity === 'critical' || severity === 'high' });
