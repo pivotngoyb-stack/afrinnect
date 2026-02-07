@@ -60,6 +60,7 @@ import FounderProgramManagement from '@/components/admin/FounderProgramManagemen
 import AmbassadorManagement from '@/components/admin/AmbassadorManagement';
 import PageVisitsAnalytics from '@/components/admin/PageVisitsAnalytics';
 import AuditTrailDashboard from '@/components/admin/AuditTrailDashboard';
+import AppStoreComplianceAdmin from '@/components/admin/AppStoreComplianceAdmin';
 import { FileText } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -627,6 +628,8 @@ export default function AdminDashboard() {
         return <ErrorLogsDashboard />;
       case 'page_visits':
         return <PageVisitsAnalytics />;
+      case 'appstore':
+        return <AppStoreComplianceAdmin />;
       case 'reports':
         return (
           <div className="max-w-2xl mx-auto space-y-6">
