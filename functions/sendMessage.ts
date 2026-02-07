@@ -195,8 +195,8 @@ Deno.serve(async (req) => {
             }
         }
 
-        // 6. Create Message with Idempotency Check
-        // Check for duplicate message using configurable window from SystemSettings
+        // 7. Create Message with Idempotency Check
+        // Check for duplicate message using configurable window
         const duplicateWindowMs = rateLimits.duplicate_window_ms || 10000;
         const recentMessages = await base44.entities.Message.filter({
             match_id: matchId,
