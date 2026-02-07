@@ -155,6 +155,16 @@ export default function Home() {
           console.log('Ban check skipped:', e);
         }
         
+        // Revalidate subscription status on login
+        try {
+          const subCheck = await base44.functions.invoke('revalidateSubscription');
+          if (subCheck.data?.expired) {
+            console.log('Subscription expired, downgraded to free');
+          }
+        } catch (e) {
+          console.log('Subscription revalidation skipped:', e);
+        }
+        
         setIsCheckingAuth(false);
       } catch (e) {
         // Not authenticated - redirect to landing

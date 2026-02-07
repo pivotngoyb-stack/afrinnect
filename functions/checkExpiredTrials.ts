@@ -1,15 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 // Check and downgrade expired premium trials
+// NOTE: This runs as a scheduled automation (no user context), so we use service role directly
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (user?.role !== 'admin') {
-        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
     
-    // Get all premium users whose trial has expired (checking is_premium flag ensures we cover all tiers)
+    // Get all premium users whose trial has expired
     const now = new Date().toISOString();
     const expiredTrials = await base44.asServiceRole.entities.UserProfile.filter({
       is_premium: true,
