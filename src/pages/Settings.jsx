@@ -517,14 +517,15 @@ export default function Settings() {
             <p className="text-sm text-red-600 mb-4">
               Permanently delete your account and all associated data. This action cannot be undone.
             </p>
-            <Button
-              onClick={() => setShowDeleteDialog(true)}
-              variant="destructive"
-              className="w-full"
-            >
-              <Trash2 size={18} className="mr-2" />
-              Delete My Account
-            </Button>
+            <Link to={createPageUrl('DeleteAccount')}>
+              <Button
+                variant="destructive"
+                className="w-full"
+              >
+                <Trash2 size={18} className="mr-2" />
+                Delete My Account
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 

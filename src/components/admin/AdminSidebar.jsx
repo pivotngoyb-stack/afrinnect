@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
   LayoutDashboard, Users, Shield, DollarSign, AlertTriangle, MessageCircle,
-  BarChart3, Settings, Calendar, FileText, Bell, Database, Crown, Eye, LogOut, Brain, Cog, Briefcase, ShieldAlert
+  BarChart3, Settings, Calendar, FileText, Bell, Database, Crown, Eye, LogOut, Brain, Cog, Briefcase, ShieldAlert, Smartphone
 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
     { id: 'support', label: 'Support', icon: Bell },
     { id: 'compliance', label: 'Compliance', icon: FileText },
     { id: 'settings', label: 'System Settings', icon: Settings },
+    { id: 'appstore', label: 'App Store', icon: Smartphone },
     { id: 'error_logs', label: 'Error Logs', icon: AlertTriangle, alert: true },
     { id: 'audit', label: 'Audit Logs', icon: Shield, badge: stats?.auditLogs }
   ];
