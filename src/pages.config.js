@@ -108,6 +108,8 @@ import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
+import DeleteAccount from './pages/DeleteAccount';
+import AppStoreCompliance from './pages/AppStoreCompliance';
 import __Layout from './Layout.jsx';
 
 
@@ -173,6 +175,8 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
     "WhoLikesYou": WhoLikesYou,
+    "DeleteAccount": DeleteAccount,
+    "AppStoreCompliance": AppStoreCompliance,
 }
 
 export const pagesConfig = {
