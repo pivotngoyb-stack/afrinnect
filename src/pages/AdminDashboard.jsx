@@ -59,6 +59,7 @@ import QuickActions from '@/components/admin/QuickActions';
 import FounderProgramManagement from '@/components/admin/FounderProgramManagement';
 import AmbassadorManagement from '@/components/admin/AmbassadorManagement';
 import PageVisitsAnalytics from '@/components/admin/PageVisitsAnalytics';
+import AuditTrailDashboard from '@/components/admin/AuditTrailDashboard';
 import { FileText } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -615,7 +616,7 @@ export default function AdminDashboard() {
       case 'settings':
         return <SystemSettings />;
       case 'audit':
-        return <AuditLogs logs={auditLogs} />;
+        return <AuditTrailDashboard />;
       case 'auth_test':
         return <AuthTest />;
       case 'security_monitor':
