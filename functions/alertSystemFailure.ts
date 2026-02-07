@@ -19,12 +19,11 @@ Deno.serve(async (req) => {
 
     // Log to ErrorLog entity
     await base44.asServiceRole.entities.ErrorLog.create({
-      error_type,
-      function_name: function_name || 'unknown',
-      message: error_message,
+      type: 'error',
+      message: `[${error_type}] ${error_message}`,
+      url: function_name || 'backend-function',
       severity,
-      metadata,
-      timestamp: new Date().toISOString()
+      breadcrumbs: [{ action: 'system_alert', data: metadata, timestamp: new Date().toISOString() }]
     });
 
     // Send email alert for critical/high severity
