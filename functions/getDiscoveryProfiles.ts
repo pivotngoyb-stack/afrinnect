@@ -28,11 +28,6 @@ function formatEnum(value) {
 }
 
 Deno.serve(async (req) => {
-    // In-memory rate limiting for discovery (expensive operation)
-    // NOTE: In a distributed system, this should use Redis. 
-    // Here we rely on Deno isolate persistence which works per-instance.
-    const rateLimitMap = new Map();
-    
     try {
         const base44 = createClientFromRequest(req);
         const user = await base44.auth.me();
@@ -41,17 +36,28 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Rate Limit Check: 20 requests per minute
-        const now = Date.now();
-        const userRequests = rateLimitMap.get(user.id) || [];
-        const recentRequests = userRequests.filter(time => now - time < 60000);
+        // Rate Limit using Deno KV (persistent across requests)
+        const kv = await Deno.openKv();
+        const rateKey = ["discovery_rate", user.id];
+        const rateData = await kv.get(rateKey);
         
-        if (recentRequests.length >= 20) {
-             return Response.json({ error: 'Rate limit exceeded. Please slow down.' }, { status: 429 });
+        const now = Date.now();
+        const windowMs = 60000; // 1 minute window
+        const maxRequests = 20;
+        
+        let requests = [];
+        if (rateData.value) {
+            requests = rateData.value.filter(time => now - time < windowMs);
         }
-        rateLimitMap.set(user.id, [...recentRequests, now]);
+        
+        if (requests.length >= maxRequests) {
+            return Response.json({ error: 'Rate limit exceeded. Please slow down.' }, { status: 429 });
+        }
+        
+        requests.push(now);
+        await kv.set(rateKey, requests, { expireIn: 60000 });
 
-        const { filters = {}, mode = 'global', limit = 20, myProfileId } = await req.json();
+        const { filters = {}, mode = 'global', limit = 20, myProfileId, cursor } = await req.json();
 
         // 1. Get My Profile
         let myProfile;
@@ -63,40 +69,57 @@ Deno.serve(async (req) => {
              const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
              myProfile = profiles[0];
         }
-        if (!myProfile) return Response.json({ profiles: [] });
+        if (!myProfile) return Response.json({ profiles: [], nextCursor: null });
 
-        // 2. Get Excludes (Passes & Likes) - Optimization: Fetch only ID fields if possible, but SDK returns objects
-        // We fetch these to build the exclusion list
-        const [passes, likes] = await Promise.all([
-             base44.entities.Pass.filter({ passer_id: myProfile.id }, '-created_date', 1000),
-             base44.entities.Like.filter({ liker_id: myProfile.id }, '-created_date', 1000)
-        ]);
+        // 2. Check cache for excludes (using Deno KV)
+        const excludeCacheKey = ["excludes", myProfile.id];
+        let excludeIds = new Set();
         
-        const excludeIds = new Set([
-            myProfile.id, 
-            ...passes.map(p => p.passed_id), 
-            ...likes.map(l => l.liked_id),
-            ...(myProfile.blocked_users || []) // Exclude users I have blocked
-        ]);
+        const cachedExcludes = await kv.get(excludeCacheKey);
+        if (cachedExcludes.value && (now - cachedExcludes.value.timestamp) < 300000) {
+            // Use cached excludes (5 min cache)
+            excludeIds = new Set(cachedExcludes.value.ids);
+        } else {
+            // Fetch fresh excludes
+            const [passes, likes] = await Promise.all([
+                 base44.entities.Pass.filter({ passer_id: myProfile.id }, '-created_date', 1000),
+                 base44.entities.Like.filter({ liker_id: myProfile.id }, '-created_date', 1000)
+            ]);
+            
+            excludeIds = new Set([
+                myProfile.id, 
+                ...passes.map(p => p.passed_id), 
+                ...likes.map(l => l.liked_id),
+                ...(myProfile.blocked_users || [])
+            ]);
+            
+            // Cache excludes
+            await kv.set(excludeCacheKey, {
+                ids: Array.from(excludeIds),
+                timestamp: now
+            }, { expireIn: 300000 });
+        }
 
         // 3. Build Database Query
-        // We push as much filtering as possible to the DB query for performance
         let query = { 
             is_active: true,
             is_deleted: { $ne: true }, 
             id: { $nin: Array.from(excludeIds) },
-            // Safety: Don't show users who blocked me
             blocked_users: { $ne: myProfile.id },
-            // Restrict to USA/Canada
             current_country: { $in: ['USA', 'United States', 'Canada', 'United States of America', 'US'] }
         };
+
+        // Cursor-based pagination
+        if (cursor) {
+            query.id = { ...query.id, $gt: cursor };
+        }
 
         // Gender Preference
         if (myProfile.looking_for && myProfile.looking_for.length > 0) {
             query.gender = { $in: myProfile.looking_for };
         }
 
-        // Age Filter (Calculate date ranges)
+        // Age Filter
         const today = new Date();
         if (filters.age_min) {
             const maxBirthDate = new Date(today.getFullYear() - filters.age_min, today.getMonth(), today.getDate()).toISOString().split('T')[0];
@@ -107,39 +130,60 @@ Deno.serve(async (req) => {
             query.birth_date = { ...query.birth_date, $gte: minBirthDate };
         }
 
-        // Simple Exact Match Filters
+        // Simple Filters
         if (filters.religion) query.religion = filters.religion;
         if (filters.education) query.education = filters.education;
         if (filters.preferred_language) query.preferred_language = filters.preferred_language;
         
-        // Array Filters (using $in for any match)
+        // Array Filters
         if (filters.relationship_goals?.length > 0) query.relationship_goal = { $in: filters.relationship_goals };
         if (filters.countries_of_origin?.length > 0) query.country_of_origin = { $in: filters.countries_of_origin };
         if (filters.states?.length > 0) query.current_state = { $in: filters.states };
 
-        // 4. Fetch Candidates
-        // Fetch 50 candidates to allow for further in-memory filtering (distance, complex arrays)
-        const candidates = await base44.entities.UserProfile.filter(query, '-last_active', 50);
+        // 4. Fetch Candidates with limit + 1 for cursor
+        const fetchLimit = limit + 1;
+        const candidates = await base44.entities.UserProfile.filter(query, '-last_active', fetchLimit);
 
-        // 4.5 Get user's ML profile for personalized scoring
-        const mlProfiles = await base44.asServiceRole.entities.UserMLProfile.filter({ user_id: myProfile.id });
-        const mlProfile = mlProfiles[0] || {
-            preference_weights: {
-                cultural_background: 1.0, religion: 1.0, interests: 1.0, location: 1.0,
-                education: 1.0, lifestyle: 1.0, relationship_goal: 1.0, age_proximity: 1.0
-            },
-            liked_patterns: { countries: [], religions: [], interests: [] }
-        };
+        // Determine next cursor
+        let nextCursor = null;
+        if (candidates.length > limit) {
+            nextCursor = candidates[limit - 1].id;
+            candidates.pop();
+        }
+
+        // 5. Get ML profile (cached)
+        const mlCacheKey = ["ml_profile", myProfile.id];
+        let mlProfile;
+        
+        const cachedML = await kv.get(mlCacheKey);
+        if (cachedML.value && (now - cachedML.value.timestamp) < 600000) {
+            mlProfile = cachedML.value.data;
+        } else {
+            const mlProfiles = await base44.asServiceRole.entities.UserMLProfile.filter({ user_id: myProfile.id });
+            mlProfile = mlProfiles[0] || {
+                preference_weights: {
+                    cultural_background: 1.0, religion: 1.0, interests: 1.0, location: 1.0,
+                    education: 1.0, lifestyle: 1.0, relationship_goal: 1.0, age_proximity: 1.0
+                },
+                liked_patterns: { countries: [], religions: [], interests: [] }
+            };
+            
+            await kv.set(mlCacheKey, {
+                data: mlProfile,
+                timestamp: now
+            }, { expireIn: 600000 });
+        }
+        
         const weights = mlProfile.preference_weights || {};
         const likedPatterns = mlProfile.liked_patterns || {};
 
-        // 5. Score & Refine with ML-enhanced algorithm
+        // 6. Score & Rank profiles
         let results = candidates.map(p => {
              let score = 0;
              const reasons = [];
              const breakdown = {};
 
-             // 1. Cultural Background (base: 25 points, ML-weighted)
+             // Cultural Background (25 points)
              let culturalScore = 0;
              if (myProfile.country_of_origin === p.country_of_origin) {
                  culturalScore += 15;
@@ -149,14 +193,13 @@ Deno.serve(async (req) => {
                  culturalScore += 10;
                  reasons.push(`Shared heritage: ${p.tribe_ethnicity}`);
              }
-             // ML boost: user historically likes this country
              if (likedPatterns.countries?.includes(p.country_of_origin)) {
                  culturalScore += 5;
              }
              breakdown.cultural = culturalScore;
              score += culturalScore * (weights.cultural_background || 1.0);
 
-             // 2. Religion (base: 15 points, ML-weighted)
+             // Religion (15 points)
              let religionScore = 0;
              if (myProfile.religion === p.religion) {
                  religionScore = 15;
@@ -168,20 +211,19 @@ Deno.serve(async (req) => {
              breakdown.religion = religionScore;
              score += religionScore * (weights.religion || 1.0);
 
-             // 3. Shared Interests (base: 20 points, ML-weighted)
+             // Shared Interests (20 points)
              let interestScore = 0;
              const sharedInterests = myProfile.interests?.filter(i => p.interests?.includes(i)) || [];
              interestScore = Math.min(sharedInterests.length * 4, 20);
              if (sharedInterests.length > 0) {
                  reasons.push(`${sharedInterests.length} shared interests: ${sharedInterests.slice(0, 2).join(', ')}`);
              }
-             // ML boost for preferred interests
              const boostedInterests = sharedInterests.filter(i => likedPatterns.interests?.includes(i));
              interestScore += boostedInterests.length * 2;
              breakdown.interests = interestScore;
              score += interestScore * (weights.interests || 1.0);
 
-             // 4. Location (base: 10 points, ML-weighted)
+             // Location (10 points)
              let locationScore = 0;
              if (myProfile.current_city === p.current_city) {
                  locationScore = 10;
@@ -192,7 +234,7 @@ Deno.serve(async (req) => {
              breakdown.location = locationScore;
              score += locationScore * (weights.location || 1.0);
 
-             // 5. Relationship Goal (base: 15 points, ML-weighted)
+             // Relationship Goal (15 points)
              let goalScore = 0;
              if (myProfile.relationship_goal === p.relationship_goal) {
                  goalScore = 15;
@@ -201,7 +243,7 @@ Deno.serve(async (req) => {
              breakdown.relationship_goal = goalScore;
              score += goalScore * (weights.relationship_goal || 1.0);
 
-             // 6. Lifestyle Compatibility (base: 10 points, ML-weighted)
+             // Lifestyle (10 points)
              let lifestyleScore = 0;
              if (myProfile.lifestyle && p.lifestyle) {
                  if (myProfile.lifestyle.smoking === p.lifestyle.smoking) lifestyleScore += 2;
@@ -213,14 +255,14 @@ Deno.serve(async (req) => {
              breakdown.lifestyle = lifestyleScore;
              score += lifestyleScore * (weights.lifestyle || 1.0);
 
-             // 7. Languages (bonus)
+             // Languages (bonus)
              const sharedLanguages = myProfile.languages?.filter(l => p.languages?.includes(l)) || [];
              if (sharedLanguages.length > 1) {
                  score += sharedLanguages.length * 2;
                  reasons.push(`${sharedLanguages.length} shared languages`);
              }
 
-             // 8. Age Proximity (ML-weighted)
+             // Age Proximity
              let ageScore = 0;
              if (myProfile.birth_date && p.birth_date) {
                  const myAge = calculateAge(myProfile.birth_date);
@@ -233,11 +275,11 @@ Deno.serve(async (req) => {
              breakdown.age = ageScore;
              score += ageScore * (weights.age_proximity || 1.0);
 
-             // TIER PRIORITY (Passive Ranking)
+             // Tier Priority
              if (p.subscription_tier === 'vip') score += 50;
              if (p.subscription_tier === 'elite') score += 30;
 
-             // BOOST LOGIC: Boosted profiles get massive priority
+             // Boost Logic
              if (p.profile_boost_active && p.boost_expires_at) {
                  const expiry = new Date(p.boost_expires_at);
                  if (expiry > new Date()) {
@@ -251,7 +293,6 @@ Deno.serve(async (req) => {
                  distance = calculateDistance(myProfile.location.lat, myProfile.location.lng, p.location.lat, p.location.lng);
              }
 
-             // Normalize score to 0-100
              const normalizedScore = Math.min(Math.round(score), 100);
 
              return { 
@@ -263,29 +304,27 @@ Deno.serve(async (req) => {
              };
         });
 
-        // 6. Complex Filtering (In-Memory)
+        // 7. Complex Filtering
         results = results.filter(p => {
-            // Distance Filter
             if (mode === 'local' && filters.distance_km && p.distance !== null) {
                 if (p.distance > filters.distance_km) return false;
             }
-            // Verification Filter
             if (filters.verified_only && !p.verification_status?.photo_verified) return false;
-            
-            // Incognito Check
             if (p.incognito_mode) return false;
-
             return true;
         });
 
-        // 7. Sort
+        // 8. Sort
         if (mode === 'local') {
              results.sort((a, b) => (a.distance || 99999) - (b.distance || 99999));
         } else {
              results.sort((a, b) => b.matchScore - a.matchScore);
         }
 
-        return Response.json({ profiles: results.slice(0, limit) });
+        return Response.json({ 
+            profiles: results.slice(0, limit),
+            nextCursor
+        });
 
     } catch (error) {
         console.error('Discovery error:', error);
