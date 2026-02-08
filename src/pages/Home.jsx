@@ -452,6 +452,10 @@ export default function Home() {
       if (!likedProfiles.length) throw new Error('Profile not found');
       const likedProfile = likedProfiles[0];
 
+      // Check if user has Priority Likes (Elite/VIP perk)
+      const tier = myProfile.subscription_tier || 'free';
+      const isPriorityLike = tier === 'elite' || tier === 'vip';
+      
       // Create like record with security fields
       await base44.entities.Like.create({
         liker_id: myProfile.id,
@@ -459,7 +463,9 @@ export default function Home() {
         liker_user_id: myProfile.user_id,
         liked_user_id: likedProfile.user_id,
         is_super_like: isSuperLike,
-        is_seen: false
+        is_seen: false,
+        is_priority: isPriorityLike,
+        priority_boost_expires: isPriorityLike ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null
       });
 
       // If there's a note, create initial message
@@ -521,7 +527,9 @@ export default function Home() {
             await base44.entities.Like.update(myNewLike[0].id, { is_seen: true });
           }
 
-          // Create match (only once) with security fields
+          // Create match with 24hr expiry timer
+          const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+          
           await base44.entities.Match.create({
             user1_id: myProfile.id,
             user2_id: likedId,
@@ -531,6 +539,10 @@ export default function Home() {
             user2_liked: true,
             is_match: true,
             matched_at: new Date().toISOString(),
+            expires_at: expiresAt,
+            is_expired: false,
+            last_chance_sent: false,
+            first_message_sent: false,
             status: 'active'
           });
 
