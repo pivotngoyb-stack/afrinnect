@@ -303,7 +303,17 @@ Deno.serve(async (req) => {
             }
         }
 
-        // 12. Notifications (only if not deleted)
+        // 12. Update match first_message tracking and remove expiry
+        if (!match.first_message_sent) {
+            await base44.asServiceRole.entities.Match.update(match.id, {
+                first_message_sent: true,
+                first_message_sent_by: myProfile.id,
+                first_message_sent_at: new Date().toISOString(),
+                expires_at: null // Remove expiry once a message is sent
+            });
+        }
+
+        // 13. Notifications (only if not deleted)
         if (!isDeleted) {
             await base44.asServiceRole.entities.Notification.create({
                 user_profile_id: receiverId,
@@ -325,7 +335,7 @@ Deno.serve(async (req) => {
             } catch(e) {}
         }
 
-        // 13. Track analytics
+        // 14. Track analytics
         try {
             await base44.functions.invoke('trackAnalytics', {
                 eventType: 'message_sent',
