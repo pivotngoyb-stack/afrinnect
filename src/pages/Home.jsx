@@ -720,7 +720,9 @@ export default function Home() {
       // Record the pass so they don't see this person again
       await base44.entities.Pass.create({
         passer_id: myProfile.id,
-        passed_id: currentProfile.id
+        passed_id: currentProfile.id,
+        passer_user_id: myProfile.user_id,
+        is_rewindable: true
       });
 
       // Record interaction for ML learning
@@ -773,7 +775,16 @@ export default function Home() {
   };
 
   const handleRewind = async () => {
-    if (swipeHistory.length === 0 || !myProfile?.is_premium) return;
+    // Premium feature check
+    const tier = myProfile?.subscription_tier || 'free';
+    const canRewind = tier === 'premium' || tier === 'elite' || tier === 'vip' || myProfile?.is_premium;
+    
+    if (swipeHistory.length === 0 || !canRewind) {
+      if (!canRewind) {
+        setShowLimitPaywall(true);
+      }
+      return;
+    }
     
     const lastAction = swipeHistory[swipeHistory.length - 1];
     
@@ -786,6 +797,18 @@ export default function Home() {
       
       for (const like of existingLikes) {
         await base44.entities.Like.delete(like.id);
+      }
+    }
+    
+    // If last action was a pass, delete the pass record
+    if (lastAction.action === 'pass') {
+      const existingPasses = await base44.entities.Pass.filter({
+        passer_id: myProfile.id,
+        passed_id: lastAction.profile.id
+      });
+      
+      for (const pass of existingPasses) {
+        await base44.entities.Pass.delete(pass.id);
       }
     }
     
@@ -964,11 +987,15 @@ export default function Home() {
         ) : viewMode === 'swipe' ? (
           /* Swipe Mode */
           <div className="flex items-center justify-center min-h-[60vh] sm:min-h-[70vh] relative">
-            {/* Rewind Button (Premium) */}
-            {myProfile?.is_premium && swipeHistory.length > 0 && (
+            {/* Rewind Button (Premium/Elite/VIP) */}
+            {swipeHistory.length > 0 && (
               <Button
                 onClick={handleRewind}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 rounded-full w-14 h-14 bg-amber-500 hover:bg-amber-600"
+                className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 rounded-full w-14 h-14 ${
+                  (myProfile?.subscription_tier === 'premium' || myProfile?.subscription_tier === 'elite' || myProfile?.subscription_tier === 'vip' || myProfile?.is_premium)
+                    ? 'bg-amber-500 hover:bg-amber-600'
+                    : 'bg-gray-300 hover:bg-gray-400'
+                }`}
                 title={t('admin.home.rewindLastSwipe')}
               >
                 <RotateCcw size={24} />

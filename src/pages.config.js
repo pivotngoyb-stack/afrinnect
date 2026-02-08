@@ -52,6 +52,7 @@ import AdminLaunchChecklist from './pages/AdminLaunchChecklist';
 import AmbassadorApply from './pages/AmbassadorApply';
 import AmbassadorPortal from './pages/AmbassadorPortal';
 import Analytics from './pages/Analytics';
+import AppStoreCompliance from './pages/AppStoreCompliance';
 import AuthFlowTest from './pages/AuthFlowTest';
 import BackgroundCheckRequest from './pages/BackgroundCheckRequest';
 import BlockedUsers from './pages/BlockedUsers';
@@ -65,6 +66,7 @@ import CreateEvent from './pages/CreateEvent';
 import CustomerView from './pages/CustomerView';
 import DailyMatches from './pages/DailyMatches';
 import DatePlanner from './pages/DatePlanner';
+import DeleteAccount from './pages/DeleteAccount';
 import EditProfile from './pages/EditProfile';
 import Error from './pages/Error';
 import EventChat from './pages/EventChat';
@@ -108,8 +110,6 @@ import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
-import DeleteAccount from './pages/DeleteAccount';
-import AppStoreCompliance from './pages/AppStoreCompliance';
 import __Layout from './Layout.jsx';
 
 
@@ -119,6 +119,7 @@ export const PAGES = {
     "AmbassadorApply": AmbassadorApply,
     "AmbassadorPortal": AmbassadorPortal,
     "Analytics": Analytics,
+    "AppStoreCompliance": AppStoreCompliance,
     "AuthFlowTest": AuthFlowTest,
     "BackgroundCheckRequest": BackgroundCheckRequest,
     "BlockedUsers": BlockedUsers,
@@ -132,6 +133,7 @@ export const PAGES = {
     "CustomerView": CustomerView,
     "DailyMatches": DailyMatches,
     "DatePlanner": DatePlanner,
+    "DeleteAccount": DeleteAccount,
     "EditProfile": EditProfile,
     "Error": Error,
     "EventChat": EventChat,
@@ -175,8 +177,6 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
     "WhoLikesYou": WhoLikesYou,
-    "DeleteAccount": DeleteAccount,
-    "AppStoreCompliance": AppStoreCompliance,
 }
 
 export const pagesConfig = {

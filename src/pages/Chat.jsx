@@ -42,6 +42,7 @@ import TierGate, { hasAccess } from '@/components/shared/TierGate';
 import MessageLimitPaywall from '@/components/paywall/MessageLimitPaywall';
 import VoiceRecorder from '@/components/shared/VoiceRecorder';
 import VideoChat from './VideoChat';
+import ReadReceipts from '@/components/chat/ReadReceipts';
 
 export default function Chat() {
   usePerformanceMonitor('Chat');
@@ -569,9 +570,10 @@ export default function Chat() {
                     {new Date(msg.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                   {isMine && (
-                    <span className="text-xs opacity-70">
-                      {msg.is_read ? '✓✓' : '✓'}
-                    </span>
+                    <ReadReceipts 
+                      message={msg} 
+                      isPremium={myProfile?.subscription_tier === 'premium' || myProfile?.subscription_tier === 'elite' || myProfile?.subscription_tier === 'vip'}
+                    />
                   )}
                 </div>
                 {!isMine && (
