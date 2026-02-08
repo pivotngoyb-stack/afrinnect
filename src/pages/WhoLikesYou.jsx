@@ -44,13 +44,25 @@ export default function WhoLikesYou() {
         is_seen: false 
       }, '-created_date', 100);
       
+      // Sort by priority first (Elite/VIP likes shown first), then by date
+      const sortedLikes = allLikes.sort((a, b) => {
+        // Priority likes come first
+        if (a.is_priority && !b.is_priority) return -1;
+        if (!a.is_priority && b.is_priority) return 1;
+        // Super likes come second
+        if (a.is_super_like && !b.is_super_like) return -1;
+        if (!a.is_super_like && b.is_super_like) return 1;
+        // Then by date
+        return new Date(b.created_date) - new Date(a.created_date);
+      });
+      
       // Get profiles of people who liked me
-      const profileIds = allLikes.map(like => like.liker_id);
+      const profileIds = sortedLikes.map(like => like.liker_id);
       const profiles = await Promise.all(
         profileIds.map(id => base44.entities.UserProfile.filter({ id }).then(p => p[0]))
       );
 
-      return allLikes.map((like, idx) => ({
+      return sortedLikes.map((like, idx) => ({
         ...like,
         profile: profiles[idx]
       })).filter(like => like.profile);
@@ -249,6 +261,11 @@ export default function WhoLikesYou() {
                           {is_super_like && !showBlurred && (
                             <Badge className="absolute top-3 right-3 bg-blue-600">
                               ⭐ Super Like
+                            </Badge>
+                          )}
+                          {profile.is_priority && !showBlurred && (
+                            <Badge className="absolute top-3 left-3 bg-gradient-to-r from-purple-600 to-amber-500">
+                              👑 Priority
                             </Badge>
                           )}
                           {showBlurred && (

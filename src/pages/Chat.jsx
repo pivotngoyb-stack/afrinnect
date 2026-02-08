@@ -43,6 +43,7 @@ import MessageLimitPaywall from '@/components/paywall/MessageLimitPaywall';
 import VoiceRecorder from '@/components/shared/VoiceRecorder';
 import VideoChat from './VideoChat';
 import ReadReceipts from '@/components/chat/ReadReceipts';
+import PremiumTypingIndicator from '@/components/chat/PremiumTypingIndicator';
 
 export default function Chat() {
   usePerformanceMonitor('Chat');
@@ -597,12 +598,12 @@ export default function Chat() {
           );
         })}
 
-        {/* Typing Indicator */}
-        <AnimatePresence>
-          {otherUserTyping && (
-            <TypingIndicator name={otherProfile.display_name} />
-          )}
-        </AnimatePresence>
+        {/* Premium Typing Indicator */}
+        <PremiumTypingIndicator 
+          isTyping={otherUserTyping}
+          displayName={otherProfile.display_name}
+          isPremium={myProfile?.subscription_tier === 'premium' || myProfile?.subscription_tier === 'elite' || myProfile?.subscription_tier === 'vip'}
+        />
 
         <div ref={messagesEndRef} />
       </div>
