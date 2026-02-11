@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { cn } from '@/lib/utils';
 
-// Optimized image component with lazy loading, blur placeholder, and error handling
-export default function OptimizedImage({ 
+// Optimized image component with lazy loading and error handling
+const OptimizedImage = memo(function OptimizedImage({ 
   src, 
   alt, 
   className, 
@@ -11,7 +11,7 @@ export default function OptimizedImage({
   onLoad,
   ...props 
 }) {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(priority); // Skip loading state for priority images
   const [hasError, setHasError] = useState(false);
 
   const handleLoad = () => {
@@ -33,9 +33,8 @@ export default function OptimizedImage({
 
   return (
     <div className={cn('relative overflow-hidden', aspectRatio, className)}>
-      {/* Blur placeholder while loading */}
       {!isLoaded && (
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
+        <div className="absolute inset-0 bg-gray-200" />
       )}
       
       <img
@@ -43,10 +42,11 @@ export default function OptimizedImage({
         alt={alt}
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
+        fetchpriority={priority ? 'high' : 'auto'}
         onLoad={handleLoad}
         onError={handleError}
         className={cn(
-          'w-full h-full object-cover transition-opacity duration-300',
+          'w-full h-full object-cover',
           isLoaded ? 'opacity-100' : 'opacity-0',
           className
         )}
@@ -54,4 +54,6 @@ export default function OptimizedImage({
       />
     </div>
   );
-}
+});
+
+export default OptimizedImage;

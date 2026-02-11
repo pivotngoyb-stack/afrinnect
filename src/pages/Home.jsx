@@ -614,13 +614,9 @@ export default function Home() {
       navigator.vibrate(50);
     }
     setSwipeHistory([...swipeHistory, { profile: pendingLikeProfile, action: 'like', index: currentIndex }]);
-    await likeMutation.mutateAsync({ likedId: pendingLikeProfile.id, likeNote: message });
-    console.log('Like recorded:', pendingLikeProfile.id);
+    likeMutation.mutate({ likedId: pendingLikeProfile.id, likeNote: message });
     setShowMessageModal(false);
     setPendingLikeProfile(null);
-    
-    // CRITICAL FIX: Force immediate cache refresh after swipe
-    await refetch();
   };
 
   const handleSuperLike = async (profile) => {
@@ -670,9 +666,7 @@ export default function Home() {
       navigator.vibrate([50, 50, 50]);
     }
     setSwipeHistory([...swipeHistory, { profile, action: 'superlike', index: currentIndex }]);
-    await likeMutation.mutateAsync({ likedId: profile.id, isSuperLike: true });
-    // CRITICAL FIX: Force immediate cache refresh
-    await refetch();
+    likeMutation.mutate({ likedId: profile.id, isSuperLike: true });
   };
 
   // Pass mutation
@@ -711,23 +705,12 @@ export default function Home() {
         console.log('ML tracking skipped:', e);
       }
     },
-    onSuccess: async () => {
-      console.log('Pass recorded:', currentProfile.id);
+    onSuccess: () => {
       setSwipeHistory([...swipeHistory, { profile: currentProfile, action: 'pass', index: currentIndex }]);
-      
-      // Show feedback modal occasionally (every 5th pass)
-      const passCount = swipeHistory.filter(s => s.action === 'pass').length;
-      if (passCount > 0 && passCount % 5 === 0) {
-        setFeedbackProfile(currentProfile);
-        setShowFeedbackModal(true);
-      }
-      
       setCurrentIndex(prev => prev + 1);
       setProfileViewStartTime(Date.now());
       setPhotosViewedCount(0);
-      
-      // CRITICAL FIX: Force immediate cache refresh after swipe
-      await refetch();
+      // Skip feedback modal and immediate refetch for speed
     },
     onError: (error) => {
       console.error('Failed to record pass:', error);
