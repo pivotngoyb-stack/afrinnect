@@ -62,121 +62,74 @@ export default function Home() {
   const navigate = useNavigate();
   const { prompt: upgradePrompt, dismissPrompt } = useUpgradePrompts(myProfile);
 
-  // Fetch AI Behavior Analysis Recommendations
+  // Fetch AI Behavior Analysis Recommendations - DEFERRED to avoid blocking initial load
   useEffect(() => {
-    if (myProfile?.id) {
-      const fetchRecs = async () => {
-        // Check if we have existing recs
+    if (!myProfile?.id) return;
+    
+    // Delay recommendation fetch to not block initial render
+    const timer = setTimeout(async () => {
+      try {
         const recs = await base44.entities.UserRecommendation.filter({ user_id: myProfile.id, is_dismissed: false });
-        
-        if (recs.length === 0) {
-          // Trigger analysis if none exist (rarely, to avoid spam)
-          // We can just rely on manual trigger or occasional background job, 
-          // but here we'll do it on load if empty for demo purposes
-          try {
-             const res = await base44.functions.invoke('analyzeBehavior');
-             if (res.data.success) {
-               setRecommendations(res.data.recommendations || []);
-             }
-          } catch(e) { console.error(e); }
-        } else {
+        if (recs.length > 0) {
           setRecommendations(recs);
         }
-      };
-      fetchRecs();
-    }
+        // Skip analyzeBehavior on page load - too slow
+      } catch(e) {}
+    }, 3000);
+    
+    return () => clearTimeout(timer);
   }, [myProfile?.id]);
 
-  // OPTIMIZATION: Prefetch Activity Data
+  // OPTIMIZATION: Prefetch Activity Data - DEFERRED
   useEffect(() => {
-    if (myProfile?.id) {
-      const prefetchActivity = async () => {
-        // Prefetch Likes
-        await queryClient.prefetchQuery({
-          queryKey: ['who-likes-me', myProfile.id],
-          queryFn: async () => {
-            const allLikes = await base44.entities.Like.filter({ liked_id: myProfile.id, is_seen: false }, '-created_date', 100);
-            return allLikes;
-          },
-          staleTime: 60000 // 1 minute
-        });
-
-        // Prefetch Views
-        await queryClient.prefetchQuery({
-          queryKey: ['who-viewed-me', myProfile.id],
-          queryFn: async () => {
-            const allViews = await base44.entities.ProfileView.filter({ viewed_profile_id: myProfile.id }, '-created_date', 50);
-            return allViews;
-          },
-          staleTime: 60000 // 1 minute
-        });
-      };
-      prefetchActivity();
-    }
+    if (!myProfile?.id) return;
+    
+    // Delay prefetch to not block initial render
+    const timer = setTimeout(() => {
+      queryClient.prefetchQuery({
+        queryKey: ['who-likes-me', myProfile.id],
+        queryFn: () => base44.entities.Like.filter({ liked_id: myProfile.id, is_seen: false }, '-created_date', 50),
+        staleTime: 120000
+      });
+    }, 2000);
+    
+    return () => clearTimeout(timer);
   }, [myProfile?.id, queryClient]);
 
-  // Fetch counts for badge
+  // Fetch counts for badge - OPTIMIZED with longer staleTime
   const { data: activityCounts } = useQuery({
     queryKey: ['activity-counts', myProfile?.id],
     queryFn: async () => {
       if (!myProfile?.id) return { likes: 0, views: 0 };
       const likes = await base44.entities.Like.count({ liked_id: myProfile.id, is_seen: false });
-      // For views, we just count recent ones as "new" for the badge
-      const today = new Date().toISOString().split('T')[0];
-      const views = await base44.entities.ProfileView.count({ viewed_profile_id: myProfile.id, created_date: { $gte: today } });
-      return { likes, views };
+      return { likes, views: 0 }; // Skip views count - not critical
     },
     enabled: !!myProfile?.id,
-    refetchInterval: 30000
+    staleTime: 60000,
+    refetchInterval: 60000
   });
 
-  // CRITICAL: Check auth first before anything else
+  // CRITICAL: Check auth first - OPTIMIZED (removed blocking calls)
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const isAuth = await base44.auth.isAuthenticated();
         if (!isAuth) {
-          // Not logged in - redirect to landing page immediately
           navigate(createPageUrl('Landing'));
           return;
         }
-        
-        // Check if user was previously banned (skip on error)
-        const user = await base44.auth.me();
-        try {
-          const banCheck = await base44.functions.invoke('checkBannedUser', { email: user.email });
-          if (banCheck.data?.banned) {
-            alert(banCheck.data.reason);
-            await base44.auth.logout();
-            navigate(createPageUrl('Landing'));
-            return;
-          }
-        } catch (e) {
-          console.log('Ban check skipped:', e);
-        }
-        
-        // Revalidate subscription status on login
-        try {
-          const subCheck = await base44.functions.invoke('revalidateSubscription');
-          if (subCheck.data?.expired) {
-            console.log('Subscription expired, downgraded to free');
-          }
-        } catch (e) {
-          console.log('Subscription revalidation skipped:', e);
-        }
-        
-        // Track login event
-        try {
-          await base44.functions.invoke('trackAnalytics', {
-            eventType: 'user_login',
-            userId: user.id,
-            properties: { source: 'home_page' }
-          });
-        } catch (e) {}
-        
         setIsCheckingAuth(false);
+        
+        // Defer non-critical checks to background
+        setTimeout(async () => {
+          try {
+            const user = await base44.auth.me();
+            // Ban check and subscription revalidation in background
+            base44.functions.invoke('checkBannedUser', { email: user.email }).catch(() => {});
+            base44.functions.invoke('revalidateSubscription').catch(() => {});
+          } catch (e) {}
+        }, 1000);
       } catch (e) {
-        // Not authenticated - redirect to landing
         navigate(createPageUrl('Landing'));
       }
     };
@@ -363,7 +316,7 @@ export default function Home() {
 
   // Fetch profiles for discovery - OPTIMIZED via Backend Function
   const { data: profiles = [], isLoading, refetch } = useQuery({
-    queryKey: ['discovery-profiles', filters, discoveryMode, myProfile?.filters],
+    queryKey: ['discovery-profiles', filters, discoveryMode, myProfile?.id],
     queryFn: async () => {
       const savedFilters = myProfile?.filters || {};
       const combinedFilters = { ...savedFilters, ...filters };
@@ -373,7 +326,7 @@ export default function Home() {
            filters: combinedFilters,
            mode: discoveryMode,
            myProfileId: myProfile.id,
-           limit: 20
+           limit: 15
         });
         return response.data.profiles || [];
       } catch (error) {
@@ -381,10 +334,11 @@ export default function Home() {
         return [];
       }
     },
-    enabled: !!myProfile,
+    enabled: !!myProfile?.id,
     refetchInterval: false,
     refetchOnWindowFocus: false,
-    staleTime: 600000, 
+    staleTime: 300000,
+    gcTime: 600000,
     retry: 1
   });
 

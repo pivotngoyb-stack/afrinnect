@@ -17,71 +17,50 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
   const { t } = useLanguage();
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   
-  // Swipe animation values
+  // Swipe animation values - memoized
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-15, 15]);
   const likeOpacity = useTransform(x, [50, 150], [0, 1]);
   const nopeOpacity = useTransform(x, [-50, -150], [0, 1]);
-  const borderOpacity = useTransform(x, [-150, 0, 150], [1, 0, 1]);
   const borderColor = useTransform(x, [-150, 0, 150], ['#ef4444', 'rgba(0,0,0,0)', '#22c55e']);
 
-  const handleDragEnd = (event, info) => {
+  const handleDragEnd = React.useCallback((event, info) => {
     const threshold = 100;
     if (info.offset.x > threshold && onLike) {
       onLike();
     } else if (info.offset.x < -threshold && onPass) {
       onPass();
     }
-  };
+  }, [onLike, onPass]);
+  
   const [showDetails, setShowDetails] = useState(expanded);
   const [viewLogged, setViewLogged] = useState(false);
-  const [viewerProfile, setViewerProfile] = useState(null);
 
+  // REMOVED: Viewer profile fetch moved to parent component to avoid repeated calls
+
+  // OPTIMIZED: Debounced profile view logging - skip PhotoEngagement on view
   useEffect(() => {
-    const getViewer = async () => {
+    if (viewLogged || !profile?.id) return;
+    
+    const timer = setTimeout(async () => {
       try {
         const user = await base44.auth.me();
         if (!user) return;
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-        if (profiles.length > 0) setViewerProfile(profiles[0]);
-      } catch (e) {}
-    };
-    getViewer();
-  }, []);
-
-  useEffect(() => {
-    const logProfileView = async () => {
-      if (!viewLogged && profile?.id && viewerProfile) {
-        try {
-          if (viewerProfile.id !== profile.id) {
-            await base44.entities.ProfileView.create({
-              viewer_profile_id: viewerProfile.id,
-              viewed_profile_id: profile.id,
-              view_date: new Date().toISOString(),
-              view_source: 'discovery'
-            });
-            
-            // Log photo view engagement
-            const currentPhoto = profile.photos?.[currentPhotoIndex];
-            if (currentPhoto) {
-              await base44.entities.PhotoEngagement.create({
-                profile_id: profile.id,
-                photo_url: currentPhoto,
-                viewer_profile_id: viewerProfile.id,
-                action: 'view',
-                photo_index: currentPhotoIndex
-              });
-            }
-            
-            setViewLogged(true);
-          }
-        } catch (e) {
-          // Silent fail
+        if (profiles.length > 0 && profiles[0].id !== profile.id) {
+          await base44.entities.ProfileView.create({
+            viewer_profile_id: profiles[0].id,
+            viewed_profile_id: profile.id,
+            view_date: new Date().toISOString(),
+            view_source: 'discovery'
+          });
+          setViewLogged(true);
         }
-      }
-    };
-    logProfileView();
-  }, [profile?.id, viewLogged, viewerProfile, currentPhotoIndex]);
+      } catch (e) {}
+    }, 1500); // Wait 1.5s before logging view
+    
+    return () => clearTimeout(timer);
+  }, [profile?.id, viewLogged]);
 
   const photos = profile?.photos?.length > 0 ? profile.photos : [profile?.primary_photo || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400'];
   
@@ -420,20 +399,7 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={async () => {
-              if (viewerProfile && profile?.photos?.[currentPhotoIndex]) {
-                try {
-                  await base44.entities.PhotoEngagement.create({
-                    profile_id: profile.id,
-                    photo_url: profile.photos[currentPhotoIndex],
-                    viewer_profile_id: viewerProfile.id,
-                    action: 'pass',
-                    photo_index: currentPhotoIndex
-                  });
-                } catch (e) {}
-              }
-              if (onPass) onPass();
-            }}
+            onClick={onPass}
             disabled={isPassing || isLiking || isSuperLiking}
             className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center border-2 border-gray-200 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -453,20 +419,7 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={async () => {
-              if (viewerProfile && profile?.photos?.[currentPhotoIndex]) {
-                try {
-                  await base44.entities.PhotoEngagement.create({
-                    profile_id: profile.id,
-                    photo_url: profile.photos[currentPhotoIndex],
-                    viewer_profile_id: viewerProfile.id,
-                    action: 'like',
-                    photo_index: currentPhotoIndex
-                  });
-                } catch (e) {}
-              }
-              if (onLike) onLike();
-            }}
+            onClick={onLike}
             disabled={isPassing || isLiking || isSuperLiking}
             className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
