@@ -131,24 +131,25 @@ export default function AdminSidebar({ currentView, onViewChange, stats, onLogou
       </nav>
 
       {/* Bottom Actions */}
-      <div className="p-4 border-t border-white/10 space-y-2 bg-gradient-to-t from-black/20">
-        <Link to={createPageUrl('CustomerView')}>
-          <Button variant="outline" className="w-full justify-start gap-2 border-white/20 text-gray-300 hover:bg-white/5 hover:text-white transition-all">
-            <Eye size={18} />
-            Preview App
+      <div className="p-3 border-t border-white/10 space-y-2">
+        <Link to={createPageUrl('Home')}>
+          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-gray-400 hover:bg-white/5 hover:text-white">
+            <ChevronLeft size={16} />
+            Back to App
           </Button>
         </Link>
         
-        <div className="px-3 py-2 text-xs text-gray-500 truncate" title={userEmail}>
+        <div className="px-3 py-1.5 text-xs text-gray-500 truncate" title={userEmail}>
           {userEmail}
         </div>
         
         <Button
           variant="ghost"
-          className="w-full justify-start gap-2 text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all"
+          size="sm"
+          className="w-full justify-start gap-2 text-gray-400 hover:bg-red-500/10 hover:text-red-400"
           onClick={onLogout}
         >
-          <LogOut size={18} />
+          <LogOut size={16} />
           Logout
         </Button>
       </div>
