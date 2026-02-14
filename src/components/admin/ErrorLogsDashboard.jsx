@@ -111,48 +111,48 @@ export default function ErrorLogsDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white">System Health & Errors</h2>
-        <Badge variant="outline" className="text-white border-white/20">
+        <h2 className="text-2xl font-bold text-gray-900">System Health & Errors</h2>
+        <Badge variant="outline" className="text-gray-600 border-gray-300">
           Live Monitor
         </Badge>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-gray-800 border-white/10 text-white">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Total Errors (24h)</p>
-              <p className="text-2xl font-bold">{stats.total}</p>
+              <p className="text-sm text-gray-500">Total Errors (24h)</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
-            <Activity className="text-blue-400" />
+            <Activity className="text-blue-500" />
           </CardContent>
         </Card>
-        <Card className="bg-gray-800 border-white/10 text-white">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">New / Open</p>
-              <p className="text-2xl font-bold text-red-400">{stats.new}</p>
+              <p className="text-sm text-gray-500">New / Open</p>
+              <p className="text-2xl font-bold text-red-600">{stats.new}</p>
             </div>
-            <AlertOctagon className="text-red-400" />
+            <AlertOctagon className="text-red-500" />
           </CardContent>
         </Card>
-        <Card className="bg-gray-800 border-white/10 text-white">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Resolved</p>
-              <p className="text-2xl font-bold text-green-400">{stats.resolved}</p>
+              <p className="text-sm text-gray-500">Resolved</p>
+              <p className="text-2xl font-bold text-green-600">{stats.resolved}</p>
             </div>
-            <CheckCircle className="text-green-400" />
+            <CheckCircle className="text-green-500" />
           </CardContent>
         </Card>
-        <Card className="bg-gray-800 border-white/10 text-white">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Critical</p>
-              <p className="text-2xl font-bold text-orange-400">{stats.critical}</p>
+              <p className="text-sm text-gray-500">Critical</p>
+              <p className="text-2xl font-bold text-orange-600">{stats.critical}</p>
             </div>
-            <Activity className="text-orange-400" />
+            <Activity className="text-orange-500" />
           </CardContent>
         </Card>
       </div>
@@ -163,13 +163,13 @@ export default function ErrorLogsDashboard() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <Input 
             placeholder="Search error messages..." 
-            className="pl-10 bg-gray-800 border-white/10 text-white"
+            className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-[180px] bg-gray-800 border-white/10 text-white">
+          <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -182,36 +182,36 @@ export default function ErrorLogsDashboard() {
       </div>
 
       {/* Error List */}
-      <Card className="bg-gray-800 border-white/10 text-white overflow-hidden">
-        <div className="divide-y divide-white/10">
+      <Card className="overflow-hidden">
+        <div className="divide-y divide-gray-100">
           {filteredErrors.map((error) => (
             <div 
               key={error.id} 
-              className="p-4 hover:bg-white/5 transition-colors cursor-pointer flex items-center justify-between group"
+              className="p-4 hover:bg-gray-50 transition-colors cursor-pointer flex items-center justify-between group"
               onClick={() => setSelectedError(error)}
             >
               <div className="flex-1 min-w-0 pr-4">
                 <div className="flex items-center gap-2 mb-1">
                   <Badge variant="outline" className={getSeverityColor(error.severity)}>
-                    {error.severity.toUpperCase()}
+                    {error.severity?.toUpperCase() || 'UNKNOWN'}
                   </Badge>
-                  <span className="text-xs text-gray-400 font-mono">
+                  <span className="text-xs text-gray-500 font-mono">
                     {new Date(error.created_date).toLocaleString()}
                   </span>
                   {error.status === 'new' && (
                     <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                   )}
                 </div>
-                <p className="font-medium text-sm truncate">{error.message}</p>
+                <p className="font-medium text-sm truncate text-gray-900">{error.message}</p>
                 <p className="text-xs text-gray-500 truncate mt-1">{error.url}</p>
               </div>
-              <ChevronRight className="text-gray-600 group-hover:text-white transition-colors" />
+              <ChevronRight className="text-gray-400 group-hover:text-gray-600 transition-colors" />
             </div>
           ))}
           
           {filteredErrors.length === 0 && (
             <div className="p-8 text-center text-gray-500">
-              No errors found matching your filters.
+              {isLoading ? 'Loading errors...' : 'No errors found matching your filters.'}
             </div>
           )}
         </div>

@@ -21,7 +21,9 @@ Deno.serve(async (req) => {
             matches, 
             events,
             auditLogs,
-            supportTickets
+            supportTickets,
+            ambassadors,
+            founderCodes
         ] = await Promise.all([
             adminDb.entities.User.list(),
             adminDb.entities.UserProfile.list(),
@@ -29,8 +31,10 @@ Deno.serve(async (req) => {
             adminDb.entities.Report.filter({ status: { $in: ['pending', 'under_review'] } }),
             adminDb.entities.Match.filter({ is_match: true }, '-matched_at', 500),
             adminDb.entities.Event.list(),
-            adminDb.entities.AdminAuditLog.list('-created_date', 100), // Just get recent for count estimation or last activity
-            adminDb.entities.SupportTicket.filter({ status: { $in: ['open', 'in_progress'] } })
+            adminDb.entities.AdminAuditLog.list('-created_date', 100),
+            adminDb.entities.SupportTicket.filter({ status: { $in: ['open', 'in_progress'] } }),
+            adminDb.entities.Ambassador.filter({ status: 'active' }),
+            adminDb.entities.FounderInviteCode.filter({ is_active: true })
         ]);
 
         // Calculate stats server-side
@@ -113,7 +117,12 @@ Deno.serve(async (req) => {
             // Retention Stats
             avgStreak,
             streak7Plus,
-            streak30Plus
+            streak30Plus,
+            
+            // Ambassador & Founder Stats
+            totalAmbassadors: ambassadors.length,
+            totalFounders: profiles.filter(p => p.is_founding_member).length,
+            activeFounderCodes: founderCodes.length
         };
 
         return Response.json(stats);

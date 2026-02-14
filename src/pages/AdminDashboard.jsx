@@ -502,7 +502,11 @@ export default function AdminDashboard() {
       case 'overview':
         return (
           <div className="space-y-6">
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                <p className="text-sm text-gray-500">Welcome back, {currentUser?.email}</p>
+              </div>
               <Link to={createPageUrl('AdminLaunchChecklist')}>
                 <Button variant="default" className="gap-2 bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white border-0 shadow-lg">
                   <Rocket size={16} /> Launch Checklist
@@ -510,7 +514,7 @@ export default function AdminDashboard() {
               </Link>
             </div>
             <QuickActions />
-            <AdminOverview stats={stats} />
+            <AdminOverview stats={stats} isLoading={isLoadingStats} />
           </div>
         );
       case 'users':
