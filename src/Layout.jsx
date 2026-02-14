@@ -22,14 +22,21 @@ import InstallPrompt from '@/components/mobile/InstallPrompt';
 import BannedScreen from '@/components/auth/BannedScreen';
 import FeatureReminders from '@/components/shared/FeatureReminders';
 import FeedbackWidget from '@/components/shared/FeedbackWidget';
+import IncomingCallOverlay from '@/components/video/IncomingCallOverlay';
+import VideoCallManager from '@/components/video/VideoCallManager';
+import { useIncomingCalls } from '@/components/video/useIncomingCalls';
 
 const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories', 'EventDetails', 'CreateEvent', 'CompatibilityQuizzes', 'ReferralProgram', 'LanguageExchangeHub', 'VendorManagement', 'Marketplace', 'PasswordReset'];
 
 function LayoutContent({ children, currentPageName }) {
-  const navigate = useNavigate();
-  const [myProfile, setMyProfile] = useState(null);
-  const [hasProfile, setHasProfile] = useState(true);
-  const { t } = useLanguage();
+    const navigate = useNavigate();
+    const [myProfile, setMyProfile] = useState(null);
+    const [hasProfile, setHasProfile] = useState(true);
+    const [activeCall, setActiveCall] = useState(null);
+    const { t } = useLanguage();
+
+    // Incoming call detection
+    const { incomingCall, callerProfile, answerCall, declineCall, dismissCall } = useIncomingCalls(myProfile?.id);
   
   // PWA Meta Tags
   useEffect(() => {
@@ -224,6 +231,33 @@ function LayoutContent({ children, currentPageName }) {
 
       {/* Feedback Widget - Only for logged in users with profile */}
       {myProfile && <FeedbackWidget />}
+
+      {/* Incoming Call Overlay */}
+      {incomingCall && callerProfile && !activeCall && (
+        <IncomingCallOverlay
+          caller={callerProfile}
+          callType={incomingCall.call_type}
+          onAnswer={() => {
+            const callInfo = answerCall();
+            setActiveCall(callInfo);
+            dismissCall();
+          }}
+          onDecline={() => {
+            declineCall();
+          }}
+        />
+      )}
+
+      {/* Active Video Call */}
+      {activeCall && (
+        <VideoCallManager
+          matchId={activeCall.matchId}
+          callId={activeCall.callId}
+          otherProfile={activeCall.callerProfile}
+          onClose={() => setActiveCall(null)}
+          isIncoming={true}
+        />
+      )}
 
       {/* Cookie Consent */}
       <CookieConsent />
