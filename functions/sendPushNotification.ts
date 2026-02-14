@@ -7,10 +7,11 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // SECURITY: Verify admin or system-level call
+    // SECURITY: Allow authenticated users (internal function calls pass auth context)
+    // This function is called internally from other functions like match notifications
     const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
     const { user_profile_id, title, body, link, type } = await req.json();
