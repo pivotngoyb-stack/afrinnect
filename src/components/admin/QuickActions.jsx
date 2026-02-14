@@ -54,28 +54,32 @@ export default function QuickActions() {
       label: 'Send Win-back Emails',
       description: 'Re-engage inactive users',
       icon: Mail,
-      color: 'blue',
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50 hover:bg-blue-100',
       mutation: actionMutations.sendWinback
     },
     {
       label: 'Auto-Verify Photos',
       description: 'Process pending verifications',
       icon: Shield,
-      color: 'green',
+      color: 'text-green-600',
+      bgColor: 'bg-green-50 hover:bg-green-100',
       mutation: actionMutations.verifyPhotos
     },
     {
       label: 'Analyze Patterns',
       description: 'Detect conversation issues',
       icon: TrendingUp,
-      color: 'purple',
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50 hover:bg-purple-100',
       mutation: actionMutations.analyzePatterns
     },
     {
       label: 'Check Expired Subs',
       description: 'Update subscription statuses',
       icon: Users,
-      color: 'amber',
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-50 hover:bg-amber-100',
       mutation: actionMutations.checkExpired
     }
   ];
@@ -89,7 +93,7 @@ export default function QuickActions() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid md:grid-cols-2 gap-3">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
           {actions.map((action, idx) => {
             const Icon = action.icon;
             return (
@@ -97,14 +101,17 @@ export default function QuickActions() {
                 key={idx}
                 onClick={() => action.mutation.mutate()}
                 disabled={action.mutation.isPending}
-                variant="outline"
-                className="h-auto p-4 justify-start"
+                variant="ghost"
+                className={`h-auto p-4 justify-start flex-col items-start ${action.bgColor} border transition-all`}
               >
-                <Icon size={20} className={`text-${action.color}-600 mr-3`} />
+                <Icon size={24} className={`${action.color} mb-2`} />
                 <div className="text-left">
-                  <p className="font-semibold text-sm">{action.label}</p>
+                  <p className="font-semibold text-sm text-gray-900">{action.label}</p>
                   <p className="text-xs text-gray-500">{action.description}</p>
                 </div>
+                {action.mutation.isPending && (
+                  <div className="mt-2 text-xs text-gray-500">Processing...</div>
+                )}
               </Button>
             );
           })}
