@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
-import { Send, Rocket, Loader2 } from 'lucide-react';
+import { Send, Rocket, Loader2, RefreshCw } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -702,11 +702,24 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto bg-gray-50">
-        <div className="max-w-7xl mx-auto px-8 py-8">
-        {/* Content */}
-        {renderView()}
-      </div>
-    </main>
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          {/* Refresh Stats Button */}
+          <div className="flex justify-end mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => queryClient.invalidateQueries(['admin-stats'])}
+              disabled={isLoadingStats}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <RefreshCw size={16} className={`mr-2 ${isLoadingStats ? 'animate-spin' : ''}`} />
+              Refresh Data
+            </Button>
+          </div>
+          {/* Content */}
+          {renderView()}
+        </div>
+      </main>
 
 
 
