@@ -87,7 +87,14 @@ export default function Landing() {
     }
   ];
 
-  const communityPhotos = [];
+  const communityPhotos = [
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/4aa15e12a_image.png",
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/a4c7689a9_image.png",
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/4a4914d37_image.png",
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/600f3567c_image.png",
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/aa7b7d0ce_image.png",
+    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/9c6bf76a1_image.png"
+  ];
 
   const handleGetStarted = () => {
     window.location.href = createPageUrl('Onboarding');
@@ -311,7 +318,7 @@ export default function Landing() {
           ))}
         </motion.div>
         <p className="text-center text-white/40 text-xs mt-4">
-          *Statistics are approximate and subject to change
+          *Statistics represent projected goals and are subject to change
         </p>
       </section>
 

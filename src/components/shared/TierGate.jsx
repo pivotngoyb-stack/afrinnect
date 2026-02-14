@@ -5,8 +5,9 @@ import { Crown, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
-// Tier requirements for features
+// Tier requirements for features - Production tier matrix
 export const TIER_FEATURES = {
+  // Premium Features
   unlimited_likes: ['premium', 'elite', 'vip'],
   see_who_liked: ['premium', 'elite', 'vip'],
   unlimited_messaging: ['premium', 'elite', 'vip'],
@@ -14,15 +15,22 @@ export const TIER_FEATURES = {
   profile_boost: ['premium', 'elite', 'vip'],
   read_receipts: ['premium', 'elite', 'vip'],
   rewind: ['premium', 'elite', 'vip'],
+  priority_likes: ['premium', 'elite', 'vip'],
+  
+  // Elite Features (includes all Premium)
   virtual_gifts: ['elite', 'vip'],
   unlimited_boosts: ['elite', 'vip'],
   priority_ranking: ['elite', 'vip'],
   incognito_mode: ['elite', 'vip'],
   verified_badge: ['elite', 'vip'],
+  super_likes_daily: ['elite', 'vip'],
+  
+  // VIP Features (includes all Elite)
   featured_profile: ['vip'],
   profile_insights: ['vip'],
   concierge_support: ['vip'],
-  exclusive_events: ['vip']
+  exclusive_events: ['vip'],
+  dedicated_matchmaker: ['vip']
 };
 
 export function hasAccess(userTier, feature) {

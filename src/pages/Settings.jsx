@@ -543,7 +543,7 @@ export default function Settings() {
 
         {/* App Version */}
         <p className="text-center text-gray-400 text-xs">
-          Afrinnect v1.0.0
+          Afrinnect v1.0.1 (Build 2024.02)
         </p>
       </main>
 

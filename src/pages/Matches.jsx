@@ -428,7 +428,7 @@ export default function Matches() {
 
           {/* Likes Tab */}
           <TabsContent value="likes">
-            {!myProfile?.is_premium ? (
+            {!myProfile?.is_premium && !['premium', 'elite', 'vip'].includes(myProfile?.subscription_tier) ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
