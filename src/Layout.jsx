@@ -22,9 +22,7 @@ import InstallPrompt from '@/components/mobile/InstallPrompt';
 import BannedScreen from '@/components/auth/BannedScreen';
 import FeatureReminders from '@/components/shared/FeatureReminders';
 import FeedbackWidget from '@/components/shared/FeedbackWidget';
-import IncomingCallOverlay from '@/components/video/IncomingCallOverlay';
-import VideoCallManager from '@/components/video/VideoCallManager';
-import { useIncomingCalls } from '@/components/video/useIncomingCalls';
+
 import LiveViewerNotification from '@/components/monetization/LiveViewerNotification';
 import SuperLikeReceivedModal from '@/components/monetization/SuperLikeReceivedModal';
 
@@ -34,13 +32,12 @@ function LayoutContent({ children, currentPageName }) {
     const navigate = useNavigate();
     const [myProfile, setMyProfile] = useState(null);
     const [hasProfile, setHasProfile] = useState(true);
-    const [activeCall, setActiveCall] = useState(null);
+    
     const [liveViewer, setLiveViewer] = useState(null);
     const [superLikeReceived, setSuperLikeReceived] = useState(null);
     const { t } = useLanguage();
 
-    // Incoming call detection
-    const { incomingCall, callerProfile, answerCall, declineCall, dismissCall } = useIncomingCalls(myProfile?.id);
+
 
     // Check for new super likes (simulate real-time)
     useEffect(() => {
@@ -274,32 +271,7 @@ function LayoutContent({ children, currentPageName }) {
       {/* Feedback Widget - Only for logged in users with profile */}
       {myProfile && <FeedbackWidget />}
 
-      {/* Incoming Call Overlay */}
-      {incomingCall && callerProfile && !activeCall && (
-        <IncomingCallOverlay
-          caller={callerProfile}
-          callType={incomingCall.call_type}
-          onAnswer={() => {
-            const callInfo = answerCall();
-            setActiveCall(callInfo);
-            dismissCall();
-          }}
-          onDecline={() => {
-            declineCall();
-          }}
-        />
-      )}
 
-      {/* Active Video Call */}
-      {activeCall && (
-        <VideoCallManager
-          matchId={activeCall.matchId}
-          callId={activeCall.callId}
-          otherProfile={activeCall.callerProfile}
-          onClose={() => setActiveCall(null)}
-          isIncoming={true}
-        />
-      )}
 
       {/* Live Viewer Notification */}
       {liveViewer && (
