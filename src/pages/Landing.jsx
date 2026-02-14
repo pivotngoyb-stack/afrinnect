@@ -87,14 +87,7 @@ export default function Landing() {
     }
   ];
 
-  const communityPhotos = [
-    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/e32885cab_o1ocuxst.png",
-    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/61126ff23_premium_photo-1661281273104-150484122d32.jpg",
-    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/0129c1998_ai-generated-8702314_1280.jpg",
-    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/b55b7c66d_image.png",
-    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/728ada3a8_image.png",
-    "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/3face4563_image.png"
-  ];
+  const communityPhotos = [];
 
   const handleGetStarted = () => {
     window.location.href = createPageUrl('Onboarding');
