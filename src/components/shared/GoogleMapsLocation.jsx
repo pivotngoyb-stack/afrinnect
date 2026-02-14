@@ -28,13 +28,27 @@ export default function GoogleMapsLocation({
       return;
     }
 
+    // Check if script is already being loaded
+    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+      // Wait for it to load
+      const checkLoaded = setInterval(() => {
+        if (window.google && window.google.maps) {
+          clearInterval(checkLoaded);
+          initializeMap();
+        }
+      }, 100);
+      return;
+    }
+
     try {
       // Fetch API key from backend
       const response = await base44.functions.invoke('getGoogleMapsKey');
-      const apiKey = response?.data?.apiKey || response?.apiKey;
+      const apiKey = response?.data?.apiKey;
       
       if (!apiKey) {
-        throw new Error('Google Maps API key not found');
+        setError('Google Maps API key not configured');
+        setLoading(false);
+        return;
       }
       
       // Load Google Maps script
@@ -42,17 +56,19 @@ export default function GoogleMapsLocation({
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.async = true;
       script.defer = true;
-      script.onload = initializeMap;
+      script.onload = () => {
+        // Small delay to ensure google.maps is fully available
+        setTimeout(initializeMap, 100);
+      };
       script.onerror = () => {
-        console.error('Failed to load Google Maps script');
+        setError('Failed to load Google Maps');
         setLoading(false);
-        alert('Failed to load Google Maps. Please check your internet connection and try again.');
       };
       document.head.appendChild(script);
-    } catch (error) {
-      console.error('Failed to load Google Maps:', error);
+    } catch (err) {
+      console.error('Failed to load Google Maps:', err);
+      setError('Failed to initialize Google Maps');
       setLoading(false);
-      alert('Failed to initialize Google Maps. Please try again later.');
     }
   };
 
