@@ -507,11 +507,20 @@ export default function AdminDashboard() {
                 <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
                 <p className="text-sm text-gray-500">Welcome back, {currentUser?.email}</p>
               </div>
-              <Link to={createPageUrl('AdminLaunchChecklist')}>
-                <Button variant="default" className="gap-2 bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white border-0 shadow-lg">
-                  <Rocket size={16} /> Launch Checklist
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setCurrentView('implementation')}
+                  className="gap-2"
+                >
+                  Implementation Status
                 </Button>
-              </Link>
+                <Link to={createPageUrl('AdminLaunchChecklist')}>
+                  <Button variant="default" className="gap-2 bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white border-0 shadow-lg">
+                    <Rocket size={16} /> Launch Checklist
+                  </Button>
+                </Link>
+              </div>
             </div>
             <QuickActions />
             <AdminOverview stats={stats} isLoading={isLoadingStats} />
