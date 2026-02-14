@@ -12,6 +12,7 @@ export const TIER_FEATURES = {
   advanced_filters: ['premium', 'elite', 'vip'],
   profile_boost: ['premium', 'elite', 'vip'],
   video_calls: ['elite', 'vip'],
+  video_calls_taste: ['premium'], // 5-sec taste for premium/founding members
   virtual_gifts: ['elite', 'vip'],
   read_receipts: ['premium', 'elite', 'vip'],
   rewind: ['premium', 'elite', 'vip'],
@@ -20,6 +21,14 @@ export const TIER_FEATURES = {
   concierge_support: ['vip'],
   featured_profile: ['vip']
 };
+
+// Check if user is a founding member with taste mode access
+export function isFoundingMemberWithTasteAccess(profile) {
+  if (!profile) return false;
+  return profile.is_founding_member && 
+         profile.subscription_tier === 'premium' &&
+         new Date(profile.founding_member_trial_ends_at) > new Date();
+}
 
 export function hasAccess(userTier, feature) {
   const tier = userTier || 'free';
