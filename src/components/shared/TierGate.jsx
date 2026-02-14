@@ -9,16 +9,20 @@ import { Card, CardContent } from '@/components/ui/card';
 export const TIER_FEATURES = {
   unlimited_likes: ['premium', 'elite', 'vip'],
   see_who_liked: ['premium', 'elite', 'vip'],
+  unlimited_messaging: ['premium', 'elite', 'vip'],
   advanced_filters: ['premium', 'elite', 'vip'],
   profile_boost: ['premium', 'elite', 'vip'],
-  video_calls: ['elite', 'vip'], // Coming soon
-  virtual_gifts: ['elite', 'vip'],
   read_receipts: ['premium', 'elite', 'vip'],
   rewind: ['premium', 'elite', 'vip'],
+  virtual_gifts: ['elite', 'vip'],
   unlimited_boosts: ['elite', 'vip'],
   priority_ranking: ['elite', 'vip'],
+  incognito_mode: ['elite', 'vip'],
+  verified_badge: ['elite', 'vip'],
+  featured_profile: ['vip'],
+  profile_insights: ['vip'],
   concierge_support: ['vip'],
-  featured_profile: ['vip']
+  exclusive_events: ['vip']
 };
 
 export function hasAccess(userTier, feature) {
