@@ -6,13 +6,8 @@ Deno.serve(async (req) => {
         
         // Admin only
         const user = await base44.auth.me();
-        if (!user || user.role !== 'admin') {
-            // Allow automation service role if no user (cron job)
-            // But base44.auth.me() checks cookie.
-            // If called via scheduled task, is user set? No.
-            // So we rely on "service role" context or check if we are in admin mode.
-            // Actually, scheduled tasks run as service role? No, they call the function.
-            // We should just use service role for operations.
+        if (user?.role !== 'admin') {
+            return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
         }
 
         const now = new Date().toISOString();
@@ -48,7 +43,7 @@ Deno.serve(async (req) => {
             results.push(sub.id);
         }
 
-        return Response.json({ processed: results.length, ids: results });
+        return Response.json({ success: true, checked: results.length, ids: results });
     } catch (error) {
         return Response.json({ error: error.message }, { status: 500 });
     }

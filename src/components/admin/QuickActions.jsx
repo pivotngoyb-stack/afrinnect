@@ -12,32 +12,40 @@ export default function QuickActions() {
   const actionMutations = {
     sendWinback: useMutation({
       mutationFn: () => base44.functions.invoke('sendWinbackEmail', {}),
-      onSuccess: (data) => {
-        toast.success(`Sent ${data.data.emailsSent} win-back emails`);
-      }
+      onSuccess: (response) => {
+        const count = response?.data?.emailsSent || 0;
+        toast.success(`Sent ${count} win-back emails`);
+      },
+      onError: (err) => toast.error(err.message || 'Failed to send emails')
     }),
 
     verifyPhotos: useMutation({
       mutationFn: () => base44.functions.invoke('autoVerifyPhotos', {}),
-      onSuccess: (data) => {
-        toast.success(`Processed ${data.data.processed} verifications`);
+      onSuccess: (response) => {
+        const count = response?.data?.processed || 0;
+        toast.success(`Processed ${count} verifications`);
         queryClient.invalidateQueries(['admin-verifications']);
-      }
+      },
+      onError: (err) => toast.error(err.message || 'Failed to verify photos')
     }),
 
     analyzePatterns: useMutation({
       mutationFn: () => base44.functions.invoke('analyzeConversationPatterns', {}),
-      onSuccess: (data) => {
-        toast.success(`Analyzed ${data.data.analyzed} conversations`);
-      }
+      onSuccess: (response) => {
+        const count = response?.data?.analyzed || 0;
+        toast.success(`Analyzed ${count} conversations`);
+      },
+      onError: (err) => toast.error(err.message || 'Failed to analyze patterns')
     }),
 
     checkExpired: useMutation({
       mutationFn: () => base44.functions.invoke('checkExpiredSubscriptions', {}),
-      onSuccess: (data) => {
-        toast.success(`Checked ${data.data.checked} subscriptions`);
+      onSuccess: (response) => {
+        const count = response?.data?.checked || 0;
+        toast.success(`Checked ${count} subscriptions`);
         queryClient.invalidateQueries(['admin-subscriptions']);
-      }
+      },
+      onError: (err) => toast.error(err.message || 'Failed to check subscriptions')
     })
   };
 
