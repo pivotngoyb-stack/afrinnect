@@ -529,7 +529,7 @@ export default function Landing() {
                   <CardContent className="p-0">
                     <div className="relative">
                       <img 
-                        src={item.image} 
+                        src={idx === 0 ? "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6940c70dbf312aa4658a9066/fb4e02dea_ChatGPTImageFeb4202612_35_48PM.png" : item.image} 
                         alt={item.title}
                         className="w-full h-48 object-cover rounded-t-lg"
                       />
