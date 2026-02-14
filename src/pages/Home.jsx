@@ -33,6 +33,8 @@ import TrialExpiryBanner from '@/components/monetization/TrialExpiryBanner';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import FeedbackModal from '@/components/matching/FeedbackModal';
 import ProfileSuggestions from '@/components/matching/ProfileSuggestions';
+import ProgressToTrial from '@/components/monetization/ProgressToTrial';
+import BlurredLikesTeaser from '@/components/monetization/BlurredLikesTeaser';
 
 export default function Home() {
   usePerformanceMonitor('Home');
@@ -893,6 +895,24 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 py-6 pb-24">
         {/* Trial Expiry Banner */}
         <TrialExpiryBanner userProfile={myProfile} />
+
+        {/* Progress to Trial - Gamification for free users */}
+        {myProfile && myProfile.subscription_tier === 'free' && (
+          <ProgressToTrial
+            completedActions={[
+              ...(myProfile.primary_photo ? ['profile_photo'] : []),
+              ...(myProfile.bio ? ['bio'] : []),
+              ...(myProfile.has_matched_before ? ['first_like'] : []),
+              ...((myProfile.daily_likes_count || 0) >= 5 ? ['view_profiles'] : []),
+            ]}
+            className="mb-6"
+          />
+        )}
+
+        {/* Blurred Likes Teaser for non-premium */}
+        {myProfile && !myProfile.is_premium && !['premium', 'elite', 'vip'].includes(myProfile.subscription_tier) && activityCounts?.likes > 0 && (
+          <BlurredLikesTeaser likesCount={activityCounts.likes} className="mb-6" />
+        )}
 
         {/* Ad Banner */}
         <AdBanner placement="discovery" userProfile={myProfile} />
