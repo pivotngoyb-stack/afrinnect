@@ -105,7 +105,6 @@ import Terms from './pages/Terms';
 import Unsubscribe from './pages/Unsubscribe';
 import VendorManagement from './pages/VendorManagement';
 import VerifyPhoto from './pages/VerifyPhoto';
-import VideoChat from './pages/VideoChat';
 import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
@@ -172,7 +171,6 @@ export const PAGES = {
     "Unsubscribe": Unsubscribe,
     "VendorManagement": VendorManagement,
     "VerifyPhoto": VerifyPhoto,
-    "VideoChat": VideoChat,
     "VideoEvents": VideoEvents,
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
