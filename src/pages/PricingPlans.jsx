@@ -41,7 +41,9 @@ const PRICING_TIERS = {
       { text: 'See Who Liked You', tip: 'View your admirers instantly' },
       { text: 'Unlimited Messaging', tip: 'Chat without restrictions' },
       { text: 'Advanced Filters', tip: 'Filter by ethnicity, religion, and more' },
-      { text: '1 Free Boost/mo', tip: 'Be the top profile in your area for 30 mins' }
+      { text: 'Read Receipts', tip: 'Know when your messages are read' },
+      { text: 'Rewind Last Swipe', tip: 'Undo accidental passes' },
+      { text: '1 Profile Boost/mo', tip: 'Be the top profile in your area for 30 mins' }
     ]
   },
   elite: {
@@ -63,7 +65,8 @@ const PRICING_TIERS = {
       { text: 'Virtual Gifts', tip: 'Send digital gifts to stand out' },
       { text: 'Elite Verified Badge', tip: 'Show you are real and serious' },
       { text: 'Priority Ranking', tip: 'Get seen by more people first' },
-      { text: '3 Free Boosts/mo', tip: 'Get seen by 10x more people' }
+      { text: 'Unlimited Boosts', tip: 'Boost your profile anytime' },
+      { text: 'Incognito Mode', tip: 'Browse profiles without being seen' }
     ]
   },
   vip: {
@@ -82,9 +85,10 @@ const PRICING_TIERS = {
     features: [
       { text: 'Everything in Elite', tip: '' },
       { text: 'VIP Verified Badge', tip: 'Exclusive status symbol' },
-      { text: 'Priority Support', tip: 'Direct line to our concierge' },
-      { text: 'Exclusive Events', tip: 'Access to VIP-only gatherings' },
-      { text: 'Featured Placement', tip: 'Permanent boost in discovery' }
+      { text: 'Priority Concierge Support', tip: 'Direct line to our team 24/7' },
+      { text: 'Exclusive VIP Events', tip: 'Access to VIP-only gatherings' },
+      { text: 'Featured Profile Placement', tip: 'Always shown first in discovery' },
+      { text: 'Profile Insights', tip: 'See who viewed you and analytics' }
     ]
   }
 };
@@ -379,12 +383,19 @@ export default function PricingPlans() {
                         {[
                             { name: 'Unlimited Likes', premium: true, elite: true, vip: true },
                             { name: 'See Who Likes You', premium: true, elite: true, vip: true },
+                            { name: 'Unlimited Messaging', premium: true, elite: true, vip: true },
                             { name: 'Advanced Filters', premium: true, elite: true, vip: true },
+                            { name: 'Read Receipts', premium: true, elite: true, vip: true },
+                            { name: 'Rewind Last Swipe', premium: true, elite: true, vip: true },
+                            { name: 'Profile Boosts', premium: '1/mo', elite: 'Unlimited', vip: 'Unlimited' },
                             { name: 'Virtual Gifts', premium: false, elite: true, vip: true },
                             { name: 'Priority Ranking', premium: false, elite: true, vip: true },
-                            { name: 'Monthly Boosts', premium: '1', elite: '3', vip: '5' },
-                            { name: 'VIP Badge', premium: false, elite: false, vip: true },
+                            { name: 'Incognito Mode', premium: false, elite: true, vip: true },
+                            { name: 'Verified Badge', premium: false, elite: 'Elite', vip: 'VIP' },
+                            { name: 'Featured Placement', premium: false, elite: false, vip: true },
+                            { name: 'Profile Insights', premium: false, elite: false, vip: true },
                             { name: 'Concierge Support', premium: false, elite: false, vip: true },
+                            { name: 'Exclusive Events', premium: false, elite: false, vip: true },
                         ].map((row, i) => (
                             <tr key={i} className="hover:bg-gray-50/50 transition-colors">
                                 <td className="p-4 text-sm font-medium text-gray-900 pl-8">{row.name}</td>
