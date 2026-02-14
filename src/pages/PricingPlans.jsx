@@ -60,7 +60,7 @@ const PRICING_TIERS = {
     },
     features: [
       { text: 'Everything in Premium', tip: '' },
-      { text: 'Video Calls', tip: 'Connect face-to-face securely' },
+      { text: 'Video Calls (Coming Soon)', tip: 'Face-to-face video chat - launching soon!' },
       { text: 'Virtual Gifts', tip: 'Send digital gifts to stand out' },
       { text: 'Elite Verified Badge', tip: 'Show you are real and serious' },
       { text: 'Priority Ranking', tip: 'Get seen by more people first' }
@@ -380,7 +380,7 @@ export default function PricingPlans() {
                             { name: 'Unlimited Likes', premium: true, elite: true, vip: true },
                             { name: 'See Who Likes You', premium: true, elite: true, vip: true },
                             { name: 'Advanced Filters', premium: true, elite: true, vip: true },
-                            { name: 'Video Calls', premium: false, elite: true, vip: true },
+                            { name: 'Video Calls (Coming Soon)', premium: false, elite: true, vip: true },
                             { name: 'Virtual Gifts', premium: false, elite: true, vip: true },
                             { name: 'Priority Ranking', premium: false, elite: true, vip: true },
                             { name: 'VIP Badge', premium: false, elite: false, vip: true },
