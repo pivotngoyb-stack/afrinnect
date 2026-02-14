@@ -202,15 +202,23 @@ export default function GoogleMapsLocation({
     );
   };
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center bg-gray-100 rounded-lg" style={{ height }}>
+        <p className="text-gray-500 text-sm">{error}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="relative">
       {showSearch && (
         <div className="mb-3 flex gap-2">
           <input
-            id="map-search-input"
+            ref={searchInputRef}
             type="text"
             placeholder="Search for a place..."
-            className="flex-1 px-3 py-2 border rounded-lg"
+            className="flex-1 px-3 py-2 border rounded-lg text-sm"
           />
           <Button
             type="button"
@@ -230,7 +238,7 @@ export default function GoogleMapsLocation({
       <div
         ref={mapRef}
         style={{ height, width: '100%' }}
-        className="rounded-lg border"
+        className="rounded-lg border bg-gray-100"
       />
 
       {loading && (
