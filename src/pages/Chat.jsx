@@ -41,7 +41,7 @@ import { useRealtimeMessages } from '@/components/chat/useRealtimeMessages';
 import TierGate, { hasAccess } from '@/components/shared/TierGate';
 import MessageLimitPaywall from '@/components/paywall/MessageLimitPaywall';
 import VoiceRecorder from '@/components/shared/VoiceRecorder';
-import VideoChat from './VideoChat';
+import VideoComingSoon from '@/components/video/VideoComingSoon';
 import ReadReceipts from '@/components/chat/ReadReceipts';
 import PremiumTypingIndicator from '@/components/chat/PremiumTypingIndicator';
 
@@ -324,13 +324,8 @@ export default function Chat() {
   });
 
   const handleVideoCall = () => {
-    const tier = myProfile?.subscription_tier;
-    if (tier === 'elite' || tier === 'vip') {
-      setShowVideoCall(true);
-    } else {
-      setUpgradeFeature('Video Calls');
-      setShowUpgradePrompt(true);
-    }
+    // Video calls coming soon - show placeholder
+    setShowVideoCall(true);
   };
 
   const handleVirtualGifts = () => {
@@ -834,23 +829,11 @@ export default function Chat() {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Video Call Overlay */}
-        <AnimatePresence>
-          {showVideoCall && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[60]"
-            >
-              <VideoChat 
-                matchId={matchId} 
-                embedded 
-                onClose={() => setShowVideoCall(false)} 
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Video Coming Soon Modal */}
+        <VideoComingSoon 
+          isOpen={showVideoCall} 
+          onClose={() => setShowVideoCall(false)} 
+        />
         </div>
         );
         }
