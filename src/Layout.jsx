@@ -25,6 +25,8 @@ import FeedbackWidget from '@/components/shared/FeedbackWidget';
 import IncomingCallOverlay from '@/components/video/IncomingCallOverlay';
 import VideoCallManager from '@/components/video/VideoCallManager';
 import { useIncomingCalls } from '@/components/video/useIncomingCalls';
+import LiveViewerNotification from '@/components/monetization/LiveViewerNotification';
+import SuperLikeReceivedModal from '@/components/monetization/SuperLikeReceivedModal';
 
 const PAGES_WITHOUT_NAV = ['Chat', 'Onboarding', 'EditProfile', 'Report', 'Settings', 'Landing', 'AdminDashboard', 'CustomerView', 'Terms', 'Privacy', 'CommunityGuidelines', 'LegalAcceptance', 'Notifications', 'PhoneVerification', 'IDVerification', 'VerifyPhoto', 'VideoChat', 'VirtualGifts', 'DailyMatches', 'SuccessStories', 'EventDetails', 'CreateEvent', 'CompatibilityQuizzes', 'ReferralProgram', 'LanguageExchangeHub', 'VendorManagement', 'Marketplace', 'PasswordReset'];
 
@@ -33,10 +35,50 @@ function LayoutContent({ children, currentPageName }) {
     const [myProfile, setMyProfile] = useState(null);
     const [hasProfile, setHasProfile] = useState(true);
     const [activeCall, setActiveCall] = useState(null);
+    const [liveViewer, setLiveViewer] = useState(null);
+    const [superLikeReceived, setSuperLikeReceived] = useState(null);
     const { t } = useLanguage();
 
     // Incoming call detection
     const { incomingCall, callerProfile, answerCall, declineCall, dismissCall } = useIncomingCalls(myProfile?.id);
+
+    // Check for new super likes (simulate real-time)
+    useEffect(() => {
+      if (!myProfile) return;
+      
+      const checkSuperLikes = async () => {
+        try {
+          const recentSuperLikes = await base44.entities.Like.filter({
+            liked_id: myProfile.id,
+            is_super_like: true,
+            is_seen: false
+          }, '-created_date', 1);
+          
+          if (recentSuperLikes.length > 0) {
+            const like = recentSuperLikes[0];
+            // Only show if created in last 5 minutes
+            const createdAt = new Date(like.created_date);
+            const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+            
+            if (createdAt > fiveMinutesAgo) {
+              const likerProfiles = await base44.entities.UserProfile.filter({ id: like.liker_id });
+              if (likerProfiles.length > 0) {
+                setSuperLikeReceived({
+                  ...like,
+                  profile: likerProfiles[0]
+                });
+              }
+            }
+          }
+        } catch (e) {
+          // Silent fail
+        }
+      };
+      
+      checkSuperLikes();
+      const interval = setInterval(checkSuperLikes, 60000); // Check every minute
+      return () => clearInterval(interval);
+    }, [myProfile]);
   
   // PWA Meta Tags
   useEffect(() => {
@@ -256,6 +298,35 @@ function LayoutContent({ children, currentPageName }) {
           otherProfile={activeCall.callerProfile}
           onClose={() => setActiveCall(null)}
           isIncoming={true}
+        />
+      )}
+
+      {/* Live Viewer Notification */}
+      {liveViewer && (
+        <LiveViewerNotification
+          viewerName={liveViewer.display_name}
+          viewerPhoto={liveViewer.primary_photo}
+          isPremium={myProfile?.is_premium || ['premium', 'elite', 'vip'].includes(myProfile?.subscription_tier)}
+          onDismiss={() => setLiveViewer(null)}
+        />
+      )}
+
+      {/* Super Like Received Modal */}
+      {superLikeReceived && (
+        <SuperLikeReceivedModal
+          isOpen={!!superLikeReceived}
+          onClose={async () => {
+            // Mark as seen
+            if (superLikeReceived?.id) {
+              try {
+                await base44.entities.Like.update(superLikeReceived.id, { is_seen: true });
+              } catch (e) {}
+            }
+            setSuperLikeReceived(null);
+          }}
+          senderName={superLikeReceived?.profile?.display_name}
+          senderPhoto={superLikeReceived?.profile?.primary_photo}
+          isPremium={myProfile?.is_premium || ['premium', 'elite', 'vip'].includes(myProfile?.subscription_tier)}
         />
       )}
 
