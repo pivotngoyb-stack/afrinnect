@@ -15,11 +15,13 @@ export default function CallButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  const isPremiumTier = ['elite', 'vip'].includes(userProfile?.subscription_tier);
+  const hasFullAccess = ['elite', 'vip'].includes(userProfile?.subscription_tier);
+  const hasTasteAccess = userProfile?.subscription_tier === 'premium'; // Premium gets 5 sec taste
+  const canCall = hasFullAccess || hasTasteAccess;
   
   const handleCall = async () => {
-    if (!isPremiumTier) {
-      setError('Video calls require Elite or VIP membership');
+    if (!canCall) {
+      setError('Video calls require Premium or higher membership');
       return;
     }
     
@@ -39,11 +41,12 @@ export default function CallButton({
         return;
       }
       
-      // Start the call
+      // Start the call with tier info
       onCallStart?.({
         matchId,
         otherProfile,
-        callType: variant
+        callType: variant,
+        isTasteMode: hasTasteAccess && !hasFullAccess // Premium gets taste mode
       });
       
     } catch (e) {
@@ -55,7 +58,7 @@ export default function CallButton({
   
   const Icon = variant === 'video' ? Video : Phone;
   
-  if (!isPremiumTier) {
+  if (!canCall) {
     return (
       <TooltipProvider>
         <Tooltip>
@@ -71,7 +74,7 @@ export default function CallButton({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Video calls require Elite or VIP membership</p>
+            <p>Video calls require Premium or higher</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

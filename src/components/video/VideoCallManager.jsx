@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { 
   Phone, PhoneOff, Video, VideoOff, Mic, MicOff, 
   Volume2, VolumeX, RotateCcw, Shield, Flag,
-  Loader2, X, AlertTriangle, WifiOff, Maximize2
+  Loader2, X, AlertTriangle, WifiOff, Maximize2, Crown
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,20 +14,80 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
 const CALL_TIMEOUT = 30000; // 30 seconds
 const RECONNECT_TIMEOUT = 10000;
 const BACKGROUND_TIMEOUT = 60000; // 1 minute before auto-disconnect
+
+const TASTE_MODE_DURATION = 5000; // 5 seconds for Premium users
+
+function UpgradeOverlay({ onUpgrade, onClose }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="absolute inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-6"
+    >
+      <motion.div
+        initial={{ scale: 0.8, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="text-center max-w-sm"
+      >
+        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+          <Video size={36} className="text-white" />
+        </div>
+        
+        <h2 className="text-2xl font-bold text-white mb-3">
+          Enjoying the connection? 💜
+        </h2>
+        
+        <p className="text-white/70 mb-6">
+          Upgrade to <span className="text-amber-400 font-semibold">Elite</span> or <span className="text-purple-400 font-semibold">VIP</span> for unlimited video calls and deeper connections.
+        </p>
+        
+        <div className="space-y-3">
+          <Button
+            onClick={onUpgrade}
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-6"
+          >
+            <Crown size={18} className="mr-2" />
+            Unlock Unlimited Calls
+          </Button>
+          
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            className="w-full text-white/60 hover:text-white hover:bg-white/10"
+          >
+            Maybe Later
+          </Button>
+        </div>
+        
+        <p className="text-xs text-white/40 mt-4">
+          Premium members get a 5-second preview of each call
+        </p>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 export default function VideoCallManager({ 
   matchId, 
   callId: initialCallId,
   otherProfile,
   onClose,
-  isIncoming = false 
+  isIncoming = false,
+  isTasteMode = false,
+  onUpgradeRequired
 }) {
   // State
   const [callState, setCallState] = useState(isIncoming ? 'ringing' : 'initiating');
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const tasteModeTimerRef = useRef(null);
+  const navigate = useNavigate();
   const [callId, setCallId] = useState(initialCallId);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
@@ -64,6 +124,7 @@ export default function VideoCallManager({
     if (backgroundTimeoutRef.current) clearTimeout(backgroundTimeoutRef.current);
     if (pollingRef.current) clearInterval(pollingRef.current);
     if (statsIntervalRef.current) clearInterval(statsIntervalRef.current);
+    if (tasteModeTimerRef.current) clearTimeout(tasteModeTimerRef.current);
     
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
@@ -177,6 +238,17 @@ export default function VideoCallManager({
           if (!callStartTimeRef.current) {
             callStartTimeRef.current = Date.now();
             startCallTimer();
+            
+            // Start taste mode timer for Premium users
+            if (isTasteMode) {
+              tasteModeTimerRef.current = setTimeout(() => {
+                setShowUpgradePrompt(true);
+                // Pause/mute the call but keep connection for dramatic effect
+                if (localStreamRef.current) {
+                  localStreamRef.current.getTracks().forEach(track => track.enabled = false);
+                }
+              }, TASTE_MODE_DURATION);
+            }
           }
           break;
         case 'disconnected':
@@ -635,8 +707,21 @@ export default function VideoCallManager({
     );
   };
 
+  const handleUpgrade = () => {
+    endCall('upgrade_required');
+    navigate(createPageUrl('PricingPlans'));
+  };
+
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
+      {/* Upgrade Overlay for Premium users after taste */}
+      {showUpgradePrompt && (
+        <UpgradeOverlay 
+          onUpgrade={handleUpgrade}
+          onClose={() => endCall('upgrade_declined')}
+        />
+      )}
+      
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-black/60 to-transparent">
         <div className="flex items-center justify-between">
