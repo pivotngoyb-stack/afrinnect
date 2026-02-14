@@ -41,7 +41,7 @@ import { useRealtimeMessages } from '@/components/chat/useRealtimeMessages';
 import TierGate, { hasAccess } from '@/components/shared/TierGate';
 import MessageLimitPaywall from '@/components/paywall/MessageLimitPaywall';
 import VoiceRecorder from '@/components/shared/VoiceRecorder';
-import VideoComingSoon from '@/components/video/VideoComingSoon';
+import VideoComingSoon from '../components/video/VideoComingSoon';
 import ReadReceipts from '@/components/chat/ReadReceipts';
 import PremiumTypingIndicator from '@/components/chat/PremiumTypingIndicator';
 
