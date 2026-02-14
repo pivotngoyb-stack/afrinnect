@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     const settings = settingsRecords[0]?.value || {
       founders_mode_enabled: false,
       auto_assign_new_users: false,
-      trial_days: 183
+      trial_days: 60 // 2 months default
     };
 
     // Get the user profile
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    let trialDays = settings.trial_days || 183;
+    let trialDays = settings.trial_days || 60; // 2 months for Founding Members
     let finalSource = source;
     let codeUsed = null;
 
@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
     const now = new Date();
     const trialEndsAt = new Date(now.getTime() + (trialDays * 24 * 60 * 60 * 1000));
 
-    // Grant Founding Member status
+    // Grant Founding Member status - Premium tier (not VIP) for 2 months
     const updateData = {
       is_founding_member: true,
       founding_member_granted_at: now.toISOString(),
@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
       founding_member_eligible: false,
       founding_trial_consumed: true,
       is_premium: true,
-      subscription_tier: 'premium',
+      subscription_tier: 'premium', // Premium tier only, NOT elite or vip
       premium_until: trialEndsAt.toISOString().split('T')[0],
       badges: [...(profile.badges || []).filter(b => b !== 'founding_member'), 'founding_member']
     };
