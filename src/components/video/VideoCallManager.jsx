@@ -23,7 +23,7 @@ const BACKGROUND_TIMEOUT = 60000; // 1 minute before auto-disconnect
 
 const TASTE_MODE_DURATION = 5000; // 5 seconds for Premium users
 
-function UpgradeOverlay({ onUpgrade, onClose }) {
+function UpgradeOverlay({ onUpgrade, onClose, isFoundingMember = false }) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -36,25 +36,38 @@ function UpgradeOverlay({ onUpgrade, onClose }) {
         transition={{ delay: 0.1 }}
         className="text-center max-w-sm"
       >
-        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+        <motion.div 
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+          className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center"
+        >
           <Video size={36} className="text-white" />
-        </div>
+        </motion.div>
         
         <h2 className="text-2xl font-bold text-white mb-3">
-          Enjoying the connection? 💜
+          {isFoundingMember ? "Founding Member Preview 🎁" : "Enjoying the connection? 💜"}
         </h2>
         
         <p className="text-white/70 mb-6">
-          Upgrade to <span className="text-amber-400 font-semibold">Elite</span> or <span className="text-purple-400 font-semibold">VIP</span> for unlimited video calls and deeper connections.
+          {isFoundingMember ? (
+            <>
+              As a <span className="text-amber-400 font-semibold">Founding Member</span>, you got a taste of video calls! 
+              Upgrade to <span className="text-purple-400 font-semibold">Elite</span> for unlimited video chats.
+            </>
+          ) : (
+            <>
+              Upgrade to <span className="text-amber-400 font-semibold">Elite</span> or <span className="text-purple-400 font-semibold">VIP</span> for unlimited video calls and deeper connections.
+            </>
+          )}
         </p>
         
         <div className="space-y-3">
           <Button
             onClick={onUpgrade}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-6"
+            className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-6"
           >
             <Crown size={18} className="mr-2" />
-            Unlock Unlimited Calls
+            Upgrade to Elite
           </Button>
           
           <Button
@@ -62,13 +75,15 @@ function UpgradeOverlay({ onUpgrade, onClose }) {
             variant="ghost"
             className="w-full text-white/60 hover:text-white hover:bg-white/10"
           >
-            Maybe Later
+            End Call
           </Button>
         </div>
         
-        <p className="text-xs text-white/40 mt-4">
-          Premium members get a 5-second preview of each call
-        </p>
+        {isFoundingMember && (
+          <p className="text-xs text-amber-400/70 mt-4">
+            ✨ Founding Members get exclusive 5-second video previews
+          </p>
+        )}
       </motion.div>
     </motion.div>
   );
@@ -714,11 +729,12 @@ export default function VideoCallManager({
 
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
-      {/* Upgrade Overlay for Premium users after taste */}
+      {/* Upgrade Overlay for Founding Members after taste */}
       {showUpgradePrompt && (
         <UpgradeOverlay 
           onUpgrade={handleUpgrade}
           onClose={() => endCall('upgrade_declined')}
+          isFoundingMember={isTasteMode}
         />
       )}
       
