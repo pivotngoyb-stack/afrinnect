@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/tooltip";
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import StripePaymentModal from '@/components/payment/StripePaymentModal';
+import SocialProofPaywall from '@/components/monetization/SocialProofPaywall';
+import ExitIntentOffer from '@/components/monetization/ExitIntentOffer';
 
 const PRICING_TIERS = {
   premium: {
@@ -345,8 +347,13 @@ export default function PricingPlans() {
           })}
         </div>
 
+        {/* Social Proof Section */}
+        <div className="mt-16 max-w-md mx-auto">
+          <SocialProofPaywall />
+        </div>
+
         {/* FAQ or Comparison Link */}
-        <div className="mt-20 text-center">
+        <div className="mt-12 text-center">
           <p className="text-gray-500 mb-4">Unsure which plan is right for you?</p>
           <a href="#comparison" className="text-purple-600 font-semibold hover:underline">
             View detailed feature comparison
@@ -415,6 +422,9 @@ export default function PricingPlans() {
             window.location.href = createPageUrl('Home');
         }}
       />
+
+      {/* Exit Intent Offer */}
+      <ExitIntentOffer isOnPricingPage={true} discountPercent={20} />
     </div>
   );
 }

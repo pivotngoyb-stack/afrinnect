@@ -12,8 +12,17 @@ export default function ConversationItem({ match, profile, lastMessage, unreadCo
     return format(d, 'MMM d');
   };
 
-  const truncateMessage = (text, maxLength = 40) => {
+  const truncateMessage = (text, maxLength = 40, isPremium = true) => {
     if (!text) return 'Say hello! 👋';
+    
+    // For non-premium, show teaser (first 3 words then blur indication)
+    if (!isPremium && text.length > 15) {
+      const words = text.split(' ');
+      if (words.length > 3) {
+        return words.slice(0, 3).join(' ') + ' •••';
+      }
+    }
+    
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
   };
 

@@ -17,6 +17,9 @@ import CountdownTimer from '@/components/shared/CountdownTimer';
 import LoadingSkeleton from '@/components/shared/LoadingSkeleton';
 import NotificationBell from '@/components/shared/NotificationBell';
 import EmptyState from '@/components/shared/EmptyState';
+import MatchCountdownBanner from '@/components/monetization/MatchCountdownBanner';
+import BlurredLikesTeaser from '@/components/monetization/BlurredLikesTeaser';
+import SocialProofPaywall from '@/components/monetization/SocialProofPaywall';
 
 export default function Matches() {
   
@@ -332,6 +335,27 @@ export default function Matches() {
 
           {/* Matches Tab */}
           <TabsContent value="matches" className="space-y-6">
+            {/* Expiring matches urgency banners */}
+            {newMatches.filter(p => {
+              const matchedAt = new Date(p.match?.matched_at || p.match?.created_date).getTime();
+              const expiresAt = p.match?.expires_at || new Date(matchedAt + 24 * 60 * 60 * 1000).toISOString();
+              const timeLeft = new Date(expiresAt).getTime() - Date.now();
+              return timeLeft < 4 * 60 * 60 * 1000 && timeLeft > 0; // Less than 4 hours
+            }).slice(0, 2).map(p => {
+              const matchedAt = new Date(p.match?.matched_at || p.match?.created_date).getTime();
+              const expiresAt = p.match?.expires_at || new Date(matchedAt + 24 * 60 * 60 * 1000).toISOString();
+              return (
+                <MatchCountdownBanner
+                  key={p.id}
+                  matchId={p.match?.id}
+                  expiresAt={expiresAt}
+                  partnerName={p.display_name}
+                  partnerPhoto={p.primary_photo || p.photos?.[0]}
+                  onExpire={() => queryClient.invalidateQueries(['matches'])}
+                />
+              );
+            })}
+
             {newMatches.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4 flex items-center gap-2">
@@ -408,36 +432,10 @@ export default function Matches() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center py-12 bg-gradient-to-br from-amber-50 to-purple-50 rounded-3xl"
+                className="py-6"
               >
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg">
-                  <Crown size={36} className="text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-800 mb-2">
-                  {likesReceived.length} people like you!
-                </h2>
-                <p className="text-gray-500 mb-6 max-w-sm mx-auto">
-                  Upgrade to Premium to see who's interested in you
-                </p>
-                
-                {/* Blurred preview */}
-                <div className="grid grid-cols-3 gap-3 max-w-sm mx-auto mb-6">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="aspect-[3/4] rounded-xl bg-gray-200 overflow-hidden relative">
-                      <div className="absolute inset-0 backdrop-blur-xl bg-white/60" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Heart className="text-purple-300" size={24} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <Link to={createPageUrl('PricingPlans')}>
-                  <Button className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700">
-                    <Crown size={18} className="mr-2" />
-                    Upgrade to Premium
-                  </Button>
-                </Link>
+                <BlurredLikesTeaser likesCount={likesReceived.length} className="mb-6" />
+                <SocialProofPaywall className="max-w-sm mx-auto" />
               </motion.div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">

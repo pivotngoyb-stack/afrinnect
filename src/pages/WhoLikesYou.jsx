@@ -10,9 +10,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import MatchCelebration from '@/components/match/MatchCelebration';
+import BlurredLikesTeaser from '@/components/monetization/BlurredLikesTeaser';
+import SocialProofPaywall from '@/components/monetization/SocialProofPaywall';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Eye } from 'lucide-react';
+import { Eye, Sparkles } from 'lucide-react';
 
 export default function WhoLikesYou() {
   const [myProfile, setMyProfile] = useState(null);
@@ -281,11 +283,12 @@ export default function WhoLikesYou() {
                           {showBlurred ? (
                             <>
                               <div className="h-6 bg-gray-200 rounded mb-2 blur-sm"></div>
-                              <div className="h-4 bg-gray-200 rounded w-3/4 mb-4 blur-sm"></div>
+                              <div className="h-4 bg-gray-200 rounded w-3/4 mb-3 blur-sm"></div>
+                              <SocialProofPaywall className="mb-3" />
                               <Link to={createPageUrl('PricingPlans')}>
                                 <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700">
                                   <Crown size={18} className="mr-2" />
-                                  Upgrade to See Who Likes You
+                                  See Who Likes You
                                 </Button>
                               </Link>
                             </>
