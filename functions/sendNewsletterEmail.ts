@@ -16,22 +16,43 @@ Deno.serve(async (req) => {
 
     // Get target users based on audience
     let profiles = [];
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    
     switch (target_audience) {
       case 'all':
         profiles = await base44.asServiceRole.entities.UserProfile.filter({ is_active: true });
         break;
       case 'premium':
-        profiles = await base44.asServiceRole.entities.UserProfile.filter({ is_premium: true });
+        profiles = await base44.asServiceRole.entities.UserProfile.filter({ 
+          subscription_tier: { $in: ['premium', 'elite', 'vip'] }
+        });
         break;
       case 'free':
         profiles = await base44.asServiceRole.entities.UserProfile.filter({ 
-          $or: [{ is_premium: false }, { is_premium: null }]
+          $or: [
+            { subscription_tier: 'free' }, 
+            { subscription_tier: null },
+            { subscription_tier: { $exists: false } }
+          ],
+          is_active: true
         });
         break;
       case 'inactive':
-        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
         profiles = await base44.asServiceRole.entities.UserProfile.filter({
-          last_active: { $lt: sevenDaysAgo }
+          last_active: { $lt: sevenDaysAgo },
+          is_active: true
+        });
+        break;
+      case 'founding_members':
+        profiles = await base44.asServiceRole.entities.UserProfile.filter({
+          is_founding_member: true,
+          is_active: true
+        });
+        break;
+      case 'new_users':
+        profiles = await base44.asServiceRole.entities.UserProfile.filter({
+          created_date: { $gte: sevenDaysAgo },
+          is_active: true
         });
         break;
       default:
@@ -50,22 +71,26 @@ Deno.serve(async (req) => {
 
         const userEmail = users[0].email;
 
+        // Personalize the body
+        const personalizedBody = body
+          .replace(/{name}/g, profile.display_name || 'there')
+          .replace(/{email}/g, userEmail);
+
         // Send email
         await base44.asServiceRole.integrations.Core.SendEmail({
           from_name: 'Afrinnect',
           to: userEmail,
-          subject: subject,
-          body: `
-            Hi ${profile.display_name}!
-            
-            ${body}
-            
-            ---
-            
-            To unsubscribe from marketing emails, click the unsubscribe link below.
-            
-            © 2025 Afrinnect. All rights reserved.
-          `
+          subject: subject.replace(/{name}/g, profile.display_name || 'there'),
+          body: `Hi ${profile.display_name || 'there'}!
+
+${personalizedBody}
+
+---
+
+To unsubscribe from marketing emails, visit your settings in the app.
+
+© ${new Date().getFullYear()} Afrinnect. All rights reserved.
+Contact: Support@afrinnect.com`
         });
 
         emailsSent++;
