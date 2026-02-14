@@ -565,11 +565,11 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-6 mb-10">
             {[
               "Unlimited Likes",
-              "Advanced Filters",
               "See Who Likes You",
-              "Profile Boosts",
+              "Advanced Filters",
               "Read Receipts",
-              "Priority Support"
+              "Rewind Last Swipe",
+              "Profile Boosts"
             ].map((feature, idx) => (
               <div key={idx} className="flex items-center justify-center gap-2 text-gray-700">
                 <CheckCircle size={20} className="text-green-600" />

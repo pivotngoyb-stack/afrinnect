@@ -43,7 +43,7 @@ const PRICING_TIERS = {
       { text: 'Advanced Filters', tip: 'Filter by ethnicity, religion, and more' },
       { text: 'Read Receipts', tip: 'Know when your messages are read' },
       { text: 'Rewind Last Swipe', tip: 'Undo accidental passes' },
-      { text: '1 Profile Boost/mo', tip: 'Be the top profile in your area for 30 mins' }
+      { text: '1 Profile Boost/month', tip: 'Be the top profile in your area for 30 mins' }
     ]
   },
   elite: {
@@ -65,7 +65,7 @@ const PRICING_TIERS = {
       { text: 'Virtual Gifts', tip: 'Send digital gifts to stand out' },
       { text: 'Elite Verified Badge', tip: 'Show you are real and serious' },
       { text: 'Priority Ranking', tip: 'Get seen by more people first' },
-      { text: 'Unlimited Boosts', tip: 'Boost your profile anytime' },
+      { text: 'Unlimited Profile Boosts', tip: 'Boost your profile anytime' },
       { text: 'Incognito Mode', tip: 'Browse profiles without being seen' }
     ]
   },
@@ -85,10 +85,10 @@ const PRICING_TIERS = {
     features: [
       { text: 'Everything in Elite', tip: '' },
       { text: 'VIP Verified Badge', tip: 'Exclusive status symbol' },
-      { text: 'Priority Concierge Support', tip: 'Direct line to our team 24/7' },
+      { text: 'Concierge Support', tip: 'Direct line to our team 24/7' },
       { text: 'Exclusive VIP Events', tip: 'Access to VIP-only gatherings' },
       { text: 'Featured Profile Placement', tip: 'Always shown first in discovery' },
-      { text: 'Profile Insights', tip: 'See who viewed you and analytics' }
+      { text: 'Profile Insights & Analytics', tip: 'See who viewed you and detailed stats' }
     ]
   }
 };
