@@ -4,6 +4,9 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
+    // This function can be called by automation system (no user auth required)
+    // or by admin manually
+    
     // Get all triggered safety alerts
     const alerts = await base44.asServiceRole.entities.SafetyCheck.filter({
       status: 'alert_triggered',

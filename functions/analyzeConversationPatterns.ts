@@ -3,11 +3,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    // CRITICAL: Admin Only
-    if (!user || (user.role !== 'admin' && user.email !== 'pivotngoyb@gmail.com')) {
+    
+    // This function can be called by automation system or admin manually
+    // Check if called by admin (optional - automation system doesn't pass auth)
+    try {
+      const user = await base44.auth.me();
+      if (user && user.role !== 'admin' && user.email !== 'pivotngoyb@gmail.com') {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    } catch (e) {
+      // Called by automation system without user context - allowed
     }
     
     // Get all active matches

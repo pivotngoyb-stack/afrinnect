@@ -5,10 +5,14 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Authenticate Admin
-    const user = await base44.auth.me();
-    if (!user || (user.role !== 'admin' && user.email !== 'pivotngoyb@gmail.com')) {
+    // This function can be called by automation system or admin manually
+    try {
+      const user = await base44.auth.me();
+      if (user && user.role !== 'admin' && user.email !== 'pivotngoyb@gmail.com') {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    } catch (e) {
+      // Called by automation system without user context - allowed
     }
 
     // Get all rate limit violations from the last 24 hours

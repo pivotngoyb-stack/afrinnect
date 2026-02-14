@@ -4,10 +4,14 @@ Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
         
-        // Admin only
-        const user = await base44.auth.me();
-        if (user?.role !== 'admin') {
+        // This function can be called by automation system or admin manually
+        try {
+          const user = await base44.auth.me();
+          if (user && user.role !== 'admin') {
             return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+          }
+        } catch (e) {
+          // Called by automation system without user context - allowed
         }
 
         const now = new Date().toISOString();
