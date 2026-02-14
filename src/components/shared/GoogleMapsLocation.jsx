@@ -72,11 +72,11 @@ export default function GoogleMapsLocation({
     }
   };
 
-  const initializeMap = () => {
+  const initializeMap = useCallback(() => {
     if (!mapRef.current) return;
     
     if (!window.google || !window.google.maps) {
-      console.error('Google Maps not loaded');
+      setError('Google Maps not available');
       setLoading(false);
       return;
     }
@@ -102,85 +102,76 @@ export default function GoogleMapsLocation({
         draggable: true
       });
 
+      // Reverse geocode helper
+      const reverseGeocode = async (lat, lng) => {
+        try {
+          const geocoder = new window.google.maps.Geocoder();
+          const response = await geocoder.geocode({ location: { lat, lng } });
+          if (response.results && response.results[0]) {
+            return response.results[0].formatted_address;
+          }
+        } catch (e) {
+          console.error('Reverse geocoding failed:', e);
+        }
+        return null;
+      };
+
       // Add click listener to map
       mapInstance.addListener('click', async (e) => {
         const lat = e.latLng.lat();
         const lng = e.latLng.lng();
-        const location = { lat, lng };
-        markerInstance.setPosition(location);
+        markerInstance.setPosition({ lat, lng });
         
-        try {
-          const geocoder = new window.google.maps.Geocoder();
-          const { results } = await geocoder.geocode({ location: { lat, lng } });
-          if (results[0]) {
-            location.address = results[0].formatted_address;
-          }
-        } catch (error) {
-          console.error('Reverse geocoding failed:', error);
-        }
-        
-        onLocationSelect?.(location);
+        const address = await reverseGeocode(lat, lng);
+        onLocationSelect?.({ lat, lng, address });
       });
 
       // Add drag listener to marker
       markerInstance.addListener('dragend', async (e) => {
         const lat = e.latLng.lat();
         const lng = e.latLng.lng();
-        const location = { lat, lng };
         
-        try {
-          const geocoder = new window.google.maps.Geocoder();
-          const { results } = await geocoder.geocode({ location: { lat, lng } });
-          if (results[0]) {
-            location.address = results[0].formatted_address;
-          }
-        } catch (error) {
-          console.error('Reverse geocoding failed:', error);
-        }
-
-        onLocationSelect?.(location);
+        const address = await reverseGeocode(lat, lng);
+        onLocationSelect?.({ lat, lng, address });
       });
 
-      if (showSearch) {
-        const input = document.getElementById('map-search-input');
-        if (input) {
-          const searchBoxInstance = new window.google.maps.places.SearchBox(input);
-          
-          mapInstance.addListener('bounds_changed', () => {
-            searchBoxInstance.setBounds(mapInstance.getBounds());
-          });
+      // Setup search box
+      if (showSearch && searchInputRef.current) {
+        const searchBoxInstance = new window.google.maps.places.SearchBox(searchInputRef.current);
+        
+        mapInstance.addListener('bounds_changed', () => {
+          searchBoxInstance.setBounds(mapInstance.getBounds());
+        });
 
-          searchBoxInstance.addListener('places_changed', () => {
-            const places = searchBoxInstance.getPlaces();
-            if (places.length === 0) return;
+        searchBoxInstance.addListener('places_changed', () => {
+          const places = searchBoxInstance.getPlaces();
+          if (!places || places.length === 0) return;
 
-            const place = places[0];
-            if (!place.geometry || !place.geometry.location) return;
+          const place = places[0];
+          if (!place.geometry || !place.geometry.location) return;
 
-            const location = {
-              lat: place.geometry.location.lat(),
-              lng: place.geometry.location.lng(),
-              address: place.formatted_address
-            };
+          const location = {
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng(),
+            address: place.formatted_address
+          };
 
-            mapInstance.setCenter(location);
-            markerInstance.setPosition(location);
-            onLocationSelect?.(location);
-          });
-
-          setSearchBox(searchBoxInstance);
-        }
+          mapInstance.setCenter(location);
+          mapInstance.setZoom(15);
+          markerInstance.setPosition(location);
+          onLocationSelect?.(location);
+        });
       }
 
       setMap(mapInstance);
       setMarker(markerInstance);
       setLoading(false);
-    } catch (error) {
-      console.error('Error initializing map:', error);
+    } catch (err) {
+      console.error('Error initializing map:', err);
+      setError('Error initializing map');
       setLoading(false);
-      alert('Error initializing map. Please refresh and try again.');
     }
-  };
+  }, [initialLocation, showSearch, onLocationSelect]);
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
