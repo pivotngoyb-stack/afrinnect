@@ -103,12 +103,18 @@ export default function Home() {
     queryKey: ['activity-counts', myProfile?.id],
     queryFn: async () => {
       if (!myProfile?.id) return { likes: 0, views: 0 };
-      const likes = await base44.entities.Like.count({ liked_id: myProfile.id, is_seen: false });
-      return { likes, views: 0 }; // Skip views count - not critical
+      try {
+        const likes = await base44.entities.Like.filter({ liked_id: myProfile.id, is_seen: false });
+        return { likes: likes.length, views: 0 };
+      } catch (e) {
+        console.error('Failed to fetch activity counts:', e);
+        return { likes: 0, views: 0 };
+      }
     },
     enabled: !!myProfile?.id,
     staleTime: 60000,
-    refetchInterval: 60000
+    refetchInterval: 120000, // Reduced frequency to prevent rate limiting
+    retry: 1
   });
 
   // CRITICAL: Check auth first - OPTIMIZED (removed blocking calls)

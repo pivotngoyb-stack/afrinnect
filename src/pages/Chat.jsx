@@ -84,9 +84,8 @@ export default function Chat() {
     sendReadReceipt 
   } = useRealtimeMessages(matchId, myProfile?.id, !!myProfile && !!matchId);
 
-  // Screenshot detection (removed unreliable visibility check)
-  // Web browsers cannot reliably detect screenshots. 
-  // The previous implementation using visibilitychange caused false positives when switching tabs.
+  // Screenshot detection note: Web browsers cannot reliably detect screenshots.
+  // Native mobile apps can handle this, but web apps cannot.
 
   useEffect(() => {
     const fetchProfiles = async () => {
