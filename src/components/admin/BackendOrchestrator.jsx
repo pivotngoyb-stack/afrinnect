@@ -16,61 +16,73 @@ export default function BackendOrchestrator() {
       id: 'auto-verify',
       name: 'autoVerifyPhotos',
       title: 'Auto Photo/ID Verification',
-      schedule: '*/15 * * * *', // Every 15 minutes
+      schedule: 'Every 15 minutes',
+      automationId: '6990ab84c117ca4f4369c752',
       enabled: true,
       lastRun: null,
-      nextRun: null,
       status: 'idle',
-      dependencies: [],
-      priority: 'high'
+      priority: 'high',
+      description: 'AI-powered auto-approval/rejection of verification requests'
     },
     {
       id: 'analyze-patterns',
       name: 'analyzeConversationPatterns',
       title: 'Conversation Pattern Analysis',
-      schedule: '*/30 * * * *', // Every 30 minutes
+      schedule: 'Every 30 minutes',
+      automationId: '6990ab84c117ca4f4369c753',
       enabled: true,
       lastRun: null,
-      nextRun: null,
       status: 'idle',
-      dependencies: [],
-      priority: 'medium'
+      priority: 'medium',
+      description: 'Detect harassment, scams, and suspicious patterns'
     },
     {
       id: 'escalate-alerts',
       name: 'autoEscalateSafetyAlerts',
       title: 'Safety Alert Escalation',
-      schedule: '*/5 * * * *', // Every 5 minutes
+      schedule: 'Every 5 minutes',
+      automationId: '6990ab84c117ca4f4369c754',
       enabled: true,
       lastRun: null,
-      nextRun: null,
       status: 'idle',
-      dependencies: [],
-      priority: 'critical'
+      priority: 'critical',
+      description: 'Escalate unresolved safety alerts to admins'
     },
     {
       id: 'expire-subscriptions',
       name: 'checkExpiredSubscriptions',
       title: 'Subscription Expiry Check',
-      schedule: '0 0 * * *', // Daily at midnight
+      schedule: 'Daily at midnight',
+      automationId: '6990ab84c117ca4f4369c755',
       enabled: true,
       lastRun: null,
-      nextRun: null,
       status: 'idle',
-      dependencies: [],
-      priority: 'medium'
+      priority: 'medium',
+      description: 'Downgrade expired subscriptions to free tier'
     },
     {
       id: 'winback-email',
       name: 'sendWinbackEmail',
       title: 'Win-back Email Campaign',
-      schedule: '0 10 * * *', // Daily at 10am
+      schedule: 'Daily at 10am',
+      automationId: '6990ab84c117ca4f4369c756',
       enabled: true,
       lastRun: null,
-      nextRun: null,
       status: 'idle',
-      dependencies: [],
-      priority: 'low'
+      priority: 'low',
+      description: 'Re-engage inactive users with personalized emails'
+    },
+    {
+      id: 'detect-scammers',
+      name: 'autoDetectScammers',
+      title: 'AI Scam Detection',
+      schedule: 'Every hour',
+      automationId: '6990ab84c117ca4f4369c757',
+      enabled: true,
+      lastRun: null,
+      status: 'idle',
+      priority: 'high',
+      description: 'AI-powered detection and auto-ban of scammers'
     }
   ]);
 
@@ -180,14 +192,7 @@ export default function BackendOrchestrator() {
     }
   };
 
-  const formatSchedule = (cron) => {
-    if (cron === '*/15 * * * *') return 'Every 15 minutes';
-    if (cron === '*/30 * * * *') return 'Every 30 minutes';
-    if (cron === '*/5 * * * *') return 'Every 5 minutes';
-    if (cron === '0 0 * * *') return 'Daily at midnight';
-    if (cron === '0 10 * * *') return 'Daily at 10am';
-    return cron;
-  };
+
 
   const getPriorityBadge = (priority) => {
     const colors = {
@@ -230,19 +235,20 @@ export default function BackendOrchestrator() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Job Details */}
+                <p className="text-sm text-gray-600 mb-3">{job.description}</p>
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-600">Schedule</p>
-                    <p className="font-medium">{formatSchedule(job.schedule)}</p>
+                    <p className="text-gray-500 text-xs">Schedule</p>
+                    <p className="font-medium">{job.schedule}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Last Run</p>
+                    <p className="text-gray-500 text-xs">Last Run</p>
                     <p className="font-medium">
-                      {job.lastRun ? new Date(job.lastRun).toLocaleTimeString() : 'Never'}
+                      {job.lastRun ? new Date(job.lastRun).toLocaleTimeString() : 'Automated'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Priority</p>
+                    <p className="text-gray-500 text-xs">Priority</p>
                     {getPriorityBadge(job.priority)}
                   </div>
                 </div>
