@@ -644,8 +644,11 @@ export default function Landing() {
             <Link to={createPageUrl('Terms')} className="hover:text-white">Terms of Service</Link>
             <Link to={createPageUrl('CommunityGuidelines')} className="hover:text-white">{t('landing.footer.guidelines')}</Link>
           </div>
-          {/* Copyright Notice */}
+          {/* Contact & Copyright */}
           <div className="mt-8 pt-8 border-t border-gray-800">
+            <p className="text-sm text-gray-400 mb-2">
+              Contact us: <a href="mailto:Support@afrinnect.com" className="text-amber-400 hover:text-amber-300">Support@afrinnect.com</a>
+            </p>
             <p className="text-sm text-gray-400">© {new Date().getFullYear()} Afrinnect. All rights reserved.</p>
             <p className="text-xs text-gray-500 mt-2">
               Afrinnect and the Afrinnect logo are trademarks of Afrinnect. Unauthorized use is prohibited.
