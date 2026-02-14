@@ -340,10 +340,13 @@ export default function PricingPlans() {
                     onClick={() => handleSubscribe(key)}
                     className={`w-full py-6 text-base font-semibold rounded-xl shadow-lg transition-all active:scale-95 ${tier.buttonColor}`}
                   >
-                    Start 3-Day Free Trial
+                    {myProfile?.subscription_tier === key ? 'Current Plan' : 'Get Started'}
                   </Button>
                   <p className="text-center text-xs text-gray-400 mt-4">
-                    Total ${price.total} • Cancel anytime
+                    {billingCycle === 'monthly' 
+                      ? `$${price.total}/month • Cancel anytime`
+                      : `Billed ${billingCycle === 'yearly' ? 'annually' : 'quarterly'} at $${price.total} • Cancel anytime`
+                    }
                   </p>
                 </div>
               </div>
@@ -356,9 +359,13 @@ export default function PricingPlans() {
           <SocialProofPaywall />
         </div>
 
-        {/* FAQ or Comparison Link */}
+        {/* Money-back guarantee */}
         <div className="mt-12 text-center">
-          <p className="text-gray-500 mb-4">Unsure which plan is right for you?</p>
+          <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-6 py-3">
+            <Shield className="w-5 h-5 text-green-600" />
+            <span className="text-green-800 font-medium">30-day money-back guarantee</span>
+          </div>
+          <p className="text-gray-500 mt-4 mb-2">Unsure which plan is right for you?</p>
           <a href="#comparison" className="text-purple-600 font-semibold hover:underline">
             View detailed feature comparison
           </a>
