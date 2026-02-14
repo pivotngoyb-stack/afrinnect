@@ -60,10 +60,10 @@ const PRICING_TIERS = {
     },
     features: [
       { text: 'Everything in Premium', tip: '' },
-      { text: 'Video Calls (Coming Soon)', tip: 'Face-to-face video chat - launching soon!' },
       { text: 'Virtual Gifts', tip: 'Send digital gifts to stand out' },
       { text: 'Elite Verified Badge', tip: 'Show you are real and serious' },
-      { text: 'Priority Ranking', tip: 'Get seen by more people first' }
+      { text: 'Priority Ranking', tip: 'Get seen by more people first' },
+      { text: '3 Free Boosts/mo', tip: 'Get seen by 10x more people' }
     ]
   },
   vip: {
@@ -380,22 +380,22 @@ export default function PricingPlans() {
                             { name: 'Unlimited Likes', premium: true, elite: true, vip: true },
                             { name: 'See Who Likes You', premium: true, elite: true, vip: true },
                             { name: 'Advanced Filters', premium: true, elite: true, vip: true },
-                            { name: 'Video Calls (Coming Soon)', premium: false, elite: true, vip: true },
                             { name: 'Virtual Gifts', premium: false, elite: true, vip: true },
                             { name: 'Priority Ranking', premium: false, elite: true, vip: true },
+                            { name: 'Monthly Boosts', premium: '1', elite: '3', vip: '5' },
                             { name: 'VIP Badge', premium: false, elite: false, vip: true },
                             { name: 'Concierge Support', premium: false, elite: false, vip: true },
                         ].map((row, i) => (
                             <tr key={i} className="hover:bg-gray-50/50 transition-colors">
                                 <td className="p-4 text-sm font-medium text-gray-900 pl-8">{row.name}</td>
                                 <td className="p-4 text-center">
-                                    {row.premium ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <span className="text-gray-300">-</span>}
+                                    {row.premium === true ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : row.premium ? <span className="text-sm font-medium text-purple-600">{row.premium}</span> : <span className="text-gray-300">-</span>}
                                 </td>
                                 <td className="p-4 text-center">
-                                    {row.elite ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <span className="text-gray-300">-</span>}
+                                    {row.elite === true ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : row.elite ? <span className="text-sm font-medium text-amber-600">{row.elite}</span> : <span className="text-gray-300">-</span>}
                                 </td>
                                 <td className="p-4 text-center">
-                                    {row.vip ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <span className="text-gray-300">-</span>}
+                                    {row.vip === true ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : row.vip ? <span className="text-sm font-medium text-slate-900">{row.vip}</span> : <span className="text-gray-300">-</span>}
                                 </td>
                             </tr>
                         ))}
