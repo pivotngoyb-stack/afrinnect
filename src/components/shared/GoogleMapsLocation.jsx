@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { MapPin, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -11,10 +11,11 @@ export default function GoogleMapsLocation({
   showSearch = true 
 }) {
   const mapRef = useRef(null);
+  const searchInputRef = useRef(null);
   const [map, setMap] = useState(null);
   const [marker, setMarker] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [searchBox, setSearchBox] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadGoogleMaps();
