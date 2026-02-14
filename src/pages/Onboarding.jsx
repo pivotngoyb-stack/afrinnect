@@ -336,9 +336,15 @@ export default function Onboarding() {
   const canProceed = () => {
     switch (step) {
       case 0: return true; // Welcome
-      case 1: return formData.display_name && formData.birth_date && calculateAge(formData.birth_date) >= 18;
+      case 1: 
+        const nameValid = formData.display_name && formData.display_name.trim().length >= 2;
+        const ageValid = formData.birth_date && calculateAge(formData.birth_date) >= 18;
+        return nameValid && ageValid;
       case 2: return formData.gender && formData.looking_for.length > 0;
-      case 3: return formData.country_of_origin && formData.current_country && formData.current_city && formData.location.lat && formData.location.lng;
+      case 3: 
+        const locationValid = formData.country_of_origin && formData.current_country && formData.current_city;
+        const geoValid = formData.location.lat && formData.location.lng;
+        return locationValid && geoValid;
       case 4: return formData.relationship_goal;
       case 5: return formData.photos.length >= 4;
       case 6: return formData.interests.length >= 3;
