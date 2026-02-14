@@ -631,6 +631,8 @@ export default function AdminDashboard() {
         return <SystemSettings />;
       case 'audit':
         return <AuditTrailDashboard />;
+      case 'implementation':
+        return <ImplementationStatus />;
       case 'auth_test':
         return <AuthTest />;
       case 'security_monitor':
@@ -643,6 +645,8 @@ export default function AdminDashboard() {
         return <PageVisitsAnalytics />;
       case 'appstore':
         return <AppStoreComplianceAdmin />;
+      case 'implementation':
+        return <ImplementationStatus />;
       case 'reports':
         return (
           <div className="max-w-2xl mx-auto space-y-6">
@@ -694,7 +698,7 @@ export default function AdminDashboard() {
           </div>
         );
       default:
-        return <AdminOverview stats={stats} />;
+        return <AdminOverview stats={stats} isLoading={isLoadingStats} />;
     }
   };
 
