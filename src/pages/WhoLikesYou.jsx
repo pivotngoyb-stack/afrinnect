@@ -275,6 +275,12 @@ export default function WhoLikesYou() {
                               <div className="text-center">
                                 <Lock size={48} className="text-white mx-auto mb-2" />
                                 <p className="text-white font-semibold">Upgrade to See</p>
+                                {is_super_like && (
+                                  <div className="mt-2 bg-blue-500/80 px-3 py-1 rounded-full text-xs text-white flex items-center gap-1 justify-center">
+                                    <Sparkles size={12} />
+                                    Super Like!
+                                  </div>
+                                )}
                               </div>
                             </div>
                           )}
