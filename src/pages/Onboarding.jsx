@@ -234,18 +234,24 @@ export default function Onboarding() {
         if ('Notification' in window && Notification.permission === 'default') {
           const permission = await Notification.requestPermission();
           if (permission === 'granted') {
-            // Get FCM token and save it
-            const { messaging } = await import('@/components/firebase/firebaseConfig');
-            const { getToken } = await import('firebase/messaging');
+            // Check if browser supports Firebase messaging
+            const { isSupported } = await import('firebase/messaging');
+            const supported = await isSupported();
             
-            try {
-              const vapidKey = await base44.functions.invoke('getVapidKey');
-              const token = await getToken(messaging, { vapidKey: vapidKey.vapid_key });
+            if (supported) {
+              // Get FCM token and save it
+              const { messaging } = await import('@/components/firebase/firebaseConfig');
+              const { getToken } = await import('firebase/messaging');
               
-              // Save token to profile (still using update here, but token is allowed field usually)
-              await base44.functions.invoke('updateUserProfile', { push_token: token });
-            } catch (tokenError) {
-              console.error('Failed to get FCM token:', tokenError);
+              try {
+                const vapidKey = await base44.functions.invoke('getVapidKey');
+                const token = await getToken(messaging, { vapidKey: vapidKey.vapid_key });
+                
+                // Save token to profile
+                await base44.functions.invoke('updateUserProfile', { push_token: token });
+              } catch (tokenError) {
+                console.error('Failed to get FCM token:', tokenError);
+              }
             }
           }
         }
