@@ -80,6 +80,7 @@ import LanguageExchangeHub from './pages/LanguageExchangeHub';
 import LegalAcceptance from './pages/LegalAcceptance';
 import Marketplace from './pages/Marketplace';
 import Matches from './pages/Matches';
+import MigrationCalculator from './pages/MigrationCalculator';
 import NotFound from './pages/NotFound';
 import Notifications from './pages/Notifications';
 import Onboarding from './pages/Onboarding';
@@ -109,7 +110,6 @@ import VideoEvents from './pages/VideoEvents';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
-import MigrationCalculator from './pages/MigrationCalculator';
 import __Layout from './Layout.jsx';
 
 
@@ -147,6 +147,7 @@ export const PAGES = {
     "LegalAcceptance": LegalAcceptance,
     "Marketplace": Marketplace,
     "Matches": Matches,
+    "MigrationCalculator": MigrationCalculator,
     "NotFound": NotFound,
     "Notifications": Notifications,
     "Onboarding": Onboarding,
@@ -176,7 +177,6 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
     "WhoLikesYou": WhoLikesYou,
-    "MigrationCalculator": MigrationCalculator,
 }
 
 export const pagesConfig = {

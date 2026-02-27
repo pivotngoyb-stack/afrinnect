@@ -259,13 +259,30 @@ export default function Onboarding() {
       setShowSafetyEducation(true);
     },
     onError: (error) => {
-      alert(error.message);
-      if (error.message.includes('already have a profile')) {
-      setTimeout(() => {
-      navigate(createPageUrl('Home'));
-      }, 2000);
+      // Parse and display user-friendly error messages
+      let friendlyMessage = "Something went wrong. Please try again.";
+      const msg = error.message || '';
+      
+      if (msg.includes('already exists') || msg.includes('already have')) {
+        friendlyMessage = "You already have an account. Redirecting you to login...";
+        setTimeout(() => navigate(createPageUrl('Home')), 2000);
+      } else if (msg.includes('Phone number')) {
+        friendlyMessage = "This phone number is already registered. Please use a different number.";
+      } else if (msg.includes('18 years')) {
+        friendlyMessage = "You must be at least 18 years old to join.";
+      } else if (msg.includes('rejected')) {
+        friendlyMessage = "Your profile information couldn't be verified. Please check your details and try again.";
+      } else if (msg.includes('Birth date')) {
+        friendlyMessage = "Please enter your date of birth to continue.";
+      } else if (msg.includes('Unauthorized')) {
+        friendlyMessage = "Your session has expired. Please log in again.";
+        setTimeout(() => base44.auth.redirectToLogin(window.location.href), 2000);
+      } else if (msg && msg !== 'null' && msg !== 'undefined') {
+        friendlyMessage = msg;
       }
-      }
+      
+      alert(friendlyMessage);
+    }
       });
 
   const getLocation = async () => {
@@ -713,11 +730,56 @@ export default function Onboarding() {
 
       <div className="grid grid-cols-3 gap-3">
         {formData.photos.map((photo, idx) => (
-          <div key={idx} className="relative aspect-[3/4] rounded-xl overflow-hidden">
+          <div key={idx} className="relative aspect-[3/4] rounded-xl overflow-hidden group">
             <img src={photo} alt="" className="w-full h-full object-cover" />
             {idx === 0 && (
               <Badge className="absolute top-2 left-2 bg-purple-600 text-xs">{t('onboarding.photos.main')}</Badge>
             )}
+            {/* Replace/Remove buttons */}
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              <label className="p-2 bg-white rounded-full cursor-pointer hover:bg-gray-100 transition">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 10 * 1024 * 1024) {
+                      alert(t('errors.photoSize'));
+                      return;
+                    }
+                    setIsUploading(true);
+                    base44.integrations.Core.UploadFile({ file })
+                      .then(({ file_url }) => {
+                        const newPhotos = [...formData.photos];
+                        newPhotos[idx] = file_url;
+                        updateField('photos', newPhotos);
+                        if (idx === 0) updateField('primary_photo', file_url);
+                      })
+                      .catch(() => alert(t('errors.uploadFailed')))
+                      .finally(() => setIsUploading(false));
+                  }}
+                  className="hidden"
+                  disabled={isUploading}
+                />
+                <Camera size={16} className="text-gray-700" />
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  const newPhotos = formData.photos.filter((_, i) => i !== idx);
+                  updateField('photos', newPhotos);
+                  if (idx === 0 && newPhotos.length > 0) {
+                    updateField('primary_photo', newPhotos[0]);
+                  } else if (newPhotos.length === 0) {
+                    updateField('primary_photo', '');
+                  }
+                }}
+                className="p-2 bg-red-500 rounded-full hover:bg-red-600 transition"
+              >
+                <span className="text-white text-xs font-bold">✕</span>
+              </button>
+            </div>
           </div>
         ))}
         
