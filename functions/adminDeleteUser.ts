@@ -38,25 +38,37 @@ Deno.serve(async (req) => {
             deleted_at: new Date().toISOString()
         });
 
-        // 3. Clean up related data for each profile
+        // 3. Clean up related data for each profile (with error handling for already-deleted records)
         for (const profile of userProfiles) {
-             // Delete Likes
-             const likes = await adminDb.entities.Like.filter({ liker_id: profile.id });
-             for (const like of likes) await adminDb.entities.Like.delete(like.id);
-             
-             // Delete Passes
-             const passes = await adminDb.entities.Pass.filter({ passer_id: profile.id });
-             for (const pass of passes) await adminDb.entities.Pass.delete(pass.id);
+             try {
+                 // Delete Likes
+                 const likes = await adminDb.entities.Like.filter({ liker_id: profile.id });
+                 for (const like of likes) {
+                     try { await adminDb.entities.Like.delete(like.id); } catch (e) { /* already deleted */ }
+                 }
+                 
+                 // Delete Passes
+                 const passes = await adminDb.entities.Pass.filter({ passer_id: profile.id });
+                 for (const pass of passes) {
+                     try { await adminDb.entities.Pass.delete(pass.id); } catch (e) { /* already deleted */ }
+                 }
 
-             // Delete Matches (as user1 or user2)
-             const matches1 = await adminDb.entities.Match.filter({ user1_id: profile.id });
-             for (const m of matches1) await adminDb.entities.Match.delete(m.id);
-             
-             const matches2 = await adminDb.entities.Match.filter({ user2_id: profile.id });
-             for (const m of matches2) await adminDb.entities.Match.delete(m.id);
+                 // Delete Matches (as user1 or user2)
+                 const matches1 = await adminDb.entities.Match.filter({ user1_id: profile.id });
+                 for (const m of matches1) {
+                     try { await adminDb.entities.Match.delete(m.id); } catch (e) { /* already deleted */ }
+                 }
+                 
+                 const matches2 = await adminDb.entities.Match.filter({ user2_id: profile.id });
+                 for (const m of matches2) {
+                     try { await adminDb.entities.Match.delete(m.id); } catch (e) { /* already deleted */ }
+                 }
 
-             // Delete Profile
-             await adminDb.entities.UserProfile.delete(profile.id);
+                 // Delete Profile
+                 try { await adminDb.entities.UserProfile.delete(profile.id); } catch (e) { /* already deleted */ }
+             } catch (e) {
+                 console.log('Profile cleanup partial failure (continuing):', e.message);
+             }
         }
 
         // 4. Log Audit
