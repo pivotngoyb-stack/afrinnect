@@ -25,8 +25,9 @@ Deno.serve(async (req) => {
         }
     }
 
-    const allUserProfiles = await base44.asServiceRole.entities.UserProfile.filter({ created_by: user.email });
-    // Enforce strict one account per email policy
+    // Check for ACTIVE profiles only (allow re-registration after account deletion)
+    const allUserProfiles = await base44.asServiceRole.entities.UserProfile.filter({ user_id: user.id });
+    // Enforce strict one account per user policy (but allow re-registration after deletion)
     if (allUserProfiles.length >= 1) {
          return Response.json({ error: 'An account with this email already exists.' }, { status: 400 });
     }
