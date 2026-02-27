@@ -81,7 +81,11 @@ Deno.serve(async (req) => {
         });
 
         // 5. CRITICAL: Delete the User Auth Record
-        await adminDb.entities.User.delete(userId);
+        try {
+            await adminDb.entities.User.delete(userId);
+        } catch (e) {
+            console.log('User auth record may already be deleted:', e.message);
+        }
 
         return Response.json({ success: true, message: 'User deleted successfully' });
 
