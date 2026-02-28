@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, Volume2, VolumeX, Pause, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
