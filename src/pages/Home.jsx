@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Grid3X3, Layers, Globe, MapPin, Sparkles, Crown, Heart as HeartIcon, RotateCcw, User, Loader2, AlertTriangle } from 'lucide-react';
+import { Grid3X3, Layers, Globe, MapPin, Sparkles, Crown, Heart as HeartIcon, RotateCcw, User, Loader2, AlertTriangle, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileCard from '@/components/profile/ProfileCard';
@@ -29,6 +29,7 @@ import LazyImage from '@/components/shared/LazyImage';
 import { useUpgradePrompts, UpgradePromptBanner } from '@/components/monetization/UpgradePrompts';
 import { ProfileCardSkeleton } from '@/components/shared/SkeletonLoader';
 import BannedScreen from '@/components/auth/BannedScreen';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import TrialExpiryBanner from '@/components/monetization/TrialExpiryBanner';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import FeedbackModal from '@/components/matching/FeedbackModal';
@@ -866,25 +867,50 @@ export default function Home() {
                 userTier={myProfile?.subscription_tier || 'free'}
               />
 
-              {/* Communities */}
-              <Link to={createPageUrl('Communities')}>
-                <Button variant="outline" className="gap-1">
-                  <span className="text-lg">👥</span>
-                </Button>
-              </Link>
+              <TooltipProvider delayDuration={300}>
+                {/* Communities */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to={createPageUrl('Communities')}>
+                      <Button variant="outline" className="gap-1">
+                        <Users size={18} />
+                      </Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Communities</p>
+                  </TooltipContent>
+                </Tooltip>
 
-              {/* Who Likes You Button */}
-              <Link to={createPageUrl('WhoLikesYou')}>
-                <Button variant="outline" className="gap-1 relative">
-                  <HeartIcon size={18} className="text-pink-600" />
-                  {(activityCounts?.likes > 0 || activityCounts?.views > 0) && (
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
-                  )}
-                </Button>
-              </Link>
+                {/* Who Likes You Button */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to={createPageUrl('WhoLikesYou')}>
+                      <Button variant="outline" className="gap-1 relative">
+                        <HeartIcon size={18} className="text-pink-600" />
+                        {(activityCounts?.likes > 0 || activityCounts?.views > 0) && (
+                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
+                        )}
+                      </Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Who Likes You</p>
+                  </TooltipContent>
+                </Tooltip>
 
-              {/* Notifications */}
-              <NotificationBell />
+                {/* Notifications */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <NotificationBell />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Notifications</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               
               {isAdmin && (
                 <Link to={createPageUrl('AdminDashboard')}>
