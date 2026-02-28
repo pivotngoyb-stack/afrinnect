@@ -298,8 +298,9 @@ export default function Onboarding() {
             // Only allow USA and Canada (Bypass for Admin)
             const isAdmin = user?.role === 'admin' || user?.email === 'pivotngoyb@gmail.com';
             if (!isAdmin && (!country || (country !== 'United States' && country !== 'Canada' && country !== 'United States of America'))) {
-              alert(t('location.notSupported'));
-              window.location.href = createPageUrl('Waitlist');
+              alert('Afrinnect is currently only available in the United States and Canada. You will be redirected to join our waitlist.');
+              // Log them out and redirect to waitlist
+              await base44.auth.logout(createPageUrl('Waitlist'));
               return;
             }
 
@@ -314,11 +315,10 @@ export default function Onboarding() {
 
           } catch (e) {
             console.error('Location validation failed:', e);
-            // Fallback: just save coordinates if reverse geocoding fails
-             setFormData(prev => ({
-              ...prev,
-              location: { lat, lng }
-            }));
+            // On error, don't allow - require location verification
+            alert('We could not verify your location. Please ensure location services are enabled and try again.');
+            setGettingLocation(false);
+            return;
           }
           setGettingLocation(false);
         },
