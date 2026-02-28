@@ -245,7 +245,7 @@ function LayoutContent({ children, currentPageName }) {
           userEmail={myProfile.created_by}
         />
       ) : (
-        <div className={showNav ? "pb-16" : ""}>
+        <div className={`${showNav ? "pb-20" : ""} min-h-screen`} style={{ paddingTop: 'env(safe-area-inset-top)' }}>
           {children}
         </div>
       )}
@@ -305,9 +305,9 @@ function LayoutContent({ children, currentPageName }) {
       {/* Cookie Consent */}
       <CookieConsent />
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation - Native Tab Bar */}
       {showNav && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50 safe-area-inset-bottom">
+        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 z-50" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}>
           <div className="flex items-center justify-around py-2 max-w-lg mx-auto">
             {navItems.map(item => {
               const isActive = currentPageName === item.name;
@@ -317,20 +317,24 @@ function LayoutContent({ children, currentPageName }) {
                 <Link
                   key={item.name}
                   to={createPageUrl(item.name)}
-                  className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all ${
+                  className={`flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all active:scale-95 touch-manipulation ${
                     isActive 
                       ? 'text-purple-600' 
                       : 'text-gray-400 hover:text-gray-600'
                   }`}
+                  onClick={() => {
+                    // Haptic feedback on tap
+                    if (navigator.vibrate) navigator.vibrate(10);
+                  }}
                 >
                   <div className="relative">
                     <Icon 
-                      size={20} 
+                      size={22} 
                       className={isActive ? 'fill-purple-100' : ''}
-                      strokeWidth={isActive ? 2.5 : 2}
+                      strokeWidth={isActive ? 2.5 : 1.8}
                     />
                     {item.badge > 0 && (
-                      <Badge className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center bg-purple-600 text-white text-[10px]">
+                      <Badge className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center bg-red-500 text-white text-[10px] animate-pulse">
                         {item.badge}
                       </Badge>
                     )}

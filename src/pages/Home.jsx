@@ -825,8 +825,8 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 relative">
       <AfricanPattern className="text-purple-600" opacity={0.03} />
       
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
+      {/* Header - Native App Bar */}
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-gray-100/50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Logo />
