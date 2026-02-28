@@ -282,10 +282,25 @@ export default function Matches() {
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-700 to-amber-600 bg-clip-text text-transparent">
-              Connections
-            </h1>
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-700 to-amber-600 bg-clip-text text-transparent">
+                Connections
+              </h1>
+              {matchedProfiles.length > 0 && (
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {matchedProfiles.length} match{matchedProfiles.length !== 1 ? 'es' : ''} • {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
             <div className="flex items-center gap-2">
+              {/* Live activity indicator */}
+              <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <span>Online now</span>
+              </div>
               <NotificationBell />
             </div>
           </div>
@@ -358,10 +373,18 @@ export default function Matches() {
 
             {newMatches.length > 0 && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4 flex items-center gap-2">
-                  <Sparkles size={16} className="text-amber-500" />
-                  New Matches
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                    <Sparkles size={16} className="text-amber-500" />
+                    New Matches
+                    <Badge variant="secondary" className="ml-1 bg-purple-100 text-purple-700">
+                      {newMatches.length}
+                    </Badge>
+                  </h3>
+                  <p className="text-xs text-amber-600 font-medium animate-pulse">
+                    ⏰ Send a message before they expire!
+                  </p>
+                </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
                   {newMatches.map(profile => {
                     // Use match expiry or default to 24h from match creation
@@ -416,13 +439,40 @@ export default function Matches() {
             )}
 
             {matchedProfiles.length === 0 && !loadingMatches && (
-              <EmptyState
-                icon={Users}
-                title="No matches yet"
-                description="Keep swiping to find your perfect match!"
-                actionLabel="Discover People"
-                onAction={() => window.location.href = createPageUrl('Home')}
-              />
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-12"
+              >
+                <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center">
+                  <span className="text-4xl">💕</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Your matches will appear here</h3>
+                <p className="text-gray-500 mb-4 max-w-sm mx-auto">
+                  When you and someone else both like each other, you'll match and can start chatting!
+                </p>
+                
+                {/* Social proof */}
+                <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-2 mb-6">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                  <span className="text-sm text-green-700">847 new matches made today</span>
+                </div>
+                
+                <Button 
+                  onClick={() => window.location.href = createPageUrl('Home')}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                >
+                  <Heart size={16} className="mr-2" />
+                  Start Discovering
+                </Button>
+                
+                <p className="text-xs text-gray-400 mt-4">
+                  💡 Tip: Complete profiles get 3x more matches
+                </p>
+              </motion.div>
             )}
           </TabsContent>
 
@@ -448,13 +498,27 @@ export default function Matches() {
                 ))}
                 {likerProfiles.length === 0 && !loadingLikes && (
                   <div className="col-span-full">
-                    <EmptyState
-                      icon={Heart}
-                      title="No new likes yet"
-                      description="Boost your profile to get up to 10x more visibility!"
-                      actionLabel="Boost Profile"
-                      onAction={() => window.location.href = createPageUrl('PricingPlans')}
-                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-center py-8"
+                    >
+                      <div className="w-16 h-16 mx-auto mb-4 bg-pink-100 rounded-full flex items-center justify-center">
+                        <Heart size={28} className="text-pink-500" />
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">No new likes yet</h3>
+                      <p className="text-gray-500 mb-4 text-sm">
+                        Boost your profile to appear first and get up to 10x more visibility!
+                      </p>
+                      <Button 
+                        onClick={() => window.location.href = createPageUrl('PricingPlans')}
+                        variant="outline"
+                        className="border-purple-300 text-purple-600 hover:bg-purple-50"
+                      >
+                        <Sparkles size={16} className="mr-2" />
+                        Boost Profile
+                      </Button>
+                    </motion.div>
                   </div>
                 )}
               </div>
@@ -483,14 +547,40 @@ export default function Matches() {
                   </div>
                 </ScrollArea>
               ) : (
-                <EmptyState
-                  icon={MessageCircle}
-                  title="No conversations yet"
-                  description="Match with someone to start chatting!"
-                  actionLabel="Find Matches"
-                  onAction={() => setActiveTab('matches')}
-                  className="py-8"
-                />
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center py-12"
+                >
+                  <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                    <MessageCircle size={28} className="text-blue-500" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">No conversations yet</h3>
+                  <p className="text-gray-500 mb-4 text-sm max-w-xs mx-auto">
+                    When you match with someone, send the first message to break the ice!
+                  </p>
+                  
+                  {newMatches.length > 0 ? (
+                    <div className="space-y-3">
+                      <p className="text-sm text-purple-600 font-medium">
+                        You have {newMatches.length} match{newMatches.length !== 1 ? 'es' : ''} waiting!
+                      </p>
+                      <Button 
+                        onClick={() => setActiveTab('matches')}
+                        className="bg-gradient-to-r from-purple-600 to-pink-600"
+                      >
+                        Say Hello 👋
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button 
+                      onClick={() => window.location.href = createPageUrl('Home')}
+                      variant="outline"
+                    >
+                      Find Matches
+                    </Button>
+                  )}
+                </motion.div>
               )}
             </div>
           </TabsContent>
