@@ -48,27 +48,151 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AdminDashboard from './pages/AdminDashboard';
+import AdminLaunchChecklist from './pages/AdminLaunchChecklist';
+import AmbassadorApply from './pages/AmbassadorApply';
+import AmbassadorPortal from './pages/AmbassadorPortal';
+import Analytics from './pages/Analytics';
+import AppStoreCompliance from './pages/AppStoreCompliance';
+import AuthFlowTest from './pages/AuthFlowTest';
+import BackgroundCheckRequest from './pages/BackgroundCheckRequest';
+import BlockedUsers from './pages/BlockedUsers';
+import Chat from './pages/Chat';
+import Communities from './pages/Communities';
+import CommunityChat from './pages/CommunityChat';
+import CommunityGuidelines from './pages/CommunityGuidelines';
+import CompatibilityQuiz from './pages/CompatibilityQuiz';
+import CompatibilityQuizzes from './pages/CompatibilityQuizzes';
+import CreateEvent from './pages/CreateEvent';
+import CustomerView from './pages/CustomerView';
+import DailyMatches from './pages/DailyMatches';
+import DatePlanner from './pages/DatePlanner';
+import DeleteAccount from './pages/DeleteAccount';
+import EditProfile from './pages/EditProfile';
+import Error from './pages/Error';
+import EventChat from './pages/EventChat';
+import EventDetails from './pages/EventDetails';
+import Events from './pages/Events';
+import Home from './pages/Home';
+import IDVerification from './pages/IDVerification';
+import InvestorReport from './pages/InvestorReport';
+import Landing from './pages/Landing';
+import LanguageExchangeHub from './pages/LanguageExchangeHub';
+import LegalAcceptance from './pages/LegalAcceptance';
+import Marketplace from './pages/Marketplace';
+import Matches from './pages/Matches';
+import MigrationCalculator from './pages/MigrationCalculator';
+import NotFound from './pages/NotFound';
+import Notifications from './pages/Notifications';
+import Onboarding from './pages/Onboarding';
+import PasswordReset from './pages/PasswordReset';
+import PhoneVerification from './pages/PhoneVerification';
+import PhotoPerformance from './pages/PhotoPerformance';
+import PricingPlans from './pages/PricingPlans';
+import Privacy from './pages/Privacy';
+import Profile from './pages/Profile';
+import ProfileOptimization from './pages/ProfileOptimization';
+import ReferralProgram from './pages/ReferralProgram';
+import Report from './pages/Report';
+import SafetyCheckMonitor from './pages/SafetyCheckMonitor';
+import SafetyCheckSetup from './pages/SafetyCheckSetup';
+import Settings from './pages/Settings';
+import Stories from './pages/Stories';
+import SubmitStory from './pages/SubmitStory';
+import SuccessStories from './pages/SuccessStories';
+import SuccessStoryContest from './pages/SuccessStoryContest';
+import Support from './pages/Support';
+import SupportChat from './pages/SupportChat';
+import Terms from './pages/Terms';
+import Unsubscribe from './pages/Unsubscribe';
+import VendorManagement from './pages/VendorManagement';
+import VerifyPhoto from './pages/VerifyPhoto';
+import VirtualGifts from './pages/VirtualGifts';
+import Waitlist from './pages/Waitlist';
+import WhoLikesYou from './pages/WhoLikesYou';
 import AdminUsers from './pages/AdminUsers';
 import AdminModeration from './pages/AdminModeration';
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminSettings from './pages/AdminSettings';
 import AdminSubscriptions from './pages/AdminSubscriptions';
 import AdminBroadcast from './pages/AdminBroadcast';
-import AdminContent from './pages/AdminContent';
+import AdminAmbassadors from './pages/AdminAmbassadors';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AdminDashboard": AdminDashboard,
+    "AdminLaunchChecklist": AdminLaunchChecklist,
+    "AmbassadorApply": AmbassadorApply,
+    "AmbassadorPortal": AmbassadorPortal,
+    "Analytics": Analytics,
+    "AppStoreCompliance": AppStoreCompliance,
+    "AuthFlowTest": AuthFlowTest,
+    "BackgroundCheckRequest": BackgroundCheckRequest,
+    "BlockedUsers": BlockedUsers,
+    "Chat": Chat,
+    "Communities": Communities,
+    "CommunityChat": CommunityChat,
+    "CommunityGuidelines": CommunityGuidelines,
+    "CompatibilityQuiz": CompatibilityQuiz,
+    "CompatibilityQuizzes": CompatibilityQuizzes,
+    "CreateEvent": CreateEvent,
+    "CustomerView": CustomerView,
+    "DailyMatches": DailyMatches,
+    "DatePlanner": DatePlanner,
+    "DeleteAccount": DeleteAccount,
+    "EditProfile": EditProfile,
+    "Error": Error,
+    "EventChat": EventChat,
+    "EventDetails": EventDetails,
+    "Events": Events,
+    "Home": Home,
+    "IDVerification": IDVerification,
+    "InvestorReport": InvestorReport,
+    "Landing": Landing,
+    "LanguageExchangeHub": LanguageExchangeHub,
+    "LegalAcceptance": LegalAcceptance,
+    "Marketplace": Marketplace,
+    "Matches": Matches,
+    "MigrationCalculator": MigrationCalculator,
+    "NotFound": NotFound,
+    "Notifications": Notifications,
+    "Onboarding": Onboarding,
+    "PasswordReset": PasswordReset,
+    "PhoneVerification": PhoneVerification,
+    "PhotoPerformance": PhotoPerformance,
+    "PricingPlans": PricingPlans,
+    "Privacy": Privacy,
+    "Profile": Profile,
+    "ProfileOptimization": ProfileOptimization,
+    "ReferralProgram": ReferralProgram,
+    "Report": Report,
+    "SafetyCheckMonitor": SafetyCheckMonitor,
+    "SafetyCheckSetup": SafetyCheckSetup,
+    "Settings": Settings,
+    "Stories": Stories,
+    "SubmitStory": SubmitStory,
+    "SuccessStories": SuccessStories,
+    "SuccessStoryContest": SuccessStoryContest,
+    "Support": Support,
+    "SupportChat": SupportChat,
+    "Terms": Terms,
+    "Unsubscribe": Unsubscribe,
+    "VendorManagement": VendorManagement,
+    "VerifyPhoto": VerifyPhoto,
+    "VirtualGifts": VirtualGifts,
+    "Waitlist": Waitlist,
+    "WhoLikesYou": WhoLikesYou,
     "AdminUsers": AdminUsers,
     "AdminModeration": AdminModeration,
     "AdminAnalytics": AdminAnalytics,
     "AdminSettings": AdminSettings,
     "AdminSubscriptions": AdminSubscriptions,
     "AdminBroadcast": AdminBroadcast,
-    "AdminContent": AdminContent,
+    "AdminAmbassadors": AdminAmbassadors,
 }
 
 export const pagesConfig = {
     mainPage: "AdminDashboard",
     Pages: PAGES,
+    Layout: __Layout,
 };

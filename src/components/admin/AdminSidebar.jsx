@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { 
-  Shield, Users, BarChart3, TrendingUp, Settings, DollarSign,
-  MessageSquare, Bell, Eye, LogOut, Menu, ChevronLeft
+  BarChart3, Users, Shield, TrendingUp, DollarSign, MessageSquare,
+  Settings, Bell, Eye, LogOut, ChevronLeft, ChevronRight, Menu,
+  Flag, Megaphone, Gift, Star, Zap, Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,13 +38,14 @@ export default function AdminSidebar({ activePage, pendingReports = 0 }) {
     { label: 'Moderation', icon: Shield, page: 'AdminModeration', badge: pendingReports },
     { label: 'Analytics', icon: TrendingUp, page: 'AdminAnalytics' },
     { label: 'Subscriptions', icon: DollarSign, page: 'AdminSubscriptions' },
-    { label: 'Content', icon: MessageSquare, page: 'AdminContent' },
-    { label: 'Broadcast', icon: Bell, page: 'AdminBroadcast' },
+    { label: 'Ambassadors', icon: Star, page: 'AdminAmbassadors' },
+    { label: 'Broadcast', icon: Megaphone, page: 'AdminBroadcast' },
+    { label: 'Feature Flags', icon: Zap, page: 'AdminFeatureFlags' },
     { label: 'Settings', icon: Settings, page: 'AdminSettings' },
   ];
 
   return (
-    <aside className={`${collapsed ? 'w-20' : 'w-64'} bg-slate-900 border-r border-slate-800 transition-all duration-300 flex flex-col sticky top-0 h-screen`}>
+    <aside className={`${collapsed ? 'w-20' : 'w-64'} bg-slate-900 border-r border-slate-800 transition-all duration-300 flex flex-col h-screen sticky top-0`}>
       {/* Logo */}
       <div className="p-4 border-b border-slate-800">
         <div className="flex items-center gap-3">
@@ -62,7 +64,7 @@ export default function AdminSidebar({ activePage, pendingReports = 0 }) {
             onClick={() => setCollapsed(!collapsed)}
             className="ml-auto text-slate-400 hover:text-white"
           >
-            {collapsed ? <Menu className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </Button>
         </div>
       </div>
@@ -70,35 +72,32 @@ export default function AdminSidebar({ activePage, pendingReports = 0 }) {
       {/* Navigation */}
       <nav className="flex-1 p-4 overflow-y-auto">
         <ul className="space-y-1">
-          {navItems.map((item) => {
-            const isActive = activePage === item.page;
-            return (
-              <li key={item.page}>
-                <button
-                  onClick={() => navigate(createPageUrl(item.page))}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                    isActive 
-                      ? 'bg-orange-500/20 text-orange-400' 
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <item.icon className="w-5 h-5 flex-shrink-0" />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 text-left">{item.label}</span>
-                      {item.badge > 0 && (
-                        <Badge className="bg-red-500 text-white text-xs">{item.badge}</Badge>
-                      )}
-                    </>
-                  )}
-                  {collapsed && item.badge > 0 && (
-                    <span className="absolute left-14 w-2 h-2 bg-red-500 rounded-full" />
-                  )}
-                </button>
-              </li>
-            );
-          })}
+          {navItems.map((item) => (
+            <li key={item.page}>
+              <button
+                onClick={() => navigate(createPageUrl(item.page))}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                  activePage === item.page 
+                    ? 'bg-orange-500/20 text-orange-400' 
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                }`}
+                title={collapsed ? item.label : undefined}
+              >
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 text-left text-sm">{item.label}</span>
+                    {item.badge > 0 && (
+                      <Badge className="bg-red-500 text-white text-xs">{item.badge}</Badge>
+                    )}
+                  </>
+                )}
+                {collapsed && item.badge > 0 && (
+                  <span className="absolute right-2 w-2 h-2 bg-red-500 rounded-full" />
+                )}
+              </button>
+            </li>
+          ))}
         </ul>
       </nav>
 
@@ -106,29 +105,35 @@ export default function AdminSidebar({ activePage, pendingReports = 0 }) {
       <div className="p-4 border-t border-slate-800">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors ${collapsed ? 'justify-center' : ''}`}>
+            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-pink-600 flex items-center justify-center text-white font-medium flex-shrink-0">
                 {user?.full_name?.[0] || 'A'}
               </div>
               {!collapsed && (
                 <div className="flex-1 text-left overflow-hidden">
                   <p className="text-sm font-medium text-white truncate">{user?.full_name || 'Admin'}</p>
-                  <p className="text-xs text-slate-400">Administrator</p>
+                  <p className="text-xs text-slate-400 truncate">{user?.email}</p>
                 </div>
               )}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align={collapsed ? "center" : "end"} side="top" className="w-56 bg-slate-900 border-slate-800">
+          <DropdownMenuContent align="end" className="w-56 bg-slate-900 border-slate-800">
             <DropdownMenuItem 
               onClick={() => navigate(createPageUrl('Home'))} 
-              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
+              className="text-slate-300 hover:text-white hover:bg-slate-800"
             >
               <Eye className="w-4 h-4 mr-2" /> View App
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => navigate(createPageUrl('Discover'))} 
+              className="text-slate-300 hover:text-white hover:bg-slate-800"
+            >
+              <Globe className="w-4 h-4 mr-2" /> User Experience
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-slate-800" />
             <DropdownMenuItem 
               onClick={() => base44.auth.logout()} 
-              className="text-red-400 hover:text-red-300 hover:bg-slate-800 cursor-pointer"
+              className="text-red-400 hover:text-red-300 hover:bg-slate-800"
             >
               <LogOut className="w-4 h-4 mr-2" /> Logout
             </DropdownMenuItem>
