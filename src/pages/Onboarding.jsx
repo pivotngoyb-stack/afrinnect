@@ -389,7 +389,7 @@ export default function Onboarding() {
   const progress = ((step) / 6) * 100;
 
   const steps = [
-    // Step 0: Welcome
+    // Step 0: Welcome - Enhanced for conversion
     <motion.div
       key="welcome"
       initial={{ opacity: 0, y: 20 }}
@@ -398,35 +398,60 @@ export default function Onboarding() {
       className="text-center relative"
     >
       <Logo size="large" />
-      <h1 className="text-3xl font-bold text-gray-900 mt-8 mb-4">
-        {t('onboarding.welcome.title')}
+      <h1 className="text-3xl font-bold text-gray-900 mt-8 mb-2">
+        Your Journey Starts Here
       </h1>
-      <p className="text-gray-500 text-lg mb-8">
+      <p className="text-gray-500 text-lg mb-2">
         {t('onboarding.welcome.subtitle')}
       </p>
+      
+      {/* Social proof */}
+      <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-2 mb-6">
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+        </span>
+        <span className="text-sm text-green-700 font-medium">147 people signed up today</span>
+      </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="text-center p-4">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-100 flex items-center justify-center">
-            <Globe size={24} className="text-purple-600" />
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="text-center p-3 bg-white rounded-xl shadow-sm">
+          <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-purple-100 flex items-center justify-center">
+            <Globe size={20} className="text-purple-600" />
           </div>
-          <p className="text-sm text-gray-600">{t('onboarding.welcome.global')}</p>
+          <p className="text-xs text-gray-600 font-medium">{t('onboarding.welcome.global')}</p>
         </div>
-        <div className="text-center p-4">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-amber-100 flex items-center justify-center">
-            <Users size={24} className="text-amber-600" />
+        <div className="text-center p-3 bg-white rounded-xl shadow-sm">
+          <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-amber-100 flex items-center justify-center">
+            <Users size={20} className="text-amber-600" />
           </div>
-          <p className="text-sm text-gray-600">{t('onboarding.welcome.cultural')}</p>
+          <p className="text-xs text-gray-600 font-medium">{t('onboarding.welcome.cultural')}</p>
         </div>
-        <div className="text-center p-4">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-100 flex items-center justify-center">
-            <Shield size={24} className="text-green-600" />
+        <div className="text-center p-3 bg-white rounded-xl shadow-sm">
+          <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-green-100 flex items-center justify-center">
+            <Shield size={20} className="text-green-600" />
           </div>
-          <p className="text-sm text-gray-600">{t('onboarding.welcome.safe')}</p>
+          <p className="text-xs text-gray-600 font-medium">{t('onboarding.welcome.safe')}</p>
+        </div>
+      </div>
+      
+      {/* Quick stats */}
+      <div className="flex justify-center gap-6 mb-6 text-sm">
+        <div className="text-center">
+          <p className="font-bold text-purple-600">2 min</p>
+          <p className="text-gray-500 text-xs">to complete</p>
+        </div>
+        <div className="text-center">
+          <p className="font-bold text-purple-600">100%</p>
+          <p className="text-gray-500 text-xs">free to join</p>
+        </div>
+        <div className="text-center">
+          <p className="font-bold text-purple-600">50+</p>
+          <p className="text-gray-500 text-xs">countries</p>
         </div>
       </div>
 
-      <p className="text-sm text-gray-400">
+      <p className="text-xs text-gray-400">
         {t('onboarding.welcome.terms')}
       </p>
 
