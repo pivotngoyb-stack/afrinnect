@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, Heart, Infinity, Users, TrendingUp, Clock, Sparkles, X } from 'lucide-react';
+import { Crown, Heart, TrendingUp, Clock, Sparkles, X, Star } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+
+// Updated tier features: Premium = limited, Elite = unlimited
 
 export default function LikesLimitPaywall({ onClose }) {
   const [upgradeCount, setUpgradeCount] = useState(23);
