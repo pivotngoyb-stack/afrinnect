@@ -84,7 +84,7 @@ export default function Landing() {
   ];
 
   const stats = [
-    { number: "50+", label: "Countries Connected" },
+    { number: "🇺🇸 🇨🇦", label: "USA & Canada" },
     { number: "24/7", label: "Active Community" },
     { number: "Free", label: "To Get Started" },
     { number: "100%", label: "Culture-Focused" }
@@ -240,9 +240,15 @@ export default function Landing() {
                 Is Already Here
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-white/90 mb-6 max-w-xl">
-              The only dating app built for the African diaspora. Find someone who truly gets your culture, values, and dreams.
+            <p className="text-lg md:text-xl text-white/90 mb-4 max-w-xl">
+              The only dating app built for the African diaspora in North America. Find someone who truly gets your culture, values, and dreams.
             </p>
+            
+            {/* Geographic notice */}
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-4 py-2 mb-4">
+              <span className="text-xl">🇺🇸 🇨🇦</span>
+              <span className="text-white/90 text-sm">Currently available in USA & Canada</span>
+            </div>
             
             {/* Urgency Message */}
             <div className="bg-amber-500/20 border border-amber-400/30 rounded-xl p-4 mb-6">
