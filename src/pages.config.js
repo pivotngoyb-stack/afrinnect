@@ -51,6 +51,9 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
 import AdminModeration from './pages/AdminModeration';
 import AdminAnalytics from './pages/AdminAnalytics';
+import AdminSettings from './pages/AdminSettings';
+import AdminSubscriptions from './pages/AdminSubscriptions';
+import AdminBroadcast from './pages/AdminBroadcast';
 
 
 export const PAGES = {
@@ -58,6 +61,9 @@ export const PAGES = {
     "AdminUsers": AdminUsers,
     "AdminModeration": AdminModeration,
     "AdminAnalytics": AdminAnalytics,
+    "AdminSettings": AdminSettings,
+    "AdminSubscriptions": AdminSubscriptions,
+    "AdminBroadcast": AdminBroadcast,
 }
 
 export const pagesConfig = {
