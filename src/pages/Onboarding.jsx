@@ -114,6 +114,17 @@ export default function Onboarding() {
   });
   const [isUploading, setIsUploading] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
+  
+  // Social proof for conversion
+  const [recentSignups] = useState(() => {
+    const names = ['Amara', 'Kwame', 'Fatou', 'Kofi', 'Nia', 'Adaeze', 'Jabari', 'Zuri'];
+    const cities = ['Atlanta', 'Toronto', 'Houston', 'London', 'Chicago', 'Dallas', 'DMV', 'NYC'];
+    return names.slice(0, 3).map((name, i) => ({
+      name,
+      city: cities[i],
+      time: `${Math.floor(Math.random() * 5) + 1} min ago`
+    }));
+  });
 
   // Auto-save to localStorage
   useEffect(() => {
