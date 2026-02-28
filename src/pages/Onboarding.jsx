@@ -519,45 +519,58 @@ export default function Onboarding() {
       )}
     </motion.div>,
 
-    // Step 1: Basic Info
+    // Step 1: Basic Info - Streamlined
     <motion.div
       key="basic"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.basic.title')}</h2>
-      <p className="text-gray-500 mb-8">{t('onboarding.basic.subtitle')}</p>
+      <h2 className="text-2xl font-bold text-gray-900 mb-1">{t('onboarding.basic.title')}</h2>
+      <p className="text-gray-500 mb-6 text-sm">This takes less than 30 seconds</p>
 
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div>
-          <Label className="text-base">{t('onboarding.basic.firstName')}</Label>
+          <Label className="text-base font-medium">{t('onboarding.basic.firstName')}</Label>
           <Input
             value={formData.display_name}
             onChange={(e) => updateField('display_name', e.target.value)}
             placeholder={t('onboarding.basic.firstNamePlaceholder')}
-            className="mt-2 h-12 text-lg"
+            className="mt-2 h-12 text-lg border-2 focus:border-purple-500"
+            autoFocus
           />
-          <div className="mt-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
-            <p className="text-sm text-amber-900">
-              {t('errors.realNameWarning')}
+          {formData.display_name && formData.display_name.length >= 2 && (
+            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+              <Check size={12} /> Looks good!
             </p>
-          </div>
+          )}
         </div>
 
         <div>
-          <Label className="text-base">{t('onboarding.basic.birthday')}</Label>
+          <Label className="text-base font-medium">{t('onboarding.basic.birthday')}</Label>
           <Input
             type="date"
             value={formData.birth_date}
             onChange={(e) => updateField('birth_date', e.target.value)}
             max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
-            className="mt-2 h-12 text-lg"
+            className="mt-2 h-12 text-lg border-2 focus:border-purple-500"
           />
-          <p className="text-xs text-gray-400 mt-2">{t('errors.ageReq')}</p>
+          {formData.birth_date && calculateAge(formData.birth_date) >= 18 && (
+            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+              <Check size={12} /> Age verified
+            </p>
+          )}
           {formData.birth_date && calculateAge(formData.birth_date) < 18 && (
             <p className="text-xs text-red-500 mt-1">{t('errors.ageWarning')}</p>
           )}
+        </div>
+        
+        {/* Privacy note */}
+        <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
+          <Shield size={16} className="text-gray-400 mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-gray-500">
+            Your birthday is used to show your age. We never share your exact date.
+          </p>
         </div>
       </div>
     </motion.div>,
