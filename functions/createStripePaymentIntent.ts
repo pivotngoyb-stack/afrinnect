@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
     let trialDays = 3; // All users get 3 days trial
     if (billingPeriod === 'yearly') {
         interval = 'year';
-        totalAmount = selectedPlan.price_usd * 12; // Assuming price_usd is monthly rate
+        totalAmount = selectedPlan.price_usd * 12;
     } else if (billingPeriod === 'quarterly') {
         interval_count = 3;
         totalAmount = selectedPlan.price_usd * 3;
@@ -128,6 +128,51 @@ Deno.serve(async (req) => {
         interval_count = 6;
         totalAmount = selectedPlan.price_usd * 6;
     }
+
+    // Check for existing subscription and calculate proration for upgrades
+    let prorationCredit = 0;
+    const existingSubscriptions = await base44.asServiceRole.entities.Subscription.filter({
+        user_profile_id: userProfile.id,
+        status: 'active'
+    });
+
+    if (existingSubscriptions.length > 0) {
+        const currentSub = existingSubscriptions[0];
+        const tierRank = { free: 0, premium: 1, elite: 2, vip: 3 };
+        const currentTierRank = tierRank[currentSub.plan_type?.split('_')[0]] || 0;
+        const newTierRank = tierRank[tier] || 0;
+
+        // Only apply credit for upgrades (not downgrades)
+        if (newTierRank > currentTierRank && currentSub.end_date && currentSub.amount_paid) {
+            const endDate = new Date(currentSub.end_date);
+            const now = new Date();
+            const totalDays = (endDate - new Date(currentSub.start_date)) / (1000 * 60 * 60 * 24);
+            const remainingDays = Math.max(0, (endDate - now) / (1000 * 60 * 60 * 24));
+            
+            if (remainingDays > 0 && totalDays > 0) {
+                prorationCredit = (currentSub.amount_paid / totalDays) * remainingDays;
+                prorationCredit = Math.round(prorationCredit * 100) / 100; // Round to 2 decimals
+            }
+        }
+
+        // Cancel old Stripe subscription if upgrading
+        if (newTierRank > currentTierRank && currentSub.external_id) {
+            try {
+                await stripe.subscriptions.cancel(currentSub.external_id, {
+                    prorate: false // We handle proration manually
+                });
+                // Mark old subscription as cancelled
+                await base44.asServiceRole.entities.Subscription.update(currentSub.id, {
+                    status: 'cancelled'
+                });
+            } catch (e) {
+                console.log('Could not cancel old subscription:', e.message);
+            }
+        }
+    }
+
+    // Apply proration credit
+    const finalAmount = Math.max(0, totalAmount - prorationCredit);
 
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
@@ -138,7 +183,7 @@ Deno.serve(async (req) => {
             name: `Afrinnect ${tier.charAt(0).toUpperCase() + tier.slice(1)} Plan (${billingPeriod})`,
             metadata: { planType: tier }
           },
-          unit_amount: Math.round(totalAmount * 100),
+          unit_amount: Math.round(finalAmount * 100),
           recurring: {
             interval: interval,
             interval_count: interval_count
@@ -147,14 +192,16 @@ Deno.serve(async (req) => {
       }],
       payment_behavior: 'default_incomplete',
       payment_settings: { save_default_payment_method: 'on_subscription' },
-      trial_period_days: trialDays,
+      trial_period_days: prorationCredit > 0 ? 0 : trialDays, // No trial if upgrading
       expand: ['latest_invoice.payment_intent', 'pending_setup_intent'],
       metadata: {
         userId: user.id,
         userEmail: user.email,
         planType: tier,
         billingPeriod: billingPeriod,
-        profileId: userProfile.id
+        profileId: userProfile.id,
+        prorationCredit: prorationCredit.toString(),
+        originalAmount: totalAmount.toString()
       },
     });
 
@@ -179,7 +226,10 @@ Deno.serve(async (req) => {
       clientSecret: clientSecret,
       subscriptionId: subscription.id,
       customerId: customerId,
-      isTrial: !!trialDays
+      isTrial: prorationCredit === 0 && !!trialDays,
+      prorationCredit: prorationCredit,
+      finalAmount: finalAmount,
+      originalAmount: totalAmount
     });
 
   } catch (error) {

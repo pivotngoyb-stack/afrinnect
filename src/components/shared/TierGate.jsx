@@ -7,17 +7,20 @@ import { Card, CardContent } from '@/components/ui/card';
 
 // Tier requirements for features - Production tier matrix
 export const TIER_FEATURES = {
-  // Premium Features
-  unlimited_likes: ['premium', 'elite', 'vip'],
+  // Premium Features (Limited)
+  limited_likes: ['premium'],        // Premium gets 50 likes/day
   see_who_liked: ['premium', 'elite', 'vip'],
-  unlimited_messaging: ['premium', 'elite', 'vip'],
+  limited_messaging: ['premium'],    // Premium gets 100 messages/day
   advanced_filters: ['premium', 'elite', 'vip'],
   profile_boost: ['premium', 'elite', 'vip'],
   read_receipts: ['premium', 'elite', 'vip'],
-  rewind: ['premium', 'elite', 'vip'],
+  limited_rewind: ['premium'],       // Premium gets 5 rewinds/day
   priority_likes: ['premium', 'elite', 'vip'],
   
-  // Elite Features (includes all Premium)
+  // Elite Features (Unlimited)
+  unlimited_likes: ['elite', 'vip'],
+  unlimited_messaging: ['elite', 'vip'],
+  rewind: ['elite', 'vip'],          // Unlimited rewind for Elite+
   virtual_gifts: ['elite', 'vip'],
   unlimited_boosts: ['elite', 'vip'],
   priority_ranking: ['elite', 'vip'],
@@ -30,7 +33,27 @@ export const TIER_FEATURES = {
   profile_insights: ['vip'],
   concierge_support: ['vip'],
   exclusive_events: ['vip'],
-  dedicated_matchmaker: ['vip']
+  dedicated_matchmaker: ['vip'],
+  virtual_speed_dating: ['vip']      // New VIP feature
+};
+
+// Tier limits for Premium users
+export const TIER_LIMITS = {
+  premium: {
+    daily_likes: 50,
+    daily_messages: 100,
+    daily_rewinds: 5
+  },
+  elite: {
+    daily_likes: Infinity,
+    daily_messages: Infinity,
+    daily_rewinds: Infinity
+  },
+  vip: {
+    daily_likes: Infinity,
+    daily_messages: Infinity,
+    daily_rewinds: Infinity
+  }
 };
 
 export function hasAccess(userTier, feature) {

@@ -47,8 +47,16 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AdminAmbassadors from './pages/AdminAmbassadors';
+import AdminAnalytics from './pages/AdminAnalytics';
+import AdminBroadcast from './pages/AdminBroadcast';
+import AdminContent from './pages/AdminContent';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLaunchChecklist from './pages/AdminLaunchChecklist';
+import AdminModeration from './pages/AdminModeration';
+import AdminSettings from './pages/AdminSettings';
+import AdminSubscriptions from './pages/AdminSubscriptions';
+import AdminUsers from './pages/AdminUsers';
 import AmbassadorApply from './pages/AmbassadorApply';
 import AmbassadorPortal from './pages/AmbassadorPortal';
 import Analytics from './pages/Analytics';
@@ -109,20 +117,20 @@ import VerifyPhoto from './pages/VerifyPhoto';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
-import AdminUsers from './pages/AdminUsers';
-import AdminModeration from './pages/AdminModeration';
-import AdminAnalytics from './pages/AdminAnalytics';
-import AdminSettings from './pages/AdminSettings';
-import AdminSubscriptions from './pages/AdminSubscriptions';
-import AdminBroadcast from './pages/AdminBroadcast';
-import AdminContent from './pages/AdminContent';
-import AdminAmbassadors from './pages/AdminAmbassadors';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AdminAmbassadors": AdminAmbassadors,
+    "AdminAnalytics": AdminAnalytics,
+    "AdminBroadcast": AdminBroadcast,
+    "AdminContent": AdminContent,
     "AdminDashboard": AdminDashboard,
     "AdminLaunchChecklist": AdminLaunchChecklist,
+    "AdminModeration": AdminModeration,
+    "AdminSettings": AdminSettings,
+    "AdminSubscriptions": AdminSubscriptions,
+    "AdminUsers": AdminUsers,
     "AmbassadorApply": AmbassadorApply,
     "AmbassadorPortal": AmbassadorPortal,
     "Analytics": Analytics,
@@ -183,14 +191,6 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
     "WhoLikesYou": WhoLikesYou,
-    "AdminUsers": AdminUsers,
-    "AdminModeration": AdminModeration,
-    "AdminAnalytics": AdminAnalytics,
-    "AdminSettings": AdminSettings,
-    "AdminSubscriptions": AdminSubscriptions,
-    "AdminBroadcast": AdminBroadcast,
-    "AdminContent": AdminContent,
-    "AdminAmbassadors": AdminAmbassadors,
 }
 
 export const pagesConfig = {

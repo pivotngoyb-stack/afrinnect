@@ -37,12 +37,12 @@ const PRICING_TIERS = {
       yearly: { amount: 9.99, period: 'month', total: 119.99, save: '33%' }
     },
     features: [
-      { text: 'Unlimited Likes', tip: 'Swipe right as much as you want' },
+      { text: '50 Likes per day', tip: 'Generous daily like limit' },
       { text: 'See Who Liked You', tip: 'View your admirers instantly' },
-      { text: 'Unlimited Messaging', tip: 'Chat without restrictions' },
+      { text: '100 Messages per day', tip: 'Plenty of messages to connect' },
       { text: 'Advanced Filters', tip: 'Filter by ethnicity, religion, and more' },
       { text: 'Read Receipts', tip: 'Know when your messages are read' },
-      { text: 'Rewind Last Swipe', tip: 'Undo accidental passes' },
+      { text: '5 Rewinds per day', tip: 'Undo accidental passes' },
       { text: '1 Profile Boost/month', tip: 'Be the top profile in your area for 30 mins' }
     ]
   },
@@ -61,7 +61,9 @@ const PRICING_TIERS = {
       yearly: { amount: 14.99, period: 'month', total: 179.99, save: '40%' }
     },
     features: [
-      { text: 'Everything in Premium', tip: '' },
+      { text: 'Unlimited Likes', tip: 'Swipe right as much as you want' },
+      { text: 'Unlimited Messaging', tip: 'Chat without any restrictions' },
+      { text: 'Unlimited Rewinds', tip: 'Never miss a potential match' },
       { text: 'Virtual Gifts', tip: 'Send digital gifts to stand out' },
       { text: 'Elite Verified Badge', tip: 'Show you are real and serious' },
       { text: 'Priority Ranking', tip: 'Get seen by more people first' },
@@ -79,11 +81,12 @@ const PRICING_TIERS = {
     buttonColor: 'bg-slate-900 hover:bg-black',
     prices: {
       monthly: { amount: 99.99, period: 'month', total: 99.99 },
-      quarterly: { amount: 83.33, period: 'month', total: 499.99, save: '17%', label: '6 Months' }, // Mapping quarterly tab to 6months logic
+      quarterly: { amount: 83.33, period: 'month', total: 499.99, save: '17%', label: '6 Months' },
       yearly: { amount: 75.00, period: 'month', total: 900.00, save: '25%' }
     },
     features: [
       { text: 'Everything in Elite', tip: '' },
+      { text: 'Virtual Speed Dating', tip: 'Join exclusive live video dating events' },
       { text: 'VIP Verified Badge', tip: 'Exclusive status symbol' },
       { text: 'Concierge Support', tip: 'Direct line to our team 24/7' },
       { text: 'Exclusive VIP Events', tip: 'Access to VIP-only gatherings' },
@@ -388,17 +391,18 @@ export default function PricingPlans() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {[
-                            { name: 'Unlimited Likes', premium: true, elite: true, vip: true },
+                            { name: 'Daily Likes', premium: '50/day', elite: 'Unlimited', vip: 'Unlimited' },
                             { name: 'See Who Likes You', premium: true, elite: true, vip: true },
-                            { name: 'Unlimited Messaging', premium: true, elite: true, vip: true },
+                            { name: 'Daily Messages', premium: '100/day', elite: 'Unlimited', vip: 'Unlimited' },
                             { name: 'Advanced Filters', premium: true, elite: true, vip: true },
                             { name: 'Read Receipts', premium: true, elite: true, vip: true },
-                            { name: 'Rewind Last Swipe', premium: true, elite: true, vip: true },
+                            { name: 'Rewind Last Swipe', premium: '5/day', elite: 'Unlimited', vip: 'Unlimited' },
                             { name: 'Profile Boosts', premium: '1/mo', elite: 'Unlimited', vip: 'Unlimited' },
                             { name: 'Virtual Gifts', premium: false, elite: true, vip: true },
                             { name: 'Priority Ranking', premium: false, elite: true, vip: true },
                             { name: 'Incognito Mode', premium: false, elite: true, vip: true },
                             { name: 'Verified Badge', premium: false, elite: 'Elite', vip: 'VIP' },
+                            { name: 'Virtual Speed Dating', premium: false, elite: false, vip: true },
                             { name: 'Featured Placement', premium: false, elite: false, vip: true },
                             { name: 'Profile Insights', premium: false, elite: false, vip: true },
                             { name: 'Concierge Support', premium: false, elite: false, vip: true },
