@@ -87,7 +87,6 @@ export default function EditProfile() {
     lifestyle: {},
     cultural_values: [],
     interests: [],
-    voice_intro_url: ''
   });
   const [heightFeet, setHeightFeet] = useState('');
   const [heightInches, setHeightInches] = useState('');
@@ -126,8 +125,7 @@ export default function EditProfile() {
           lifestyle: p.lifestyle || {},
           cultural_values: Array.isArray(p.cultural_values) ? p.cultural_values : [],
           interests: Array.isArray(p.interests) ? p.interests : [],
-          voice_intro_url: p.voice_intro_url || ''
-        });
+          });
         
         // Set measurement system based on country
         const imperialCountries = ['United States', 'United Kingdom', 'Liberia', 'Myanmar', 'USA'];
@@ -194,7 +192,7 @@ export default function EditProfile() {
         saveData.height_cm = formData.height_cm ? parseInt(formData.height_cm) : null;
       }
       
-      saveData.voice_intro_url = formData.voice_intro_url;
+
 
       if (profile) {
         await base44.functions.invoke('updateUserProfile', saveData);
@@ -267,27 +265,7 @@ export default function EditProfile() {
     setFormData({ ...formData, [field]: updated });
   };
 
-  const handleVoiceUpload = async (audioBlob) => {
-    if (!audioBlob) return;
-    
-    // Check file size (max 5MB)
-    if (audioBlob.size > 5 * 1024 * 1024) {
-      alert("Audio file is too large. Please keep it under 5MB.");
-      return;
-    }
 
-    setUploading(true);
-    try {
-      const file = new File([audioBlob], "voice_intro.webm", { type: "audio/webm" });
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setFormData(prev => ({ ...prev, voice_intro_url: file_url }));
-    } catch (error) {
-      console.error('Voice upload error:', error);
-      alert(t('errors.uploadVoiceFailed'));
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const calculateCompletion = () => {
     const fields = [
