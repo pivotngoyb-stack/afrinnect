@@ -393,37 +393,43 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
         )}
       </AnimatePresence>
 
-      {/* Action Buttons */}
+      {/* Action Buttons - Native Touch Optimized */}
       {showActions && (
-        <div className="flex items-center justify-center gap-4 p-4 bg-gradient-to-t from-gray-50">
+        <div className="flex items-center justify-center gap-5 p-5 bg-gradient-to-t from-gray-50" style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}>
           <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={onPass}
+            whileTap={{ scale: 0.85 }}
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(30);
+              onPass();
+            }}
             disabled={isPassing || isLiking || isSuperLiking}
-            className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center border-2 border-gray-200 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-14 h-14 rounded-full bg-white shadow-xl flex items-center justify-center border-2 border-gray-200 active:bg-gray-100 transition-all touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isPassing ? <Loader2 size={24} className="animate-spin text-gray-400" /> : <span className="text-xl">✕</span>}
+            {isPassing ? <Loader2 size={26} className="animate-spin text-gray-400" /> : <span className="text-2xl text-gray-500">✕</span>}
           </motion.button>
 
           <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={onSuperLike}
+            whileTap={{ scale: 0.85 }}
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate([30, 30, 30]);
+              onSuperLike();
+            }}
             disabled={isPassing || isLiking || isSuperLiking}
-            className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-xl flex items-center justify-center active:from-blue-500 active:to-blue-700 transition-all touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSuperLiking ? <Loader2 size={18} className="animate-spin text-white" /> : <Sparkles className="text-white" size={18} />}
+            {isSuperLiking ? <Loader2 size={20} className="animate-spin text-white" /> : <Sparkles className="text-white" size={20} />}
           </motion.button>
 
           <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={onLike}
+            whileTap={{ scale: 0.85 }}
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(50);
+              onLike();
+            }}
             disabled={isPassing || isLiking || isSuperLiking}
-            className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 shadow-xl flex items-center justify-center active:from-purple-600 active:to-purple-800 transition-all touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLiking ? <Loader2 size={24} className="animate-spin text-white" /> : <Heart className="text-white fill-white" size={24} />}
+            {isLiking ? <Loader2 size={26} className="animate-spin text-white" /> : <Heart className="text-white fill-white" size={26} />}
           </motion.button>
         </div>
       )}

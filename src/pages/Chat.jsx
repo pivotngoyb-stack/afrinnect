@@ -428,8 +428,8 @@ export default function Chat() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+      {/* Header - Native App Bar */}
+      <header className="bg-white/95 backdrop-blur-lg border-b border-gray-100/50 px-4 py-3 flex items-center justify-between sticky top-0 z-10" style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}>
         <div className="flex items-center gap-3">
           <Link to={createPageUrl('Matches')}>
             <Button variant="ghost" size="icon">
@@ -614,8 +614,8 @@ export default function Chat() {
         />
       )}
 
-      {/* Input */}
-      <div className="bg-white border-t p-4">
+      {/* Input - Native Keyboard Optimized */}
+      <div className="bg-white border-t border-gray-100" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))', padding: '12px 16px' }}>
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -673,9 +673,12 @@ export default function Chat() {
           />
 
           <Button
-            onClick={handleSend}
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(20);
+              handleSend();
+            }}
             disabled={!messageText.trim() || sendMessageMutation.isPending}
-            className="bg-purple-600 hover:bg-purple-700"
+            className="bg-purple-600 hover:bg-purple-700 active:bg-purple-800 h-11 w-11 p-0 rounded-full touch-manipulation transition-all active:scale-95"
           >
             <Send size={20} />
           </Button>
