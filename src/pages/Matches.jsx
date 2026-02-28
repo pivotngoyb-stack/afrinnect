@@ -277,79 +277,73 @@ export default function Matches() {
     });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20">
+    <div className="h-[100dvh] flex flex-col bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 overflow-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 py-3">
+      <header className="flex-shrink-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="max-w-4xl mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-700 to-amber-600 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-700 to-amber-600 bg-clip-text text-transparent">
                 Connections
               </h1>
               {matchedProfiles.length > 0 && (
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {matchedProfiles.length} match{matchedProfiles.length !== 1 ? 'es' : ''} • {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+                <p className="text-xs text-gray-500">
+                  {matchedProfiles.length} match{matchedProfiles.length !== 1 ? 'es' : ''}
                 </p>
               )}
             </div>
             <div className="flex items-center gap-2">
-              {/* Live activity indicator */}
-              <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                </span>
-                <span>Online now</span>
-              </div>
               <NotificationBell />
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6 pb-24">
+      <main className="flex-1 flex flex-col overflow-hidden max-w-4xl mx-auto w-full" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {/* Search Bar */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <Input
-            placeholder="Search matches & conversations..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white border-gray-200"
-          />
-          {searchQuery && (
-            <button 
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X size={16} />
-            </button>
-          )}
+        <div className="flex-shrink-0 px-4 py-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <Input
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 bg-white border-gray-200 text-sm"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full grid grid-cols-3 mb-6">
-            <TabsTrigger value="matches" className="gap-2">
-              <Heart size={16} />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden px-4">
+          <TabsList className="w-full grid grid-cols-3 mb-3 flex-shrink-0">
+            <TabsTrigger value="matches" className="gap-1 text-xs">
+              <Heart size={14} />
               Matches
             </TabsTrigger>
-            <TabsTrigger value="likes" className="gap-2 relative">
-              <Eye size={16} />
+            <TabsTrigger value="likes" className="gap-1 text-xs relative">
+              <Eye size={14} />
               Likes
               {likesReceived.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-600 text-white text-xs rounded-full flex items-center justify-center">
+                <span className="ml-1 px-1.5 py-0.5 bg-purple-600 text-white text-xs rounded-full">
                   {likesReceived.length}
                 </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="messages" className="gap-2">
-              <MessageCircle size={16} />
-              Messages
+            <TabsTrigger value="messages" className="gap-1 text-xs">
+              <MessageCircle size={14} />
+              Chats
             </TabsTrigger>
           </TabsList>
 
           {/* Matches Tab */}
-          <TabsContent value="matches" className="space-y-6">
+          <TabsContent value="matches" className="flex-1 overflow-y-auto space-y-4">
             {/* Expiring matches urgency banners */}
             {newMatches.filter(p => {
               const matchedAt = new Date(p.match?.matched_at || p.match?.created_date).getTime();
@@ -477,7 +471,7 @@ export default function Matches() {
           </TabsContent>
 
           {/* Likes Tab */}
-          <TabsContent value="likes">
+          <TabsContent value="likes" className="flex-1 overflow-y-auto">
             {!myProfile?.is_premium && !['premium', 'elite', 'vip'].includes(myProfile?.subscription_tier) ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -526,10 +520,10 @@ export default function Matches() {
           </TabsContent>
 
           {/* Messages Tab */}
-          <TabsContent value="messages">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <TabsContent value="messages" className="flex-1 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col">
               {conversations.length > 0 ? (
-                <ScrollArea className="h-[calc(100vh-220px)]">
+                <ScrollArea className="flex-1">
                   <div className="divide-y divide-gray-100">
                     {conversations.map(profile => {
                       const convData = conversationData[profile.match?.id] || {};
@@ -585,6 +579,7 @@ export default function Matches() {
             </div>
           </TabsContent>
         </Tabs>
+      </main>
 
         {/* Selected Profile Modal */}
         <AnimatePresence>
@@ -613,7 +608,6 @@ export default function Matches() {
             </motion.div>
           )}
         </AnimatePresence>
-      </main>
     </div>
   );
 }

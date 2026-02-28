@@ -823,38 +823,36 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={refetch}>
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 relative">
+    <div className="h-[100dvh] flex flex-col bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 relative overflow-hidden">
       <AfricanPattern className="text-purple-600" opacity={0.03} />
       
       {/* Header - Native App Bar */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-gray-100/50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="max-w-7xl mx-auto px-4 py-3">
+      <header className="flex-shrink-0 z-40 bg-white/90 backdrop-blur-xl border-b border-gray-100/50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="max-w-7xl mx-auto px-3 py-2">
           <div className="flex items-center justify-between">
             <Logo />
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {/* Discovery Mode Toggle */}
               <Tabs value={discoveryMode} onValueChange={setDiscoveryMode}>
-                <TabsList className="bg-gray-100">
-                  <TabsTrigger value="local" className="gap-1 text-xs sm:text-sm">
-                    <MapPin size={14} />
-                    <span className="hidden sm:inline">{t('home.local')}</span>
+                <TabsList className="bg-gray-100 h-8">
+                  <TabsTrigger value="local" className="gap-1 text-xs h-7 px-2">
+                    <MapPin size={12} />
                   </TabsTrigger>
-                  <TabsTrigger value="global" className="gap-1 text-xs sm:text-sm">
-                    <Globe size={14} />
-                    <span className="hidden sm:inline">{t('home.global')}</span>
+                  <TabsTrigger value="global" className="gap-1 text-xs h-7 px-2">
+                    <Globe size={12} />
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
 
               {/* View Mode Toggle */}
               <Tabs value={viewMode} onValueChange={setViewMode}>
-                <TabsList className="bg-gray-100">
-                  <TabsTrigger value="swipe">
-                    <Layers size={18} />
+                <TabsList className="bg-gray-100 h-8">
+                  <TabsTrigger value="swipe" className="h-7 px-2">
+                    <Layers size={14} />
                   </TabsTrigger>
-                  <TabsTrigger value="grid">
-                    <Grid3X3 size={18} />
+                  <TabsTrigger value="grid" className="h-7 px-2">
+                    <Grid3X3 size={14} />
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -867,35 +865,23 @@ export default function Home() {
                 userTier={myProfile?.subscription_tier || 'free'}
               />
 
-              {/* Communities */}
-              <Link to={createPageUrl('Communities')} className="flex flex-col items-center gap-0.5">
-                <Button variant="outline" size="icon" className="h-8 w-8">
-                  <Users size={16} />
-                </Button>
-                <span className="text-[10px] text-gray-500">Groups</span>
-              </Link>
-
               {/* Who Likes You Button */}
-              <Link to={createPageUrl('WhoLikesYou')} className="flex flex-col items-center gap-0.5">
+              <Link to={createPageUrl('WhoLikesYou')}>
                 <Button variant="outline" size="icon" className="h-8 w-8 relative">
-                  <HeartIcon size={16} className="text-pink-600" />
-                  {(activityCounts?.likes > 0 || activityCounts?.views > 0) && (
-                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+                  <HeartIcon size={14} className="text-pink-600" />
+                  {(activityCounts?.likes > 0) && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
                   )}
                 </Button>
-                <span className="text-[10px] text-gray-500">Likes</span>
               </Link>
 
               {/* Notifications */}
-              <div className="flex flex-col items-center gap-0.5">
-                <NotificationBell />
-                <span className="text-[10px] text-gray-500">Alerts</span>
-              </div>
+              <NotificationBell />
               
               {isAdmin && (
                 <Link to={createPageUrl('AdminDashboard')}>
-                  <Button variant="ghost" size="icon" className="text-purple-600 hover:bg-purple-50" title="Admin Dashboard">
-                    <Crown size={20} />
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-purple-600">
+                    <Crown size={16} />
                   </Button>
                 </Link>
               )}
@@ -904,105 +890,28 @@ export default function Home() {
               </div>
               </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 pb-24">
-        {/* Trial Expiry Banner */}
-        <TrialExpiryBanner userProfile={myProfile} />
-
-        {/* Progress to Trial - Gamification for free users */}
-        {myProfile && myProfile.subscription_tier === 'free' && (
-          <ProgressToTrial
-            completedActions={[
-              ...(myProfile.primary_photo ? ['profile_photo'] : []),
-              ...(myProfile.bio ? ['bio'] : []),
-              ...(myProfile.has_matched_before ? ['first_like'] : []),
-              ...((myProfile.daily_likes_count || 0) >= 5 ? ['view_profiles'] : []),
-            ]}
-            className="mb-6"
-          />
-        )}
-
-        {/* Blurred Likes Teaser for non-premium */}
-        {myProfile && !myProfile.is_premium && !['premium', 'elite', 'vip'].includes(myProfile.subscription_tier) && activityCounts?.likes > 0 && (
-          <BlurredLikesTeaser likesCount={activityCounts.likes} className="mb-6" />
-        )}
-
-        {/* Ad Banner */}
-        <AdBanner placement="discovery" userProfile={myProfile} />
-
-        {/* AI Recommendations Section */}
-        {recommendations.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <Sparkles size={18} className="text-purple-600" />
-              Recommended for You
-            </h3>
-            <div className="space-y-3">
-              {recommendations.map((rec, idx) => (
-                <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-purple-100 flex items-start gap-3">
-                  <div className="p-2 bg-purple-50 rounded-lg shrink-0">
-                    {rec.type === 'safety_alert' ? <AlertTriangle size={20} className="text-red-500" /> :
-                     rec.type === 'match_tip' ? <HeartIcon size={20} className="text-pink-500" /> :
-                     <Sparkles size={20} className="text-purple-600" />}
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900 text-sm">{rec.title}</h4>
-                    <p className="text-xs text-gray-600 mt-1">{rec.description}</p>
-                    {rec.action_link && (
-                      <Link to={createPageUrl(rec.action_link)}>
-                        <Button variant="link" size="sm" className="h-auto p-0 mt-2 text-purple-600">
-                          Check it out →
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
+      <main className="flex-1 flex flex-col overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {isLoading ? (
-          <div className="flex items-center justify-center min-h-[70vh]">
+          <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <ProfileCardSkeleton />
-              <p className="mt-4 text-sm text-gray-500 animate-pulse">Finding amazing people for you...</p>
+              <p className="mt-2 text-sm text-gray-500 animate-pulse">Finding people for you...</p>
             </div>
           </div>
         ) : viewMode === 'swipe' ? (
-          /* Swipe Mode */
-          <div className="flex flex-col items-center justify-center min-h-[60vh] sm:min-h-[70vh] relative">
-            {/* Activity indicator */}
-            {profiles.length > 0 && currentIndex < profiles.length && (
-              <div className="absolute top-0 left-0 right-0 flex justify-center mb-2">
-                <div className="bg-white/90 backdrop-blur rounded-full px-4 py-1.5 shadow-sm border border-gray-100 flex items-center gap-3">
-                  <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
-                    <span>{profiles.length - currentIndex} profiles nearby</span>
-                  </div>
-                  {currentIndex > 0 && (
-                    <div className="text-xs text-purple-600 font-medium border-l pl-3 border-gray-200">
-                      {currentIndex} viewed today ✓
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            
+          /* Swipe Mode - Full height native feel */
+          <div className="flex-1 flex flex-col items-center justify-center relative px-4">
             {/* Rewind Button (Premium/Elite/VIP) */}
             {swipeHistory.length > 0 && (
               <Button
                 onClick={handleRewind}
-                className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 rounded-full w-14 h-14 shadow-lg ${
+                className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 rounded-full w-12 h-12 shadow-lg ${
                   (myProfile?.subscription_tier === 'premium' || myProfile?.subscription_tier === 'elite' || myProfile?.subscription_tier === 'vip' || myProfile?.is_premium)
                     ? 'bg-amber-500 hover:bg-amber-600'
                     : 'bg-gray-300 hover:bg-gray-400'
                 }`}
-                title={t('admin.home.rewindLastSwipe')}
               >
-                <RotateCcw size={24} />
+                <RotateCcw size={20} />
               </Button>
             )}
             
@@ -1026,67 +935,44 @@ export default function Home() {
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col items-center justify-center h-full max-w-md mx-auto text-center px-4"
+                  className="flex flex-col items-center justify-center max-w-sm mx-auto text-center px-4"
                 >
-                  <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-amber-100 rounded-full flex items-center justify-center mb-6">
-                    <span className="text-5xl">🌍</span>
+                  <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-amber-100 rounded-full flex items-center justify-center mb-4">
+                    <span className="text-4xl">🌍</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">You've seen everyone nearby!</h2>
-                  <p className="text-gray-600 mb-4">
-                    Great news — there are thousands more people waiting to meet you globally.
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">You've seen everyone!</h2>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Explore globally to find more matches.
                   </p>
-                  
-                  {/* Social proof */}
-                  <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 mb-6">
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                      </span>
-                      <span className="text-sm text-green-700">2,847 members online right now</span>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3 w-full">
-                    <Button 
-                      onClick={() => setDiscoveryMode('global')}
-                      className="w-full h-14 text-lg bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 shadow-lg"
-                    >
-                      <Globe size={20} className="mr-2" />
-                      Explore Globally
-                    </Button>
-                    <Button 
-                      onClick={() => setFilters({})} 
-                      variant="outline" 
-                      className="w-full h-12 text-base"
-                    >
-                      Reset Filters
-                    </Button>
-                  </div>
-                  
-                  <p className="text-xs text-gray-400 mt-4">
-                    💡 Tip: Expanding your search increases matches by 5x
-                  </p>
+                  <Button 
+                    onClick={() => setDiscoveryMode('global')}
+                    className="w-full h-12 bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700"
+                  >
+                    <Globe size={18} className="mr-2" />
+                    Explore Globally
+                  </Button>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         ) : (
           /* Grid Mode */
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {profiles.map(profile => (
-              <ProfileMini
-                key={profile.id}
-                profile={profile}
-                myLocation={myProfile?.location}
-                onClick={() => setSelectedProfile(profile)}
-              />
-            ))}
-            {profiles.length === 0 && (
-              <div className="col-span-full text-center py-16">
-                <p className="text-gray-500">No profiles found. Try adjusting your filters.</p>
-              </div>
-            )}
+          <div className="flex-1 overflow-y-auto px-4 py-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {profiles.map(profile => (
+                <ProfileMini
+                  key={profile.id}
+                  profile={profile}
+                  myLocation={myProfile?.location}
+                  onClick={() => setSelectedProfile(profile)}
+                />
+              ))}
+              {profiles.length === 0 && (
+                <div className="col-span-full text-center py-16">
+                  <p className="text-gray-500">No profiles found.</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -1213,9 +1099,6 @@ export default function Home() {
           }}
         />
         </main>
-
-          {/* Ubuntu AI Button */}
-          <UbuntuAIButton />
           </div>
     </PullToRefresh>
           );
