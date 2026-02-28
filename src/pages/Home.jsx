@@ -867,50 +867,30 @@ export default function Home() {
                 userTier={myProfile?.subscription_tier || 'free'}
               />
 
-              <TooltipProvider delayDuration={300}>
-                {/* Communities */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link to={createPageUrl('Communities')}>
-                      <Button variant="outline" className="gap-1">
-                        <Users size={18} />
-                      </Button>
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Communities</p>
-                  </TooltipContent>
-                </Tooltip>
+              {/* Communities */}
+              <Link to={createPageUrl('Communities')} className="flex flex-col items-center gap-0.5">
+                <Button variant="outline" size="icon" className="h-8 w-8">
+                  <Users size={16} />
+                </Button>
+                <span className="text-[10px] text-gray-500">Groups</span>
+              </Link>
 
-                {/* Who Likes You Button */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link to={createPageUrl('WhoLikesYou')}>
-                      <Button variant="outline" className="gap-1 relative">
-                        <HeartIcon size={18} className="text-pink-600" />
-                        {(activityCounts?.likes > 0 || activityCounts?.views > 0) && (
-                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
-                        )}
-                      </Button>
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Who Likes You</p>
-                  </TooltipContent>
-                </Tooltip>
+              {/* Who Likes You Button */}
+              <Link to={createPageUrl('WhoLikesYou')} className="flex flex-col items-center gap-0.5">
+                <Button variant="outline" size="icon" className="h-8 w-8 relative">
+                  <HeartIcon size={16} className="text-pink-600" />
+                  {(activityCounts?.likes > 0 || activityCounts?.views > 0) && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+                  )}
+                </Button>
+                <span className="text-[10px] text-gray-500">Likes</span>
+              </Link>
 
-                {/* Notifications */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <NotificationBell />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Notifications</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {/* Notifications */}
+              <div className="flex flex-col items-center gap-0.5">
+                <NotificationBell />
+                <span className="text-[10px] text-gray-500">Alerts</span>
+              </div>
               
               {isAdmin && (
                 <Link to={createPageUrl('AdminDashboard')}>
