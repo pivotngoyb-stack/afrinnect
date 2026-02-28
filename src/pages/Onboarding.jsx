@@ -855,14 +855,20 @@ export default function Onboarding() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-amber-50/20 relative">
       <AfricanPattern className="text-purple-600" opacity={0.03} />
 
-      {/* Progress Bar */}
+      {/* Progress Bar - Enhanced with motivation */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg">
-        {step > 0 && <Progress value={progress} className="h-1 rounded-none" />}
+        {step > 0 && (
+          <div className="relative">
+            <Progress value={progress} className="h-2 rounded-none" />
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-purple-600">
+              {Math.round(progress)}%
+            </div>
+          </div>
+        )}
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <button 
             onClick={() => {
               if (step === 0) {
-                // Exit onboarding - go back to landing
                 if (confirm('Are you sure you want to exit? Your progress will be saved.')) {
                   navigate(createPageUrl('Landing'));
                 }
@@ -874,9 +880,20 @@ export default function Onboarding() {
           >
             <ArrowLeft size={24} className="text-gray-600" />
           </button>
-          <span className="text-sm text-gray-500">
-            {step === 0 ? 'Get Started' : `${t('onboarding.navigation.step')} ${step} ${t('onboarding.navigation.of')} 6`}
-          </span>
+          <div className="text-center">
+            <span className="text-sm font-medium text-gray-700">
+              {step === 0 ? 'Get Started' : `Step ${step} of 6`}
+            </span>
+            {step > 0 && step < 6 && (
+              <p className="text-xs text-purple-600 font-medium">
+                {step === 1 && "Great start! 🎉"}
+                {step === 2 && "You're doing amazing! ✨"}
+                {step === 3 && "Halfway there! 🚀"}
+                {step === 4 && "Almost done! 💪"}
+                {step === 5 && "Last step coming up! 🎯"}
+              </p>
+            )}
+          </div>
           <button 
             onClick={() => {
               if (confirm('Exit onboarding? Your progress will be saved.')) {
