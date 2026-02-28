@@ -64,6 +64,7 @@ const PRICING_TIERS = {
       { text: 'Unlimited Likes', tip: 'Swipe right as much as you want' },
       { text: 'Unlimited Messaging', tip: 'Chat without any restrictions' },
       { text: 'Unlimited Rewinds', tip: 'Never miss a potential match' },
+      { text: 'See Who Liked You', tip: 'View your admirers instantly' },
       { text: 'Virtual Gifts', tip: 'Send digital gifts to stand out' },
       { text: 'Elite Verified Badge', tip: 'Show you are real and serious' },
       { text: 'Priority Ranking', tip: 'Get seen by more people first' },
