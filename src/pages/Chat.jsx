@@ -40,8 +40,7 @@ import { usePerformanceMonitor } from '@/components/shared/usePerformanceMonitor
 import { useRealtimeMessages } from '@/components/chat/useRealtimeMessages';
 import TierGate, { hasAccess } from '@/components/shared/TierGate';
 import MessageLimitPaywall from '@/components/paywall/MessageLimitPaywall';
-import VoiceRecorder from '@/components/shared/VoiceRecorder';
-import VideoComingSoon from '../components/video/VideoComingSoon';
+
 import ReadReceipts from '@/components/chat/ReadReceipts';
 import PremiumTypingIndicator from '@/components/chat/PremiumTypingIndicator';
 
@@ -241,13 +240,7 @@ export default function Chat() {
     }
   }, [sendMessageMutation.isSuccess, sendMessageMutation.isError, matchId, queryClient]);
 
-  // Voice note mutation
-  const sendVoiceNoteMutation = useMutation({
-    mutationFn: async (audioBlob) => {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: audioBlob });
-      await sendMessageMutation.mutateAsync({ content: 'Voice message', type: 'voice_note', mediaUrl: file_url });
-    }
-  });
+
 
   // Image mutation
   const sendImageMutation = useMutation({
@@ -648,11 +641,7 @@ export default function Chat() {
             </Button>
           </label>
           
-          <VoiceRecorder 
-            compact 
-            onRecordingComplete={(blob) => sendVoiceNoteMutation.mutate(blob)} 
-            isUploading={sendVoiceNoteMutation.isPending}
-          />
+
 
           <AutoResizeTextarea
             placeholder="Type a message..."
@@ -831,11 +820,7 @@ export default function Chat() {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Video Coming Soon Modal */}
-        <VideoComingSoon 
-          isOpen={showVideoCall} 
-          onClose={() => setShowVideoCall(false)} 
-        />
+
         </div>
         );
         }

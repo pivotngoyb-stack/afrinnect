@@ -35,7 +35,7 @@ import FakeProfileScanner from '@/components/admin/FakeProfileScanner';
 import BroadcastMessages from '@/components/admin/BroadcastMessages';
 import FeatureFlags from '@/components/admin/FeatureFlags';
 import PricingManagement from '@/components/admin/PricingManagement';
-import VideoProfileManagement from '@/components/admin/VideoProfileManagement';
+
 import SuccessStoryModeration from '@/components/admin/SuccessStoryModeration';
 import ContestManagement from '@/components/admin/ContestManagement';
 import StoryManagement from '@/components/admin/StoryManagement';
@@ -620,7 +620,7 @@ export default function AdminDashboard() {
             <PhotoModeration />
             <CommunityManagement />
             <PricingManagement plans={pricingPlans} />
-            <VideoProfileManagement />
+
             <ContestManagement />
             <SuccessStoryModeration />
           </div>
