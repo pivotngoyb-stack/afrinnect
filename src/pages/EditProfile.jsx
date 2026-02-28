@@ -5,7 +5,7 @@ import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Camera, X, Loader2, Save, Check, Sparkles,
-  MapPin, Briefcase, GraduationCap, Heart, Globe, Users, Award, Video, Eye
+  MapPin, Briefcase, GraduationCap, Heart, Globe, Users, Award, Eye
 } from 'lucide-react';
 import ProfileCard from '@/components/profile/ProfileCard';
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -23,9 +23,7 @@ import EditProfilePhotos from '@/components/profile/EditProfilePhotos';
 import EditProfileBasicInfo from '@/components/profile/EditProfileBasicInfo';
 import { compressImage, validateImageFile } from '@/components/shared/ImageCompressor';
 import ImageCropper from '@/components/shared/ImageCropper';
-import VideoProfileRecorder from '@/components/profile/VideoProfileRecorder';
-import VoiceRecorder from '@/components/shared/VoiceRecorder';
-import { Mic } from 'lucide-react';
+
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
 const AFRICAN_COUNTRIES = [
@@ -785,74 +783,7 @@ export default function EditProfile() {
           </Card>
         </motion.div>
 
-        {/* Video Profile */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.7 }}
-        >
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-            <div className="bg-gradient-to-r from-pink-500 to-rose-600 p-6">
-              <div className="flex items-center gap-3 text-white">
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur">
-                  <Video size={24} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">{t('editProfile.videoProfile')}</h2>
-                  <p className="text-sm text-white/80">{t('editProfile.videoSubtitle')}</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-6">
-              <VideoProfileRecorder
-                existingVideoUrl={formData.video_profile_url}
-                onVideoUploaded={(url) => setFormData({ ...formData, video_profile_url: url })}
-              />
-            </div>
-          </div>
-        </motion.div>
 
-        {/* Voice Intro */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.75 }}
-        >
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-            <div className="bg-gradient-to-r from-indigo-500 to-violet-600 p-6">
-              <div className="flex items-center gap-3 text-white">
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur">
-                  <Mic size={24} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">{t('editProfile.voiceIntro')}</h2>
-                  <p className="text-sm text-white/80">{t('editProfile.voiceSubtitle')}</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-6 flex flex-col items-center">
-              {formData.voice_intro_url && (
-                <div className="w-full mb-4">
-                  <audio controls src={formData.voice_intro_url} className="w-full" />
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setFormData({ ...formData, voice_intro_url: '' })}
-                    className="text-red-500 mt-2 hover:bg-red-50"
-                  >
-                    {t('editProfile.removeVoice')}
-                  </Button>
-                </div>
-              )}
-              {!formData.voice_intro_url && (
-                <VoiceRecorder 
-                  onRecordingComplete={handleVoiceUpload}
-                  isUploading={uploading}
-                />
-              )}
-            </div>
-          </div>
-        </motion.div>
 
         {/* Save Button (Bottom) */}
         <motion.div

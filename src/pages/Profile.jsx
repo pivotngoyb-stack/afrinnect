@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import {
   Settings, Edit2, Camera, Shield, Star, Crown, MapPin,
   Briefcase, GraduationCap, Book, Languages, Heart, ChevronRight,
-  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard, RotateCcw, Users, Zap, Video, MessageCircle, Mic
+  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard, RotateCcw, Users, Zap, MessageCircle
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import BoostProfileButton from '@/components/profile/BoostProfileButton';
@@ -28,7 +28,7 @@ import SocialProofBanner from '@/components/shared/SocialProofBanner';
 import SpotifySection from '@/components/profile/SpotifySection';
 import ProfileBadges from '@/components/profile/ProfileBadges';
 import NotificationBell from '@/components/shared/NotificationBell';
-import VideoProfilePlayer from '@/components/profile/VideoProfilePlayer';
+
 import ProfileSuggestions from '@/components/matching/ProfileSuggestions';
 import { Share2, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -381,20 +381,7 @@ export default function Profile() {
           </Card>
         )}
 
-        {/* Voice Intro */}
-        {profile?.voice_intro_url && (
-          <Card className="mb-4">
-            <CardContent className="p-4 flex flex-col items-center">
-              <div className="flex items-center gap-2 mb-2 text-purple-600">
-                <div className="p-2 bg-purple-100 rounded-full">
-                  <Mic size={16} />
-                </div>
-                <span className="text-sm font-medium">Voice Intro</span>
-              </div>
-              <audio controls src={profile.voice_intro_url} className="w-full" />
-            </CardContent>
-          </Card>
-        )}
+
 
         {/* Photo Gallery */}
         {profile?.photos?.length > 0 && (
@@ -422,21 +409,7 @@ export default function Profile() {
           </div>
         )}
 
-        {/* Video Profile */}
-        {profile?.video_profile_url && (
-          <Card className="mb-6 overflow-hidden border-0 shadow-lg">
-            <div className="bg-gradient-to-r from-pink-500 to-rose-600 p-4">
-              <div className="flex items-center gap-2 text-white">
-                <Video size={20} />
-                <h3 className="font-bold">{t('admin.home.videoIntro')}</h3>
-              </div>
-            </div>
-            <VideoProfilePlayer 
-              videoUrl={profile.video_profile_url} 
-              className="aspect-[9/16] max-h-[500px]"
-            />
-          </Card>
-        )}
+
 
         {/* Quick Info Grid */}
         <div className="grid grid-cols-2 gap-3 mb-6">
