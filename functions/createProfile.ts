@@ -17,11 +17,11 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Profile already exists' }, { status: 400 });
     }
 
-    // 2. Validate Device/Phone Limits (Security)
+    // 2. ENHANCED Device/Phone Limits (Security)
     if (formData.phone_number) {
         const phoneCheck = await base44.asServiceRole.entities.UserProfile.filter({ phone_number: formData.phone_number });
-        if (phoneCheck.length >= 2) {
-             return Response.json({ error: 'Phone number limit reached' }, { status: 400 });
+        if (phoneCheck.length >= 1) { // STRICTER: Only 1 account per phone number
+             return Response.json({ error: 'This phone number is already registered with another account.' }, { status: 400 });
         }
     }
 
@@ -30,6 +30,22 @@ Deno.serve(async (req) => {
     // Enforce strict one account per user policy (but allow re-registration after deletion)
     if (allUserProfiles.length >= 1) {
          return Response.json({ error: 'An account with this email already exists.' }, { status: 400 });
+    }
+    
+    // Check for banned email domains (disposable emails)
+    const disposableDomains = ['tempmail.com', 'guerrillamail.com', '10minutemail.com', 'mailinator.com', 'throwaway.email', 'fakeinbox.com', 'trashmail.com', 'yopmail.com'];
+    const emailDomain = user.email?.split('@')[1]?.toLowerCase();
+    if (emailDomain && disposableDomains.some(d => emailDomain.includes(d))) {
+        return Response.json({ error: 'Please use a valid email address. Temporary/disposable emails are not allowed.' }, { status: 400 });
+    }
+    
+    // Check device limit more strictly
+    const deviceId = formData.device_id || `web_${Date.now()}`;
+    const existingDeviceProfiles = await base44.asServiceRole.entities.UserProfile.filter({
+        device_ids: { $contains: deviceId }
+    });
+    if (existingDeviceProfiles.length >= 2) {
+        return Response.json({ error: 'Too many accounts from this device. Please contact support if you believe this is an error.' }, { status: 400 });
     }
 
     // 3. Prepare Secure Data
@@ -117,35 +133,102 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Birth date is required' }, { status: 400 });
     }
 
-    // 2.2 AI Content Safety Check (Fake Profiles / Hate Speech)
+    // 2.1.5 GEOGRAPHIC RESTRICTION: Only USA and Canada allowed
+    const isAdmin = user.role === 'admin' || user.email === 'pivotngoyb@gmail.com';
+    const allowedCountries = ['United States', 'United States of America', 'USA', 'Canada'];
+    if (!isAdmin) {
+        const currentCountry = formData.current_country;
+        if (!currentCountry || !allowedCountries.some(c => c.toLowerCase() === currentCountry.toLowerCase())) {
+            return Response.json({ 
+                error: 'Afrinnect is currently only available in the United States and Canada. Join our waitlist to be notified when we expand to your region!' 
+            }, { status: 400 });
+        }
+        
+        // Validate location coordinates exist (prevent bypass)
+        if (!formData.location?.lat || !formData.location?.lng) {
+            return Response.json({ 
+                error: 'Location verification is required. Please enable location services to continue.' 
+            }, { status: 400 });
+        }
+    }
+
+    // 2.2 ENHANCED AI Content Safety Check (Fake Profiles / Hate Speech / Scams)
     if (formData.bio || formData.display_name) {
         try {
             const safetyCheck = await base44.integrations.Core.InvokeLLM({
-                prompt: `Analyze this user profile data for safety:
-                Name: "${formData.display_name}"
-                Bio: "${formData.bio}"
-                
-                Detect:
-                1. Fake profiles (celebrity names, nonsensical text)
-                2. Hate speech or offensive content
-                3. Solicitation or spam
-                
-                Return JSON: {"is_safe": boolean, "reason": "string"}`,
+                prompt: `You are a strict content moderator for a dating app. Analyze this user profile data for safety:
+
+Name: "${formData.display_name}"
+Bio: "${formData.bio || 'None provided'}"
+Photos count: ${formData.photos?.length || 0}
+Country: ${formData.current_country}
+
+STRICTLY detect and reject if ANY of these are true:
+1. FAKE PROFILES: Celebrity names, famous people names, fictional characters, obviously fake names (e.g., "John Smith 123", random characters)
+2. SCAM INDICATORS: Mentions of money, crypto, investment, "make money fast", WhatsApp/Telegram numbers, external links, email addresses in bio
+3. HATE SPEECH: Any racist, sexist, homophobic, or discriminatory content
+4. SOLICITATION: Prostitution, escort services, "massage" services, OnlyFans/adult content promotion
+5. SPAM: Repeated characters, nonsensical text, promotional content
+6. CATFISH SIGNALS: Claims of being a model, celebrity, or rich person in bio
+
+Be STRICT - when in doubt, reject. We prefer false positives over letting scammers through.
+
+Return JSON: {"is_safe": boolean, "reason": "string", "risk_level": "low" | "medium" | "high", "flags": ["list of specific concerns"]}`,
                 response_json_schema: {
                     type: "object",
                     properties: {
                         is_safe: { type: "boolean" },
-                        reason: { type: "string" }
+                        reason: { type: "string" },
+                        risk_level: { type: "string" },
+                        flags: { type: "array", items: { type: "string" } }
                     }
                 }
             });
 
             if (!safetyCheck.is_safe) {
+                // Log the rejection for review
+                try {
+                    await base44.asServiceRole.entities.AdminAuditLog.create({
+                        admin_user_id: 'ai_system',
+                        admin_email: 'ai@afrinnect.com',
+                        action_type: 'profile_rejected',
+                        target_user_id: user.email,
+                        details: {
+                            reason: safetyCheck.reason,
+                            risk_level: safetyCheck.risk_level,
+                            flags: safetyCheck.flags,
+                            name: formData.display_name,
+                            bio: formData.bio?.substring(0, 200)
+                        }
+                    });
+                } catch (logError) {
+                    console.error('Failed to log rejection:', logError);
+                }
                 return Response.json({ error: `Profile rejected: ${safetyCheck.reason}` }, { status: 400 });
+            }
+            
+            // If medium/high risk but passed, flag for review
+            if (safetyCheck.risk_level === 'medium' || safetyCheck.risk_level === 'high') {
+                try {
+                    await base44.asServiceRole.entities.AdminAuditLog.create({
+                        admin_user_id: 'ai_system',
+                        admin_email: 'ai@afrinnect.com',
+                        action_type: 'profile_flagged_for_review',
+                        target_user_id: user.email,
+                        details: {
+                            risk_level: safetyCheck.risk_level,
+                            flags: safetyCheck.flags,
+                            name: formData.display_name
+                        }
+                    });
+                } catch (logError) {
+                    console.error('Failed to log flag:', logError);
+                }
             }
         } catch (e) {
             console.error("Profile safety check failed", e);
-            // Fail open to avoid blocking legit users on AI error, but log it
+            // For safety, block profile creation if AI check fails
+            return Response.json({ error: 'Profile verification temporarily unavailable. Please try again in a few minutes.' }, { status: 503 });
         }
     }
 

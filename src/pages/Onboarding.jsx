@@ -27,32 +27,8 @@ const AFRICAN_COUNTRIES = [
   'Algeria', 'Tunisia', 'Libya', 'Somalia', 'Eritrea', 'Djibouti'
 ];
 
-const RESIDENCE_COUNTRIES = [
-  'Afghanistan', 'Albania', 'Andorra', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
-  'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Brazil', 'Brunei', 'Bulgaria',
-  'Cambodia', 'Canada', 'Chile', 'China', 'Colombia', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czech Republic',
-  'Denmark', 'Dominica', 'Dominican Republic',
-  'Ecuador', 'El Salvador', 'Estonia',
-  'Fiji', 'Finland', 'France',
-  'Georgia', 'Germany', 'Greece', 'Grenada', 'Guatemala', 'Guyana',
-  'Haiti', 'Honduras', 'Hungary',
-  'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy',
-  'Jamaica', 'Japan', 'Jordan',
-  'Kazakhstan', 'Kiribati', 'Kosovo', 'Kuwait', 'Kyrgyzstan',
-  'Laos', 'Latvia', 'Lebanon', 'Liechtenstein', 'Lithuania', 'Luxembourg',
-  'Malaysia', 'Maldives', 'Malta', 'Marshall Islands', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Myanmar',
-  'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'North Korea', 'North Macedonia', 'Norway',
-  'Oman',
-  'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Puerto Rico',
-  'Qatar',
-  'Romania', 'Russia', 'Rwanda',
-  'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Saudi Arabia', 'Serbia', 'Seychelles', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'South Korea', 'Spain', 'Sri Lanka', 'Suriname', 'Sweden', 'Switzerland', 'Syria',
-  'Taiwan', 'Tajikistan', 'Thailand', 'Timor-Leste', 'Tonga', 'Trinidad and Tobago', 'Turkey', 'Turkmenistan', 'Tuvalu',
-  'UAE', 'Ukraine', 'United Kingdom', 'United States', 'Uruguay', 'USA', 'Uzbekistan',
-  'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam',
-  'Yemen',
-  'Other'
-].sort();
+// RESTRICTED: Only USA and Canada for residence
+const ALLOWED_RESIDENCE_COUNTRIES = ['United States', 'Canada'];
 
 const ALL_COUNTRIES = [
   ...AFRICAN_COUNTRIES,
@@ -437,18 +413,18 @@ export default function Onboarding() {
       
       {/* Quick stats */}
       <div className="flex justify-center gap-6 mb-6 text-sm">
-        <div className="text-center">
-          <p className="font-bold text-purple-600">2 min</p>
-          <p className="text-gray-500 text-xs">to complete</p>
-        </div>
-        <div className="text-center">
-          <p className="font-bold text-purple-600">100%</p>
-          <p className="text-gray-500 text-xs">free to join</p>
-        </div>
-        <div className="text-center">
-          <p className="font-bold text-purple-600">50+</p>
-          <p className="text-gray-500 text-xs">countries</p>
-        </div>
+      <div className="text-center">
+        <p className="font-bold text-purple-600">2 min</p>
+        <p className="text-gray-500 text-xs">to complete</p>
+      </div>
+      <div className="text-center">
+        <p className="font-bold text-purple-600">100%</p>
+        <p className="text-gray-500 text-xs">free to join</p>
+      </div>
+      <div className="text-center">
+        <p className="font-bold text-purple-600">🇺🇸 🇨🇦</p>
+        <p className="text-gray-500 text-xs">USA & Canada</p>
+      </div>
       </div>
 
       <p className="text-xs text-gray-400">
