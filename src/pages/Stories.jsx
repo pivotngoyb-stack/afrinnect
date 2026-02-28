@@ -276,37 +276,56 @@ export default function Stories() {
               <h2 className="text-lg font-semibold mb-4 px-1">Recent Stories</h2>
               
               {!myProfile || (allStories.length > 0 && isLoadingProfiles) ? (
-                <ListItemSkeleton count={3} />
+                <div className="flex gap-4 overflow-x-auto pb-4 px-1">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="flex-shrink-0 flex flex-col items-center gap-2">
+                      <div className="w-[72px] h-[72px] rounded-full bg-gray-200 animate-pulse" />
+                      <div className="w-12 h-3 bg-gray-200 rounded animate-pulse" />
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide">
+                <div className="flex gap-3 overflow-x-auto pb-4 px-1 scrollbar-hide snap-x snap-mandatory">
                   {/* My Story Ring */}
-                  <StoryRing
-                    profile={myProfile}
-                    hasStory={myActiveStories.length > 0}
-                    isViewed={false}
-                    onClick={() => {
-                      if (myActiveStories.length > 0) {
-                        handleStoryClick(myActiveStories);
-                      } else {
-                        setUploadingStory(true);
-                      }
-                    }}
-                    isOwnProfile
-                  />
+                  <div className="snap-start">
+                    <StoryRing
+                      profile={myProfile}
+                      hasStory={myActiveStories.length > 0}
+                      isViewed={false}
+                      storyCount={myActiveStories.length}
+                      onClick={() => {
+                        if (myActiveStories.length > 0) {
+                          handleStoryClick(myActiveStories);
+                        } else {
+                          setUploadingStory(true);
+                        }
+                      }}
+                      isOwnProfile
+                    />
+                  </div>
 
-                  {/* Other users' stories */}
-                  {otherStoryGroups.map(([profileId, { profile, stories }]) => {
-                    const hasViewed = stories.every(s => s.views?.includes(myProfile?.id));
-                    return (
-                      <StoryRing
-                        key={profileId}
-                        profile={profile}
-                        hasStory
-                        isViewed={hasViewed}
-                        onClick={() => handleStoryClick(stories)}
-                      />
-                    );
-                  })}
+                  {/* Other users' stories - sorted by unviewed first */}
+                  {otherStoryGroups
+                    .sort(([, a], [, b]) => {
+                      const aViewed = a.stories.every(s => s.views?.includes(myProfile?.id));
+                      const bViewed = b.stories.every(s => s.views?.includes(myProfile?.id));
+                      if (aViewed === bViewed) return 0;
+                      return aViewed ? 1 : -1;
+                    })
+                    .map(([profileId, { profile, stories }]) => {
+                      const hasViewed = stories.every(s => s.views?.includes(myProfile?.id));
+                      return (
+                        <div key={profileId} className="snap-start">
+                          <StoryRing
+                            profile={profile}
+                            hasStory
+                            isViewed={hasViewed}
+                            storyCount={stories.length}
+                            onClick={() => handleStoryClick(stories)}
+                          />
+                        </div>
+                      );
+                    })}
                 </div>
               )}
 
@@ -418,47 +437,79 @@ export default function Stories() {
           )}
         </main>
 
-        {/* Upload dialog */}
-        {uploadingStory && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Add to Your Story</h2>
-                <Button variant="ghost" size="icon" onClick={() => setUploadingStory(false)}>
-                  <span className="text-xl">×</span>
-                </Button>
+        {/* Upload dialog - Full screen camera style */}
+        <AnimatePresence>
+          {uploadingStory && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black z-50 flex flex-col"
+              style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-4">
+                <button 
+                  onClick={() => setUploadingStory(false)}
+                  className="w-10 h-10 flex items-center justify-center rounded-full active:bg-white/10 transition touch-manipulation"
+                >
+                  <X size={26} className="text-white" />
+                </button>
+                <h2 className="text-white font-semibold text-lg">Add to Story</h2>
+                <div className="w-10" />
               </div>
-              <div className="space-y-4">
-                <div>
-                  <Label>Caption (optional)</Label>
+              
+              {/* Upload Area */}
+              <div className="flex-1 flex flex-col items-center justify-center px-6">
+                <Label htmlFor="story-upload" className="cursor-pointer w-full">
+                  <motion.div 
+                    whileTap={{ scale: 0.98 }}
+                    className="border-2 border-dashed border-white/30 rounded-3xl p-12 text-center hover:border-white/50 transition bg-white/5 backdrop-blur-sm"
+                  >
+                    {uploadStoryMutation.isPending ? (
+                      <div className="flex flex-col items-center">
+                        <div className="w-12 h-12 border-3 border-white border-t-transparent rounded-full animate-spin mb-4" />
+                        <p className="text-white/80 text-base">Uploading...</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                          <Upload className="text-white" size={36} />
+                        </div>
+                        <p className="text-white text-lg font-medium mb-2">Tap to upload</p>
+                        <p className="text-white/60 text-sm">Photo or video</p>
+                      </>
+                    )}
+                  </motion.div>
+                </Label>
+                <input
+                  id="story-upload"
+                  type="file"
+                  accept="image/*,video/*"
+                  capture="environment"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  disabled={uploadStoryMutation.isPending}
+                />
+                
+                {/* Caption input */}
+                <div className="w-full mt-6">
                   <Input
                     value={caption}
                     onChange={(e) => setCaption(e.target.value)}
-                    placeholder="Say something..."
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="story-upload" className="cursor-pointer">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-500 transition">
-                      <Upload className="mx-auto mb-2 text-gray-400" size={32} />
-                      <p className="text-sm text-gray-600">
-                        {uploadStoryMutation.isPending ? 'Uploading...' : 'Click to upload photo or video'}
-                      </p>
-                    </div>
-                  </Label>
-                  <input
-                    id="story-upload"
-                    type="file"
-                    accept="image/*,video/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                    disabled={uploadStoryMutation.isPending}
+                    placeholder="Add a caption..."
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 rounded-full px-5 py-3 text-base"
                   />
                 </div>
               </div>
-            </div>
-          </div>
-        )}
+              
+              {/* Bottom hint */}
+              <div className="p-6 text-center">
+                <p className="text-white/50 text-xs">Stories disappear after 24 hours</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Story viewer */}
         <AnimatePresence>
