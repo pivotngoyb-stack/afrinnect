@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft, Camera, CheckCircle, Shield, Loader2, AlertCircle
+  Camera, CheckCircle, Shield, Loader2, AlertCircle
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -183,15 +183,12 @@ export default function VerifyPhoto() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Header */}
+      {/* Header - No back button if verification is mandatory */}
       <header className="bg-white border-b">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link to={createPageUrl('Profile')}>
-            <Button variant="ghost" size="icon">
-              <ArrowLeft size={24} />
-            </Button>
-          </Link>
-          <h1 className="text-lg font-bold">Video Verification</h1>
+          <div className="w-10" /> {/* Spacer - no back button during mandatory verification */}
+          <h1 className="text-lg font-bold flex-1 text-center">Video Verification</h1>
+          <div className="w-10" /> {/* Spacer for centering */}
         </div>
       </header>
 
@@ -270,21 +267,63 @@ export default function VerifyPhoto() {
         )}
 
         {step === 'failed' && (
-          <Alert className="mt-6 border-red-200 bg-red-50">
-            <AlertCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800">
-              <strong className="text-lg block mb-2">Verification Failed</strong>
-              <p className="mb-4">
-                {verificationResult?.reason || "We couldn't verify your identity. Please make sure your face is clearly visible and you follow the movement instructions."}
-              </p>
+          <div className="space-y-6">
+            <Alert className="border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                <strong className="text-lg block mb-2">Verification Failed</strong>
+                <p className="mb-4">
+                  {verificationResult?.reason || "We couldn't verify your identity. Please make sure your face is clearly visible and you follow the movement instructions."}
+                </p>
+              </AlertDescription>
+            </Alert>
+
+            {/* Show captured photos with option to remove */}
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-3">Captured Photos</h3>
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {['center', 'left', 'right'].map(pose => (
+                    <div key={pose} className="relative">
+                      {captures[pose] ? (
+                        <img 
+                          src={captures[pose]} 
+                          alt={pose} 
+                          className="w-full aspect-square object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Camera size={20} className="text-gray-400" />
+                        </div>
+                      )}
+                      <p className="text-xs text-center mt-1 capitalize text-gray-500">{pose}</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  If these photos don't match your profile picture, you may need to update your profile photo first, then try verification again.
+                </p>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-3">
               <Button
                 onClick={resetVerification}
-                className="w-full bg-white hover:bg-gray-50 text-red-600 border border-red-200"
+                className="w-full bg-purple-600 hover:bg-purple-700"
               >
-                Try Again
+                <Camera className="mr-2" size={18} />
+                Retake Photos
               </Button>
-            </AlertDescription>
-          </Alert>
+              <Link to={createPageUrl('EditProfile')} className="block">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                >
+                  Update Profile Photo First
+                </Button>
+              </Link>
+            </div>
+          </div>
         )}
       </main>
     </div>
