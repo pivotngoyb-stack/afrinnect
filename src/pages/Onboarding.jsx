@@ -913,9 +913,22 @@ export default function Onboarding() {
         </AnimatePresence>
       </main>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
+      {/* Bottom Navigation - Enhanced */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg">
         <div className="max-w-lg mx-auto">
+          {/* Social proof ticker */}
+          {step > 0 && step < 6 && (
+            <div className="mb-3 overflow-hidden">
+              <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <span>{recentSignups[step % 3]?.name} from {recentSignups[step % 3]?.city} just signed up</span>
+              </div>
+            </div>
+          )}
+          
           <Button
             onClick={() => {
               if (step === 6) {
@@ -925,7 +938,7 @@ export default function Onboarding() {
               }
             }}
             disabled={!canProceed() || createProfileMutation.isPending}
-            className="w-full py-6 text-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+            className="w-full py-6 text-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg"
           >
             {createProfileMutation.isPending ? (
               <Loader2 size={24} className="animate-spin" />
@@ -941,6 +954,13 @@ export default function Onboarding() {
               </>
             )}
           </Button>
+          
+          {/* Trust signals */}
+          {step === 0 && (
+            <p className="text-center text-xs text-gray-400 mt-3">
+              🔒 Your data is encrypted • Takes ~2 minutes
+            </p>
+          )}
         </div>
       </div>
 
