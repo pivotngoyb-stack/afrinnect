@@ -755,7 +755,7 @@ export default function Onboarding() {
       </div>
     </motion.div>,
 
-    // Step 5: Photos
+    // Step 5: Photos - Enhanced with skip option hint
     <motion.div
       key="photos"
       initial={{ opacity: 0, y: 20 }}
@@ -763,10 +763,42 @@ export default function Onboarding() {
       exit={{ opacity: 0, y: -20 }}
     >
       <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.photos.title')}</h2>
-      <p className="text-gray-500 mb-4">{t('onboarding.photos.subtitle')} ({formData.photos.length}/4)</p>
-      <div className="mb-6 p-4 bg-purple-50 border-2 border-purple-200 rounded-xl">
-        <p className="text-sm text-purple-800">
-          💡 <strong>Pro tip:</strong> Keep important details (face, upper body) in the <strong>top half</strong> of your photos for best visibility
+      <p className="text-gray-500 mb-2">{t('onboarding.photos.subtitle')}</p>
+      
+      {/* Progress indicator */}
+      <div className="flex items-center gap-2 mb-4">
+        {[1, 2, 3, 4].map((num) => (
+          <div 
+            key={num}
+            className={`flex-1 h-2 rounded-full transition-all ${
+              formData.photos.length >= num ? 'bg-purple-600' : 'bg-gray-200'
+            }`}
+          />
+        ))}
+        <span className={`text-sm font-bold ${formData.photos.length >= 4 ? 'text-green-600' : 'text-gray-500'}`}>
+          {formData.photos.length}/4
+        </span>
+      </div>
+      
+      {formData.photos.length < 4 && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+          <p className="text-sm text-amber-800">
+            📸 <strong>Profiles with 4+ photos get 3x more matches!</strong>
+          </p>
+        </div>
+      )}
+      
+      {formData.photos.length >= 4 && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl">
+          <p className="text-sm text-green-800">
+            ✅ <strong>Perfect!</strong> You're ready to continue
+          </p>
+        </div>
+      )}
+      
+      <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-xl">
+        <p className="text-xs text-purple-800">
+          💡 <strong>Pro tip:</strong> Keep important details (face, upper body) in the <strong>top half</strong> of your photos
         </p>
       </div>
 
