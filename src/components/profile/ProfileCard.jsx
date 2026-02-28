@@ -127,8 +127,8 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
   return (
     <ProfileTierDecoration tier={profile?.subscription_tier}>
       <motion.div 
-        className="relative w-full max-w-[92vw] sm:max-w-sm mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden cursor-grab active:cursor-grabbing"
-        style={{ x, rotate, maxHeight: 'calc(100dvh - 140px)', borderColor, borderWidth: expanded ? 0 : 2 }}
+        className="relative w-full max-w-[90vw] sm:max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden cursor-grab active:cursor-grabbing"
+        style={{ x, rotate, maxHeight: 'calc(100dvh - 120px)', borderColor, borderWidth: expanded ? 0 : 2 }}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
@@ -162,8 +162,8 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
 
       {/* Photo Section */}
       <div 
-        className="relative aspect-[3/4] overflow-hidden cursor-pointer group"
-        style={{ maxHeight: 'calc(100dvh - 260px)' }}
+        className="relative aspect-[4/5] overflow-hidden cursor-pointer group"
+        style={{ maxHeight: 'calc(100dvh - 220px)' }}
         onClick={() => setShowDetails(!showDetails)}
       >
         <AnimatePresence mode="wait">
@@ -395,7 +395,7 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
 
       {/* Action Buttons - Native Touch Optimized */}
       {showActions && (
-        <div className="flex items-center justify-center gap-4 p-3 bg-gradient-to-t from-gray-50">
+        <div className="flex items-center justify-center gap-5 p-4 bg-gradient-to-t from-gray-50">
           <motion.button
             whileTap={{ scale: 0.85 }}
             onClick={() => {
@@ -403,9 +403,9 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
               onPass();
             }}
             disabled={isPassing || isLiking || isSuperLiking}
-            className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center border-2 border-gray-200 active:bg-gray-100 transition-all touch-manipulation disabled:opacity-50"
+            className="w-14 h-14 rounded-full bg-white shadow-xl flex items-center justify-center border-2 border-gray-200 active:bg-gray-100 transition-all touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isPassing ? <Loader2 size={22} className="animate-spin text-gray-400" /> : <span className="text-xl text-gray-500">✕</span>}
+            {isPassing ? <Loader2 size={26} className="animate-spin text-gray-400" /> : <span className="text-2xl text-gray-500">✕</span>}
           </motion.button>
 
           <motion.button
@@ -415,9 +415,9 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
               onSuperLike();
             }}
             disabled={isPassing || isLiking || isSuperLiking}
-            className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg flex items-center justify-center transition-all touch-manipulation disabled:opacity-50"
+            className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-xl flex items-center justify-center active:from-blue-500 active:to-blue-700 transition-all touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSuperLiking ? <Loader2 size={16} className="animate-spin text-white" /> : <Sparkles className="text-white" size={16} />}
+            {isSuperLiking ? <Loader2 size={20} className="animate-spin text-white" /> : <Sparkles className="text-white" size={20} />}
           </motion.button>
 
           <motion.button
@@ -427,9 +427,9 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
               onLike();
             }}
             disabled={isPassing || isLiking || isSuperLiking}
-            className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg flex items-center justify-center transition-all touch-manipulation disabled:opacity-50"
+            className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 shadow-xl flex items-center justify-center active:from-purple-600 active:to-purple-800 transition-all touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLiking ? <Loader2 size={22} className="animate-spin text-white" /> : <Heart className="text-white fill-white" size={22} />}
+            {isLiking ? <Loader2 size={26} className="animate-spin text-white" /> : <Heart className="text-white fill-white" size={26} />}
           </motion.button>
         </div>
       )}

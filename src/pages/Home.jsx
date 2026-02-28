@@ -828,31 +828,33 @@ export default function Home() {
       
       {/* Header - Native App Bar */}
       <header className="flex-shrink-0 z-40 bg-white/90 backdrop-blur-xl border-b border-gray-100/50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="max-w-7xl mx-auto px-3 py-2">
+        <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Logo />
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {/* Discovery Mode Toggle */}
               <Tabs value={discoveryMode} onValueChange={setDiscoveryMode}>
-                <TabsList className="bg-gray-100 h-8">
-                  <TabsTrigger value="local" className="gap-1 text-xs h-7 px-2">
-                    <MapPin size={12} />
+                <TabsList className="bg-gray-100">
+                  <TabsTrigger value="local" className="gap-1 text-xs sm:text-sm">
+                    <MapPin size={14} />
+                    <span className="hidden sm:inline">{t('home.local')}</span>
                   </TabsTrigger>
-                  <TabsTrigger value="global" className="gap-1 text-xs h-7 px-2">
-                    <Globe size={12} />
+                  <TabsTrigger value="global" className="gap-1 text-xs sm:text-sm">
+                    <Globe size={14} />
+                    <span className="hidden sm:inline">{t('home.global')}</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
 
               {/* View Mode Toggle */}
               <Tabs value={viewMode} onValueChange={setViewMode}>
-                <TabsList className="bg-gray-100 h-8">
-                  <TabsTrigger value="swipe" className="h-7 px-2">
-                    <Layers size={14} />
+                <TabsList className="bg-gray-100">
+                  <TabsTrigger value="swipe">
+                    <Layers size={18} />
                   </TabsTrigger>
-                  <TabsTrigger value="grid" className="h-7 px-2">
-                    <Grid3X3 size={14} />
+                  <TabsTrigger value="grid">
+                    <Grid3X3 size={18} />
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -868,9 +870,9 @@ export default function Home() {
               {/* Who Likes You Button */}
               <Link to={createPageUrl('WhoLikesYou')}>
                 <Button variant="outline" size="icon" className="h-8 w-8 relative">
-                  <HeartIcon size={14} className="text-pink-600" />
-                  {(activityCounts?.likes > 0) && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+                  <HeartIcon size={16} className="text-pink-600" />
+                  {(activityCounts?.likes > 0 || activityCounts?.views > 0) && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
                   )}
                 </Button>
               </Link>
@@ -880,8 +882,8 @@ export default function Home() {
               
               {isAdmin && (
                 <Link to={createPageUrl('AdminDashboard')}>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-purple-600">
-                    <Crown size={16} />
+                  <Button variant="ghost" size="icon" className="text-purple-600 hover:bg-purple-50" title="Admin Dashboard">
+                    <Crown size={20} />
                   </Button>
                 </Link>
               )}
@@ -890,28 +892,29 @@ export default function Home() {
               </div>
               </header>
 
-      <main className="flex-1 flex flex-col overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <main className="flex-1 flex flex-col overflow-hidden px-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <ProfileCardSkeleton />
-              <p className="mt-2 text-sm text-gray-500 animate-pulse">Finding people for you...</p>
+              <p className="mt-4 text-sm text-gray-500 animate-pulse">Finding amazing people for you...</p>
             </div>
           </div>
         ) : viewMode === 'swipe' ? (
-          /* Swipe Mode - Full height native feel */
-          <div className="flex-1 flex flex-col items-center justify-center relative px-4">
+          /* Swipe Mode */
+          <div className="flex-1 flex flex-col items-center justify-center relative">
             {/* Rewind Button (Premium/Elite/VIP) */}
             {swipeHistory.length > 0 && (
               <Button
                 onClick={handleRewind}
-                className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 rounded-full w-12 h-12 shadow-lg ${
+                className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 rounded-full w-14 h-14 shadow-lg ${
                   (myProfile?.subscription_tier === 'premium' || myProfile?.subscription_tier === 'elite' || myProfile?.subscription_tier === 'vip' || myProfile?.is_premium)
                     ? 'bg-amber-500 hover:bg-amber-600'
                     : 'bg-gray-300 hover:bg-gray-400'
                 }`}
+                title={t('admin.home.rewindLastSwipe')}
               >
-                <RotateCcw size={20} />
+                <RotateCcw size={24} />
               </Button>
             )}
             
@@ -935,30 +938,39 @@ export default function Home() {
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col items-center justify-center max-w-sm mx-auto text-center px-4"
+                  className="flex flex-col items-center justify-center h-full max-w-md mx-auto text-center px-4"
                 >
-                  <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-amber-100 rounded-full flex items-center justify-center mb-4">
-                    <span className="text-4xl">🌍</span>
+                  <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-amber-100 rounded-full flex items-center justify-center mb-6">
+                    <span className="text-5xl">🌍</span>
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-2">You've seen everyone!</h2>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Explore globally to find more matches.
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">You've seen everyone nearby!</h2>
+                  <p className="text-gray-600 mb-4">
+                    Great news — there are thousands more people waiting to meet you globally.
                   </p>
-                  <Button 
-                    onClick={() => setDiscoveryMode('global')}
-                    className="w-full h-12 bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700"
-                  >
-                    <Globe size={18} className="mr-2" />
-                    Explore Globally
-                  </Button>
+                  <div className="space-y-3 w-full">
+                    <Button 
+                      onClick={() => setDiscoveryMode('global')}
+                      className="w-full h-14 text-lg bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 shadow-lg"
+                    >
+                      <Globe size={20} className="mr-2" />
+                      Explore Globally
+                    </Button>
+                    <Button 
+                      onClick={() => setFilters({})} 
+                      variant="outline" 
+                      className="w-full h-12 text-base"
+                    >
+                      Reset Filters
+                    </Button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         ) : (
           /* Grid Mode */
-          <div className="flex-1 overflow-y-auto px-4 py-2">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="flex-1 overflow-y-auto py-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {profiles.map(profile => (
                 <ProfileMini
                   key={profile.id}
@@ -969,7 +981,7 @@ export default function Home() {
               ))}
               {profiles.length === 0 && (
                 <div className="col-span-full text-center py-16">
-                  <p className="text-gray-500">No profiles found.</p>
+                  <p className="text-gray-500">No profiles found. Try adjusting your filters.</p>
                 </div>
               )}
             </div>
