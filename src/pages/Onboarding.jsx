@@ -879,25 +879,43 @@ export default function Onboarding() {
       </div>
     </motion.div>,
 
-    // Step 6: Interests
+    // Step 6: Interests - Final step with celebration
     <motion.div
       key="interests"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.interests.title')}</h2>
-      <p className="text-gray-500 mb-8">{t('onboarding.interests.subtitle')} ({formData.interests.length}/5)</p>
+      <div className="text-center mb-4">
+        <span className="text-4xl">🎉</span>
+        <h2 className="text-2xl font-bold text-gray-900 mt-2">Final Step!</h2>
+        <p className="text-gray-500">{t('onboarding.interests.subtitle')}</p>
+      </div>
+      
+      {/* Progress indicator */}
+      <div className="flex items-center gap-2 mb-6">
+        {[1, 2, 3].map((num) => (
+          <div 
+            key={num}
+            className={`flex-1 h-2 rounded-full transition-all ${
+              formData.interests.length >= num ? 'bg-purple-600' : 'bg-gray-200'
+            }`}
+          />
+        ))}
+        <span className={`text-sm font-bold ${formData.interests.length >= 3 ? 'text-green-600' : 'text-gray-500'}`}>
+          {formData.interests.length}/3
+        </span>
+      </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 mb-6">
         {INTERESTS.map(interest => (
           <Badge
             key={interest}
             variant={formData.interests.includes(interest) ? "default" : "outline"}
             className={`cursor-pointer text-base py-2 px-4 transition ${
               formData.interests.includes(interest)
-                ? 'bg-purple-600 text-white'
-                : 'hover:bg-purple-50'
+                ? 'bg-purple-600 text-white scale-105'
+                : 'hover:bg-purple-50 hover:scale-105'
             }`}
             onClick={() => toggleInterest(interest)}
           >
@@ -905,6 +923,18 @@ export default function Onboarding() {
           </Badge>
         ))}
       </div>
+      
+      {formData.interests.length >= 3 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="p-4 bg-gradient-to-r from-purple-50 to-amber-50 rounded-xl border border-purple-200 text-center"
+        >
+          <p className="text-purple-800 font-medium">
+            🎊 You're all set! Click below to start meeting people
+          </p>
+        </motion.div>
+      )}
     </motion.div>
   ];
 
