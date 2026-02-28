@@ -309,8 +309,8 @@ function LayoutContent({ children, currentPageName }) {
 
       {/* Bottom Navigation - Native Tab Bar */}
       {showNav && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 z-50" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}>
-          <div className="flex items-center justify-around py-2 max-w-lg mx-auto">
+        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          <div className="flex items-center justify-around py-1 max-w-lg mx-auto">
             {navItems.map(item => {
               const isActive = currentPageName === item.name;
               const Icon = item.icon;
@@ -319,29 +319,21 @@ function LayoutContent({ children, currentPageName }) {
                 <Link
                   key={item.name}
                   to={createPageUrl(item.name)}
-                  className={`flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all active:scale-95 touch-manipulation ${
+                  className={`flex flex-col items-center gap-0 px-3 py-1 rounded-lg transition-all active:scale-95 touch-manipulation ${
                     isActive 
                       ? 'text-purple-600' 
                       : 'text-gray-400 hover:text-gray-600'
                   }`}
                   onClick={() => {
-                    // Haptic feedback on tap
                     if (navigator.vibrate) navigator.vibrate(10);
                   }}
                 >
-                  <div className="relative">
-                    <Icon 
-                      size={22} 
-                      className={isActive ? 'fill-purple-100' : ''}
-                      strokeWidth={isActive ? 2.5 : 1.8}
-                    />
-                    {item.badge > 0 && (
-                      <Badge className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center bg-red-500 text-white text-[10px] animate-pulse">
-                        {item.badge}
-                      </Badge>
-                    )}
-                  </div>
-                  <span className={`text-[10px] ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                  <Icon 
+                    size={20} 
+                    className={isActive ? 'fill-purple-100' : ''}
+                    strokeWidth={isActive ? 2.5 : 1.8}
+                  />
+                  <span className={`text-[9px] ${isActive ? 'font-semibold' : 'font-medium'}`}>
                     {item.label}
                   </span>
                 </Link>
