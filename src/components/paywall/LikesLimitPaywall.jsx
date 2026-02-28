@@ -121,28 +121,42 @@ export default function LikesLimitPaywall({ onClose }) {
               </motion.div>
             </AnimatePresence>
 
-            {/* What you get */}
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 mb-4">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <Sparkles size={20} className="text-amber-500" />
-                <span className="font-bold text-lg text-gray-900">Unlock Premium</span>
+            {/* Premium vs Elite comparison */}
+            <div className="space-y-3 mb-4">
+              {/* Premium option */}
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Heart size={18} className="text-purple-600" />
+                    <span className="font-bold text-gray-900">Premium</span>
+                  </div>
+                  <span className="text-sm text-gray-500">$14.99/mo</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1 text-xs text-left text-gray-600">
+                  <span>• 50 likes/day</span>
+                  <span>• 100 messages/day</span>
+                  <span>• See who likes you</span>
+                  <span>• 5 rewinds/day</span>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-sm text-left">
-                <div className="flex items-center gap-2">
-                  <Infinity size={14} className="text-purple-600" />
-                  <span>Unlimited likes</span>
+
+              {/* Elite option - recommended */}
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 border-2 border-amber-400 relative">
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  BEST VALUE
                 </div>
-                <div className="flex items-center gap-2">
-                  <Heart size={14} className="text-pink-600" />
-                  <span>See who likes you</span>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={18} className="text-amber-600" />
+                    <span className="font-bold text-gray-900">Elite</span>
+                  </div>
+                  <span className="text-sm text-gray-500">$24.99/mo</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Users size={14} className="text-blue-600" />
-                  <span>Priority matches</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Crown size={14} className="text-amber-600" />
-                  <span>Advanced filters</span>
+                <div className="grid grid-cols-2 gap-1 text-xs text-left text-gray-600">
+                  <span>• <strong>Unlimited</strong> likes</span>
+                  <span>• <strong>Unlimited</strong> messages</span>
+                  <span>• <strong>Unlimited</strong> rewinds</span>
+                  <span>• Priority ranking</span>
                 </div>
               </div>
             </div>
