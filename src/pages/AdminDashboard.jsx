@@ -1,874 +1,456 @@
-import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createPageUrl } from '@/utils';
-import { Link } from 'react-router-dom';
-import { Send, Rocket, Loader2, RefreshCw } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { 
+  Users, MessageSquare, Heart, Shield, TrendingUp, AlertTriangle,
+  Settings, BarChart3, UserX, Eye, Clock, DollarSign, Activity,
+  Flag, ChevronRight, RefreshCw, Search, Bell, Menu, LogOut
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import AdminSidebar from '@/components/admin/AdminSidebar';
-import AdminOverview from '@/components/admin/AdminOverview';
-import UserManagement from '@/components/admin/UserManagement';
-import ModerationCenter from '@/components/admin/ModerationCenter';
-import SafetyMonitorDashboard from '@/components/admin/SafetyMonitorDashboard';
-import RevenueAnalytics from '@/components/admin/RevenueAnalytics';
-import AuditLogs from '@/components/admin/AuditLogs';
-import VerificationQueue from '@/components/admin/VerificationQueue';
-import ModerationRules from '@/components/admin/ModerationRules';
-import EventManagement from '@/components/admin/EventManagement';
-import SupportTickets from '@/components/admin/SupportTickets';
-import FakeProfileScanner from '@/components/admin/FakeProfileScanner';
-import BroadcastMessages from '@/components/admin/BroadcastMessages';
-import FeatureFlags from '@/components/admin/FeatureFlags';
-import PricingManagement from '@/components/admin/PricingManagement';
-
-import SuccessStoryModeration from '@/components/admin/SuccessStoryModeration';
-import ContestManagement from '@/components/admin/ContestManagement';
-import StoryManagement from '@/components/admin/StoryManagement';
-import CommunityManagement from '@/components/admin/CommunityManagement';
-import SubscriptionManagement from '@/components/admin/SubscriptionManagement';
-import ReceiptsManagement from '@/components/admin/ReceiptsManagement';
-import ChurnAnalysis from '@/components/admin/ChurnAnalysis';
-import AIInsightsDashboard from '@/components/admin/AIInsightsDashboard';
-import BackendOrchestrator from '@/components/admin/BackendOrchestrator';
-import ABTestManager from '@/components/admin/ABTestManager';
-import EmailCampaignManager from '@/components/admin/EmailCampaignManager';
-import PhotoModeration from '@/components/admin/PhotoModeration';
-import SystemSettings from '@/components/admin/SystemSettings';
-import VendorManagement from '@/components/admin/VendorManagement';
-import WaitlistManagement from '@/components/admin/WaitlistManagement';
-import AuthTest from '@/components/auth/AuthTest';
-import RateLimitMonitor from '@/components/admin/RateLimitMonitor';
-import DisputeManagement from '@/components/admin/DisputeManagement';
-import ErrorLogsDashboard from '@/components/admin/ErrorLogsDashboard';
-import QuickActions from '@/components/admin/QuickActions';
-import FounderProgramManagement from '@/components/admin/FounderProgramManagement';
-import AmbassadorManagement from '@/components/admin/AmbassadorManagement';
-import PageVisitsAnalytics from '@/components/admin/PageVisitsAnalytics';
-import AuditTrailDashboard from '@/components/admin/AuditTrailDashboard';
-import AppStoreComplianceAdmin from '@/components/admin/AppStoreComplianceAdmin';
-import { FileText } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
+  DropdownMenuTrigger, DropdownMenuSeparator 
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 export default function AdminDashboard() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [currentView, setCurrentView] = useState('overview');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState({ status: 'all', tier: 'all', country: 'all' });
-  const PAGE_SIZE = 20;
-  const [actionDialog, setActionDialog] = useState({ open: false, type: null, user: null });
-  const [messageDialog, setMessageDialog] = useState({ open: false, type: 'single', profile: null });
-  const [messageText, setMessageText] = useState('');
-  const [reportGenerating, setReportGenerating] = useState(false);
-  const [processingAction, setProcessingAction] = useState({ id: null, type: null });
-  const [waitlistDialog, setWaitlistDialog] = useState(false);
-  const [waitlistEmail, setWaitlistEmail] = useState({ 
-    subject: "You're invited to Afrinnect! 🌍", 
-    body: "Hi {{name}},\n\nThe wait is over! Afrinnect is now live and ready for you.\n\nJoin us today to connect with African singles worldwide.\n\nClick here to get started: https://afrinnect.com\n\nSee you inside,\nThe Afrinnect Team" 
-  });
-  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(null);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [alerts, setAlerts] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
-    const checkAdmin = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-        // Allow super admin email or users with admin role
-        const isSuperAdmin = user?.email === 'pivotngoyb@gmail.com' || user?.role === 'admin';
-        setIsAdmin(isSuperAdmin);
-        if (!isSuperAdmin) {
-          window.location.href = createPageUrl('Landing');
-        }
-      } catch (e) {
-        window.location.href = createPageUrl('Landing');
-      }
-    };
-    checkAdmin();
+    checkAuth();
   }, []);
 
-  // Fetch Dashboard Stats (Server-Side)
-  const { data: statsData = null, isLoading: isLoadingStats } = useQuery({
-    queryKey: ['admin-stats'],
-    queryFn: async () => {
-      const response = await base44.functions.invoke('getAdminStats', {});
-      return response.data;
-    },
-    enabled: isAdmin
-  });
-
-  // Conditional Data Fetching based on Active View
-  
-  // Users View
-  const { data: profiles = [] } = useQuery({
-    queryKey: ['admin-profiles', currentView, page, searchTerm, filters],
-    queryFn: async () => {
-      if (currentView === 'users') {
-        const query = {};
-        
-        // Status Filter
-        if (filters.status === 'active') query.is_active = true;
-        if (filters.status === 'banned') query.is_active = false; // Note: is_active=false usually means banned/suspended/inactive
-
-        // Tier Filter
-        if (filters.tier === 'premium') query.is_premium = true;
-        if (filters.tier === 'free') query.is_premium = false;
-
-        // Country Filter
-        if (filters.country !== 'all') query.current_country = filters.country;
-
-        // Search
-        if (searchTerm) {
-          query.$or = [
-             { display_name: { $regex: searchTerm, $options: 'i' } },
-             { user_id: searchTerm }
-          ];
-        }
-
-        const skip = (page - 1) * PAGE_SIZE;
-        return base44.entities.UserProfile.filter(query, '-created_date', PAGE_SIZE, skip);
+  const checkAuth = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      if (!currentUser || currentUser.role !== 'admin') {
+        navigate(createPageUrl('Home'));
+        return;
       }
-      
-      // Fallback for other views that need "all" (capped at 500 for now)
-      return base44.entities.UserProfile.list('-created_date', 500);
-    },
-    enabled: isAdmin && (currentView === 'users' || currentView === 'revenue' || currentView === 'verification' || currentView === 'messaging'),
-    keepPreviousData: true
-  });
-
-  const { data: users = [] } = useQuery({
-    queryKey: ['admin-users', profiles],
-    queryFn: async () => {
-      if (currentView === 'users') {
-        // Filter to only valid MongoDB ObjectIds (24 hex chars)
-        const validObjectIdRegex = /^[a-f\d]{24}$/i;
-        const userIds = profiles
-          .map(p => p.user_id)
-          .filter(id => id && validObjectIdRegex.test(id));
-        if (userIds.length === 0) return [];
-        // Fetch only the users for the current page of profiles
-        return base44.entities.User.filter({ id: { $in: userIds } });
-      }
-      return base44.entities.User.list('-created_date', 500);
-    },
-    enabled: isAdmin && (currentView === 'users' || currentView === 'verification') // verification might need user email
-  });
-
-  // Moderation View
-  const { data: reports = [] } = useQuery({
-    queryKey: ['admin-reports'],
-    queryFn: () => base44.entities.Report.filter({ status: { $in: ['pending', 'under_review'] } }, '-created_date', 100),
-    enabled: isAdmin && currentView === 'moderation'
-  });
-
-  // Revenue View
-  const { data: subscriptions = [] } = useQuery({
-    queryKey: ['admin-subscriptions'],
-    queryFn: () => base44.entities.Subscription.filter({ status: 'active' }, '-created_date', 200),
-    enabled: isAdmin && currentView === 'revenue'
-  });
-
-  // Safety Monitor
-  const { data: safetyChecks = [] } = useQuery({
-    queryKey: ['admin-safety-checks'],
-    queryFn: () => base44.entities.SafetyCheck.filter({ status: { $in: ['active', 'alert_triggered'] } }, '-created_date', 50),
-    enabled: isAdmin && currentView === 'safety_monitor'
-  });
-
-  // Deleted Accounts (only needed if we add a view for it, or audit)
-  // const { data: deletedAccounts = [] } = useQuery({ ... });
-
-  // Events View
-  const { data: events = [] } = useQuery({
-    queryKey: ['admin-events'],
-    queryFn: () => base44.entities.Event.list('-created_date', 100),
-    enabled: isAdmin && currentView === 'events'
-  });
-
-  // Audit Logs
-  const { data: auditLogs = [] } = useQuery({
-    queryKey: ['admin-audit-logs'],
-    queryFn: () => base44.entities.AdminAuditLog.list('-created_date', 200),
-    enabled: isAdmin && currentView === 'audit'
-  });
-
-  // Rate Limits
-  const { data: rateLimitViolations = [] } = useQuery({
-    queryKey: ['admin-rate-limits'],
-    queryFn: async () => {
-      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      return base44.entities.AdminAuditLog.filter({
-        action_type: 'rate_limit_exceeded',
-        created_date: { $gte: yesterday }
-      });
-    },
-    enabled: isAdmin && currentView === 'security_monitor',
-    refetchInterval: 60000
-  });
-
-  // Disputes
-  const { data: disputes = [] } = useQuery({
-    queryKey: ['admin-disputes'],
-    queryFn: () => base44.entities.Dispute.list('-created_date', 100),
-    enabled: isAdmin && currentView === 'disputes'
-  });
-
-  // Verification
-  const { data: verificationRequests = [] } = useQuery({
-    queryKey: ['admin-verifications'],
-    queryFn: () => base44.entities.VerificationRequest.filter({ status: 'pending' }, '-created_date', 100),
-    enabled: isAdmin && currentView === 'verification'
-  });
-
-  // Analytics/Rules
-  const { data: moderationRules = [] } = useQuery({
-    queryKey: ['admin-moderation-rules'],
-    queryFn: () => base44.entities.ModerationRule.list('-created_date', 200),
-    enabled: isAdmin && currentView === 'analytics'
-  });
-
-  // Support
-  const { data: supportTickets = [] } = useQuery({
-    queryKey: ['admin-support-tickets'],
-    queryFn: () => base44.entities.SupportTicket.filter({ status: { $in: ['open', 'in_progress'] } }, '-created_date', 200),
-    enabled: isAdmin && currentView === 'support'
-  });
-
-  // Messaging
-  const { data: broadcastMessages = [] } = useQuery({
-    queryKey: ['admin-broadcasts'],
-    queryFn: () => base44.entities.BroadcastMessage.list('-created_date', 100),
-    enabled: isAdmin && currentView === 'messaging'
-  });
-
-  // Feature Flags
-  const { data: featureFlags = [] } = useQuery({
-    queryKey: ['admin-feature-flags'],
-    queryFn: () => base44.entities.FeatureFlag.list('-created_date', 100),
-    enabled: isAdmin && currentView === 'analytics'
-  });
-
-  // Pricing
-  const { data: pricingPlans = [] } = useQuery({
-    queryKey: ['admin-pricing-plans'],
-    queryFn: () => base44.entities.PricingPlan.list('-created_date', 50),
-    enabled: isAdmin && currentView === 'compliance'
-  });
-
-  // Delete user mutation (using backend function for complete cleanup)
-  const deleteUserMutation = useMutation({
-    mutationFn: async (userId) => {
-      // Use the backend function to ensure the User auth record is strictly deleted
-      // along with all related data (profiles, likes, matches, etc.)
-      const response = await base44.functions.invoke('adminDeleteUser', { userId });
-      
-      if (response.status !== 200) {
-        throw new Error(response.data?.error || 'Failed to delete user');
-      }
-      
-      return userId;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['admin-users']);
-      queryClient.invalidateQueries(['admin-profiles']);
-      queryClient.invalidateQueries(['admin-audit-logs']);
-      queryClient.invalidateQueries(['admin-deleted']);
-      setActionDialog({ open: false, type: null, user: null });
-      alert('User successfully deleted and can now sign up again.');
-    },
-    onError: (error) => {
-      console.error('Delete failed:', error);
-      alert(`Failed to delete user: ${error.message}`);
+      setUser(currentUser);
+      await loadDashboardData();
+    } catch (error) {
+      navigate(createPageUrl('Home'));
     }
-  });
-
-  // Ban/suspend user mutation
-  const banUserMutation = useMutation({
-    mutationFn: async (userId) => {
-      const userProfiles = await base44.entities.UserProfile.filter({ user_id: userId });
-      for (const profile of userProfiles) {
-        await base44.entities.UserProfile.update(profile.id, { 
-          is_active: false,
-          is_banned: true,
-          ban_reason: 'Banned by admin'
-        });
-      }
-      
-      // Log action
-      await base44.entities.AdminAuditLog.create({
-        admin_user_id: currentUser.id,
-        admin_email: currentUser.email,
-        action_type: 'user_ban',
-        target_user_id: userId,
-        details: { profiles: userProfiles.map(p => p.id) }
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['admin-profiles']);
-      queryClient.invalidateQueries(['admin-audit-logs']);
-      setActionDialog({ open: false, type: null, user: null });
-    }
-  });
-
-  // Resolve report mutation
-  const resolveReportMutation = useMutation({
-    mutationFn: async ({ reportId, action, notes }) => {
-      const response = await base44.functions.invoke('resolveReport', { reportId, action, notes });
-      if (response.data?.error) throw new Error(response.data.error);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['admin-reports']);
-      alert('Report resolved and user notified.');
-    },
-    onError: (error) => {
-      alert(`Failed to resolve report: ${error.message}`);
-    }
-  });
-
-  // Cancel subscription mutation
-  const cancelSubscriptionMutation = useMutation({
-    mutationFn: async (subId) => {
-      await base44.entities.Subscription.update(subId, {
-        status: 'cancelled',
-        auto_renew: false
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['admin-subscriptions']);
-    }
-  });
-
-  // Grant/revoke admin access mutation
-  const toggleAdminMutation = useMutation({
-    mutationFn: async ({ userId, grantAdmin }) => {
-      setProcessingAction({ id: userId, type: 'admin' });
-      await base44.entities.User.update(userId, {
-        role: grantAdmin ? 'admin' : 'user'
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['admin-users']);
-    },
-    onSettled: () => {
-      setProcessingAction({ id: null, type: null });
-    }
-  });
-
-  // Change user tier mutation
-  const changeTierMutation = useMutation({
-    mutationFn: async ({ profileId, tier }) => {
-      setProcessingAction({ id: profileId, type: 'tier' });
-      // Update profile
-      await base44.entities.UserProfile.update(profileId, {
-        subscription_tier: tier,
-        is_premium: tier !== 'free',
-        premium_until: tier !== 'free' ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() : null
-      });
-
-      // Create or update subscription
-      const existingSubs = await base44.entities.Subscription.filter({ user_profile_id: profileId, status: 'active' });
-      
-      if (tier === 'free') {
-        // Cancel existing subscriptions
-        for (const sub of existingSubs) {
-          await base44.entities.Subscription.update(sub.id, { status: 'cancelled' });
-        }
-      } else {
-        // Create new subscription if none exists
-        if (existingSubs.length === 0) {
-          await base44.entities.Subscription.create({
-            user_profile_id: profileId,
-            plan_type: `${tier}_yearly`,
-            status: 'active',
-            start_date: new Date().toISOString(),
-            end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-            amount_paid: 0,
-            currency: 'USD',
-            payment_provider: 'manual',
-            boosts_remaining: tier === 'elite' || tier === 'vip' ? 999 : 5,
-            super_likes_remaining: 999,
-            auto_renew: false
-          });
-        } else {
-          // Update existing
-          await base44.entities.Subscription.update(existingSubs[0].id, {
-            plan_type: `${tier}_yearly`,
-            status: 'active'
-          });
-        }
-      }
-
-      // Log action
-      await base44.entities.AdminAuditLog.create({
-        admin_user_id: currentUser.id,
-        admin_email: currentUser.email,
-        action_type: 'tier_change',
-        target_user_id: profileId,
-        details: { new_tier: tier }
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['admin-profiles']);
-      queryClient.invalidateQueries(['admin-subscriptions']);
-      queryClient.invalidateQueries(['admin-audit-logs']);
-    },
-    onSettled: () => {
-      setProcessingAction({ id: null, type: null });
-    }
-  });
-
-  // Send waitlist invites mutation
-  const sendWaitlistInvitesMutation = useMutation({
-    mutationFn: async (data) => {
-      const response = await base44.functions.invoke('sendWaitlistInvites', data);
-      if (response.data?.error) throw new Error(response.data.error);
-      return response.data;
-    },
-    onSuccess: (data) => {
-      setWaitlistDialog(false);
-      alert(`Emails sent successfully to ${data.sent} people!`);
-    },
-    onError: (error) => {
-      alert(`Failed to send emails: ${error.message}`);
-    }
-  });
-
-  // Send message mutation
-  const sendMessageMutation = useMutation({
-    mutationFn: async ({ profileIds, message }) => {
-      const notifications = profileIds.map(profileId => ({
-        user_profile_id: profileId,
-        type: 'admin_message',
-        title: 'Message from Admin',
-        message: message,
-        is_admin: true
-      }));
-      
-      for (const notif of notifications) {
-        await base44.entities.Notification.create(notif);
-      }
-    },
-    onSuccess: () => {
-      setMessageDialog({ open: false, type: 'single', profile: null });
-      setMessageText('');
-      alert('Message sent successfully!');
-    }
-  });
-
-  // Use server-side calculated stats with fallback values
-  const defaultStats = {
-    totalUsers: 0, totalProfiles: 0, activeUsers: 0, bannedUsers: 0, verifiedUsers: 0,
-    freeUsers: 0, premiumUsers: 0, eliteUsers: 0, vipUsers: 0, totalPaidUsers: 0, conversionRate: 0,
-    totalRevenue: 0, revenueThisMonth: 0, activeSubscriptions: 0,
-    totalMatches: 0, matchesThisMonth: 0, matchesThisWeek: 0, matchRate: 0, usersWithMatches: 0,
-    newUsersThisWeek: 0, newUsersThisMonth: 0, growthRate: 0,
-    totalReports: 0, pendingReports: 0, resolvedReports: 0, activeSafetyChecks: 0,
-    totalTickets: 0, openTickets: 0, urgentTickets: 0,
-    totalEvents: 0, upcomingEvents: 0,
-    auditLogs: 0, featureFlags: 0, moderationRules: 0
   };
 
-  const stats = statsData || defaultStats;
+  const loadDashboardData = async () => {
+    setLoading(true);
+    try {
+      const [profiles, matches, messages, reports, likes, subscriptions] = await Promise.all([
+        base44.entities.UserProfile.list('-created_date', 1000),
+        base44.entities.Match.filter({ is_match: true }, '-created_date', 1000),
+        base44.entities.Message.list('-created_date', 500),
+        base44.entities.Report.filter({ status: 'pending' }, '-created_date', 50),
+        base44.entities.Like.list('-created_date', 1000),
+        base44.entities.Subscription.filter({ status: 'active' }, '-created_date', 200)
+      ]);
 
-  const filteredProfiles = profiles.filter(p => 
-    p.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.user_id?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      // Calculate stats
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  if (!isAdmin) {
+      const activeProfiles = profiles.filter(p => p.is_active && !p.is_banned);
+      const newUsersToday = profiles.filter(p => new Date(p.created_date) >= today);
+      const newUsersWeek = profiles.filter(p => new Date(p.created_date) >= weekAgo);
+      const premiumUsers = profiles.filter(p => p.is_premium);
+      const bannedUsers = profiles.filter(p => p.is_banned);
+      const suspendedUsers = profiles.filter(p => p.is_suspended);
+
+      const matchesToday = matches.filter(m => new Date(m.created_date) >= today);
+      const messagesToday = messages.filter(m => new Date(m.created_date) >= today);
+
+      // DAU calculation (users active in last 24 hours)
+      const dau = profiles.filter(p => {
+        if (!p.last_active) return false;
+        return new Date(p.last_active) >= new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      }).length;
+
+      // MAU calculation (users active in last 30 days)
+      const mau = profiles.filter(p => {
+        if (!p.last_active) return false;
+        return new Date(p.last_active) >= monthAgo;
+      }).length;
+
+      // Revenue (estimated from active subscriptions)
+      const revenue = subscriptions.reduce((sum, sub) => sum + (sub.amount_paid || 0), 0);
+
+      setStats({
+        totalUsers: profiles.length,
+        activeUsers: activeProfiles.length,
+        newUsersToday: newUsersToday.length,
+        newUsersWeek: newUsersWeek.length,
+        premiumUsers: premiumUsers.length,
+        conversionRate: profiles.length > 0 ? ((premiumUsers.length / profiles.length) * 100).toFixed(1) : 0,
+        bannedUsers: bannedUsers.length,
+        suspendedUsers: suspendedUsers.length,
+        totalMatches: matches.length,
+        matchesToday: matchesToday.length,
+        totalMessages: messages.length,
+        messagesToday: messagesToday.length,
+        totalLikes: likes.length,
+        pendingReports: reports.length,
+        dau,
+        mau,
+        dauMauRatio: mau > 0 ? ((dau / mau) * 100).toFixed(1) : 0,
+        revenue,
+        activeSubscriptions: subscriptions.length
+      });
+
+      // Set alerts
+      const newAlerts = [];
+      if (reports.length > 10) {
+        newAlerts.push({ type: 'danger', message: `${reports.length} pending reports need attention`, icon: AlertTriangle });
+      }
+      if (bannedUsers.length > 50) {
+        newAlerts.push({ type: 'warning', message: `High ban rate: ${bannedUsers.length} users banned`, icon: UserX });
+      }
+      if (parseFloat(stats?.dauMauRatio || 0) < 20) {
+        newAlerts.push({ type: 'info', message: 'DAU/MAU ratio below target (20%)', icon: TrendingUp });
+      }
+      setAlerts(newAlerts);
+
+      // Recent activity
+      const activities = [
+        ...newUsersToday.slice(0, 5).map(u => ({ type: 'signup', user: u.display_name, time: u.created_date })),
+        ...matchesToday.slice(0, 5).map(m => ({ type: 'match', time: m.matched_at || m.created_date })),
+        ...reports.slice(0, 5).map(r => ({ type: 'report', reportType: r.report_type, time: r.created_date }))
+      ].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 10);
+
+      setRecentActivity(activities);
+    } catch (error) {
+      console.error('Error loading dashboard:', error);
+    }
+    setLoading(false);
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadDashboardData();
+    setRefreshing(false);
+  };
+
+  const navItems = [
+    { label: 'Overview', icon: BarChart3, page: 'AdminDashboard', active: true },
+    { label: 'Users', icon: Users, page: 'AdminUsers' },
+    { label: 'Moderation', icon: Shield, page: 'AdminModeration', badge: stats?.pendingReports },
+    { label: 'Analytics', icon: TrendingUp, page: 'AdminAnalytics' },
+    { label: 'Subscriptions', icon: DollarSign, page: 'AdminSubscriptions' },
+    { label: 'Content', icon: MessageSquare, page: 'AdminContent' },
+    { label: 'Settings', icon: Settings, page: 'AdminSettings' },
+  ];
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent" />
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 text-orange-500 animate-spin mx-auto mb-4" />
+          <p className="text-white">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
 
-  const renderView = () => {
-    switch (currentView) {
-      case 'overview':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-                <p className="text-sm text-gray-500">Welcome back, {currentUser?.email}</p>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setCurrentView('implementation')}
-                  className="gap-2"
-                >
-                  Implementation Status
-                </Button>
-                <Link to={createPageUrl('AdminLaunchChecklist')}>
-                  <Button variant="default" className="gap-2 bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 text-white border-0 shadow-lg">
-                    <Rocket size={16} /> Launch Checklist
-                  </Button>
-                </Link>
-              </div>
+  return (
+    <div className="min-h-screen bg-slate-950 flex">
+      {/* Sidebar */}
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-slate-900 border-r border-slate-800 transition-all duration-300 flex flex-col`}>
+        {/* Logo */}
+        <div className="p-4 border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-pink-600 flex items-center justify-center">
+              <Shield className="w-6 h-6 text-white" />
             </div>
-            <QuickActions />
-            <AdminOverview stats={stats} isLoading={isLoadingStats} />
+            {sidebarOpen && (
+              <div>
+                <h1 className="font-bold text-white">Afrinnect</h1>
+                <p className="text-xs text-slate-400">Admin Console</p>
+              </div>
+            )}
           </div>
-        );
-      case 'users':
-        return (
-          <UserManagement
-            profiles={profiles}
-            users={users}
-            searchTerm={searchTerm}
-            onSearchChange={(term) => { setSearchTerm(term); setPage(1); }}
-            stats={stats}
-            page={page}
-            setPage={setPage}
-            filters={filters}
-            setFilters={(newFilters) => { setFilters(newFilters); setPage(1); }}
-            hasMore={profiles.length === PAGE_SIZE}
-            onViewUser={(id) => window.open(createPageUrl(`Profile?id=${id}`), '_blank')}
-            onBanUser={(user) => setActionDialog({ open: true, type: 'ban', user })}
-            onDeleteUser={(user) => setActionDialog({ open: true, type: 'delete', user })}
-            onMessageUser={(profile) => setMessageDialog({ open: true, type: 'single', profile })}
-            onToggleAdmin={(userId, grantAdmin) => toggleAdminMutation.mutate({ userId, grantAdmin })}
-            onChangeTier={(profileId, tier) => changeTierMutation.mutate({ profileId, tier })}
-            processingAction={processingAction}
-          />
-        );
-      case 'moderation':
-        return <ModerationCenter reports={reports} onResolveReport={resolveReportMutation.mutate} />;
-      case 'fake-profiles':
-        return <FakeProfileScanner />;
-      case 'revenue':
-        return (
-          <div className="space-y-6">
-            <RevenueAnalytics subscriptions={subscriptions} profiles={profiles} />
-            <ChurnAnalysis />
-            <SubscriptionManagement />
-            <ReceiptsManagement />
-          </div>
-        );
-      case 'verification':
-        return <VerificationQueue requests={verificationRequests} profiles={profiles} currentUser={currentUser} />;
-      case 'analytics':
-        return (
-          <div className="space-y-6">
-            <ABTestManager />
-            <ModerationRules rules={moderationRules} currentUser={currentUser} />
-            <FeatureFlags flags={featureFlags} />
-          </div>
-        );
-      case 'ai-insights':
-        return <AIInsightsDashboard />;
-      case 'automation':
-        return <BackendOrchestrator />;
-      case 'events':
-        return <EventManagement events={events} />;
-      case 'vendors':
-        return <VendorManagement />;
-      case 'waitlist':
-        return <WaitlistManagement onSendEmail={() => setWaitlistDialog(true)} />;
-      case 'founder_program':
-        return <FounderProgramManagement />;
-      case 'ambassadors':
-        return <AmbassadorManagement />;
-      case 'messaging':
-        return (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Send className="h-5 w-5 text-purple-600" />
-                  Waitlist Invitations
-                </CardTitle>
-                <CardDescription>
-                  Send launch emails to everyone on the waitlist who hasn't been invited yet.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <button 
-                  onClick={() => setWaitlistDialog(true)}
-                  className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-                >
-                  Draft Launch Email
-                </button>
-              </CardContent>
-            </Card>
-            <BroadcastMessages broadcasts={broadcastMessages} profiles={profiles} currentUser={currentUser} />
-            <EmailCampaignManager />
-          </div>
-        );
-      case 'support':
-        return <SupportTickets tickets={supportTickets} currentUser={currentUser} />;
-      case 'compliance':
-        return (
-          <div className="space-y-6">
-            <StoryManagement />
-            <PhotoModeration />
-            <CommunityManagement />
-            <PricingManagement plans={pricingPlans} />
+        </div>
 
-            <ContestManagement />
-            <SuccessStoryModeration />
-          </div>
-        );
-      case 'safety_monitor':
-        return <SafetyMonitorDashboard />;
-      case 'settings':
-        return <SystemSettings />;
-      case 'audit':
-        return <AuditTrailDashboard />;
-      case 'implementation':
-        return <ImplementationStatus />;
-      case 'auth_test':
-        return <AuthTest />;
-      case 'security_monitor':
-        return <RateLimitMonitor violations={rateLimitViolations} currentUser={currentUser} />;
-      case 'disputes':
-        return <DisputeManagement disputes={disputes} currentUser={currentUser} />;
-      case 'error_logs':
-        return <ErrorLogsDashboard />;
-      case 'page_visits':
-        return <PageVisitsAnalytics />;
-      case 'appstore':
-        return <AppStoreComplianceAdmin />;
-      case 'implementation':
-        return <ImplementationStatus />;
-      case 'reports':
-        return (
-          <div className="max-w-2xl mx-auto space-y-6">
-            <Card className="border-purple-200 bg-gradient-to-br from-white to-purple-50/50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-purple-800">
-                  <FileText className="h-6 w-6" />
-                  AI Investor Report Bot
-                </CardTitle>
-                <CardDescription>
-                  Generate a professional, printable PDF-style report for investors and stakeholders. 
-                  Our AI will analyze your latest metrics and write an executive summary for you.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="bg-white p-4 rounded-lg border border-purple-100 shadow-sm">
-                  <h4 className="font-semibold text-sm mb-2 text-gray-700">What's included:</h4>
-                  <ul className="text-sm text-gray-600 space-y-2">
-                    <li className="flex items-center gap-2">✨ AI-written Executive Summary</li>
-                    <li className="flex items-center gap-2">📈 Growth & Revenue Charts</li>
-                    <li className="flex items-center gap-2">💰 Key Financial Metrics (MRR, ARPU)</li>
-                    <li className="flex items-center gap-2">🎯 Strategic Recommendations</li>
-                  </ul>
-                </div>
-                
-                <Button 
-                  className="w-full bg-purple-600 hover:bg-purple-700 h-12 text-lg shadow-md transition-all hover:scale-[1.02]"
-                  onClick={() => {
-                    setReportGenerating(true);
-                    // Simulate "Thinking" delay for effect, then redirect
-                    setTimeout(() => {
-                      window.open(createPageUrl('InvestorReport'), '_blank');
-                      setReportGenerating(false);
-                    }, 1500);
-                  }}
-                  disabled={reportGenerating}
+        {/* Navigation */}
+        <nav className="flex-1 p-4">
+          <ul className="space-y-2">
+            {navItems.map((item) => (
+              <li key={item.page}>
+                <button
+                  onClick={() => navigate(createPageUrl(item.page))}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                    item.active 
+                      ? 'bg-orange-500/20 text-orange-400' 
+                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                  }`}
                 >
-                  {reportGenerating ? (
-                    <>Generating Report...</>
-                  ) : (
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  {sidebarOpen && (
                     <>
-                      <Rocket className="mr-2 h-5 w-5" />
-                      Generate Investor Report
+                      <span className="flex-1 text-left">{item.label}</span>
+                      {item.badge > 0 && (
+                        <Badge className="bg-red-500 text-white">{item.badge}</Badge>
+                      )}
                     </>
                   )}
-                </Button>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* User */}
+        <div className="p-4 border-t border-slate-800">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-pink-600 flex items-center justify-center text-white font-medium">
+                  {user?.full_name?.[0] || 'A'}
+                </div>
+                {sidebarOpen && (
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium text-white truncate">{user?.full_name || 'Admin'}</p>
+                    <p className="text-xs text-slate-400">Administrator</p>
+                  </div>
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-slate-900 border-slate-800">
+              <DropdownMenuItem onClick={() => navigate(createPageUrl('Home'))} className="text-slate-300 hover:text-white hover:bg-slate-800">
+                <Eye className="w-4 h-4 mr-2" /> View App
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-slate-800" />
+              <DropdownMenuItem onClick={() => base44.auth.logout()} className="text-red-400 hover:text-red-300 hover:bg-slate-800">
+                <LogOut className="w-4 h-4 mr-2" /> Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto">
+        {/* Top Bar */}
+        <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)} className="text-slate-400">
+                <Menu className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-xl font-bold text-white">Dashboard Overview</h1>
+                <p className="text-sm text-slate-400">Welcome back, {user?.full_name}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input 
+                  placeholder="Search users..." 
+                  className="w-64 pl-10 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                />
+              </div>
+              <Button variant="ghost" size="icon" className="text-slate-400 relative">
+                <Bell className="w-5 h-5" />
+                {alerts.length > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                )}
+              </Button>
+              <Button onClick={handleRefresh} disabled={refreshing} className="bg-orange-500 hover:bg-orange-600">
+                <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        <div className="p-6">
+          {/* Alerts */}
+          {alerts.length > 0 && (
+            <div className="mb-6 space-y-2">
+              {alerts.map((alert, i) => (
+                <div key={i} className={`flex items-center gap-3 p-4 rounded-lg ${
+                  alert.type === 'danger' ? 'bg-red-500/10 border border-red-500/20 text-red-400' :
+                  alert.type === 'warning' ? 'bg-yellow-500/10 border border-yellow-500/20 text-yellow-400' :
+                  'bg-blue-500/10 border border-blue-500/20 text-blue-400'
+                }`}>
+                  <alert.icon className="w-5 h-5" />
+                  <span>{alert.message}</span>
+                  <Button variant="ghost" size="sm" className="ml-auto">View</Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Key Metrics */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <Card className="bg-slate-900 border-slate-800">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Total Users</p>
+                    <p className="text-2xl font-bold text-white">{stats?.totalUsers?.toLocaleString()}</p>
+                    <p className="text-green-400 text-xs">+{stats?.newUsersToday} today</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                    <Users className="w-6 h-6 text-blue-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-900 border-slate-800">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">DAU / MAU</p>
+                    <p className="text-2xl font-bold text-white">{stats?.dau} / {stats?.mau}</p>
+                    <p className="text-slate-400 text-xs">{stats?.dauMauRatio}% ratio</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+                    <Activity className="w-6 h-6 text-green-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-900 border-slate-800">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Premium Users</p>
+                    <p className="text-2xl font-bold text-white">{stats?.premiumUsers}</p>
+                    <p className="text-orange-400 text-xs">{stats?.conversionRate}% conversion</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
+                    <DollarSign className="w-6 h-6 text-orange-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-900 border-slate-800">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Pending Reports</p>
+                    <p className="text-2xl font-bold text-white">{stats?.pendingReports}</p>
+                    <p className="text-red-400 text-xs">Needs review</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center">
+                    <Flag className="w-6 h-6 text-red-400" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
-        );
-      default:
-        return <AdminOverview stats={stats} isLoading={isLoadingStats} />;
-    }
-  };
 
-  return (
-    <div className="flex min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      {/* Sidebar */}
-      <AdminSidebar
-        currentView={currentView}
-        onViewChange={setCurrentView}
-        stats={stats}
-        onLogout={() => base44.auth.logout(createPageUrl('Landing'))}
-        userEmail={currentUser?.email}
-      />
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          {/* Refresh Stats Button */}
-          <div className="flex justify-end mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => queryClient.invalidateQueries(['admin-stats'])}
-              disabled={isLoadingStats}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <RefreshCw size={16} className={`mr-2 ${isLoadingStats ? 'animate-spin' : ''}`} />
-              Refresh Data
-            </Button>
+          {/* Secondary Metrics */}
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
+            {[
+              { label: 'Total Matches', value: stats?.totalMatches, sub: `+${stats?.matchesToday} today`, color: 'pink' },
+              { label: 'Messages Sent', value: stats?.totalMessages, sub: `+${stats?.messagesToday} today`, color: 'purple' },
+              { label: 'Total Likes', value: stats?.totalLikes, sub: 'All time', color: 'red' },
+              { label: 'Active Subs', value: stats?.activeSubscriptions, sub: 'Paying users', color: 'green' },
+              { label: 'Banned Users', value: stats?.bannedUsers, sub: 'Permanent', color: 'slate' },
+              { label: 'Suspended', value: stats?.suspendedUsers, sub: 'Temporary', color: 'yellow' },
+            ].map((metric, i) => (
+              <Card key={i} className="bg-slate-900 border-slate-800">
+                <CardContent className="p-4">
+                  <p className="text-slate-400 text-xs">{metric.label}</p>
+                  <p className="text-xl font-bold text-white">{metric.value?.toLocaleString()}</p>
+                  <p className={`text-${metric.color}-400 text-xs`}>{metric.sub}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-          {/* Content */}
-          {renderView()}
+
+          {/* Quick Actions & Activity */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Quick Actions */}
+            <Card className="bg-slate-900 border-slate-800">
+              <CardHeader>
+                <CardTitle className="text-white">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {[
+                  { label: 'Review Reports', icon: Flag, page: 'AdminModeration', badge: stats?.pendingReports, color: 'red' },
+                  { label: 'Manage Users', icon: Users, page: 'AdminUsers', color: 'blue' },
+                  { label: 'View Analytics', icon: TrendingUp, page: 'AdminAnalytics', color: 'green' },
+                  { label: 'System Settings', icon: Settings, page: 'AdminSettings', color: 'slate' },
+                  { label: 'Send Broadcast', icon: Bell, page: 'AdminBroadcast', color: 'purple' },
+                ].map((action, i) => (
+                  <button
+                    key={i}
+                    onClick={() => navigate(createPageUrl(action.page))}
+                    className="w-full flex items-center gap-3 p-3 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors group"
+                  >
+                    <div className={`w-8 h-8 rounded-lg bg-${action.color}-500/20 flex items-center justify-center`}>
+                      <action.icon className={`w-4 h-4 text-${action.color}-400`} />
+                    </div>
+                    <span className="text-white flex-1 text-left">{action.label}</span>
+                    {action.badge > 0 && (
+                      <Badge className="bg-red-500 text-white">{action.badge}</Badge>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-white transition-colors" />
+                  </button>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card className="bg-slate-900 border-slate-800 md:col-span-2">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-white">Recent Activity</CardTitle>
+                <Button variant="ghost" size="sm" className="text-slate-400">View All</Button>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[300px]">
+                  <div className="space-y-4">
+                    {recentActivity.map((activity, i) => (
+                      <div key={i} className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          activity.type === 'signup' ? 'bg-green-500/20' :
+                          activity.type === 'match' ? 'bg-pink-500/20' :
+                          'bg-red-500/20'
+                        }`}>
+                          {activity.type === 'signup' ? <Users className="w-5 h-5 text-green-400" /> :
+                           activity.type === 'match' ? <Heart className="w-5 h-5 text-pink-400" /> :
+                           <Flag className="w-5 h-5 text-red-400" />}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-white text-sm">
+                            {activity.type === 'signup' ? `${activity.user} signed up` :
+                             activity.type === 'match' ? 'New match created' :
+                             `New report: ${activity.reportType}`}
+                          </p>
+                          <p className="text-slate-400 text-xs">
+                            {new Date(activity.time).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
-
-
-
-
-
-
-
-
-      {/* Action Confirmation Dialog */}
-      <AlertDialog open={actionDialog.open} onOpenChange={(open) => setActionDialog({ ...actionDialog, open })}>
-        <AlertDialogContent className="bg-gray-900 border-white/20">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">
-              {actionDialog.type === 'delete' ? 'Delete User' : 'Ban User'}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
-              Are you sure you want to {actionDialog.type} {actionDialog.user?.display_name}? 
-              {actionDialog.type === 'delete' && ' This action cannot be undone.'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/10 text-white border-white/20">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
-              disabled={deleteUserMutation.isPending || banUserMutation.isPending}
-              onClick={(e) => {
-                e.preventDefault(); // Prevent auto-close
-                if (actionDialog.type === 'delete') {
-                  deleteUserMutation.mutate(actionDialog.user?.user_id);
-                } else {
-                  banUserMutation.mutate(actionDialog.user?.user_id);
-                }
-              }}
-            >
-              {(deleteUserMutation.isPending || banUserMutation.isPending) ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                'Confirm'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Waitlist Email Dialog */}
-      <Dialog open={waitlistDialog} onOpenChange={setWaitlistDialog}>
-        <DialogContent className="sm:max-w-[525px] bg-gray-900 border-white/20 text-white">
-          <DialogHeader>
-            <DialogTitle>Send Waitlist Invites</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              This will send an email to ALL waitlist members (both pending and already invited) who haven't joined yet. Use {'{{name}}'} to insert their name.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="subject" className="text-white">Subject</Label>
-              <Input
-                id="subject"
-                value={waitlistEmail.subject}
-                onChange={(e) => setWaitlistEmail({ ...waitlistEmail, subject: e.target.value })}
-                className="bg-white/10 border-white/20 text-white"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="body" className="text-white">Email Body</Label>
-              <Textarea
-                id="body"
-                value={waitlistEmail.body}
-                onChange={(e) => setWaitlistEmail({ ...waitlistEmail, body: e.target.value })}
-                className="bg-white/10 border-white/20 text-white h-48"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <button
-              onClick={() => setWaitlistDialog(false)}
-              className="px-4 py-2 rounded-md bg-white/10 hover:bg-white/20 text-white transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => sendWaitlistInvitesMutation.mutate(waitlistEmail)}
-              disabled={sendWaitlistInvitesMutation.isPending}
-              className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white transition-colors flex items-center gap-2"
-            >
-              {sendWaitlistInvitesMutation.isPending ? 'Sending...' : 'Send Emails'}
-              <Send size={16} />
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Message Dialog */}
-      <AlertDialog open={messageDialog.open} onOpenChange={(open) => setMessageDialog({ ...messageDialog, open })}>
-        <AlertDialogContent className="bg-gray-900 border-white/20">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">
-              {messageDialog.type === 'all' ? 'Send Message to All Users' : `Message ${messageDialog.profile?.display_name}`}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
-              {messageDialog.type === 'all' 
-                ? 'This message will be sent to all active users on the platform.'
-                : 'Send a direct message to this user.'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="p-4">
-            <textarea
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              placeholder="Type your message..."
-              className="w-full h-32 bg-white/10 text-white border border-white/20 rounded-lg p-3 resize-none"
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/10 text-white border-white/20">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-blue-600 hover:bg-blue-700"
-              disabled={!messageText.trim()}
-              onClick={() => {
-                if (messageDialog.type === 'all') {
-                  const allProfileIds = profiles.filter(p => p.is_active).map(p => p.id);
-                  sendMessageMutation.mutate({ profileIds: allProfileIds, message: messageText });
-                } else {
-                  sendMessageMutation.mutate({ profileIds: [messageDialog.profile.id], message: messageText });
-                }
-              }}
-            >
-              <Send size={16} className="mr-2" />
-              Send Message
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
