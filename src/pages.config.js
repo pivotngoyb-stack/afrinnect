@@ -115,6 +115,7 @@ import AdminAnalytics from './pages/AdminAnalytics';
 import AdminSettings from './pages/AdminSettings';
 import AdminSubscriptions from './pages/AdminSubscriptions';
 import AdminBroadcast from './pages/AdminBroadcast';
+import AdminContent from './pages/AdminContent';
 import AdminAmbassadors from './pages/AdminAmbassadors';
 import __Layout from './Layout.jsx';
 
@@ -188,6 +189,7 @@ export const PAGES = {
     "AdminSettings": AdminSettings,
     "AdminSubscriptions": AdminSubscriptions,
     "AdminBroadcast": AdminBroadcast,
+    "AdminContent": AdminContent,
     "AdminAmbassadors": AdminAmbassadors,
 }
 

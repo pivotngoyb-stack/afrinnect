@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useInfinitePagination } from '@/components/shared/useInfinitePagination';
 import PullToRefresh from '@/components/shared/PullToRefresh';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Upload, Plus, Trash2, Eye } from 'lucide-react';
+import { ArrowLeft, Upload, Plus, Trash2, Eye, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
