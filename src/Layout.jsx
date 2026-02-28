@@ -12,6 +12,7 @@ import { LanguageProvider, useLanguage } from '@/components/i18n/LanguageContext
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { ErrorLoggerProvider } from '@/components/analytics/ErrorLogger'; // Replaced ErrorMonitor
 import OfflineIndicator from '@/components/shared/OfflineIndicator';
+import { NativeStyles } from '@/components/shared/NativeStyles';
 import { useServiceWorker } from '@/components/shared/ServiceWorkerManager';
 import { useNetworkStatus } from '@/components/shared/NetworkStatus';
 import CookieConsent from '@/components/legal/CookieConsent';
@@ -205,6 +206,7 @@ function LayoutContent({ children, currentPageName }) {
 
   return (
     <>
+      <NativeStyles />
       <OfflineIndicator />
       <div className="min-h-screen bg-gray-50">
         <style>{`
