@@ -957,16 +957,39 @@ export default function Home() {
 
         {isLoading ? (
           <div className="flex items-center justify-center min-h-[70vh]">
-            <ProfileCardSkeleton />
+            <div className="text-center">
+              <ProfileCardSkeleton />
+              <p className="mt-4 text-sm text-gray-500 animate-pulse">Finding amazing people for you...</p>
+            </div>
           </div>
         ) : viewMode === 'swipe' ? (
           /* Swipe Mode */
-          <div className="flex items-center justify-center min-h-[60vh] sm:min-h-[70vh] relative">
+          <div className="flex flex-col items-center justify-center min-h-[60vh] sm:min-h-[70vh] relative">
+            {/* Activity indicator */}
+            {profiles.length > 0 && currentIndex < profiles.length && (
+              <div className="absolute top-0 left-0 right-0 flex justify-center mb-2">
+                <div className="bg-white/90 backdrop-blur rounded-full px-4 py-1.5 shadow-sm border border-gray-100 flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    <span>{profiles.length - currentIndex} profiles nearby</span>
+                  </div>
+                  {currentIndex > 0 && (
+                    <div className="text-xs text-purple-600 font-medium border-l pl-3 border-gray-200">
+                      {currentIndex} viewed today ✓
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
             {/* Rewind Button (Premium/Elite/VIP) */}
             {swipeHistory.length > 0 && (
               <Button
                 onClick={handleRewind}
-                className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 rounded-full w-14 h-14 ${
+                className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 rounded-full w-14 h-14 shadow-lg ${
                   (myProfile?.subscription_tier === 'premium' || myProfile?.subscription_tier === 'elite' || myProfile?.subscription_tier === 'vip' || myProfile?.is_premium)
                     ? 'bg-amber-500 hover:bg-amber-600'
                     : 'bg-gray-300 hover:bg-gray-400'
@@ -994,15 +1017,38 @@ export default function Home() {
                     matchBreakdown={currentProfile.matchBreakdown || {}}
                   />
               ) : (
-                <div className="flex flex-col items-center justify-center h-full max-w-md mx-auto text-center px-4">
-                  <div className="w-24 h-24 bg-purple-50 rounded-full flex items-center justify-center mb-6 animate-pulse">
-                    <Globe size={40} className="text-purple-400" />
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col items-center justify-center h-full max-w-md mx-auto text-center px-4"
+                >
+                  <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-amber-100 rounded-full flex items-center justify-center mb-6">
+                    <span className="text-5xl">🌍</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">That's everyone nearby!</h2>
-                  <p className="text-gray-600 mb-8">
-                    We've run out of profiles in your current filter range. Try expanding your search to meet more amazing people.
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">You've seen everyone nearby!</h2>
+                  <p className="text-gray-600 mb-4">
+                    Great news — there are thousands more people waiting to meet you globally.
                   </p>
+                  
+                  {/* Social proof */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 mb-6">
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                      </span>
+                      <span className="text-sm text-green-700">2,847 members online right now</span>
+                    </div>
+                  </div>
+                  
                   <div className="space-y-3 w-full">
+                    <Button 
+                      onClick={() => setDiscoveryMode('global')}
+                      className="w-full h-14 text-lg bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700 shadow-lg"
+                    >
+                      <Globe size={20} className="mr-2" />
+                      Explore Globally
+                    </Button>
                     <Button 
                       onClick={() => setFilters({})} 
                       variant="outline" 
@@ -1010,15 +1056,12 @@ export default function Home() {
                     >
                       Reset Filters
                     </Button>
-                    <Button 
-                      onClick={() => setDiscoveryMode('global')}
-                      className="w-full h-12 text-base bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-700 hover:to-amber-700"
-                    >
-                      <Globe size={18} className="mr-2" />
-                      Go Global
-                    </Button>
                   </div>
-                </div>
+                  
+                  <p className="text-xs text-gray-400 mt-4">
+                    💡 Tip: Expanding your search increases matches by 5x
+                  </p>
+                </motion.div>
               )}
             </AnimatePresence>
           </div>
@@ -1091,19 +1134,49 @@ export default function Home() {
           <TutorialTooltip steps={tutorialSteps} onComplete={completeTutorial} />
         )}
 
-        {/* Match Celebration */}
+        {/* Match Celebration - Enhanced */}
         <AnimatePresence>
           {showMatchCelebration && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.5 }}
-              className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
             >
-              <div className="text-center">
-                <div className="text-8xl mb-4">💕</div>
-                <h2 className="text-4xl font-bold text-white drop-shadow-lg">{t('admin.home.itsAMatch')}</h2>
-              </div>
+              <motion.div 
+                initial={{ scale: 0.5, y: 50 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.5, y: 50 }}
+                className="text-center bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl p-8 mx-4 shadow-2xl"
+              >
+                <motion.div 
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 1 }}
+                  className="text-8xl mb-4"
+                >
+                  💕
+                </motion.div>
+                <h2 className="text-4xl font-bold text-white mb-2">{t('admin.home.itsAMatch')}</h2>
+                <p className="text-white/80 mb-4">You both liked each other!</p>
+                <div className="flex gap-3 justify-center">
+                  <Button 
+                    onClick={() => {
+                      setShowMatchCelebration(false);
+                      navigate(createPageUrl('Matches'));
+                    }}
+                    className="bg-white text-purple-600 hover:bg-gray-100"
+                  >
+                    Send a Message
+                  </Button>
+                  <Button 
+                    onClick={() => setShowMatchCelebration(false)}
+                    variant="ghost"
+                    className="text-white hover:bg-white/20"
+                  >
+                    Keep Swiping
+                  </Button>
+                </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
