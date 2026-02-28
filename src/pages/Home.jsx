@@ -373,7 +373,7 @@ export default function Home() {
   // Check daily like limit
   const canLike = () => {
     if (isAdmin) return true; // Admins get unlimited likes
-    // Premium/Elite/VIP get unlimited likes
+    // Elite/VIP get unlimited likes
     if (hasAccess(myProfile?.subscription_tier, 'unlimited_likes')) return true;
 
     // Use local date string for comparisons
@@ -386,7 +386,10 @@ export default function Home() {
       return true; // New day, reset
     }
 
-    return likesUsed < 15; // Free users get 15 likes per day
+    const tier = myProfile?.subscription_tier || 'free';
+    // Premium: 50 likes/day, Free: 15 likes/day
+    const limit = tier === 'premium' ? 50 : 15;
+    return likesUsed < limit;
   };
 
   // Like mutation
@@ -742,6 +745,18 @@ export default function Home() {
         setShowLimitPaywall(true);
       }
       return;
+    }
+
+    // Premium has limited rewinds (5/day), Elite/VIP have unlimited
+    if (tier === 'premium') {
+      const now = new Date();
+      const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+      const rewindsToday = parseInt(localStorage.getItem(`rewinds_${today}`) || '0');
+      if (rewindsToday >= 5) {
+        alert('You\'ve used all 5 rewinds for today. Upgrade to Elite for unlimited rewinds!');
+        return;
+      }
+      localStorage.setItem(`rewinds_${today}`, String(rewindsToday + 1));
     }
     
     const lastAction = swipeHistory[swipeHistory.length - 1];
