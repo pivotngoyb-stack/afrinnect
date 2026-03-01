@@ -44,7 +44,7 @@ import ActivitySummaryBanner from '@/components/monetization/ActivitySummaryBann
 import WeeklyTopPicks from '@/components/monetization/WeeklyTopPicks';
 import PremiumBadgeOnProfile from '@/components/monetization/PremiumBadgeOnProfile';
 import MatchMilestones from '@/components/monetization/MatchMilestones';
-import VIPEventsPromo from '@/components/monetization/VIPEventsPromo';
+import VIPEventsPromo from '@/components/monetization/VIPEventsPromo.jsx';
 
 export default function Home() {
   usePerformanceMonitor('Home');
