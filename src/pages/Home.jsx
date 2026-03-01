@@ -43,6 +43,7 @@ import LikesCounter from '@/components/monetization/LikesCounter';
 import ActivitySummaryBanner from '@/components/monetization/ActivitySummaryBanner';
 import WeeklyTopPicks from '@/components/monetization/WeeklyTopPicks';
 import PremiumBadgeOnProfile from '@/components/monetization/PremiumBadgeOnProfile';
+import MatchMilestones from '@/components/monetization/MatchMilestones';
 
 export default function Home() {
   usePerformanceMonitor('Home');
@@ -68,6 +69,7 @@ export default function Home() {
   const [feedbackProfile, setFeedbackProfile] = useState(null);
   const [profileViewStartTime, setProfileViewStartTime] = useState(Date.now());
   const [photosViewedCount, setPhotosViewedCount] = useState(0);
+  const [matchCount, setMatchCount] = useState(0);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { prompt: upgradePrompt, dismissPrompt } = useUpgradePrompts(myProfile);
@@ -612,6 +614,7 @@ export default function Home() {
           origin: { y: 0.6 }
         });
         setShowMatchCelebration(true);
+        setMatchCount(prev => prev + 1); // Trigger milestone check
         setTimeout(() => setShowMatchCelebration(false), 3000);
       }
       setCurrentIndex(prev => prev + 1);
@@ -1138,6 +1141,9 @@ export default function Home() {
             setPendingLikeProfile(null);
           }}
         />
+
+        {/* Match Milestones Celebration */}
+        <MatchMilestones userProfile={myProfile} newMatchCount={matchCount} />
 
         {/* Feedback Modal for ML Learning */}
         <FeedbackModal
