@@ -543,9 +543,22 @@ export default function Chat() {
           return (
             <div 
               key={msg.id} 
-              className={`flex ${isMine ? 'justify-end' : 'justify-start'} ${isOptimistic ? 'opacity-60' : ''}`}
+              className={`flex items-end gap-2 ${isMine ? 'justify-end' : 'justify-start'} ${isOptimistic ? 'opacity-60' : ''}`}
             >
-              <div className={`max-w-xs md:max-w-md ${isMine ? 'bg-purple-600 text-white' : 'bg-white'} rounded-2xl px-4 py-2 shadow`}>
+              {/* Other user's avatar */}
+              {!isMine && (
+                <img 
+                  src={otherProfile?.primary_photo || otherProfile?.photos?.[0]} 
+                  alt="" 
+                  className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+                />
+              )}
+              
+              <div className={`max-w-xs md:max-w-md ${
+                isMine 
+                  ? 'bg-gradient-to-br from-purple-600 to-purple-700 text-white' 
+                  : 'bg-gradient-to-br from-gray-100 to-gray-50 text-gray-900'
+              } rounded-2xl ${isMine ? 'rounded-br-md' : 'rounded-bl-md'} px-4 py-2.5 shadow-sm`}>
                 {msg.message_type === 'voice_note' ? (
                   <audio controls src={msg.media_url} className="w-full" preload="metadata" />
                 ) : msg.message_type === 'image' ? (
@@ -554,7 +567,7 @@ export default function Chat() {
                   <p className="text-sm break-words">{msg.content}</p>
                 )}
                 <div className="flex items-center gap-2 mt-1">
-                  <p className="text-xs opacity-70">
+                  <p className={`text-xs ${isMine ? 'text-white/70' : 'text-gray-400'}`}>
                     {new Date(msg.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                   {isMine && (
@@ -564,23 +577,16 @@ export default function Chat() {
                     />
                   )}
                 </div>
-                {!isMine && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mt-1 h-6 text-xs"
-                    onClick={() => setShowTranslate(msg.id)}
-                    disabled={translatingId === msg.id}
-                  >
-                    {translatingId === msg.id ? (
-                      <Loader2 size={12} className="animate-spin mr-1" />
-                    ) : (
-                      <Languages size={12} className="mr-1" />
-                    )}
-                    Translate
-                  </Button>
-                )}
               </div>
+
+              {/* My avatar */}
+              {isMine && (
+                <img 
+                  src={myProfile?.primary_photo || myProfile?.photos?.[0]} 
+                  alt="" 
+                  className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+                />
+              )}
             </div>
           );
         })}

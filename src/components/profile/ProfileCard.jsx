@@ -232,49 +232,31 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
         {/* Gradient Overlay */}
         <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
-        {/* Profile Info Overlay */}
+        {/* Profile Info Overlay - SIMPLIFIED */}
         <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-2xl font-bold">{profile?.display_name}</h2>
             {age && <span className="text-xl font-light">{age}</span>}
             <VerificationBadge verification={profile?.verification_status} />
-            {profile?.is_founding_member && (
-              <div className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
-                <Crown size={10} />
-                <span>Founder</span>
-              </div>
-            )}
-            <TrustScoreIndicator profile={profile} />
           </div>
 
-          <div className="flex items-center gap-2 text-white/90 mb-1 text-sm">
-            <CountryFlag country={profile?.country_of_origin} size="small" />
-            {profile?.tribe_ethnicity && (
-              <span className="text-xs">• {profile.tribe_ethnicity}</span>
-            )}
+          <div className="flex items-center gap-1 text-white/90 text-sm">
+            <MapPin size={14} />
+            <span>{profile?.current_city}{distance !== null && ` • ${distance} mi`}</span>
           </div>
 
-          <div className="flex items-center gap-1 text-white/80 text-xs">
-            <MapPin size={12} />
-            <span>
-              {profile?.current_city}, {profile?.current_country}
-              {distance !== null && ` • ${distance} miles away`}
-            </span>
-          </div>
+          {/* ONE key trait - relationship goal */}
+          {profile?.relationship_goal && (
+            <Badge className="mt-2 bg-white/20 backdrop-blur-sm text-white border-0 text-xs">
+              {relationshipLabels[profile.relationship_goal]}
+            </Badge>
+          )}
 
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
-            {profile?.relationship_goal && (
-              <Badge className="bg-purple-600/80 text-white border-0 text-xs">
-                <Heart size={10} className="mr-1" />
-                {relationshipLabels[profile.relationship_goal]}
-              </Badge>
-            )}
-            <SafetyBadge profile={profile} size="small" />
-          </div>
-          
-          {profile?.badges && profile.badges.length > 0 && (
-            <div className="mt-2">
-              <ProfileBadges badges={profile.badges} />
+          {/* Show first prompt if available - Hinge style */}
+          {profile?.prompts?.[0] && (
+            <div className="mt-3 bg-white/10 backdrop-blur-sm rounded-lg p-3">
+              <p className="text-xs text-white/70 mb-1">{profile.prompts[0].question}</p>
+              <p className="text-sm text-white font-medium line-clamp-2">{profile.prompts[0].answer}</p>
             </div>
           )}
         </div>

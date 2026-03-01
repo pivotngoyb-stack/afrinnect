@@ -322,152 +322,89 @@ export default function Matches() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="w-full grid grid-cols-3 mb-4 flex-shrink-0">
+          <TabsList className="w-full grid grid-cols-2 mb-4 flex-shrink-0">
             <TabsTrigger value="matches" className="gap-2">
-              <Heart size={16} />
-              Matches
+              <MessageCircle size={16} />
+              Conversations
             </TabsTrigger>
             <TabsTrigger value="likes" className="gap-2 relative">
-              <Eye size={16} />
-              Likes
+              <Heart size={16} />
+              Likes You
               {likesReceived.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-600 text-white text-xs rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-pink-500 text-white text-xs rounded-full flex items-center justify-center">
                   {likesReceived.length}
                 </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="messages" className="gap-2">
-              <MessageCircle size={16} />
-              Messages
-            </TabsTrigger>
           </TabsList>
 
-          {/* Matches Tab */}
+          {/* Conversations Tab - MERGED Matches + Messages */}
           <TabsContent value="matches" className="flex-1 overflow-y-auto space-y-4">
-            {/* Expiring matches urgency banners */}
-            {newMatches.filter(p => {
-              const matchedAt = new Date(p.match?.matched_at || p.match?.created_date).getTime();
-              const expiresAt = p.match?.expires_at || new Date(matchedAt + 24 * 60 * 60 * 1000).toISOString();
-              const timeLeft = new Date(expiresAt).getTime() - Date.now();
-              return timeLeft < 4 * 60 * 60 * 1000 && timeLeft > 0; // Less than 4 hours
-            }).slice(0, 2).map(p => {
-              const matchedAt = new Date(p.match?.matched_at || p.match?.created_date).getTime();
-              const expiresAt = p.match?.expires_at || new Date(matchedAt + 24 * 60 * 60 * 1000).toISOString();
-              return (
-                <MatchCountdownBanner
-                  key={p.id}
-                  matchId={p.match?.id}
-                  expiresAt={expiresAt}
-                  partnerName={p.display_name}
-                  partnerPhoto={p.primary_photo || p.photos?.[0]}
-                  onExpire={() => queryClient.invalidateQueries(['matches'])}
-                />
-              );
-            })}
-
+            {/* New Matches Row */}
             {newMatches.length > 0 && (
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
-                    <Sparkles size={16} className="text-amber-500" />
-                    New Matches
-                    <Badge variant="secondary" className="ml-1 bg-purple-100 text-purple-700">
-                      {newMatches.length}
-                    </Badge>
-                  </h3>
-                  <p className="text-xs text-amber-600 font-medium animate-pulse">
-                    ⏰ Send a message before they expire!
-                  </p>
-                </div>
-                <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-                  {newMatches.map(profile => {
-                    // Use match expiry or default to 24h from match creation
-                    const matchedAt = new Date(profile.match?.matched_at || profile.match?.created_date).getTime();
-                    const expiresAt = profile.match?.expires_at 
-                      ? new Date(profile.match.expires_at).toISOString()
-                      : new Date(matchedAt + 24 * 60 * 60 * 1000).toISOString();
-                    
-                    return (
-                      <motion.div
-                        key={profile.id}
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="flex-shrink-0 w-32"
-                      >
-                        <Link to={createPageUrl(`Chat?matchId=${profile.match?.id}`)}>
-                          <div className="relative">
-                            <img
-                              src={profile.primary_photo || profile.photos?.[0] || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200'}
-                              alt={profile.display_name}
-                              className="w-32 h-40 object-cover rounded-2xl shadow-md hover:shadow-lg transition"
-                            />
-                            <div className="absolute top-2 left-2">
-                              <CountdownTimer
-                                expiresAt={expiresAt}
-                                onExpire={() => queryClient.invalidateQueries(['matches'])}
-                              />
-                            </div>
-                            <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent rounded-b-2xl">
-                              <p className="text-white font-medium text-sm truncate">{profile.display_name}</p>
-                            </div>
-                            <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow">
-                              <Heart size={14} className="text-white fill-white" />
-                            </div>
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2 mb-3">
+                  <Sparkles size={14} className="text-amber-500" />
+                  New Matches
+                </h3>
+                <div className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-hide">
+                  {newMatches.map(profile => (
+                    <Link key={profile.id} to={createPageUrl(`Chat?matchId=${profile.match?.id}`)}>
+                      <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="flex-shrink-0 w-20 text-center">
+                        <div className="relative">
+                          <img
+                            src={profile.primary_photo || profile.photos?.[0]}
+                            alt={profile.display_name}
+                            className="w-20 h-20 object-cover rounded-full border-3 border-purple-500 shadow-lg"
+                          />
+                          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center">
+                            <Heart size={12} className="text-white fill-white" />
                           </div>
-                        </Link>
+                        </div>
+                        <p className="text-xs font-medium text-gray-700 mt-1 truncate">{profile.display_name?.split(' ')[0]}</p>
                       </motion.div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Conversations List */}
+            {conversations.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="divide-y divide-gray-100">
+                  {conversations.map(profile => {
+                    const convData = conversationData[profile.match?.id] || {};
+                    return (
+                      <Link key={profile.id} to={createPageUrl(`Chat?matchId=${profile.match?.id}`)}>
+                        <ConversationItem
+                          match={profile.match}
+                          profile={profile}
+                          lastMessage={convData.lastMessage}
+                          unreadCount={convData.unreadCount || 0}
+                        />
+                      </Link>
                     );
                   })}
                 </div>
               </div>
             )}
 
-            {loadingMatches && (
-              <div className="flex gap-4 overflow-x-auto pb-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="flex-shrink-0 w-32">
-                    <LoadingSkeleton variant="grid" />
-                  </div>
-                ))}
-              </div>
-            )}
-
             {matchedProfiles.length === 0 && !loadingMatches && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-12"
-              >
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12">
                 <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center">
                   <span className="text-4xl">💕</span>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Your matches will appear here</h3>
-                <p className="text-gray-500 mb-4 max-w-sm mx-auto">
-                  When you and someone else both like each other, you'll match and can start chatting!
-                </p>
-                
-                {/* Social proof */}
-                <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-2 mb-6">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                  </span>
-                  <span className="text-sm text-green-700">847 new matches made today</span>
-                </div>
-                
-                <Button 
-                  onClick={() => window.location.href = createPageUrl('Home')}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                >
+                <h3 className="text-xl font-bold text-gray-900 mb-2">No matches yet</h3>
+                <p className="text-gray-500 mb-4 max-w-sm mx-auto">Start swiping to find your perfect match!</p>
+                <Button onClick={() => window.location.href = createPageUrl('Home')} className="bg-gradient-to-r from-purple-600 to-pink-600">
                   <Heart size={16} className="mr-2" />
                   Start Discovering
                 </Button>
-                
-                <p className="text-xs text-gray-400 mt-4">
-                  💡 Tip: Complete profiles get 3x more matches
-                </p>
               </motion.div>
             )}
+
+            {loadingMatches && <LoadingSkeleton variant="list" />}
           </TabsContent>
 
           {/* Likes Tab */}
@@ -519,65 +456,6 @@ export default function Matches() {
             )}
           </TabsContent>
 
-          {/* Messages Tab */}
-          <TabsContent value="messages" className="flex-1 overflow-hidden">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col">
-              {conversations.length > 0 ? (
-                <ScrollArea className="flex-1">
-                  <div className="divide-y divide-gray-100">
-                    {conversations.map(profile => {
-                      const convData = conversationData[profile.match?.id] || {};
-                      return (
-                        <Link key={profile.id} to={createPageUrl(`Chat?matchId=${profile.match?.id}`)}>
-                          <ConversationItem
-                            match={profile.match}
-                            profile={profile}
-                            lastMessage={convData.lastMessage}
-                            unreadCount={convData.unreadCount || 0}
-                          />
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center py-12"
-                >
-                  <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                    <MessageCircle size={28} className="text-blue-500" />
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">No conversations yet</h3>
-                  <p className="text-gray-500 mb-4 text-sm max-w-xs mx-auto">
-                    When you match with someone, send the first message to break the ice!
-                  </p>
-                  
-                  {newMatches.length > 0 ? (
-                    <div className="space-y-3">
-                      <p className="text-sm text-purple-600 font-medium">
-                        You have {newMatches.length} match{newMatches.length !== 1 ? 'es' : ''} waiting!
-                      </p>
-                      <Button 
-                        onClick={() => setActiveTab('matches')}
-                        className="bg-gradient-to-r from-purple-600 to-pink-600"
-                      >
-                        Say Hello 👋
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button 
-                      onClick={() => window.location.href = createPageUrl('Home')}
-                      variant="outline"
-                    >
-                      Find Matches
-                    </Button>
-                  )}
-                </motion.div>
-              )}
-            </div>
-          </TabsContent>
         </Tabs>
       </main>
 

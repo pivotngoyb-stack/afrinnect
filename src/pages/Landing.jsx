@@ -127,81 +127,21 @@ export default function Landing() {
   ];
 
   const handleGetStarted = async () => {
-    // Check location before allowing signup
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`);
-            const data = await response.json();
-            const country = data.address?.country;
-            
-            if (country !== 'United States' && country !== 'Canada' && country !== 'United States of America') {
-              alert('Afrinnect is currently only available in the United States and Canada. Join our waitlist to be notified when we expand to your region!');
-              window.location.href = createPageUrl('Waitlist');
-              return;
-            }
-            window.location.href = createPageUrl('Onboarding');
-          } catch (e) {
-            // On error, let them proceed to onboarding where it will be checked again
-            window.location.href = createPageUrl('Onboarding');
-          }
-        },
-        () => {
-          // If they deny location, redirect to waitlist
-          alert('Location access is required to use Afrinnect. We are currently only available in the USA and Canada.');
-          window.location.href = createPageUrl('Waitlist');
-        }
-      );
-    } else {
-      window.location.href = createPageUrl('Onboarding');
-    }
+    // No location gate - let users sign up first, verify location during onboarding
+    trackEvent(CONVERSION_EVENTS.SIGNUP_START);
+    const urlParams = new URLSearchParams(window.location.search);
+    const ref = urlParams.get('ref');
+    const nextUrl = ref ? createPageUrl('Onboarding') + `?ref=${ref}` : createPageUrl('Onboarding');
+    base44.auth.redirectToLogin(window.location.origin + nextUrl);
   };
 
   const handleLogin = async () => {
-    // Check location before allowing login
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`);
-            const data = await response.json();
-            const country = data.address?.country;
-            
-            if (country !== 'United States' && country !== 'Canada' && country !== 'United States of America') {
-              alert('Afrinnect is currently only available in the United States and Canada. Join our waitlist to be notified when we expand to your region!');
-              window.location.href = createPageUrl('Waitlist');
-              return;
-            }
-            
-            trackEvent(CONVERSION_EVENTS.SIGNUP_START);
-            const urlParams = new URLSearchParams(window.location.search);
-            const ref = urlParams.get('ref');
-            const nextUrl = ref ? createPageUrl('Home') + `?ref=${ref}` : createPageUrl('Home');
-            base44.auth.redirectToLogin(window.location.origin + nextUrl);
-          } catch (e) {
-            // On error, let them proceed - will be checked at profile creation
-            trackEvent(CONVERSION_EVENTS.SIGNUP_START);
-            const urlParams = new URLSearchParams(window.location.search);
-            const ref = urlParams.get('ref');
-            const nextUrl = ref ? createPageUrl('Home') + `?ref=${ref}` : createPageUrl('Home');
-            base44.auth.redirectToLogin(window.location.origin + nextUrl);
-          }
-        },
-        () => {
-          // If they deny location, redirect to waitlist
-          alert('Location access is required to use Afrinnect. We are currently only available in the USA and Canada.');
-          window.location.href = createPageUrl('Waitlist');
-        }
-      );
-    } else {
-      // Fallback - let them proceed, will be checked at profile creation
-      trackEvent(CONVERSION_EVENTS.SIGNUP_START);
-      const urlParams = new URLSearchParams(window.location.search);
-      const ref = urlParams.get('ref');
-      const nextUrl = ref ? createPageUrl('Home') + `?ref=${ref}` : createPageUrl('Home');
-      base44.auth.redirectToLogin(window.location.origin + nextUrl);
-    }
+    // No location gate - verify during onboarding
+    trackEvent(CONVERSION_EVENTS.SIGNUP_START);
+    const urlParams = new URLSearchParams(window.location.search);
+    const ref = urlParams.get('ref');
+    const nextUrl = ref ? createPageUrl('Home') + `?ref=${ref}` : createPageUrl('Home');
+    base44.auth.redirectToLogin(window.location.origin + nextUrl);
   };
 
   return (

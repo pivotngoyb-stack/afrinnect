@@ -347,25 +347,28 @@ export default function Onboarding() {
     switch (step) {
       case 0: return true; // Welcome
       case 1: 
+        // Combined: Name + DOB + Gender + Looking For
         const nameValid = formData.display_name && formData.display_name.trim().length >= 2;
         const ageValid = formData.birth_date && calculateAge(formData.birth_date) >= 18;
-        return nameValid && ageValid;
-      case 2: return formData.gender && formData.looking_for.length > 0;
-      case 3: 
+        const genderValid = formData.gender && formData.looking_for.length > 0;
+        return nameValid && ageValid && genderValid;
+      case 2: 
+        // Combined: Location + Heritage + Goal
         const locationValid = formData.country_of_origin && formData.current_country && formData.current_city;
         const geoValid = formData.location.lat && formData.location.lng;
-        return locationValid && geoValid;
-      case 4: return formData.relationship_goal;
-      case 5: return formData.photos.length >= 4;
-      case 6: return formData.interests.length >= 3;
+        const goalValid = formData.relationship_goal;
+        return locationValid && geoValid && goalValid;
+      case 3: 
+        // Combined: Photos + Interests
+        return formData.photos.length >= 2 && formData.interests.length >= 3;
       default: return false;
     }
   };
 
-  const progress = ((step) / 6) * 100;
+  const progress = ((step) / 3) * 100;
 
   const steps = [
-    // Step 0: Welcome - Enhanced for conversion
+    // Step 0: Welcome
     <motion.div
       key="welcome"
       initial={{ opacity: 0, y: 20 }}
@@ -381,7 +384,6 @@ export default function Onboarding() {
         {t('onboarding.welcome.subtitle')}
       </p>
       
-      {/* Social proof */}
       <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-2 mb-6">
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -411,517 +413,259 @@ export default function Onboarding() {
         </div>
       </div>
       
-      {/* Quick stats */}
       <div className="flex justify-center gap-6 mb-6 text-sm">
-      <div className="text-center">
-        <p className="font-bold text-purple-600">2 min</p>
-        <p className="text-gray-500 text-xs">to complete</p>
-      </div>
-      <div className="text-center">
-        <p className="font-bold text-purple-600">100%</p>
-        <p className="text-gray-500 text-xs">free to join</p>
-      </div>
-      <div className="text-center">
-        <p className="font-bold text-purple-600">🇺🇸 🇨🇦</p>
-        <p className="text-gray-500 text-xs">USA & Canada</p>
-      </div>
+        <div className="text-center">
+          <p className="font-bold text-purple-600">1 min</p>
+          <p className="text-gray-500 text-xs">to complete</p>
+        </div>
+        <div className="text-center">
+          <p className="font-bold text-purple-600">100%</p>
+          <p className="text-gray-500 text-xs">free to join</p>
+        </div>
+        <div className="text-center">
+          <p className="font-bold text-purple-600">🇺🇸 🇨🇦</p>
+          <p className="text-gray-500 text-xs">USA & Canada</p>
+        </div>
       </div>
 
-      <p className="text-xs text-gray-400">
-        {t('onboarding.welcome.terms')}
-      </p>
+      <p className="text-xs text-gray-400">{t('onboarding.welcome.terms')}</p>
 
-      {/* Founding Member Code Input */}
-      {formData.founder_invite_code ? (
+      {formData.founder_invite_code && (
         <div className="mt-6 p-4 bg-gradient-to-r from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber-200 rounded-full">
-              <Crown size={20} className="text-amber-700" />
-            </div>
+            <div className="p-2 bg-amber-200 rounded-full"><Crown size={20} className="text-amber-700" /></div>
             <div className="text-left">
               <p className="font-bold text-amber-800">Founding Member Code Applied!</p>
-              <p className="text-sm text-amber-700">Code: {formData.founder_invite_code}</p>
-              <p className="text-xs text-amber-600 mt-1">You'll receive 6 months of Premium free!</p>
+              <p className="text-xs text-amber-600 mt-1">6 months of Premium free!</p>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="mt-6">
-          <button
-            onClick={() => {
-              const code = prompt('Enter your Founding Member invite code:');
-              if (code) {
-                updateField('founder_invite_code', code.toUpperCase());
-                localStorage.setItem('founder_invite_code', code.toUpperCase());
-              }
-            }}
-            className="text-sm text-purple-600 hover:text-purple-800 flex items-center gap-2 mx-auto"
-          >
-            <Gift size={16} />
-            Have an invite code?
-          </button>
-        </div>
-      )}
-
-      {/* Ambassador/Referral Code Input */}
-      {formData.ambassador_code ? (
-        <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-300 rounded-xl">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-200 rounded-full">
-              <Users size={18} className="text-purple-700" />
-            </div>
-            <div className="text-left">
-              <p className="font-semibold text-purple-800 text-sm">Referred by a Creator!</p>
-              <p className="text-xs text-purple-600">Code: {formData.ambassador_code}</p>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="mt-3">
-          <button
-            onClick={() => {
-              const code = prompt('Enter your referral code (from a creator/ambassador):');
-              if (code) {
-                updateField('ambassador_code', code.toUpperCase());
-                localStorage.setItem('ambassador_code', code.toUpperCase());
-              }
-            }}
-            className="text-xs text-gray-500 hover:text-purple-600 flex items-center gap-1 mx-auto"
-          >
-            <Users size={14} />
-            Have a referral code?
-          </button>
         </div>
       )}
     </motion.div>,
 
-    // Step 1: Basic Info - Streamlined
+    // Step 1: COMBINED - Basic Info + Gender + Looking For
     <motion.div
-      key="basic"
+      key="basics-combined"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
+      className="space-y-6"
     >
-      <h2 className="text-2xl font-bold text-gray-900 mb-1">{t('onboarding.basic.title')}</h2>
-      <p className="text-gray-500 mb-6 text-sm">This takes less than 30 seconds</p>
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-1">About You</h2>
+        <p className="text-gray-500 text-sm">Let's get the basics</p>
+      </div>
 
-      <div className="space-y-5">
+      <div className="space-y-4">
         <div>
-          <Label className="text-base font-medium">{t('onboarding.basic.firstName')}</Label>
+          <Label className="text-sm font-medium">{t('onboarding.basic.firstName')}</Label>
           <Input
             value={formData.display_name}
             onChange={(e) => updateField('display_name', e.target.value)}
-            placeholder={t('onboarding.basic.firstNamePlaceholder')}
-            className="mt-2 h-12 text-lg border-2 focus:border-purple-500"
+            placeholder="Your first name"
+            className="mt-1 h-11 border-2 focus:border-purple-500"
             autoFocus
           />
-          {formData.display_name && formData.display_name.length >= 2 && (
-            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-              <Check size={12} /> Looks good!
-            </p>
-          )}
         </div>
 
         <div>
-          <Label className="text-base font-medium">{t('onboarding.basic.birthday')}</Label>
+          <Label className="text-sm font-medium">{t('onboarding.basic.birthday')}</Label>
           <Input
             type="date"
             value={formData.birth_date}
             onChange={(e) => updateField('birth_date', e.target.value)}
             max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
-            className="mt-2 h-12 text-lg border-2 focus:border-purple-500"
+            className="mt-1 h-11 border-2 focus:border-purple-500"
           />
-          {formData.birth_date && calculateAge(formData.birth_date) >= 18 && (
-            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-              <Check size={12} /> Age verified
-            </p>
-          )}
-          {formData.birth_date && calculateAge(formData.birth_date) < 18 && (
-            <p className="text-xs text-red-500 mt-1">{t('errors.ageWarning')}</p>
-          )}
-        </div>
-        
-        {/* Privacy note */}
-        <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
-          <Shield size={16} className="text-gray-400 mt-0.5 flex-shrink-0" />
-          <p className="text-xs text-gray-500">
-            Your birthday is used to show your age. We never share your exact date.
-          </p>
-        </div>
-      </div>
-    </motion.div>,
-
-    // Step 2: Gender & Preferences
-    <motion.div
-      key="gender"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-    >
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.gender.iAm')}</h2>
-      <div className="grid grid-cols-2 gap-3 mb-8">
-        {['man', 'woman'].map(gender => (
-          <button
-            key={gender}
-            onClick={() => updateField('gender', gender)}
-            className={`p-4 rounded-xl border-2 transition ${
-              formData.gender === gender
-                ? 'border-purple-600 bg-purple-50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <span className="text-2xl mb-2 block">{gender === 'man' ? '👨' : '👩'}</span>
-            <span className={`font-medium capitalize ${formData.gender === gender ? 'text-purple-600' : 'text-gray-700'}`}>
-              {gender === 'man' ? t('onboarding.gender.man') : t('onboarding.gender.woman')}
-            </span>
-          </button>
-        ))}
-      </div>
-
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.gender.lookingFor')}</h2>
-      <div className="grid grid-cols-2 gap-3">
-        {['man', 'woman'].map(gender => (
-          <button
-            key={gender}
-            onClick={() => toggleGender(gender)}
-            className={`p-4 rounded-xl border-2 transition ${
-              formData.looking_for.includes(gender)
-                ? 'border-purple-600 bg-purple-50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <span className="text-2xl mb-2 block">{gender === 'man' ? '👨' : '👩'}</span>
-            <span className={`font-medium capitalize ${formData.looking_for.includes(gender) ? 'text-purple-600' : 'text-gray-700'}`}>
-              {gender === 'man' ? t('onboarding.gender.men') : t('onboarding.gender.women')}
-            </span>
-
-          </button>
-        ))}
-      </div>
-    </motion.div>,
-
-    // Step 3: Location & Heritage
-    <motion.div
-      key="location"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-    >
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.location.title')}</h2>
-      <p className="text-gray-500 mb-6">{t('onboarding.location.subtitle')}</p>
-
-      <div className="space-y-6">
-        <div>
-          <Label className="text-base">{t('onboarding.location.iAm')}</Label>
-          <Select value={formData.ethnicity} onValueChange={(v) => updateField('ethnicity', v)}>
-            <SelectTrigger className="mt-2 h-12">
-              <SelectValue placeholder={t('onboarding.location.iAm')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="african">{t('onboarding.location.african')}</SelectItem>
-              <SelectItem value="african_descent">{t('onboarding.location.africanDescent')}</SelectItem>
-              <SelectItem value="non_african_interested">{t('onboarding.location.nonAfrican')}</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
         <div>
-          <Label className="text-base">
-            {formData.ethnicity === 'non_african_interested' ? t('onboarding.location.yourCountry') : t('onboarding.location.heritageCountry')}
-          </Label>
-          <Select value={formData.country_of_origin} onValueChange={(v) => updateField('country_of_origin', v)}>
-            <SelectTrigger className="mt-2 h-12">
-              <SelectValue placeholder={t('onboarding.location.selectCountry')} />
-            </SelectTrigger>
-            <SelectContent>
-              {formData.ethnicity === 'non_african_interested' ? (
-                <>
-                  <SelectItem value="divider" disabled className="font-semibold">── All Countries ──</SelectItem>
-                  {RESIDENCE_COUNTRIES.map(country => (
-                    <SelectItem key={country} value={country}>{country}</SelectItem>
-                  ))}
-                </>
-              ) : (
-                <>
-                  <SelectItem value="divider" disabled className="font-semibold">── African Countries ──</SelectItem>
-                  {AFRICAN_COUNTRIES.map(country => (
-                    <SelectItem key={country} value={country}>{country}</SelectItem>
-                  ))}
-                </>
-              )}
-            </SelectContent>
-          </Select>
-          {formData.ethnicity === 'non_african_interested' && (
-            <p className="text-xs text-purple-600 mt-2">
-              {t('onboarding.location.welcome')}
-            </p>
-          )}
-        </div>
-
-        {/* Country selection removed - strictly geolocation based */}
-        <div>
-           {formData.current_country && (
-            <div className="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-100">
-              <p className="text-sm font-medium text-purple-900">{t('onboarding.location.currentLocation')}:</p>
-              <p className="text-lg text-purple-700 font-bold flex items-center gap-2">
-                <MapPin size={18} />
-                {formData.current_city}, {formData.current_country}
-              </p>
-            </div>
-           )}
-        </div>
-
-        {/* City input removed - strictly geolocation based */}
-
-        <div className={`p-4 rounded-xl border-2 ${formData.location.lat ? 'border-green-500 bg-green-50' : 'border-red-300 bg-red-50'}`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Globe size={24} className={formData.location.lat ? 'text-green-600' : 'text-red-600'} />
-              <div>
-                <p className="font-semibold text-sm">
-                  {formData.location.lat ? t('onboarding.location.locationEnabled') : t('onboarding.location.locationRequired')}
-                </p>
-                <p className="text-xs text-gray-600">
-                  {formData.location.lat 
-                    ? t('onboarding.location.locationSuccess') 
-                    : t('onboarding.location.locationPrompt')}
-                </p>
-              </div>
-            </div>
-            {!formData.location.lat && (
-              <Button 
-                type="button"
-                onClick={getLocation}
-                disabled={gettingLocation}
-                className="bg-purple-600"
+          <Label className="text-sm font-medium mb-2 block">{t('onboarding.gender.iAm')}</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {['man', 'woman'].map(gender => (
+              <button
+                key={gender}
+                onClick={() => updateField('gender', gender)}
+                className={`p-3 rounded-xl border-2 transition flex items-center justify-center gap-2 ${
+                  formData.gender === gender ? 'border-purple-600 bg-purple-50' : 'border-gray-200'
+                }`}
               >
-                {gettingLocation ? t('onboarding.location.gettingLocation') : t('onboarding.location.enableButton')}
-              </Button>
-            )}
+                <span className="text-xl">{gender === 'man' ? '👨' : '👩'}</span>
+                <span className={`font-medium ${formData.gender === gender ? 'text-purple-600' : 'text-gray-700'}`}>
+                  {gender === 'man' ? 'Man' : 'Woman'}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <Label className="text-sm font-medium mb-2 block">{t('onboarding.gender.lookingFor')}</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {['man', 'woman'].map(gender => (
+              <button
+                key={gender}
+                onClick={() => toggleGender(gender)}
+                className={`p-3 rounded-xl border-2 transition flex items-center justify-center gap-2 ${
+                  formData.looking_for.includes(gender) ? 'border-purple-600 bg-purple-50' : 'border-gray-200'
+                }`}
+              >
+                <span className="text-xl">{gender === 'man' ? '👨' : '👩'}</span>
+                <span className={`font-medium ${formData.looking_for.includes(gender) ? 'text-purple-600' : 'text-gray-700'}`}>
+                  {gender === 'man' ? 'Men' : 'Women'}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       </div>
     </motion.div>,
 
-    // Step 4: Relationship Goal
+    // Step 2: COMBINED - Location + Heritage + Goal
     <motion.div
-      key="goal"
+      key="location-combined"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
+      className="space-y-5"
     >
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.goal.title')}</h2>
-      <p className="text-gray-500 mb-8">{t('onboarding.goal.subtitle')}</p>
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-1">Your Background</h2>
+        <p className="text-gray-500 text-sm">Help us find your perfect match</p>
+      </div>
 
-      <div className="space-y-3">
-        {[
-          { value: 'dating', emoji: '💕', label: t('onboarding.goal.dating.label'), desc: t('onboarding.goal.dating.desc') },
-          { value: 'serious_relationship', emoji: '❤️', label: t('onboarding.goal.serious.label'), desc: t('onboarding.goal.serious.desc') },
-          { value: 'marriage', emoji: '💍', label: t('onboarding.goal.marriage.label'), desc: t('onboarding.goal.marriage.desc') },
-          { value: 'friendship_community', emoji: '🤝', label: t('onboarding.goal.friendship.label'), desc: t('onboarding.goal.friendship.desc') },
-          { value: 'networking', emoji: '🌐', label: 'Networking', desc: 'Professional connections' }
-        ].map(goal => (
-          <button
-            key={goal.value}
-            onClick={() => updateField('relationship_goal', goal.value)}
-            className={`w-full p-4 rounded-xl border-2 text-left transition ${
-              formData.relationship_goal === goal.value
-                ? 'border-purple-600 bg-purple-50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <div className="flex items-center gap-4">
-              <span className="text-2xl">{goal.emoji}</span>
-              <div>
-                <span className={`font-medium block ${formData.relationship_goal === goal.value ? 'text-purple-600' : 'text-gray-700'}`}>
-                  {goal.label}
-                </span>
-                <span className="text-sm text-gray-500">{goal.desc}</span>
-              </div>
+      <div>
+        <Label className="text-sm font-medium">Heritage Country</Label>
+        <Select value={formData.country_of_origin} onValueChange={(v) => updateField('country_of_origin', v)}>
+          <SelectTrigger className="mt-1 h-11"><SelectValue placeholder="Select country" /></SelectTrigger>
+          <SelectContent>
+            {AFRICAN_COUNTRIES.map(country => (
+              <SelectItem key={country} value={country}>{country}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className={`p-4 rounded-xl border-2 ${formData.location.lat ? 'border-green-500 bg-green-50' : 'border-amber-300 bg-amber-50'}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <MapPin size={20} className={formData.location.lat ? 'text-green-600' : 'text-amber-600'} />
+            <div>
+              {formData.location.lat ? (
+                <p className="font-semibold text-sm text-green-800">{formData.current_city}, {formData.current_country}</p>
+              ) : (
+                <p className="font-semibold text-sm text-amber-800">Enable location to continue</p>
+              )}
             </div>
-          </button>
-        ))}
+          </div>
+          {!formData.location.lat && (
+            <Button onClick={getLocation} disabled={gettingLocation} size="sm" className="bg-amber-600 hover:bg-amber-700">
+              {gettingLocation ? <Loader2 size={16} className="animate-spin" /> : 'Enable'}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <Label className="text-sm font-medium mb-2 block">What are you looking for?</Label>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { value: 'dating', emoji: '💕', label: 'Dating' },
+            { value: 'serious_relationship', emoji: '❤️', label: 'Relationship' },
+            { value: 'marriage', emoji: '💍', label: 'Marriage' },
+            { value: 'friendship_community', emoji: '🤝', label: 'Friendship' }
+          ].map(goal => (
+            <button
+              key={goal.value}
+              onClick={() => updateField('relationship_goal', goal.value)}
+              className={`p-3 rounded-xl border-2 transition text-left ${
+                formData.relationship_goal === goal.value ? 'border-purple-600 bg-purple-50' : 'border-gray-200'
+              }`}
+            >
+              <span className="text-xl mr-2">{goal.emoji}</span>
+              <span className={`font-medium text-sm ${formData.relationship_goal === goal.value ? 'text-purple-600' : 'text-gray-700'}`}>
+                {goal.label}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
     </motion.div>,
 
-    // Step 5: Photos - Enhanced with skip option hint
+    // Step 3: COMBINED - Photos + Interests (Final Step)
     <motion.div
-      key="photos"
+      key="photos-interests"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
+      className="space-y-5"
     >
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('onboarding.photos.title')}</h2>
-      <p className="text-gray-500 mb-2">{t('onboarding.photos.subtitle')}</p>
-      
-      {/* Progress indicator */}
-      <div className="flex items-center gap-2 mb-4">
-        {[1, 2, 3, 4].map((num) => (
-          <div 
-            key={num}
-            className={`flex-1 h-2 rounded-full transition-all ${
-              formData.photos.length >= num ? 'bg-purple-600' : 'bg-gray-200'
-            }`}
-          />
-        ))}
-        <span className={`text-sm font-bold ${formData.photos.length >= 4 ? 'text-green-600' : 'text-gray-500'}`}>
-          {formData.photos.length}/4
-        </span>
-      </div>
-      
-      {formData.photos.length < 4 && (
-        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-          <p className="text-sm text-amber-800">
-            📸 <strong>Profiles with 4+ photos get 3x more matches!</strong>
-          </p>
-        </div>
-      )}
-      
-      {formData.photos.length >= 4 && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl">
-          <p className="text-sm text-green-800">
-            ✅ <strong>Perfect!</strong> You're ready to continue
-          </p>
-        </div>
-      )}
-      
-      <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-xl">
-        <p className="text-xs text-purple-800">
-          💡 <strong>Pro tip:</strong> Keep important details (face, upper body) in the <strong>top half</strong> of your photos
-        </p>
+      <div className="text-center">
+        <span className="text-3xl">🎉</span>
+        <h2 className="text-2xl font-bold text-gray-900 mt-2">Almost Done!</h2>
+        <p className="text-gray-500 text-sm">Add photos & interests</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        {formData.photos.map((photo, idx) => (
-          <div key={idx} className="relative aspect-[3/4] rounded-xl overflow-hidden group">
-            <img src={photo} alt="" className="w-full h-full object-cover" />
-            {idx === 0 && (
-              <Badge className="absolute top-2 left-2 bg-purple-600 text-xs">{t('onboarding.photos.main')}</Badge>
-            )}
-            {/* Replace/Remove buttons */}
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-              <label className="p-2 bg-white rounded-full cursor-pointer hover:bg-gray-100 transition">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    if (file.size > 10 * 1024 * 1024) {
-                      alert(t('errors.photoSize'));
-                      return;
-                    }
-                    setIsUploading(true);
-                    base44.integrations.Core.UploadFile({ file })
-                      .then(({ file_url }) => {
-                        const newPhotos = [...formData.photos];
-                        newPhotos[idx] = file_url;
-                        updateField('photos', newPhotos);
-                        if (idx === 0) updateField('primary_photo', file_url);
-                      })
-                      .catch(() => alert(t('errors.uploadFailed')))
-                      .finally(() => setIsUploading(false));
-                  }}
-                  className="hidden"
-                  disabled={isUploading}
-                />
-                <Camera size={16} className="text-gray-700" />
-              </label>
+      {/* Photos */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <Label className="text-sm font-medium">Photos ({formData.photos.length}/2 min)</Label>
+          {formData.photos.length >= 2 && <span className="text-xs text-green-600 flex items-center gap-1"><Check size={12} />Ready!</span>}
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {formData.photos.map((photo, idx) => (
+            <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group">
+              <img src={photo} alt="" className="w-full h-full object-cover" />
               <button
-                type="button"
                 onClick={() => {
                   const newPhotos = formData.photos.filter((_, i) => i !== idx);
                   updateField('photos', newPhotos);
-                  if (idx === 0 && newPhotos.length > 0) {
-                    updateField('primary_photo', newPhotos[0]);
-                  } else if (newPhotos.length === 0) {
-                    updateField('primary_photo', '');
-                  }
+                  if (idx === 0 && newPhotos.length > 0) updateField('primary_photo', newPhotos[0]);
                 }}
-                className="p-2 bg-red-500 rounded-full hover:bg-red-600 transition"
+                className="absolute top-1 right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
               >
-                <span className="text-white text-xs font-bold">✕</span>
+                <span className="text-white text-xs">✕</span>
               </button>
             </div>
-          </div>
-        ))}
-        
-        {formData.photos.length < 6 && (
-          <label className="aspect-[3/4] rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoUpload}
-              className="hidden"
-              disabled={isUploading}
-            />
-            {isUploading ? (
-              <Loader2 size={32} className="text-purple-600 animate-spin" />
-            ) : (
-              <>
-                <Camera size={32} className="text-gray-400 mb-2" />
-                <span className="text-sm text-gray-500">{t('onboarding.photos.addPhoto')}</span>
-              </>
-            )}
-          </label>
-        )}
-      </div>
-    </motion.div>,
-
-    // Step 6: Interests - Final step with celebration
-    <motion.div
-      key="interests"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-    >
-      <div className="text-center mb-4">
-        <span className="text-4xl">🎉</span>
-        <h2 className="text-2xl font-bold text-gray-900 mt-2">Final Step!</h2>
-        <p className="text-gray-500">{t('onboarding.interests.subtitle')}</p>
-      </div>
-      
-      {/* Progress indicator */}
-      <div className="flex items-center gap-2 mb-6">
-        {[1, 2, 3].map((num) => (
-          <div 
-            key={num}
-            className={`flex-1 h-2 rounded-full transition-all ${
-              formData.interests.length >= num ? 'bg-purple-600' : 'bg-gray-200'
-            }`}
-          />
-        ))}
-        <span className={`text-sm font-bold ${formData.interests.length >= 3 ? 'text-green-600' : 'text-gray-500'}`}>
-          {formData.interests.length}/3
-        </span>
+          ))}
+          {formData.photos.length < 4 && (
+            <label className="aspect-square rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition">
+              <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" disabled={isUploading} />
+              {isUploading ? <Loader2 size={24} className="text-purple-600 animate-spin" /> : <Camera size={24} className="text-gray-400" />}
+            </label>
+          )}
+        </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 mb-6">
-        {INTERESTS.map(interest => (
-          <Badge
-            key={interest}
-            variant={formData.interests.includes(interest) ? "default" : "outline"}
-            className={`cursor-pointer text-base py-2 px-4 transition ${
-              formData.interests.includes(interest)
-                ? 'bg-purple-600 text-white scale-105'
-                : 'hover:bg-purple-50 hover:scale-105'
-            }`}
-            onClick={() => toggleInterest(interest)}
-          >
-            {interest}
-          </Badge>
-        ))}
+      {/* Interests */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <Label className="text-sm font-medium">Interests ({formData.interests.length}/3 min)</Label>
+          {formData.interests.length >= 3 && <span className="text-xs text-green-600 flex items-center gap-1"><Check size={12} />Great!</span>}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {INTERESTS.map(interest => (
+            <Badge
+              key={interest}
+              variant={formData.interests.includes(interest) ? "default" : "outline"}
+              className={`cursor-pointer py-1.5 px-3 transition ${
+                formData.interests.includes(interest) ? 'bg-purple-600 text-white' : 'hover:bg-purple-50'
+              }`}
+              onClick={() => toggleInterest(interest)}
+            >
+              {interest}
+            </Badge>
+          ))}
+        </div>
       </div>
-      
-      {formData.interests.length >= 3 && (
+
+      {formData.photos.length >= 2 && formData.interests.length >= 3 && (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="p-4 bg-gradient-to-r from-purple-50 to-amber-50 rounded-xl border border-purple-200 text-center"
         >
-          <p className="text-purple-800 font-medium">
-            🎊 You're all set! Click below to start meeting people
-          </p>
+          <p className="text-purple-800 font-medium">🎊 You're all set! Tap below to start</p>
         </motion.div>
       )}
     </motion.div>
@@ -958,15 +702,13 @@ export default function Onboarding() {
           </button>
           <div className="text-center">
             <span className="text-sm font-medium text-gray-700">
-              {step === 0 ? 'Get Started' : `Step ${step} of 6`}
+              {step === 0 ? 'Get Started' : `Step ${step} of 3`}
             </span>
-            {step > 0 && step < 6 && (
+            {step > 0 && step <= 3 && (
               <p className="text-xs text-purple-600 font-medium">
                 {step === 1 && "Great start! 🎉"}
-                {step === 2 && "You're doing amazing! ✨"}
-                {step === 3 && "Halfway there! 🚀"}
-                {step === 4 && "Almost done! 💪"}
-                {step === 5 && "Last step coming up! 🎯"}
+                {step === 2 && "Almost there! 🚀"}
+                {step === 3 && "Final step! 🎯"}
               </p>
             )}
           </div>
@@ -1007,7 +749,7 @@ export default function Onboarding() {
           
           <Button
             onClick={() => {
-              if (step === 6) {
+              if (step === 3) {
                 createProfileMutation.mutate();
               } else {
                 setStep(step + 1);
@@ -1018,7 +760,7 @@ export default function Onboarding() {
           >
             {createProfileMutation.isPending ? (
               <Loader2 size={24} className="animate-spin" />
-            ) : step === 6 ? (
+            ) : step === 3 ? (
               <>
                 <Sparkles size={20} className="mr-2" />
                 {t('onboarding.navigation.startMatching')}
