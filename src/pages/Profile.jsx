@@ -41,7 +41,6 @@ export default function Profile() {
   
   const [myProfile, setMyProfile] = useState(null);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
-  const [socialProofData, setSocialProofData] = useState({ views: 0, likes: 0, percentile: 0 });
   const [activeMatch, setActiveMatch] = useState(null);
   const queryClient = useQueryClient();
 
