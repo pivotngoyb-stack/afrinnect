@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import confetti from 'canvas-confetti';
+import StripePaymentModal from '@/components/payment/StripePaymentModal';
 
 const SHOP_ITEMS = [
   {
