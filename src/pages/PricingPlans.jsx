@@ -349,8 +349,11 @@ export default function PricingPlans() {
                   <p className="text-center text-xs text-gray-400 mt-4">
                     {billingCycle === 'monthly' 
                       ? `$${price.total}/month • Cancel anytime`
-                      : `Billed ${billingCycle === 'yearly' ? 'annually' : 'quarterly'} at $${price.total} • Cancel anytime`
+                      : `Billed ${billingCycle === 'yearly' ? 'annually' : (billingCycle === 'quarterly' ? 'every 3 months' : '')} at $${price.total}`
                     }
+                  </p>
+                  <p className="text-center text-xs text-gray-400">
+                    Auto-renews • Cancel anytime
                   </p>
                 </div>
               </div>
@@ -363,11 +366,24 @@ export default function PricingPlans() {
           <SocialProofPaywall />
         </div>
 
+        {/* Upgrade/Downgrade Info Box */}
+        <div className="mt-12 max-w-2xl mx-auto bg-blue-50 border border-blue-200 rounded-2xl p-6">
+          <h4 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
+            <Zap size={18} />
+            Fair Billing - No Double Charges
+          </h4>
+          <div className="space-y-2 text-sm text-blue-800">
+            <p>⬆️ <strong>Upgrading?</strong> You get credit for unused time on your current plan - automatically applied to your new subscription.</p>
+            <p>⬇️ <strong>Downgrading?</strong> Keep all features until your current billing period ends. No refunds, but no extra charges either.</p>
+            <p>❌ <strong>Canceling?</strong> Cancel anytime. Keep your features until the end of your paid period.</p>
+          </div>
+        </div>
+
         {/* Money-back guarantee */}
-        <div className="mt-12 text-center">
+        <div className="mt-8 text-center">
           <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-6 py-3">
             <Shield className="w-5 h-5 text-green-600" />
-            <span className="text-green-800 font-medium">30-day money-back guarantee</span>
+            <span className="text-green-800 font-medium">3-day free trial on first subscription</span>
           </div>
           <p className="text-gray-500 mt-4 mb-2">Unsure which plan is right for you?</p>
           <a href="#comparison" className="text-purple-600 font-semibold hover:underline">
