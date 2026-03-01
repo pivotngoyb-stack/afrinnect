@@ -935,6 +935,9 @@ export default function Home() {
         {/* Weekly Top Picks (Elite/VIP) */}
         <WeeklyTopPicks userProfile={myProfile} />
 
+        {/* VIP Events Promo (Elite/VIP) */}
+        <VIPEventsPromo userProfile={myProfile} />
+
         {/* Boost Button */}
         <div className="mb-3">
           <BoostButton userProfile={myProfile} onBoostActivated={() => refetch()} />
