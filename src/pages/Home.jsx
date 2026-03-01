@@ -37,6 +37,12 @@ import FeedbackModal from '@/components/matching/FeedbackModal';
 import ProfileSuggestions from '@/components/matching/ProfileSuggestions';
 import ProgressToTrial from '@/components/monetization/ProgressToTrial';
 import BlurredLikesTeaser from '@/components/monetization/BlurredLikesTeaser';
+import BoostButton from '@/components/monetization/BoostButton';
+import SuperLikeCounter from '@/components/monetization/SuperLikeCounter';
+import LikesCounter from '@/components/monetization/LikesCounter';
+import ActivitySummaryBanner from '@/components/monetization/ActivitySummaryBanner';
+import WeeklyTopPicks from '@/components/monetization/WeeklyTopPicks';
+import PremiumBadgeOnProfile from '@/components/monetization/PremiumBadgeOnProfile';
 
 export default function Home() {
   usePerformanceMonitor('Home');
@@ -887,6 +893,12 @@ export default function Home() {
                 userTier={myProfile?.subscription_tier || 'free'}
               />
 
+              {/* Likes Counter */}
+              <LikesCounter userProfile={myProfile} />
+
+              {/* Super Like Counter */}
+              <SuperLikeCounter userProfile={myProfile} />
+
               {/* Who Likes You Button */}
               <Link to={createPageUrl('WhoLikesYou')}>
                 <Button variant="outline" size="icon" className="h-8 w-8 relative">
@@ -913,6 +925,17 @@ export default function Home() {
               </header>
 
       <main className="flex-1 flex flex-col overflow-hidden px-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        {/* Activity Summary Banner */}
+        <ActivitySummaryBanner userProfile={myProfile} />
+        
+        {/* Weekly Top Picks (Elite/VIP) */}
+        <WeeklyTopPicks userProfile={myProfile} />
+
+        {/* Boost Button */}
+        <div className="mb-3">
+          <BoostButton userProfile={myProfile} onBoostActivated={() => refetch()} />
+        </div>
+
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">

@@ -12,6 +12,7 @@ import OptimizedImage from '../shared/OptimizedImage';
 import ProfileTierDecoration from './ProfileTierDecoration';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import MatchExplanation from '../matching/MatchExplanation';
+import PremiumBadgeOnProfile from '../monetization/PremiumBadgeOnProfile';
 
 const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLike, onPass, onSuperLike, showActions = true, expanded = false, isLiking = false, isPassing = false, isSuperLiking = false, matchScore, matchReasons, matchBreakdown }) {
   const { t } = useLanguage();
@@ -238,6 +239,7 @@ const ProfileCard = React.memo(function ProfileCard({ profile, myLocation, onLik
             <h2 className="text-2xl font-bold">{profile?.display_name}</h2>
             {age && <span className="text-xl font-light">{age}</span>}
             <VerificationBadge verification={profile?.verification_status} />
+            <PremiumBadgeOnProfile tier={profile?.subscription_tier} size="small" />
           </div>
 
           <div className="flex items-center gap-1 text-white/90 text-sm">

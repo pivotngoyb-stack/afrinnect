@@ -181,7 +181,7 @@ export default function WhoLikesYou() {
     return age;
   };
 
-  const showBlurred = !myProfile?.is_premium;
+  const showBlurred = !myProfile?.is_premium && !['premium', 'elite', 'vip'].includes(myProfile?.subscription_tier);
 
   return (
     <>
