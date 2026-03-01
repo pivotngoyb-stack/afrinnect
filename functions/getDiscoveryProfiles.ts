@@ -36,26 +36,32 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Rate Limit using Deno KV (persistent across requests)
-        const kv = await Deno.openKv();
-        const rateKey = ["discovery_rate", user.id];
-        const rateData = await kv.get(rateKey);
-        
         const now = Date.now();
-        const windowMs = 60000; // 1 minute window
-        const maxRequests = 20;
         
-        let requests = [];
-        if (rateData.value) {
-            requests = rateData.value.filter(time => now - time < windowMs);
+        // Try to use KV for rate limiting, but don't fail if unavailable
+        let kv;
+        try {
+            kv = await Deno.openKv();
+            const rateKey = ["discovery_rate", user.id];
+            const rateData = await kv.get(rateKey);
+            
+            const windowMs = 60000;
+            const maxRequests = 20;
+            
+            let requests = [];
+            if (rateData.value) {
+                requests = rateData.value.filter(time => now - time < windowMs);
+            }
+            
+            if (requests.length >= maxRequests) {
+                return Response.json({ error: 'Rate limit exceeded. Please slow down.' }, { status: 429 });
+            }
+            
+            requests.push(now);
+            await kv.set(rateKey, requests, { expireIn: 60000 });
+        } catch (kvError) {
+            console.log('KV unavailable, skipping rate limit:', kvError.message);
         }
-        
-        if (requests.length >= maxRequests) {
-            return Response.json({ error: 'Rate limit exceeded. Please slow down.' }, { status: 429 });
-        }
-        
-        requests.push(now);
-        await kv.set(rateKey, requests, { expireIn: 60000 });
 
         const { filters = {}, mode = 'global', limit = 20, myProfileId, cursor } = await req.json();
 
@@ -71,19 +77,52 @@ Deno.serve(async (req) => {
         }
         if (!myProfile) return Response.json({ profiles: [], nextCursor: null });
 
-        // 2. Check cache for excludes (using Deno KV)
-        const excludeCacheKey = ["excludes", myProfile.id];
+        // 2. Get excludes (with optional KV caching)
         let excludeIds = new Set();
         
-        const cachedExcludes = await kv.get(excludeCacheKey);
-        if (cachedExcludes.value && (now - cachedExcludes.value.timestamp) < 300000) {
-            // Use cached excludes (5 min cache)
-            excludeIds = new Set(cachedExcludes.value.ids);
-        } else {
-            // Fetch fresh excludes
+        try {
+            if (kv) {
+                const excludeCacheKey = ["excludes", myProfile.id];
+                const cachedExcludes = await kv.get(excludeCacheKey);
+                if (cachedExcludes.value && (now - cachedExcludes.value.timestamp) < 300000) {
+                    excludeIds = new Set(cachedExcludes.value.ids);
+                } else {
+                    const [passes, likes] = await Promise.all([
+                        base44.entities.Pass.filter({ passer_id: myProfile.id }, '-created_date', 500),
+                        base44.entities.Like.filter({ liker_id: myProfile.id }, '-created_date', 500)
+                    ]);
+                    
+                    excludeIds = new Set([
+                        myProfile.id, 
+                        ...passes.map(p => p.passed_id), 
+                        ...likes.map(l => l.liked_id),
+                        ...(myProfile.blocked_users || [])
+                    ]);
+                    
+                    await kv.set(excludeCacheKey, {
+                        ids: Array.from(excludeIds),
+                        timestamp: now
+                    }, { expireIn: 300000 });
+                }
+            } else {
+                // No KV, fetch directly
+                const [passes, likes] = await Promise.all([
+                    base44.entities.Pass.filter({ passer_id: myProfile.id }, '-created_date', 500),
+                    base44.entities.Like.filter({ liker_id: myProfile.id }, '-created_date', 500)
+                ]);
+                
+                excludeIds = new Set([
+                    myProfile.id, 
+                    ...passes.map(p => p.passed_id), 
+                    ...likes.map(l => l.liked_id),
+                    ...(myProfile.blocked_users || [])
+                ]);
+            }
+        } catch (cacheError) {
+            console.log('Cache error, fetching fresh:', cacheError.message);
             const [passes, likes] = await Promise.all([
-                 base44.entities.Pass.filter({ passer_id: myProfile.id }, '-created_date', 1000),
-                 base44.entities.Like.filter({ liker_id: myProfile.id }, '-created_date', 1000)
+                base44.entities.Pass.filter({ passer_id: myProfile.id }, '-created_date', 500),
+                base44.entities.Like.filter({ liker_id: myProfile.id }, '-created_date', 500)
             ]);
             
             excludeIds = new Set([
@@ -92,12 +131,6 @@ Deno.serve(async (req) => {
                 ...likes.map(l => l.liked_id),
                 ...(myProfile.blocked_users || [])
             ]);
-            
-            // Cache excludes
-            await kv.set(excludeCacheKey, {
-                ids: Array.from(excludeIds),
-                timestamp: now
-            }, { expireIn: 300000 });
         }
 
         // 3. Build Database Query
@@ -151,27 +184,33 @@ Deno.serve(async (req) => {
             candidates.pop();
         }
 
-        // 5. Get ML profile (cached)
-        const mlCacheKey = ["ml_profile", myProfile.id];
-        let mlProfile;
+        // 5. Get ML profile (with optional caching)
+        let mlProfile = {
+            preference_weights: {
+                cultural_background: 1.0, religion: 1.0, interests: 1.0, location: 1.0,
+                education: 1.0, lifestyle: 1.0, relationship_goal: 1.0, age_proximity: 1.0
+            },
+            liked_patterns: { countries: [], religions: [], interests: [] }
+        };
         
-        const cachedML = await kv.get(mlCacheKey);
-        if (cachedML.value && (now - cachedML.value.timestamp) < 600000) {
-            mlProfile = cachedML.value.data;
-        } else {
-            const mlProfiles = await base44.asServiceRole.entities.UserMLProfile.filter({ user_id: myProfile.id });
-            mlProfile = mlProfiles[0] || {
-                preference_weights: {
-                    cultural_background: 1.0, religion: 1.0, interests: 1.0, location: 1.0,
-                    education: 1.0, lifestyle: 1.0, relationship_goal: 1.0, age_proximity: 1.0
-                },
-                liked_patterns: { countries: [], religions: [], interests: [] }
-            };
-            
-            await kv.set(mlCacheKey, {
-                data: mlProfile,
-                timestamp: now
-            }, { expireIn: 600000 });
+        try {
+            if (kv) {
+                const mlCacheKey = ["ml_profile", myProfile.id];
+                const cachedML = await kv.get(mlCacheKey);
+                if (cachedML.value && (now - cachedML.value.timestamp) < 600000) {
+                    mlProfile = cachedML.value.data;
+                } else {
+                    const mlProfiles = await base44.asServiceRole.entities.UserMLProfile.filter({ user_id: myProfile.id });
+                    if (mlProfiles[0]) mlProfile = mlProfiles[0];
+                    
+                    await kv.set(mlCacheKey, { data: mlProfile, timestamp: now }, { expireIn: 600000 });
+                }
+            } else {
+                const mlProfiles = await base44.asServiceRole.entities.UserMLProfile.filter({ user_id: myProfile.id });
+                if (mlProfiles[0]) mlProfile = mlProfiles[0];
+            }
+        } catch (mlError) {
+            console.log('ML profile fetch skipped:', mlError.message);
         }
         
         const weights = mlProfile.preference_weights || {};
