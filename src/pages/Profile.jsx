@@ -637,102 +637,37 @@ export default function Profile() {
             />
 
             {profile?.subscription_tier && profile?.subscription_tier !== 'free' ? (
-              <div className="space-y-2 pt-2">
-                <Button 
-                  variant="outline"
-                  className="w-full border-amber-200 text-amber-700 hover:bg-amber-50" 
-                  onClick={async () => {
-                    if (confirm(t('admin.home.cancelWarning'))) {
-                      try {
-                        const res = await base44.functions.invoke('cancelSubscription', {});
-                        if (res.data.success) {
-                          alert(res.data.message);
-                          window.location.reload();
-                        } else {
-                          alert(res.data.error || 'Cancellation failed');
-                        }
-                      } catch(e) {
-                        alert('Error cancelling subscription');
+              <Button 
+                variant="outline"
+                className="w-full border-amber-200 text-amber-700 hover:bg-amber-50 h-12" 
+                onClick={async () => {
+                  if (confirm(t('admin.home.cancelWarning'))) {
+                    try {
+                      const res = await base44.functions.invoke('cancelSubscription', {});
+                      if (res.data.success) {
+                        alert(res.data.message);
+                        window.location.reload();
+                      } else {
+                        alert(res.data.error || 'Cancellation failed');
                       }
+                    } catch(e) {
+                      alert('Error cancelling subscription');
                     }
-                  }}
-                >
-                  {t('admin.home.cancelSubscription')}
-                </Button>
-                <p className="text-xs text-center text-gray-400">
-                  Current Plan: {profile.subscription_tier.charAt(0).toUpperCase() + profile.subscription_tier.slice(1)}
-                </p>
-              </div>
+                  }
+                }}
+              >
+                {t('admin.home.cancelSubscription')}
+              </Button>
             ) : (
               <Link to={createPageUrl('PricingPlans')}>
-                <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700" size="lg">
-                  <Crown size={18} className="mr-2" />
+                <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 h-14" size="lg">
+                  <Crown size={20} className="mr-2" />
                   {t('profile.upgradePremium')}
                 </Button>
               </Link>
             )}
 
-            {/* Dynamic Features Section */}
-            {[
-              { id: 'background_check', label: t('profile.backgroundCheck'), icon: Shield, link: 'BackgroundCheckRequest', badge: 'Safety' },
-              { id: 'phone_verification', label: t('profile.verifyPhone'), icon: Shield, link: 'PhoneVerification', condition: !profile?.verification_status?.phone_verified },
-              { id: 'language_exchange', label: t('profile.languageExchange'), icon: Languages, link: 'LanguageExchangeHub' },
-              { id: 'referral_program', label: 'Referral Program', icon: Users, link: 'ReferralProgram', badge: 'Earn' },
-              { id: 'marketplace', label: 'Marketplace', icon: Heart, link: 'Marketplace' }
-            ].map((feature) => {
-              const isEnabled = isFeatureEnabled(feature.id);
-              if (feature.condition === false) return null; // Skip if condition not met (e.g. already verified)
-              
-              if (isEnabled) {
-                // Render as active feature
-                return (
-                  <Link to={createPageUrl(feature.link)} key={feature.id} className="block mt-3">
-                    <Button className="w-full bg-white text-gray-800 border-2 border-purple-100 hover:bg-purple-50 hover:border-purple-200 shadow-sm" size="lg">
-                      <feature.icon size={18} className="mr-2 text-purple-600" />
-                      {feature.label}
-                      {feature.badge && <Badge className="ml-2 bg-purple-100 text-purple-700 hover:bg-purple-200 border-0">{feature.badge}</Badge>}
-                    </Button>
-                  </Link>
-                );
-              }
-              return null; // Don't render enabled features here, they are handled above
-            })}
-
-            {/* Coming Soon Section - Only show disabled features */}
-            {['background_check', 'phone_verification', 'language_exchange', 'referral_program', 'marketplace'].some(id => !isFeatureEnabled(id)) && (
-              <div className="pt-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Separator className="flex-1" />
-                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('admin.home.comingSoon')}</span>
-                  <Separator className="flex-1" />
-                </div>
-                
-                <div className="space-y-3 opacity-70 grayscale">
-                  {[
-                    { id: 'background_check', label: t('profile.backgroundCheck'), icon: Shield },
-                    { id: 'phone_verification', label: t('profile.verifyPhone'), icon: Shield, condition: !profile?.verification_status?.phone_verified },
-                    { id: 'language_exchange', label: t('profile.languageExchange'), icon: Languages },
-                    { id: 'referral_program', label: 'Referral Program', icon: Users }, // TODO: Add key
-                    { id: 'marketplace', label: 'Marketplace', icon: Heart } // TODO: Add key
-                  ].map(feature => {
-                    const isEnabled = isFeatureEnabled(feature.id);
-                    if (isEnabled || feature.condition === false) return null;
-
-                    return (
-                      <Button key={feature.id} disabled variant="outline" className="w-full justify-between bg-gray-50 text-gray-500 border-gray-200 cursor-not-allowed" size="lg">
-                        <div className="flex items-center">
-                          <feature.icon size={18} className="mr-2" />
-                          {feature.label}
-                        </div>
-                        <Badge variant="secondary" className="text-[10px] bg-gray-200 text-gray-500">{t('admin.home.comingSoon')}</Badge>
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <Separator className="my-6" />
+            <Separator className="my-4" />
 
             <Button
               variant="outline"
