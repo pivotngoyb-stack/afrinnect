@@ -24,6 +24,7 @@ import { usePerformanceMonitor } from '@/components/shared/usePerformanceMonitor
 import EmptyState from '@/components/shared/EmptyState';
 import { useConversionTracker, CONVERSION_EVENTS } from '@/components/shared/ConversionTracker';
 import { hasAccess } from '@/components/shared/TierGate';
+import { useTierConfig, getTierLimit, isUnlimited } from '@/components/shared/useTierConfig';
 import PullToRefresh from '@/components/shared/PullToRefresh';
 import LazyImage from '@/components/shared/LazyImage';
 import { useUpgradePrompts, UpgradePromptBanner } from '@/components/monetization/UpgradePrompts';
@@ -64,6 +65,7 @@ export default function Home() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { prompt: upgradePrompt, dismissPrompt } = useUpgradePrompts(myProfile);
+  const { tiers: tierConfig } = useTierConfig();
 
   // Fetch AI Behavior Analysis Recommendations - DEFERRED to avoid blocking initial load
   useEffect(() => {
@@ -370,11 +372,15 @@ export default function Home() {
     }
   }, [currentIndex, profiles]);
 
-  // Check daily like limit
+  // Check daily like limit - uses centralized tier configuration
   const canLike = () => {
     if (isAdmin) return true; // Admins get unlimited likes
-    // Elite/VIP get unlimited likes
-    if (hasAccess(myProfile?.subscription_tier, 'unlimited_likes')) return true;
+    
+    const tier = myProfile?.subscription_tier || 'free';
+    const dailyLikesLimit = getTierLimit(tierConfig, tier, 'daily_likes');
+    
+    // -1 means unlimited
+    if (isUnlimited(dailyLikesLimit)) return true;
 
     // Use local date string for comparisons
     const now = new Date();
@@ -386,10 +392,7 @@ export default function Home() {
       return true; // New day, reset
     }
 
-    const tier = myProfile?.subscription_tier || 'free';
-    // Premium: 50 likes/day, Free: 15 likes/day
-    const limit = tier === 'premium' ? 50 : 15;
-    return likesUsed < limit;
+    return likesUsed < dailyLikesLimit;
   };
 
   // Like mutation
@@ -736,24 +739,26 @@ export default function Home() {
   };
 
   const handleRewind = async () => {
-    // Premium feature check
     const tier = myProfile?.subscription_tier || 'free';
-    const canRewind = tier === 'premium' || tier === 'elite' || tier === 'vip' || myProfile?.is_premium;
+    const dailyRewindsLimit = getTierLimit(tierConfig, tier, 'daily_rewinds');
     
-    if (swipeHistory.length === 0 || !canRewind) {
-      if (!canRewind) {
-        setShowLimitPaywall(true);
-      }
+    // Free users can't rewind (limit = 0)
+    if (dailyRewindsLimit === 0) {
+      setShowLimitPaywall(true);
+      return;
+    }
+    
+    if (swipeHistory.length === 0) {
       return;
     }
 
-    // Premium has limited rewinds (5/day), Elite/VIP have unlimited
-    if (tier === 'premium') {
+    // Check daily limit if not unlimited
+    if (!isUnlimited(dailyRewindsLimit)) {
       const now = new Date();
       const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
       const rewindsToday = parseInt(localStorage.getItem(`rewinds_${today}`) || '0');
-      if (rewindsToday >= 5) {
-        alert('You\'ve used all 5 rewinds for today. Upgrade to Elite for unlimited rewinds!');
+      if (rewindsToday >= dailyRewindsLimit) {
+        alert(`You've used all ${dailyRewindsLimit} rewinds for today. Upgrade to Elite for unlimited rewinds!`);
         return;
       }
       localStorage.setItem(`rewinds_${today}`, String(rewindsToday + 1));
