@@ -118,6 +118,8 @@ import VerifyPhoto from './pages/VerifyPhoto';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
+import VIPEventsHub from './pages/VIPEventsHub';
+import SpeedDatingLobby from './pages/SpeedDatingLobby';
 import __Layout from './Layout.jsx';
 
 
@@ -193,6 +195,8 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
     "WhoLikesYou": WhoLikesYou,
+    "VIPEventsHub": VIPEventsHub,
+    "SpeedDatingLobby": SpeedDatingLobby,
 }
 
 export const pagesConfig = {
