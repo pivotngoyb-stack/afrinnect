@@ -101,63 +101,98 @@ export default function Shop() {
     fetchProfile();
   }, []);
 
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [clientSecret, setClientSecret] = useState(null);
+  const [stripeConfig, setStripeConfig] = useState(null);
+
+  // Fetch Stripe config on mount
+  useEffect(() => {
+    const getStripeConfig = async () => {
+      try {
+        const res = await base44.functions.invoke('getStripeConfig', {});
+        if (res.data?.publicKey) setStripeConfig(res.data);
+      } catch (e) {}
+    };
+    getStripeConfig();
+  }, []);
+
   const handlePurchase = async (item) => {
     setPurchasing(item.id);
+    setSelectedItem(item);
     
     try {
-      // Create payment intent
+      // Create payment intent for ONE-TIME purchase
       const response = await base44.functions.invoke('createStripePaymentIntent', {
         amount: item.price,
         currency: 'usd',
-        planType: `${item.type}_${item.quantity}`,
+        planType: `shop_${item.type}`,
         billingPeriod: 'one_time',
         itemType: item.type,
         itemQuantity: item.quantity
       });
 
       if (response.data?.clientSecret) {
-        // For now, simulate success - in production this would open Stripe checkout
-        // Actually apply the purchase
-        const updates = {};
-        
-        if (item.type === 'boost') {
-          updates.purchased_boosts = (myProfile.purchased_boosts || 0) + item.quantity;
-        } else if (item.type === 'super_likes') {
-          updates.purchased_super_likes = (myProfile.purchased_super_likes || 0) + item.quantity;
-        } else if (item.type === '24hr_unlock') {
-          updates.purchased_24hr_unlock = true;
-          updates.purchased_24hr_unlock_expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-        }
-
-        await base44.entities.UserProfile.update(myProfile.id, updates);
-        
-        // Record purchase
-        await base44.entities.InAppPurchase.create({
-          user_profile_id: myProfile.id,
-          item_type: item.type,
-          item_quantity: item.quantity,
-          amount_usd: item.price,
-          payment_provider: 'stripe',
-          status: 'completed'
-        });
-
-        setMyProfile({ ...myProfile, ...updates });
-        setPurchaseSuccess(item);
-        
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
-
-        setTimeout(() => setPurchaseSuccess(null), 3000);
+        setClientSecret(response.data.clientSecret);
+        setShowPaymentModal(true);
+      } else {
+        throw new Error('Failed to create payment');
       }
     } catch (e) {
       console.error('Purchase failed:', e);
-      alert('Purchase failed. Please try again.');
+      alert('Failed to start purchase. Please try again.');
+      setSelectedItem(null);
     }
     
     setPurchasing(null);
+  };
+
+  // Called ONLY after Stripe confirms payment success
+  const handlePaymentSuccess = async () => {
+    if (!selectedItem) return;
+    
+    try {
+      const updates = {};
+      
+      if (selectedItem.type === 'boost') {
+        updates.purchased_boosts = (myProfile.purchased_boosts || 0) + selectedItem.quantity;
+      } else if (selectedItem.type === 'super_likes') {
+        updates.purchased_super_likes = (myProfile.purchased_super_likes || 0) + selectedItem.quantity;
+      } else if (selectedItem.type === '24hr_unlock') {
+        updates.purchased_24hr_unlock = true;
+        updates.purchased_24hr_unlock_expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      }
+
+      // Update profile via service role (should be done in webhook ideally)
+      await base44.entities.UserProfile.update(myProfile.id, updates);
+      
+      // Record purchase
+      await base44.entities.InAppPurchase.create({
+        user_profile_id: myProfile.id,
+        item_type: selectedItem.type,
+        item_quantity: selectedItem.quantity,
+        amount_usd: selectedItem.price,
+        payment_provider: 'stripe',
+        status: 'completed'
+      });
+
+      setMyProfile({ ...myProfile, ...updates });
+      setPurchaseSuccess(selectedItem);
+      
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+
+      setTimeout(() => setPurchaseSuccess(null), 3000);
+    } catch (e) {
+      console.error('Failed to apply purchase:', e);
+    }
+    
+    setShowPaymentModal(false);
+    setClientSecret(null);
+    setSelectedItem(null);
   };
 
   const tier = myProfile?.subscription_tier || 'free';
