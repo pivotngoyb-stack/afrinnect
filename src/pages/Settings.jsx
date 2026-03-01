@@ -5,9 +5,10 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
   ArrowLeft, Bell, Lock, Eye, Shield, Globe, Moon, Sun,
-  HelpCircle, FileText, LogOut, Trash2, ChevronRight, Download, Smartphone, Loader2, Crown
+  HelpCircle, FileText, LogOut, Trash2, ChevronRight, Download, Smartphone, Loader2, Crown, EyeOff, ShoppingBag
 } from 'lucide-react';
 import FoundingMemberStatus from '@/components/subscription/FoundingMemberStatus';
+import IncognitoModeToggle from '@/components/monetization/IncognitoModeToggle';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -357,6 +358,32 @@ export default function Settings() {
             <Link to={createPageUrl('BlockedUsers')} className="flex items-center justify-between py-2">
               <span className="text-gray-700">Blocked Users</span>
               <ChevronRight size={20} className="text-gray-400" />
+            </Link>
+
+            <Separator />
+
+            {/* Incognito Mode */}
+            <IncognitoModeToggle 
+              userProfile={myProfile} 
+              onUpdate={(updated) => setMyProfile(updated)}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Shop */}
+        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+          <CardContent className="pt-4">
+            <Link to={createPageUrl('Shop')} className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
+                  <ShoppingBag size={20} className="text-white" />
+                </div>
+                <div>
+                  <span className="font-bold text-gray-900 block">Shop</span>
+                  <span className="text-xs text-gray-500">Boosts, Super Likes & more</span>
+                </div>
+              </div>
+              <ChevronRight size={20} className="text-purple-600" />
             </Link>
           </CardContent>
         </Card>
