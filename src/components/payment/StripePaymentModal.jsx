@@ -152,9 +152,15 @@ const CheckoutForm = ({ amount, planName, onSuccess, onCancel, clientSecret, isT
           </Button>
       </div>
       
-      <div className="text-center">
+      <div className="text-center space-y-2">
         <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
             <Lock size={10} /> Secured by Stripe
+        </p>
+        <p className="text-[10px] text-gray-400 leading-relaxed max-w-xs mx-auto">
+          {isTrial 
+            ? 'Your card will be charged after the 3-day trial unless you cancel. You can cancel anytime from Settings.'
+            : 'Subscription auto-renews. Cancel anytime from Settings. Upgrading? You get credit for unused time on your current plan.'
+          }
         </p>
       </div>
     </form>
