@@ -434,6 +434,36 @@ export default function Settings() {
               </div>
               <ChevronRight size={20} className="text-gray-400" />
             </Link>
+            
+            {/* Cancel Subscription - only if active */}
+            {myProfile?.subscription_tier && myProfile.subscription_tier !== 'free' && (
+              <>
+                <Separator />
+                <button
+                  onClick={async () => {
+                    if (!confirm('Are you sure you want to cancel your subscription? You will keep access until the end of your billing period.')) return;
+                    
+                    try {
+                      const res = await base44.functions.invoke('cancelSubscription', { immediate: false });
+                      if (res.data.success) {
+                        alert(`Subscription cancelled. You'll have access until ${new Date(res.data.end_date).toLocaleDateString()}.`);
+                      } else {
+                        alert(res.data.error || 'Failed to cancel subscription');
+                      }
+                    } catch (e) {
+                      alert('Failed to cancel subscription. Please contact support.');
+                    }
+                  }}
+                  className="flex items-center justify-between py-2 w-full text-left text-red-600"
+                >
+                  <div>
+                    <span className="block">Cancel Subscription</span>
+                    <span className="text-xs text-red-400">Keep access until end of billing period</span>
+                  </div>
+                  <ChevronRight size={20} className="text-red-400" />
+                </button>
+              </>
+            )}
           </CardContent>
         </Card>
 
