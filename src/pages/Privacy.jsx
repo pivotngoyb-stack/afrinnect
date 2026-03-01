@@ -22,18 +22,21 @@ export default function Privacy() {
         <div className="bg-white rounded-xl p-8 shadow-sm space-y-6">
           <div>
             <h2 className="text-2xl font-bold mb-2">Afrinnect Privacy Policy</h2>
-            <p className="text-sm text-gray-500">Last Updated: January 21, 2026</p>
+            <p className="text-sm text-gray-500">Last Updated: March 1, 2026</p>
           </div>
 
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">1. Information We Collect</h3>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
-              <li><strong>Profile Information:</strong> Name, age, photos, location, interests, and preferences</li>
+              <li><strong>Profile Information:</strong> Name, age, photos, location, ethnicity, country of origin, interests, and preferences</li>
               <li><strong>Account Data:</strong> Email address, phone number (if verified)</li>
-              <li><strong>Third-Party Accounts:</strong> If you sign in with Google, Facebook, or other providers, we access basic profile info (Name, Email, Photo) authorized by you.</li>
-              <li><strong>Usage Data:</strong> How you use the app, profiles viewed, matches made</li>
-              <li><strong>Device Information:</strong> Device type, operating system, IP address</li>
+              <li><strong>Third-Party Accounts:</strong> If you sign in with Google, Facebook, or other providers, we access basic profile info (Name, Email, Photo) authorized by you</li>
+              <li><strong>Verification Data:</strong> Photo verification selfies, ID documents (if submitted for verification)</li>
+              <li><strong>Usage Data:</strong> How you use the app, profiles viewed, matches made, messages sent</li>
+              <li><strong>Device Information:</strong> Device type, operating system, IP address, device IDs (limited to 4 per account)</li>
               <li><strong>Location Data:</strong> With your permission, to show nearby matches</li>
+              <li><strong>Payment Information:</strong> Payment method details are processed securely by Stripe; we store only transaction references</li>
+              <li><strong>Communication Data:</strong> Messages exchanged with other users and support tickets</li>
             </ul>
           </section>
 
@@ -41,23 +44,47 @@ export default function Privacy() {
             <h3 className="text-xl font-semibold">2. How We Use Your Information</h3>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
               <li>To provide and improve our dating service</li>
-              <li>To match you with compatible users</li>
-              <li>To verify your identity and ensure safety</li>
-              <li>To send you notifications about matches and messages</li>
+              <li>To match you with compatible users using our AI-powered matching algorithm</li>
+              <li>To verify your identity through photo verification and optional ID verification</li>
+              <li>To send you notifications about matches, messages, and account activity</li>
               <li>To analyze usage patterns and improve features</li>
-              <li>To prevent fraud and enforce our terms</li>
+              <li>To prevent fraud, scams, and fake profiles using AI moderation</li>
+              <li>To process payments and manage subscriptions</li>
+              <li>To provide customer support</li>
+              <li>To enforce our Terms of Service and Community Guidelines</li>
+              <li>To comply with legal obligations</li>
             </ul>
+          </section>
+
+          <section className="space-y-4">
+            <h3 className="text-xl font-semibold">2a. AI and Machine Learning</h3>
+            <p className="text-gray-700">
+              Afrinnect uses AI and machine learning to enhance your experience:
+            </p>
+            <ul className="list-disc pl-6 space-y-2 text-gray-700 mt-2">
+              <li><strong>Matching Algorithm:</strong> We analyze your preferences, behavior, and profile to suggest compatible matches</li>
+              <li><strong>Photo Moderation:</strong> AI scans photos for inappropriate content and verification</li>
+              <li><strong>Scam Detection:</strong> AI monitors for suspicious behavior patterns to protect users</li>
+              <li><strong>Content Moderation:</strong> Messages may be scanned for violations of Community Guidelines</li>
+            </ul>
+            <p className="text-gray-700 mt-2 text-sm">
+              AI decisions that significantly affect your account (e.g., bans) are reviewed by human moderators upon appeal.
+            </p>
           </section>
 
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">3. Information Sharing</h3>
             <p className="text-gray-700">We share your information with:</p>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
-              <li><strong>Other Users:</strong> Profile information visible to potential matches</li>
-              <li><strong>Service Providers:</strong> Cloud hosting, payment processors, analytics</li>
-              <li><strong>Legal Requirements:</strong> When required by law or to protect safety</li>
-              <li><strong>We NEVER sell your data to third parties</strong></li>
+              <li><strong>Other Users:</strong> Profile information visible to potential matches (you control visibility via Incognito Mode if subscribed)</li>
+              <li><strong>Service Providers:</strong> Cloud hosting (Base44), payment processors (Stripe), email services, push notification providers (Firebase)</li>
+              <li><strong>Analytics Partners:</strong> Google Analytics for app usage insights (anonymized)</li>
+              <li><strong>Legal Requirements:</strong> When required by law, court order, or to protect safety</li>
+              <li><strong>Business Transfers:</strong> In case of merger, acquisition, or sale of assets</li>
             </ul>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+              <p className="font-semibold text-green-900">🔒 We NEVER sell your personal data to third parties for advertising or marketing purposes.</p>
+            </div>
           </section>
 
           <section className="space-y-4">
