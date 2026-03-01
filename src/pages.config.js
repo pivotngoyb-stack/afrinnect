@@ -120,6 +120,7 @@ import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
 import VIPEventsHub from './pages/VIPEventsHub';
 import SpeedDatingLobby from './pages/SpeedDatingLobby';
+import AdminVIPEvents from './pages/AdminVIPEvents';
 import __Layout from './Layout.jsx';
 
 
@@ -197,6 +198,7 @@ export const PAGES = {
     "WhoLikesYou": WhoLikesYou,
     "VIPEventsHub": VIPEventsHub,
     "SpeedDatingLobby": SpeedDatingLobby,
+    "AdminVIPEvents": AdminVIPEvents,
 }
 
 export const pagesConfig = {
