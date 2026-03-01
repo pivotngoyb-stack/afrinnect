@@ -71,23 +71,39 @@ Deno.serve(async (req) => {
             }
         }
 
-        // 6. Subscription Limit
-        // Free: 20/day, Premium: 100/day, Elite/VIP: Unlimited
+        // 6. Subscription Limit - Fetch from centralized TierConfiguration
         const tier = myProfile.subscription_tier || 'free';
-        const dailyLimits = {
-            free: rateLimits.daily_message_limit_free || 20,
-            premium: 100  // Premium gets 100 messages/day
-            // Elite and VIP are unlimited (not in this object)
-        };
         
-        if (tier === 'free' || tier === 'premium') {
-            const dailyLimit = dailyLimits[tier];
+        // Try to get dynamic limits from TierConfiguration entity
+        let dailyMessageLimit = -1; // Default to unlimited
+        try {
+            const tierConfigs = await base44.entities.TierConfiguration.filter({ tier_id: tier });
+            if (tierConfigs.length > 0 && tierConfigs[0].limits?.daily_messages !== undefined) {
+                dailyMessageLimit = tierConfigs[0].limits.daily_messages;
+            } else {
+                // Fallback to hardcoded defaults
+                const defaultLimits = {
+                    free: rateLimits.daily_message_limit_free || 20,
+                    premium: 100,
+                    elite: -1,
+                    vip: -1
+                };
+                dailyMessageLimit = defaultLimits[tier] ?? 20;
+            }
+        } catch (e) {
+            console.log('Using fallback message limits');
+            const defaultLimits = { free: 20, premium: 100, elite: -1, vip: -1 };
+            dailyMessageLimit = defaultLimits[tier] ?? 20;
+        }
+        
+        // -1 means unlimited, otherwise enforce limit
+        if (dailyMessageLimit !== -1) {
             const today = new Date().toISOString().split('T')[0];
             const dailyMsgs = await base44.entities.Message.filter({ 
                 sender_id: myProfile.id,
                 created_date: { $gte: `${today}T00:00:00.000Z` }
             });
-            if (dailyMsgs.length >= dailyLimit) {
+            if (dailyMsgs.length >= dailyMessageLimit) {
                  return Response.json({ error: 'upgrade_required' }, { status: 403 });
             }
         }
