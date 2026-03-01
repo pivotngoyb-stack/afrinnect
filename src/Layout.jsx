@@ -23,6 +23,7 @@ import InstallPrompt from '@/components/mobile/InstallPrompt';
 import BannedScreen from '@/components/auth/BannedScreen';
 import FeatureReminders from '@/components/shared/FeatureReminders';
 import FeedbackWidget from '@/components/shared/FeedbackWidget';
+import CelebrationModal from '@/components/shared/CelebrationModal';
 
 import LiveViewerNotification from '@/components/monetization/LiveViewerNotification';
 import SuperLikeReceivedModal from '@/components/monetization/SuperLikeReceivedModal';
@@ -36,6 +37,7 @@ function LayoutContent({ children, currentPageName }) {
     
     const [liveViewer, setLiveViewer] = useState(null);
     const [superLikeReceived, setSuperLikeReceived] = useState(null);
+    const [showStreakCelebration, setShowStreakCelebration] = useState(false);
     const { t } = useLanguage();
 
 
@@ -272,6 +274,15 @@ function LayoutContent({ children, currentPageName }) {
 
       {/* Feedback Widget - Only for logged in users with profile */}
       {myProfile && <FeedbackWidget />}
+
+      {/* Streak Celebration */}
+      <CelebrationModal
+        isOpen={showStreakCelebration}
+        onClose={() => setShowStreakCelebration(false)}
+        title="Amazing Streak!"
+        message={`${myProfile?.login_streak || 0} days in a row! Keep it up!`}
+        emoji="🔥"
+      />
 
 
 

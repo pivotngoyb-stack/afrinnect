@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import TierConfigurationManager from "@/components/admin/TierConfigurationManager";
+import OnboardingSettings from "@/components/admin/OnboardingSettings";
 import { toast } from "sonner";
 
 export default function AdminSettings() {
@@ -168,6 +169,9 @@ export default function AdminSettings() {
               </TabsTrigger>
               <TabsTrigger value="founder" className="data-[state=active]:bg-orange-500">
                 <Users className="w-4 h-4 mr-2" /> Founder Program
+              </TabsTrigger>
+              <TabsTrigger value="onboarding" className="data-[state=active]:bg-orange-500">
+                <Users className="w-4 h-4 mr-2" /> Onboarding
               </TabsTrigger>
             </TabsList>
 
@@ -432,6 +436,11 @@ export default function AdminSettings() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Onboarding Settings */}
+            <TabsContent value="onboarding">
+              <OnboardingSettings />
             </TabsContent>
 
             {/* Founder Program */}

@@ -8,8 +8,9 @@ import { format } from 'date-fns';
 import {
   Settings, Edit2, Camera, Shield, Star, Crown, MapPin,
   Briefcase, GraduationCap, Book, Languages, Heart, ChevronRight,
-  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard, RotateCcw, Users, Zap, MessageCircle
+  LogOut, HelpCircle, Bell, Lock, Eye, Award, Sparkles, BarChart, IdCard, RotateCcw, Users, Zap, MessageCircle, MoreVertical
 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import BoostProfileButton from '@/components/profile/BoostProfileButton';
 import { Badge } from "@/components/ui/badge";
@@ -571,82 +572,69 @@ export default function Profile() {
           </div>
         )}
 
-        {/* Action Buttons (Own profile) */}
+        {/* Action Buttons - SIMPLIFIED */}
         {isOwnProfile && (
           <div className="space-y-3 mt-8">
-            {/* Premium+ Features */}
-            {profile?.is_premium && (
-              <>
-                <Link to={createPageUrl('Analytics')}>
-                  <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" size="lg">
-                    <BarChart size={18} className="mr-2" />
-                    {t('profile.viewAnalytics')}
-                    <Badge className="ml-2 bg-amber-500 text-xs">{t('common.premium')}</Badge>
-                  </Button>
-                </Link>
-
-                <Link to={createPageUrl('ProfileOptimization')}>
-                  <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" size="lg">
-                    <Sparkles size={18} className="mr-2" />
-                    {t('profile.optimizeProfile')}
-                    <Badge className="ml-2 bg-amber-500 text-xs">{t('common.premium')}</Badge>
-                  </Button>
-                </Link>
-              </>
-            )}
-
-            {/* Free Tier Features */}
-            {!profile?.verification_status?.photo_verified && (
-              <Link to={createPageUrl('VerifyPhoto')}>
-                <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
-                  <Shield size={18} className="mr-2" />
-                  {t('profile.verifyPhoto')}
-                </Button>
-              </Link>
-            )}
-
-            {!profile?.verification_status?.id_verified && (
-              <Link to={createPageUrl('IDVerification')}>
-                <Button className="w-full bg-orange-600 hover:bg-orange-700" size="lg">
-                  <IdCard size={18} className="mr-2" />
-                  {t('profile.verifyAge')}
-                </Button>
-              </Link>
-            )}
-
-            <Link to={createPageUrl('SuccessStories')}>
-              <Button className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700" size="lg">
-                <Heart size={18} className="mr-2" />
-                {t('profile.successStories')}
+            {/* Primary Action */}
+            <Link to={createPageUrl('EditProfile')}>
+              <Button className="w-full bg-purple-600 hover:bg-purple-700 h-14" size="lg">
+                <Edit2 size={20} className="mr-2" />
+                {t('profile.editProfile')}
               </Button>
             </Link>
 
-            <Link to={createPageUrl('CompatibilityQuizzes')}>
-              <Button className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700" size="lg">
-                <Sparkles size={18} className="mr-2" />
-                Compatibility Quizzes
-              </Button>
-            </Link>
-
-            <Link to={createPageUrl('SafetyCheckMonitor')}>
-              <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
-                <Shield size={18} className="mr-2" />
-                Safety Check Monitor
-              </Button>
-            </Link>
-
-            <div className="flex gap-3">
-              <Link to={createPageUrl('EditProfile')} className="flex-1">
-                <Button className="w-full bg-purple-600 hover:bg-purple-700" size="lg">
-                  <Edit2 size={18} className="mr-2" />
-                  {t('profile.editProfile')}
+            {/* Secondary Actions in Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full h-12" size="lg">
+                  More Options
+                  <ChevronRight size={18} className="ml-auto" />
                 </Button>
-              </Link>
-              <BoostProfileButton 
-                userProfile={profile} 
-                onBoostSuccess={() => window.location.reload()}
-              />
-            </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-[calc(100vw-2rem)] max-w-sm" align="center">
+                {!profile?.verification_status?.photo_verified && (
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('VerifyPhoto')} className="flex items-center">
+                      <Shield size={16} className="mr-2 text-green-600" />
+                      {t('profile.verifyPhoto')}
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {profile?.is_premium && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('Analytics')} className="flex items-center">
+                        <BarChart size={16} className="mr-2 text-blue-600" />
+                        {t('profile.viewAnalytics')}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('ProfileOptimization')} className="flex items-center">
+                        <Sparkles size={16} className="mr-2 text-purple-600" />
+                        {t('profile.optimizeProfile')}
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('SuccessStories')} className="flex items-center">
+                    <Heart size={16} className="mr-2 text-pink-600" />
+                    Success Stories
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to={createPageUrl('SafetyCheckMonitor')} className="flex items-center">
+                    <Shield size={16} className="mr-2 text-green-600" />
+                    Safety Check
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <BoostProfileButton 
+              userProfile={profile} 
+              onBoostSuccess={() => window.location.reload()}
+            />
 
             {profile?.subscription_tier && profile?.subscription_tier !== 'free' ? (
               <div className="space-y-2 pt-2">

@@ -19,6 +19,7 @@ import AfricanPattern from '@/components/shared/AfricanPattern';
 import SafetyEducationModal from '@/components/safety/SafetyEducationModal';
 import { useConversionTracker, CONVERSION_EVENTS } from '@/components/shared/ConversionTracker';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import CelebrationModal from '@/components/shared/CelebrationModal';
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
@@ -90,6 +91,7 @@ export default function Onboarding() {
   });
   const [isUploading, setIsUploading] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
   
   // Social proof for conversion
   const [recentSignups] = useState(() => {
@@ -249,7 +251,11 @@ export default function Onboarding() {
       return profile;
     },
     onSuccess: () => {
-      setShowSafetyEducation(true);
+      setShowCelebration(true);
+      setTimeout(() => {
+        setShowCelebration(false);
+        setShowSafetyEducation(true);
+      }, 3000);
     },
     onError: (error) => {
       // Parse and display user-friendly error messages
@@ -781,6 +787,15 @@ export default function Onboarding() {
           )}
         </div>
       </div>
+
+      {/* Profile Complete Celebration */}
+      <CelebrationModal
+        isOpen={showCelebration}
+        onClose={() => setShowCelebration(false)}
+        title="Welcome to Afrinnect!"
+        message="Your profile is ready. Let's find your perfect match!"
+        emoji="🎉"
+      />
 
       {/* Safety Education Modal */}
       <SafetyEducationModal
