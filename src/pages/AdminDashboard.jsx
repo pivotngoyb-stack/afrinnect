@@ -151,6 +151,7 @@ export default function AdminDashboard() {
     { label: 'Moderation', icon: Shield, page: 'AdminModeration', badge: stats?.pendingReports },
     { label: 'Analytics', icon: TrendingUp, page: 'AdminAnalytics' },
     { label: 'Subscriptions', icon: DollarSign, page: 'AdminSubscriptions' },
+    { label: 'VIP Events', icon: Heart, page: 'AdminVIPEvents' },
     { label: 'Content', icon: MessageSquare, page: 'AdminContent' },
     { label: 'Settings', icon: Settings, page: 'AdminSettings' },
   ];
