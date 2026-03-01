@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { 
   Settings, Save, RefreshCw, Shield, DollarSign, Bell, Users,
-  Zap, Clock, AlertTriangle, Check, Globe, Lock, Smartphone
+  Zap, Clock, AlertTriangle, Check, Globe, Lock, Smartphone, Crown
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import TierConfigurationManager from "@/components/admin/TierConfigurationManager";
 import { toast } from "sonner";
 
 export default function AdminSettings() {
@@ -151,10 +152,13 @@ export default function AdminSettings() {
         </header>
 
         <div className="p-6">
-          <Tabs defaultValue="subscription" className="space-y-6">
+          <Tabs defaultValue="tiers" className="space-y-6">
             <TabsList className="bg-slate-800">
+              <TabsTrigger value="tiers" className="data-[state=active]:bg-orange-500">
+                <Crown className="w-4 h-4 mr-2" /> Subscription Tiers
+              </TabsTrigger>
               <TabsTrigger value="subscription" className="data-[state=active]:bg-orange-500">
-                <DollarSign className="w-4 h-4 mr-2" /> Subscriptions
+                <DollarSign className="w-4 h-4 mr-2" /> Legacy Limits
               </TabsTrigger>
               <TabsTrigger value="safety" className="data-[state=active]:bg-orange-500">
                 <Shield className="w-4 h-4 mr-2" /> Safety
@@ -167,8 +171,18 @@ export default function AdminSettings() {
               </TabsTrigger>
             </TabsList>
 
-            {/* Subscription Limits */}
+            {/* NEW: Tier Configuration Manager */}
+            <TabsContent value="tiers">
+              <TierConfigurationManager />
+            </TabsContent>
+
+            {/* Legacy Subscription Limits (kept for backwards compatibility) */}
             <TabsContent value="subscription" className="space-y-6">
+              <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-4 mb-4">
+                <p className="text-amber-200 text-sm">
+                  ⚠️ <strong>Legacy Settings:</strong> These settings are deprecated. Use the new "Subscription Tiers" tab for managing tier limits and features.
+                </p>
+              </div>
               {['free', 'premium', 'elite', 'vip'].map((tier) => (
                 <Card key={tier} className="bg-slate-900 border-slate-800">
                   <CardHeader>
