@@ -19,6 +19,14 @@ Deno.serve(async (req) => {
                 return await updateUserWeights(base44, payload);
             case 'record_interaction':
                 return await recordInteraction(base44, payload);
+            case 'get_recommendations':
+                return await getRecommendations(base44, payload);
+            case 'batch_update_weights':
+                // Admin only
+                if (user.role !== 'admin') {
+                    return Response.json({ error: 'Admin access required' }, { status: 403 });
+                }
+                return await batchUpdateWeights(base44, payload);
             default:
                 return Response.json({ error: 'Invalid action' }, { status: 400 });
         }
@@ -402,22 +410,99 @@ async function recordInteraction(base44, { userId, targetProfileId, actionType, 
         bio_expanded: metadata.bioExpanded || false
     });
 
-    // Trigger async weight update (could be moved to scheduled job)
-    // For now, update weights every 10 interactions
-    const recentFeedback = await base44.asServiceRole.entities.MatchFeedback.filter(
-        { user_id: userId }, 
-        '-created_date', 
-        1
-    );
-    
+    // Get current stats to decide if we should update weights
     const mlProfiles = await base44.asServiceRole.entities.UserMLProfile.filter({ user_id: userId });
-    const totalInteractions = mlProfiles[0]?.engagement_stats?.total_likes + 
-                             mlProfiles[0]?.engagement_stats?.total_passes || 0;
+    const stats = mlProfiles[0]?.engagement_stats || {};
+    const totalInteractions = (stats.total_likes || 0) + (stats.total_passes || 0);
 
-    // Update weights periodically
+    // Update weights every 10 interactions
     if (totalInteractions > 0 && totalInteractions % 10 === 0) {
         await updateUserWeights(base44, { userId });
     }
 
     return Response.json({ success: true });
+}
+
+// Get personalized recommendations for a user
+async function getRecommendations(base44, { userId, limit = 20 }) {
+    // Get user's ML profile
+    const mlProfiles = await base44.asServiceRole.entities.UserMLProfile.filter({ user_id: userId });
+    const mlProfile = mlProfiles[0];
+    
+    // Get user's regular profile
+    const myProfiles = await base44.entities.UserProfile.filter({ id: userId });
+    const myProfile = myProfiles[0];
+    if (!myProfile) return Response.json({ profiles: [], reason: 'Profile not found' });
+
+    // Get profiles that user hasn't interacted with
+    const [likes, passes] = await Promise.all([
+        base44.entities.Like.filter({ liker_id: userId }),
+        base44.entities.Pass.filter({ passer_id: userId })
+    ]);
+    
+    const excludeIds = new Set([
+        userId,
+        ...likes.map(l => l.liked_id),
+        ...passes.map(p => p.passed_id),
+        ...(myProfile.blocked_users || [])
+    ]);
+
+    // Build query based on preferences
+    const query = {
+        id: { $nin: Array.from(excludeIds) },
+        is_active: true,
+        is_banned: false,
+        is_suspended: false
+    };
+
+    // Add gender preference
+    if (myProfile.looking_for?.length > 0) {
+        query.gender = { $in: myProfile.looking_for };
+    }
+
+    // Fetch candidates
+    const candidates = await base44.entities.UserProfile.filter(query, '-last_active', limit * 3);
+
+    // Score and rank candidates
+    const scoredCandidates = [];
+    for (const candidate of candidates) {
+        const result = calculateMLScore(myProfile, candidate, mlProfile || {
+            preference_weights: {},
+            liked_patterns: {}
+        });
+        scoredCandidates.push({
+            profile: candidate,
+            ...result
+        });
+    }
+
+    // Sort by score and take top N
+    scoredCandidates.sort((a, b) => b.score - a.score);
+    const topCandidates = scoredCandidates.slice(0, limit);
+
+    return Response.json({
+        profiles: topCandidates.map(c => ({
+            ...c.profile,
+            matchScore: c.score,
+            matchReasons: c.reasons,
+            matchBreakdown: c.breakdown
+        })),
+        ml_confidence: mlProfile ? calculateConfidence(mlProfile) : 'new_user'
+    });
+}
+
+// Batch update weights for multiple users (for scheduled job)
+async function batchUpdateWeights(base44, { userIds }) {
+    const results = [];
+    
+    for (const userId of userIds.slice(0, 50)) { // Limit batch size
+        try {
+            await updateUserWeights(base44, { userId });
+            results.push({ userId, success: true });
+        } catch (e) {
+            results.push({ userId, success: false, error: e.message });
+        }
+    }
+    
+    return Response.json({ results, processed: results.length });
 }
