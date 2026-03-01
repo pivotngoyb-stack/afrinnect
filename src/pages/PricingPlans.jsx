@@ -69,7 +69,8 @@ const PRICING_TIERS = {
       { text: 'Elite Verified Badge', tip: 'Show you are real and serious' },
       { text: 'Priority Ranking', tip: 'Get seen by more people first' },
       { text: 'Unlimited Profile Boosts', tip: 'Boost your profile anytime' },
-      { text: 'Incognito Mode', tip: 'Browse profiles without being seen' }
+      { text: 'Incognito Mode', tip: 'Browse profiles without being seen' },
+      { text: 'VIP Events Access', tip: 'Join exclusive mixers and workshops' }
     ]
   },
   vip: {
@@ -81,18 +82,20 @@ const PRICING_TIERS = {
     bgColor: 'bg-slate-50',
     buttonColor: 'bg-slate-900 hover:bg-black',
     prices: {
-      monthly: { amount: 99.99, period: 'month', total: 99.99 },
-      quarterly: { amount: 83.33, period: 'month', total: 499.99, save: '17%', label: '6 Months' },
-      yearly: { amount: 75.00, period: 'month', total: 900.00, save: '25%' }
+      monthly: { amount: 49.99, period: 'month', total: 49.99 },
+      quarterly: { amount: 39.99, period: 'month', total: 119.99, save: '20%', label: '3 Months' },
+      yearly: { amount: 29.99, period: 'month', total: 359.99, save: '40%' }
     },
     features: [
       { text: 'Everything in Elite', tip: '' },
       { text: 'Virtual Speed Dating', tip: 'Join exclusive live video dating events' },
-      { text: 'VIP Verified Badge', tip: 'Exclusive status symbol' },
+      { text: 'VIP Verified Badge', tip: 'Exclusive gold status symbol' },
       { text: 'Concierge Support', tip: 'Direct line to our team 24/7' },
-      { text: 'Exclusive VIP Events', tip: 'Access to VIP-only gatherings' },
+      { text: 'Exclusive VIP Events', tip: 'VIP-only mixers and speed dating' },
       { text: 'Featured Profile Placement', tip: 'Always shown first in discovery' },
-      { text: 'Profile Insights & Analytics', tip: 'See who viewed you and detailed stats' }
+      { text: 'Profile Insights & Analytics', tip: 'See who viewed you and detailed stats' },
+      { text: '5 Virtual Gifts/month', tip: 'Free monthly gift allowance' },
+      { text: 'Priority DMs', tip: 'Your messages appear first' }
     ]
   }
 };
