@@ -72,8 +72,16 @@ Deno.serve(async (req) => {
         }
 
         // 6. Subscription Limit
-        const dailyLimit = rateLimits.daily_message_limit_free || 20;
-        if (myProfile.subscription_tier === 'free') {
+        // Free: 20/day, Premium: 100/day, Elite/VIP: Unlimited
+        const tier = myProfile.subscription_tier || 'free';
+        const dailyLimits = {
+            free: rateLimits.daily_message_limit_free || 20,
+            premium: 100  // Premium gets 100 messages/day
+            // Elite and VIP are unlimited (not in this object)
+        };
+        
+        if (tier === 'free' || tier === 'premium') {
+            const dailyLimit = dailyLimits[tier];
             const today = new Date().toISOString().split('T')[0];
             const dailyMsgs = await base44.entities.Message.filter({ 
                 sender_id: myProfile.id,
