@@ -117,6 +117,7 @@ import VerifyPhoto from './pages/VerifyPhoto';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
+import Shop from './pages/Shop';
 import __Layout from './Layout.jsx';
 
 
@@ -191,6 +192,7 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
     "WhoLikesYou": WhoLikesYou,
+    "Shop": Shop,
 }
 
 export const pagesConfig = {

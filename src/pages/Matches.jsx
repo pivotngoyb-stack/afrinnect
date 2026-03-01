@@ -20,6 +20,7 @@ import EmptyState from '@/components/shared/EmptyState';
 import MatchCountdownBanner from '@/components/monetization/MatchCountdownBanner';
 import BlurredLikesTeaser from '@/components/monetization/BlurredLikesTeaser';
 import SocialProofPaywall from '@/components/monetization/SocialProofPaywall';
+import PremiumBadgeOnProfile from '@/components/monetization/PremiumBadgeOnProfile';
 
 export default function Matches() {
   
@@ -268,12 +269,26 @@ export default function Matches() {
   });
   
   // Active conversations sorted by most recent message
+  // Priority DMs: Elite/VIP messages appear first
   const conversations = matchedProfiles
     .filter(p => conversationData[p.match?.id]?.lastMessage && filterBySearch(p))
     .sort((a, b) => {
+      const aTier = a.subscription_tier || 'free';
+      const bTier = b.subscription_tier || 'free';
+      const tierPriority = { vip: 3, elite: 2, premium: 1, free: 0 };
+      
+      // Priority users first
+      const aPriority = tierPriority[aTier] || 0;
+      const bPriority = tierPriority[bTier] || 0;
+      
+      if (aPriority !== bPriority) {
+        return bPriority - aPriority; // Higher tier first
+      }
+      
+      // Then by date
       const dateA = new Date(conversationData[a.match?.id]?.lastMessage?.created_date || 0);
       const dateB = new Date(conversationData[b.match?.id]?.lastMessage?.created_date || 0);
-      return dateB - dateA; // Most recent first
+      return dateB - dateA;
     });
 
   return (
@@ -377,12 +392,20 @@ export default function Matches() {
                     const convData = conversationData[profile.match?.id] || {};
                     return (
                       <Link key={profile.id} to={createPageUrl(`Chat?matchId=${profile.match?.id}`)}>
-                        <ConversationItem
-                          match={profile.match}
-                          profile={profile}
-                          lastMessage={convData.lastMessage}
-                          unreadCount={convData.unreadCount || 0}
-                        />
+                        <div className="relative">
+                          {/* Priority Badge for Elite/VIP */}
+                          {['elite', 'vip'].includes(profile.subscription_tier) && (
+                            <div className="absolute top-2 right-2 z-10">
+                              <PremiumBadgeOnProfile tier={profile.subscription_tier} size="icon" />
+                            </div>
+                          )}
+                          <ConversationItem
+                            match={profile.match}
+                            profile={profile}
+                            lastMessage={convData.lastMessage}
+                            unreadCount={convData.unreadCount || 0}
+                          />
+                        </div>
                       </Link>
                     );
                   })}
