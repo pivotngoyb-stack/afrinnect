@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Users, Save } from "lucide-react";
+import { Users, Save, Loader2 } from "lucide-react";
 
 export default function OnboardingSettings() {
   const [settings, setSettings] = useState({
