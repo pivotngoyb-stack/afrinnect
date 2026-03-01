@@ -110,38 +110,34 @@ export default function Profile() {
     return false;
   };
 
-  // Fetch social proof data
-  useEffect(() => {
-    const fetchSocialProof = async () => {
-      if (!profile || !isOwnProfile) return;
-
+  // Fetch social proof data using useQuery to prevent rate limiting
+  const { data: socialProofData = { views: 0, likes: 0, percentile: 0 } } = useQuery({
+    queryKey: ['social-proof', profile?.id],
+    queryFn: async () => {
       const today = new Date().toISOString().split('T')[0];
       const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
 
-      // Views today
-      const views = await base44.entities.ProfileView.filter({
-        viewed_profile_id: profile.id,
-        created_date: { $gte: today }
-      });
+      const [views, likes] = await Promise.all([
+        base44.entities.ProfileView.filter({
+          viewed_profile_id: profile.id,
+          created_date: { $gte: today }
+        }),
+        base44.entities.Like.filter({
+          liked_id: profile.id,
+          created_date: { $gte: weekAgo }
+        })
+      ]);
 
-      // Likes this week
-      const likes = await base44.entities.Like.filter({
-        liked_id: profile.id,
-        created_date: { $gte: weekAgo }
-      });
-
-      setSocialProofData({
+      return {
         views: views.length,
         likes: likes.length,
         percentile: profile.profile_performance_percentile || 50
-      });
-
-      // Note: Notifications for profile performance should be handled by a backend scheduled task
-      // to avoid creating duplicates on every page load
-    };
-
-    fetchSocialProof();
-  }, [profile, isOwnProfile]);
+      };
+    },
+    enabled: !!profile?.id && isOwnProfile,
+    staleTime: 300000, // 5 minutes
+    refetchOnWindowFocus: false
+  });
 
   const calculateAge = (birthDate) => {
     if (!birthDate) return null;
