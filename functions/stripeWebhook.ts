@@ -185,8 +185,52 @@ Deno.serve(async (req) => {
         }
     }
     
-    // Ignore payment_intent.succeeded if it's from a subscription invoice
-    // (Invoice event handles it better)
+    // Handle ONE-TIME payment_intent.succeeded (Shop purchases)
+    if (event.type === 'payment_intent.succeeded') {
+        const paymentIntent = event.data.object;
+        const { userId, profileId, planType, itemType, itemQuantity } = paymentIntent.metadata;
+        
+        // Only process shop purchases (not subscription payments which have invoices)
+        if (planType && planType.startsWith('shop_') && profileId && itemType) {
+            const qty = parseInt(itemQuantity) || 1;
+            
+            // Get current profile
+            const profiles = await base44.asServiceRole.entities.UserProfile.filter({ id: profileId });
+            if (profiles.length > 0) {
+                const profile = profiles[0];
+                const updates = {};
+                
+                if (itemType === 'boost') {
+                    updates.purchased_boosts = (profile.purchased_boosts || 0) + qty;
+                } else if (itemType === 'super_likes') {
+                    updates.purchased_super_likes = (profile.purchased_super_likes || 0) + qty;
+                } else if (itemType === '24hr_unlock') {
+                    updates.purchased_24hr_unlock = true;
+                    updates.purchased_24hr_unlock_expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+                } else if (itemType === 'rewind') {
+                    // Rewinds are typically used immediately, but we could track them
+                    // For now just record the purchase
+                }
+                
+                if (Object.keys(updates).length > 0) {
+                    await base44.asServiceRole.entities.UserProfile.update(profileId, updates);
+                }
+                
+                // Record purchase
+                await base44.asServiceRole.entities.InAppPurchase.create({
+                    user_profile_id: profileId,
+                    item_type: itemType,
+                    item_quantity: qty,
+                    amount_usd: paymentIntent.amount / 100,
+                    payment_provider: 'stripe',
+                    transaction_id: paymentIntent.id,
+                    status: 'completed'
+                });
+                
+                console.log(`Shop purchase completed: ${itemType} x${qty} for ${profileId}`);
+            }
+        }
+    }
 
     return Response.json({ received: true });
   } catch (error) {
