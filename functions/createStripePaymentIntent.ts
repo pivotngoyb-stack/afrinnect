@@ -63,15 +63,30 @@ Deno.serve(async (req) => {
         });
     }
 
-    // ONE-TIME PAYMENT (Virtual Gifts)
+    // ONE-TIME PAYMENT (Virtual Gifts AND Shop Items)
     if (billingPeriod === 'one_time') {
         let amount = 0;
+        const body = await req.clone().json(); // Re-read for itemType/itemQuantity
+        const { itemType, itemQuantity } = body;
         
         if (planType === 'virtual_gift') {
             if (!giftType || !GIFT_PRICES[giftType]) {
                 return Response.json({ error: 'Invalid gift type' }, { status: 400 });
             }
             amount = GIFT_PRICES[giftType];
+        } else if (planType.startsWith('shop_')) {
+            // Shop purchases (boosts, super likes, etc.)
+            const SHOP_PRICES = {
+                'boost': { 1: 2.99, 3: 7.49 },
+                'super_likes': { 3: 4.99, 10: 12.99 },
+                '24hr_unlock': { 1: 1.99 },
+                'rewind': { 5: 3.99 }
+            };
+            
+            if (!itemType || !SHOP_PRICES[itemType] || !SHOP_PRICES[itemType][itemQuantity]) {
+                return Response.json({ error: 'Invalid shop item' }, { status: 400 });
+            }
+            amount = SHOP_PRICES[itemType][itemQuantity];
         } else {
              return Response.json({ error: 'Invalid one-time plan' }, { status: 400 });
         }
@@ -85,7 +100,9 @@ Deno.serve(async (req) => {
                 userId: user.id,
                 profileId: userProfile.id,
                 planType: planType,
-                giftType: giftType
+                giftType: giftType,
+                itemType: itemType || null,
+                itemQuantity: itemQuantity ? String(itemQuantity) : null
             }
         });
 
