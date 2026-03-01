@@ -131,11 +131,19 @@ Deno.serve(async (req) => {
                 // Update User Profile
                 const tierName = planType.split('_')[0]; // premium_monthly -> premium
                 
+                // VIP perks: monthly gift allowance, priority DMs
+                const vipPerks = tierName === 'vip' ? {
+                    monthly_gifts_remaining: 5,
+                    monthly_gifts_reset_date: new Date().toISOString().split('T')[0],
+                    priority_dm_enabled: true
+                } : {};
+                
                 await base44.asServiceRole.entities.UserProfile.update(profileId, {
                     is_premium: true,
                     subscription_tier: tierName,
                     premium_until: endDate.split('T')[0], // YYYY-MM-DD
-                    is_active: true
+                    is_active: true,
+                    ...vipPerks
                 });
 
                 // Send Notification
