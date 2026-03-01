@@ -104,6 +104,7 @@ import Report from './pages/Report';
 import SafetyCheckMonitor from './pages/SafetyCheckMonitor';
 import SafetyCheckSetup from './pages/SafetyCheckSetup';
 import Settings from './pages/Settings';
+import Shop from './pages/Shop';
 import Stories from './pages/Stories';
 import SubmitStory from './pages/SubmitStory';
 import SuccessStories from './pages/SuccessStories';
@@ -117,7 +118,6 @@ import VerifyPhoto from './pages/VerifyPhoto';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
-import Shop from './pages/Shop';
 import __Layout from './Layout.jsx';
 
 
@@ -179,6 +179,7 @@ export const PAGES = {
     "SafetyCheckMonitor": SafetyCheckMonitor,
     "SafetyCheckSetup": SafetyCheckSetup,
     "Settings": Settings,
+    "Shop": Shop,
     "Stories": Stories,
     "SubmitStory": SubmitStory,
     "SuccessStories": SuccessStories,
@@ -192,7 +193,6 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
     "WhoLikesYou": WhoLikesYou,
-    "Shop": Shop,
 }
 
 export const pagesConfig = {
