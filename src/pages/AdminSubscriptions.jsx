@@ -9,6 +9,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { 
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from "@/components/ui/select";
@@ -18,6 +19,7 @@ import {
 } from "recharts";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import RefundsManager from "@/components/admin/RefundsManager";
 
 export default function AdminSubscriptions() {
   const navigate = useNavigate();
@@ -142,6 +144,14 @@ export default function AdminSubscriptions() {
         </header>
 
         <div className="p-6 space-y-6">
+          {/* Tabs */}
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="bg-slate-800 border-slate-700">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="refunds">Refunds</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="mt-6 space-y-6">
           {/* Key Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="bg-slate-900 border-slate-800">
@@ -310,6 +320,12 @@ export default function AdminSubscriptions() {
               </CardContent>
             </Card>
           </div>
+            </TabsContent>
+
+            <TabsContent value="refunds" className="mt-6">
+              <RefundsManager />
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </div>
