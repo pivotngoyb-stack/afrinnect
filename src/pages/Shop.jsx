@@ -328,6 +328,24 @@ export default function Shop() {
         </div>
       </main>
 
+      {/* Stripe Payment Modal */}
+      {showPaymentModal && clientSecret && stripeConfig && (
+        <StripePaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => {
+            setShowPaymentModal(false);
+            setClientSecret(null);
+            setSelectedItem(null);
+          }}
+          clientSecret={clientSecret}
+          amount={selectedItem?.price || 0}
+          planName={selectedItem?.name || 'Purchase'}
+          stripePublicKey={stripeConfig.publicKey}
+          onSuccess={handlePaymentSuccess}
+          isTrial={false}
+        />
+      )}
+
       {/* Success Modal */}
       {purchaseSuccess && (
         <motion.div
