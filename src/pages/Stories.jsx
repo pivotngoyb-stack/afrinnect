@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useInfinitePagination } from '@/components/shared/useInfinitePagination';
+
 import PullToRefresh from '@/components/shared/PullToRefresh';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, Upload, Plus, Trash2, Eye, X } from 'lucide-react';
