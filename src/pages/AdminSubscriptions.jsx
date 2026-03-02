@@ -133,7 +133,33 @@ export default function AdminSubscriptions() {
               <p className="text-sm text-slate-400">Track monetization metrics</p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" className="border-slate-700 text-slate-300">
+              <Button 
+                variant="outline" 
+                className="border-slate-700 text-slate-300"
+                onClick={() => {
+                  const csv = [
+                    ['User', 'Plan', 'Status', 'Amount', 'Start Date', 'End Date'].join(','),
+                    ...subscriptions.map(s => {
+                      const profile = profiles.find(p => p.id === s.user_profile_id);
+                      return [
+                        `"${profile?.display_name || 'Unknown'}"`,
+                        s.plan_type || '',
+                        s.status || '',
+                        s.amount_paid || 0,
+                        s.start_date ? new Date(s.start_date).toLocaleDateString() : '',
+                        s.end_date ? new Date(s.end_date).toLocaleDateString() : ''
+                      ].join(',');
+                    })
+                  ].join('\n');
+                  const blob = new Blob([csv], { type: 'text/csv' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `subscriptions-export-${new Date().toISOString().split('T')[0]}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
                 <Download className="w-4 h-4 mr-2" /> Export
               </Button>
               <Button onClick={loadData} className="bg-orange-500 hover:bg-orange-600">

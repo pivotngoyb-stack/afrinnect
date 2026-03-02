@@ -219,7 +219,31 @@ export default function AdminUsers() {
               <p className="text-sm text-slate-400">{filteredUsers.length} users found</p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" className="border-slate-700 text-slate-300">
+              <Button 
+                variant="outline" 
+                className="border-slate-700 text-slate-300"
+                onClick={() => {
+                  const csv = [
+                    ['Name', 'Gender', 'Status', 'Tier', 'Location', 'Joined', 'Last Active'].join(','),
+                    ...filteredUsers.map(u => [
+                      `"${u.display_name || ''}"`,
+                      u.gender || '',
+                      u.is_banned ? 'Banned' : u.is_suspended ? 'Suspended' : u.is_active ? 'Active' : 'Inactive',
+                      u.subscription_tier || 'free',
+                      `"${u.current_city || ''}, ${u.current_country || ''}"`,
+                      u.created_date ? new Date(u.created_date).toLocaleDateString() : '',
+                      u.last_active ? new Date(u.last_active).toLocaleDateString() : 'Never'
+                    ].join(','))
+                  ].join('\n');
+                  const blob = new Blob([csv], { type: 'text/csv' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
                 <Download className="w-4 h-4 mr-2" /> Export
               </Button>
               <Button onClick={loadUsers} className="bg-orange-500 hover:bg-orange-600">

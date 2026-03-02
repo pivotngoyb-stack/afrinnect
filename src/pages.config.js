@@ -57,6 +57,7 @@ import AdminModeration from './pages/AdminModeration';
 import AdminSettings from './pages/AdminSettings';
 import AdminSubscriptions from './pages/AdminSubscriptions';
 import AdminUsers from './pages/AdminUsers';
+import AdminVIPEvents from './pages/AdminVIPEvents';
 import AmbassadorApply from './pages/AmbassadorApply';
 import AmbassadorPortal from './pages/AmbassadorPortal';
 import Analytics from './pages/Analytics';
@@ -105,6 +106,7 @@ import SafetyCheckMonitor from './pages/SafetyCheckMonitor';
 import SafetyCheckSetup from './pages/SafetyCheckSetup';
 import Settings from './pages/Settings';
 import Shop from './pages/Shop';
+import SpeedDatingLobby from './pages/SpeedDatingLobby';
 import Stories from './pages/Stories';
 import SubmitStory from './pages/SubmitStory';
 import SuccessStories from './pages/SuccessStories';
@@ -113,14 +115,12 @@ import Support from './pages/Support';
 import SupportChat from './pages/SupportChat';
 import Terms from './pages/Terms';
 import Unsubscribe from './pages/Unsubscribe';
+import VIPEventsHub from './pages/VIPEventsHub';
 import VendorManagement from './pages/VendorManagement';
 import VerifyPhoto from './pages/VerifyPhoto';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
-import VIPEventsHub from './pages/VIPEventsHub';
-import SpeedDatingLobby from './pages/SpeedDatingLobby';
-import AdminVIPEvents from './pages/AdminVIPEvents';
 import __Layout from './Layout.jsx';
 
 
@@ -135,6 +135,7 @@ export const PAGES = {
     "AdminSettings": AdminSettings,
     "AdminSubscriptions": AdminSubscriptions,
     "AdminUsers": AdminUsers,
+    "AdminVIPEvents": AdminVIPEvents,
     "AmbassadorApply": AmbassadorApply,
     "AmbassadorPortal": AmbassadorPortal,
     "Analytics": Analytics,
@@ -183,6 +184,7 @@ export const PAGES = {
     "SafetyCheckSetup": SafetyCheckSetup,
     "Settings": Settings,
     "Shop": Shop,
+    "SpeedDatingLobby": SpeedDatingLobby,
     "Stories": Stories,
     "SubmitStory": SubmitStory,
     "SuccessStories": SuccessStories,
@@ -191,14 +193,12 @@ export const PAGES = {
     "SupportChat": SupportChat,
     "Terms": Terms,
     "Unsubscribe": Unsubscribe,
+    "VIPEventsHub": VIPEventsHub,
     "VendorManagement": VendorManagement,
     "VerifyPhoto": VerifyPhoto,
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
     "WhoLikesYou": WhoLikesYou,
-    "VIPEventsHub": VIPEventsHub,
-    "SpeedDatingLobby": SpeedDatingLobby,
-    "AdminVIPEvents": AdminVIPEvents,
 }
 
 export const pagesConfig = {

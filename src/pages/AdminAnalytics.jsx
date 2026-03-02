@@ -235,7 +235,23 @@ export default function AdminAnalytics() {
                   <SelectItem value="90d">Last 90 days</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" className="border-slate-700 text-slate-300">
+              <Button 
+                variant="outline" 
+                className="border-slate-700 text-slate-300"
+                onClick={() => {
+                  const csv = [
+                    ['Date', 'Signups', 'DAU', 'Matches', 'Likes', 'Messages'].join(','),
+                    ...chartData.map(d => [d.date, d.signups, d.dau, d.matches, d.likes, d.messages].join(','))
+                  ].join('\n');
+                  const blob = new Blob([csv], { type: 'text/csv' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `analytics-export-${period}-${new Date().toISOString().split('T')[0]}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
                 <Download className="w-4 h-4 mr-2" /> Export
               </Button>
             </div>
