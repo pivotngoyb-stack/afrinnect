@@ -64,27 +64,41 @@ export default function Stories() {
   });
 
   // Server-side filtered stories with pagination (The Feed)
-  const [filterDate, setFilterDate] = useState(new Date().toISOString());
+  const [allStories, setAllStories] = useState([]);
+  const [isLoadingStories, setIsLoadingStories] = useState(true);
   
-  const filters = React.useMemo(() => ({
-    is_expired: false,
-    expires_at: { $gte: filterDate }
-  }), [filterDate]);
-
-  const { 
-    items: allStories, 
-    loadMore, 
-    hasMore, 
-    isLoadingMore,
-    refetch 
-  } = useInfinitePagination('Story', filters, {
-    pageSize: 30,
-    sortBy: '-created_date',
-    enabled: !!myProfile,
-    refetchInterval: false,
-    retry: 1,
-    staleTime: 300000
-  });
+  const fetchAllStories = async () => {
+    if (!myProfile) return;
+    setIsLoadingStories(true);
+    try {
+      // Fetch all non-expired stories (RLS already filters expired ones)
+      const stories = await base44.entities.Story.filter(
+        { is_expired: false },
+        '-created_date',
+        100
+      );
+      // Client-side filter for stories that haven't expired yet
+      const now = new Date();
+      const validStories = stories.filter(s => {
+        if (!s.expires_at) return true;
+        return new Date(s.expires_at) > now;
+      });
+      setAllStories(validStories);
+    } catch (error) {
+      console.error('Error fetching stories:', error);
+      setAllStories([]);
+    }
+    setIsLoadingStories(false);
+  };
+  
+  useEffect(() => {
+    fetchAllStories();
+  }, [myProfile]);
+  
+  const refetch = fetchAllStories;
+  const hasMore = false;
+  const isLoadingMore = false;
+  const loadMore = () => {};
 
   // Fetch profiles for feed stories
   const storyUserIds = React.useMemo(() => {
