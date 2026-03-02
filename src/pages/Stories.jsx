@@ -40,12 +40,28 @@ export default function Stories() {
     loadProfile();
   }, []);
 
-  // Load stories
+  // Load stories - Only from matches (like Tinder/Bumble)
   const loadStories = useCallback(async () => {
     if (!myProfile) return;
     setIsLoading(true);
 
     try {
+      // First, get all my matches to know whose stories I can see
+      const matches = await base44.entities.Match.filter({
+        $or: [
+          { user1_id: myProfile.id, is_match: true, status: 'active' },
+          { user2_id: myProfile.id, is_match: true, status: 'active' }
+        ]
+      });
+
+      // Get matched profile IDs
+      const matchedProfileIds = matches.map(m => 
+        m.user1_id === myProfile.id ? m.user2_id : m.user1_id
+      );
+
+      // Always include my own profile
+      const allowedProfileIds = [myProfile.id, ...matchedProfileIds];
+
       // Get all non-expired stories
       const allStories = await base44.entities.Story.filter(
         { is_expired: false },
@@ -53,9 +69,10 @@ export default function Stories() {
         100
       );
 
-      // Client-side filter for actually non-expired
+      // Filter: only from matches + my own, and not expired
       const now = new Date();
       const validStories = allStories.filter(story => {
+        if (!allowedProfileIds.includes(story.user_profile_id)) return false;
         if (!story.expires_at) return true;
         return new Date(story.expires_at) > now;
       });
@@ -283,7 +300,7 @@ export default function Stories() {
                   <Camera className="text-white" size={40} />
                 </div>
                 <h2 className="text-white text-xl font-semibold mb-2">No Stories Yet</h2>
-                <p className="text-gray-400 mb-6">Share a moment with your matches</p>
+                <p className="text-gray-400 mb-6">Only your matches can see your stories</p>
                 <Button 
                   onClick={() => setUploadingStory(true)}
                   className="bg-gradient-to-r from-pink-500 to-orange-500 hover:opacity-90"
