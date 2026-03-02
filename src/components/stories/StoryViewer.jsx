@@ -354,8 +354,31 @@ export default function StoryViewer({ stories, currentIndex, onNext, onPrev, onC
             />
             {replyText && (
               <button
-                onClick={() => {
-                  toast.success('Reply sent!');
+                onClick={async () => {
+                  try {
+                    // Find match with story owner to send reply
+                    const matches = await base44.entities.Match.filter({
+                      $or: [
+                        { user1_id: myProfileId, user2_id: story.user_profile_id, is_match: true },
+                        { user1_id: story.user_profile_id, user2_id: myProfileId, is_match: true }
+                      ]
+                    });
+                    
+                    if (matches.length > 0) {
+                      await base44.entities.Message.create({
+                        match_id: matches[0].id,
+                        sender_id: myProfileId,
+                        receiver_id: story.user_profile_id,
+                        content: `Replied to your story: ${replyText}`,
+                        message_type: 'text'
+                      });
+                      toast.success('Reply sent!');
+                    } else {
+                      toast.error('You can only reply to stories from your matches');
+                    }
+                  } catch (e) {
+                    toast.error('Failed to send reply');
+                  }
                   setReplyText('');
                 }}
                 className="w-11 h-11 bg-gradient-to-r from-pink-500 to-orange-500 rounded-full flex items-center justify-center"
