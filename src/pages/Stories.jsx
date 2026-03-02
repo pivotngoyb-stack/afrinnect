@@ -289,7 +289,7 @@ export default function Stories() {
             <div className="lg:col-span-2">
               <h2 className="text-lg font-semibold mb-4 px-1">Recent Stories</h2>
               
-              {!myProfile || (allStories.length > 0 && isLoadingProfiles) ? (
+              {!myProfile || isLoadingStories || (allStories.length > 0 && isLoadingProfiles) ? (
                 <div className="flex gap-4 overflow-x-auto pb-4 px-1">
                   {[1, 2, 3, 4, 5].map(i => (
                     <div key={i} className="flex-shrink-0 flex flex-col items-center gap-2">
