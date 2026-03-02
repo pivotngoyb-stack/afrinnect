@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { 
   BarChart3, Users, Shield, TrendingUp, DollarSign, MessageSquare,
   Settings, Bell, Eye, LogOut, ChevronLeft, ChevronRight, Menu,
-  Flag, Megaphone, Gift, Star, Zap, Globe
+  Flag, Megaphone, Gift, Star, Zap, Globe, Book
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +42,10 @@ export default function AdminSidebar({ activePage, pendingReports = 0 }) {
     { label: 'Broadcast', icon: Megaphone, page: 'AdminBroadcast' },
     { label: 'Feature Flags', icon: Zap, page: 'AdminFeatureFlags' },
     { label: 'Settings', icon: Settings, page: 'AdminSettings' },
+  ];
+
+  const utilityItems = [
+    { label: 'Admin Manual', icon: Book, page: 'AdminManual' },
   ];
 
   return (
@@ -94,6 +98,31 @@ export default function AdminSidebar({ activePage, pendingReports = 0 }) {
                 )}
                 {collapsed && item.badge > 0 && (
                   <span className="absolute right-2 w-2 h-2 bg-red-500 rounded-full" />
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        {/* Utility Links */}
+        {!collapsed && <div className="mt-4 pt-4 border-t border-slate-800">
+          <p className="px-3 text-xs font-medium text-slate-500 uppercase mb-2">Resources</p>
+        </div>}
+        <ul className="space-y-1 mt-1">
+          {utilityItems.map((item) => (
+            <li key={item.page}>
+              <button
+                onClick={() => navigate(createPageUrl(item.page))}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                  activePage === item.page 
+                    ? 'bg-purple-500/20 text-purple-400' 
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                }`}
+                title={collapsed ? item.label : undefined}
+              >
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                {!collapsed && (
+                  <span className="flex-1 text-left text-sm">{item.label}</span>
                 )}
               </button>
             </li>
