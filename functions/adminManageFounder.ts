@@ -1,114 +1,222 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { base44 } from './base44Client.js';
 
-Deno.serve(async (req) => {
+/**
+ * Admin actions for managing the Founding Member program.
+ * 
+ * @param {object} payload
+ * @param {string} payload.action - Action to perform: 'update_settings', 'create_code', 'revoke_code', 'grant_status', 'revoke_status', 'extend_trial'
+ * @param {object} payload.data - Action-specific data
+ */
+export default async function adminManageFounder(payload, context) {
+  const { action, data } = payload;
+
+  // Verify admin (in production, check context.user.role === 'admin')
+  
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Admin access required' }, { status: 403 });
-    }
-
-    const body = await req.json();
-    const { action, user_profile_id, email, trial_days, extend_days } = body;
-
-    // Find user profile
-    let profiles;
-    if (user_profile_id) {
-      profiles = await base44.asServiceRole.entities.UserProfile.filter({ id: user_profile_id });
-    } else if (email) {
-      profiles = await base44.asServiceRole.entities.UserProfile.filter({ created_by: email });
-    }
-
-    if (!profiles || profiles.length === 0) {
-      return Response.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    const profile = profiles[0];
-
     switch (action) {
-      case 'grant': {
-        const days = trial_days || 183;
-        const now = new Date();
-        const trialEndsAt = new Date(now.getTime() + (days * 24 * 60 * 60 * 1000));
-
-        await base44.asServiceRole.entities.UserProfile.update(profile.id, {
-          is_founding_member: true,
-          founding_member_granted_at: now.toISOString(),
-          founding_member_trial_ends_at: trialEndsAt.toISOString(),
-          founding_member_source: 'manual_admin',
-          founding_member_eligible: false,
-          founding_trial_consumed: true,
-          is_premium: true,
-          subscription_tier: 'premium',
-          premium_until: trialEndsAt.toISOString().split('T')[0],
-          badges: [...(profile.badges || []).filter(b => b !== 'founding_member'), 'founding_member']
-        });
-
-        // Log admin action
-        await base44.asServiceRole.entities.AdminAuditLog.create({
-          admin_user_id: user.id,
-          admin_email: user.email,
-          action_type: 'user_edited',
-          target_user_id: profile.user_id,
-          details: { action: 'grant_founding_member', trial_days: days }
-        });
-
-        return Response.json({ success: true, action: 'granted', trial_ends_at: trialEndsAt.toISOString() });
-      }
-
-      case 'revoke': {
-        await base44.asServiceRole.entities.UserProfile.update(profile.id, {
-          is_founding_member: false,
-          is_premium: false,
-          subscription_tier: 'free',
-          premium_until: null,
-          badges: (profile.badges || []).filter(b => b !== 'founding_member')
-        });
-
-        // Log admin action
-        await base44.asServiceRole.entities.AdminAuditLog.create({
-          admin_user_id: user.id,
-          admin_email: user.email,
-          action_type: 'user_edited',
-          target_user_id: profile.user_id,
-          details: { action: 'revoke_founding_member' }
-        });
-
-        return Response.json({ success: true, action: 'revoked' });
-      }
-
-      case 'extend': {
-        if (!profile.founding_member_trial_ends_at) {
-          return Response.json({ error: 'User does not have an active founding trial' }, { status: 400 });
-        }
-
-        const currentEndDate = new Date(profile.founding_member_trial_ends_at);
-        const newEndDate = new Date(currentEndDate.getTime() + ((extend_days || 30) * 24 * 60 * 60 * 1000));
-
-        await base44.asServiceRole.entities.UserProfile.update(profile.id, {
-          founding_member_trial_ends_at: newEndDate.toISOString(),
-          premium_until: newEndDate.toISOString().split('T')[0]
-        });
-
-        // Log admin action
-        await base44.asServiceRole.entities.AdminAuditLog.create({
-          admin_user_id: user.id,
-          admin_email: user.email,
-          action_type: 'user_edited',
-          target_user_id: profile.user_id,
-          details: { action: 'extend_founding_trial', extend_days: extend_days || 30 }
-        });
-
-        return Response.json({ success: true, action: 'extended', new_trial_ends_at: newEndDate.toISOString() });
-      }
-
+      case 'update_settings':
+        return await updateSettings(data);
+      
+      case 'create_code':
+        return await createInviteCode(data);
+      
+      case 'revoke_code':
+        return await revokeInviteCode(data);
+      
+      case 'grant_status':
+        return await grantFounderStatus(data);
+      
+      case 'revoke_status':
+        return await revokeFounderStatus(data);
+      
+      case 'extend_trial':
+        return await extendTrial(data);
+      
       default:
-        return Response.json({ error: 'Invalid action' }, { status: 400 });
+        return { success: false, error: `Unknown action: ${action}` };
     }
-
   } catch (error) {
-    console.error('Admin Manage Founder error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error(`Error in adminManageFounder (${action}):`, error);
+    return { success: false, error: error.message };
   }
-});
+}
+
+async function updateSettings(data) {
+  const { founders_mode_enabled, auto_assign_new_users, trial_days } = data;
+
+  // Get existing settings
+  const settings = await base44.entities.SystemSettings.filter({ key: 'founder_program' });
+  
+  const newValue = {
+    founders_mode_enabled: founders_mode_enabled ?? settings[0]?.value?.founders_mode_enabled ?? false,
+    auto_assign_new_users: auto_assign_new_users ?? settings[0]?.value?.auto_assign_new_users ?? false,
+    trial_days: trial_days ?? settings[0]?.value?.trial_days ?? 183
+  };
+
+  if (settings.length > 0) {
+    await base44.entities.SystemSettings.update(settings[0].id, {
+      value: newValue,
+      updated_by: 'admin'
+    });
+  } else {
+    await base44.entities.SystemSettings.create({
+      key: 'founder_program',
+      value: newValue,
+      description: 'Founding Member Program Configuration'
+    });
+  }
+
+  return { success: true, data: newValue };
+}
+
+async function createInviteCode(data) {
+  const { code, max_redemptions = 100, trial_days = 183, expires_at, notes } = data;
+
+  if (!code || code.length < 4) {
+    return { success: false, error: 'Code must be at least 4 characters' };
+  }
+
+  // Check if code already exists
+  const existing = await base44.entities.FounderInviteCode.filter({ 
+    code: code.toUpperCase() 
+  });
+  
+  if (existing.length > 0) {
+    return { success: false, error: 'Code already exists' };
+  }
+
+  const newCode = await base44.entities.FounderInviteCode.create({
+    code: code.toUpperCase(),
+    max_redemptions,
+    current_redemptions: 0,
+    is_active: true,
+    trial_days,
+    expires_at: expires_at || null,
+    notes: notes || null
+  });
+
+  return { success: true, data: newCode };
+}
+
+async function revokeInviteCode(data) {
+  const { codeId } = data;
+
+  if (!codeId) {
+    return { success: false, error: 'Code ID is required' };
+  }
+
+  await base44.entities.FounderInviteCode.update(codeId, {
+    is_active: false
+  });
+
+  return { success: true };
+}
+
+async function grantFounderStatus(data) {
+  const { userProfileId, trialDays } = data;
+
+  if (!userProfileId) {
+    return { success: false, error: 'User profile ID is required' };
+  }
+
+  const profiles = await base44.entities.UserProfile.filter({ id: userProfileId });
+  if (profiles.length === 0) {
+    return { success: false, error: 'User profile not found' };
+  }
+
+  const profile = profiles[0];
+  const days = trialDays || 183;
+  const trialEndsAt = new Date();
+  trialEndsAt.setDate(trialEndsAt.getDate() + days);
+
+  await base44.entities.UserProfile.update(profile.id, {
+    is_founding_member: true,
+    founding_member_granted_at: new Date().toISOString(),
+    founding_member_trial_ends_at: trialEndsAt.toISOString(),
+    founding_member_source: 'manual_admin',
+    founding_member_eligible: true,
+    founding_trial_consumed: false,
+    subscription_tier: 'premium',
+    is_premium: true,
+    premium_until: trialEndsAt.toISOString(),
+    badges: [...(profile.badges || []).filter(b => b !== 'founding_member'), 'founding_member']
+  });
+
+  // Send notification
+  await base44.entities.Notification.create({
+    user_profile_id: profile.id,
+    user_id: profile.user_id,
+    type: 'admin_message',
+    title: '🎉 Founding Member Status Granted!',
+    message: `You've been granted ${days} days of FREE Premium as a Founding Member!`,
+    is_admin: true
+  });
+
+  return { success: true, trialEndsAt: trialEndsAt.toISOString() };
+}
+
+async function revokeFounderStatus(data) {
+  const { userProfileId } = data;
+
+  if (!userProfileId) {
+    return { success: false, error: 'User profile ID is required' };
+  }
+
+  const profiles = await base44.entities.UserProfile.filter({ id: userProfileId });
+  if (profiles.length === 0) {
+    return { success: false, error: 'User profile not found' };
+  }
+
+  const profile = profiles[0];
+
+  await base44.entities.UserProfile.update(profile.id, {
+    is_founding_member: false,
+    founding_trial_consumed: true,
+    subscription_tier: 'free',
+    is_premium: false,
+    premium_until: null,
+    badges: (profile.badges || []).filter(b => b !== 'founding_member')
+  });
+
+  return { success: true };
+}
+
+async function extendTrial(data) {
+  const { userProfileId, additionalDays } = data;
+
+  if (!userProfileId || !additionalDays) {
+    return { success: false, error: 'User profile ID and additional days are required' };
+  }
+
+  const profiles = await base44.entities.UserProfile.filter({ id: userProfileId });
+  if (profiles.length === 0) {
+    return { success: false, error: 'User profile not found' };
+  }
+
+  const profile = profiles[0];
+  
+  // Calculate new end date
+  const currentEnd = profile.founding_member_trial_ends_at 
+    ? new Date(profile.founding_member_trial_ends_at)
+    : new Date();
+  
+  const newEnd = new Date(currentEnd);
+  newEnd.setDate(newEnd.getDate() + additionalDays);
+
+  await base44.entities.UserProfile.update(profile.id, {
+    founding_member_trial_ends_at: newEnd.toISOString(),
+    premium_until: newEnd.toISOString()
+  });
+
+  // Send notification
+  await base44.entities.Notification.create({
+    user_profile_id: profile.id,
+    user_id: profile.user_id,
+    type: 'admin_message',
+    title: '🎁 Trial Extended!',
+    message: `Your Founding Member trial has been extended by ${additionalDays} days!`,
+    is_admin: true
+  });
+
+  return { success: true, newTrialEndsAt: newEnd.toISOString() };
+}

@@ -1,74 +1,152 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { base44 } from './base44Client.js';
 
-Deno.serve(async (req) => {
+/**
+ * Checks if a user is eligible for Founding Member status.
+ * Used during signup/onboarding to determine if the user should get FM status.
+ * 
+ * @param {object} payload
+ * @param {string} [payload.userProfileId] - Existing user profile ID (if checking for existing user)
+ * @param {string} [payload.inviteCode] - Invite code to validate
+ */
+export default async function checkFoundingMemberEligibility(payload, context) {
+  const { userProfileId, inviteCode } = payload;
+
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Get Founder Program Settings
-    const settingsRecords = await base44.asServiceRole.entities.SystemSettings.filter({ key: 'founder_program' });
-    const settings = settingsRecords[0]?.value || {
+    // Get founder program settings
+    const settings = await base44.entities.SystemSettings.filter({ key: 'founder_program' });
+    const founderConfig = settings[0]?.value || {
       founders_mode_enabled: false,
       auto_assign_new_users: false,
       trial_days: 183
     };
 
-    // Get user profile
-    const profiles = await base44.asServiceRole.entities.UserProfile.filter({ user_id: user.id });
-    
-    if (profiles.length === 0) {
-      // New user - check if eligible
-      return Response.json({
-        eligible: settings.founders_mode_enabled && settings.auto_assign_new_users,
-        is_founding_member: false,
-        trial_consumed: false,
-        program_active: settings.founders_mode_enabled,
-        auto_assign_enabled: settings.auto_assign_new_users,
-        trial_days: settings.trial_days
-      });
-    }
-
-    const profile = profiles[0];
-
-    // Check if trial already consumed
-    if (profile.founding_trial_consumed) {
-      return Response.json({
+    // Check if founder mode is globally enabled
+    if (!founderConfig.founders_mode_enabled) {
+      // Even if global mode is off, check if they have a valid invite code
+      if (inviteCode) {
+        const codeResult = await validateInviteCode(inviteCode);
+        if (codeResult.valid) {
+          return {
+            eligible: true,
+            reason: 'invite_code',
+            trialDays: codeResult.trialDays,
+            codeId: codeResult.codeId
+          };
+        }
+      }
+      
+      return {
         eligible: false,
-        is_founding_member: profile.is_founding_member,
-        trial_consumed: true,
-        trial_ends_at: profile.founding_member_trial_ends_at,
-        program_active: settings.founders_mode_enabled
-      });
+        reason: 'founder_mode_disabled'
+      };
     }
 
-    // Check if already a founding member
-    if (profile.is_founding_member) {
-      return Response.json({
-        eligible: false,
-        is_founding_member: true,
-        trial_consumed: true,
-        trial_ends_at: profile.founding_member_trial_ends_at,
-        source: profile.founding_member_source,
-        program_active: settings.founders_mode_enabled
-      });
+    // If checking for an existing user
+    if (userProfileId) {
+      const profiles = await base44.entities.UserProfile.filter({ id: userProfileId });
+      if (profiles.length === 0) {
+        return { eligible: false, reason: 'profile_not_found' };
+      }
+
+      const profile = profiles[0];
+
+      // Check if already used founding trial
+      if (profile.founding_trial_consumed) {
+        return { eligible: false, reason: 'trial_already_consumed' };
+      }
+
+      // Check if already an active founding member
+      if (profile.is_founding_member && profile.founding_member_trial_ends_at) {
+        const trialEnd = new Date(profile.founding_member_trial_ends_at);
+        if (trialEnd > new Date()) {
+          return { 
+            eligible: false, 
+            reason: 'already_founding_member',
+            trialEndsAt: profile.founding_member_trial_ends_at
+          };
+        }
+      }
     }
 
-    // User is eligible
-    return Response.json({
-      eligible: profile.founding_member_eligible !== false && settings.founders_mode_enabled,
-      is_founding_member: false,
-      trial_consumed: false,
-      program_active: settings.founders_mode_enabled,
-      auto_assign_enabled: settings.auto_assign_new_users,
-      trial_days: settings.trial_days
-    });
+    // Check invite code if provided
+    if (inviteCode) {
+      const codeResult = await validateInviteCode(inviteCode);
+      if (codeResult.valid) {
+        return {
+          eligible: true,
+          reason: 'invite_code',
+          trialDays: codeResult.trialDays,
+          codeId: codeResult.codeId
+        };
+      } else {
+        return {
+          eligible: false,
+          reason: codeResult.reason
+        };
+      }
+    }
+
+    // Check if auto-assign is enabled for new users
+    if (founderConfig.auto_assign_new_users) {
+      // Count current founding members to enforce limit
+      const foundingMembers = await base44.entities.UserProfile.filter({ 
+        is_founding_member: true 
+      });
+      
+      const FOUNDING_MEMBER_LIMIT = 1000;
+      
+      if (foundingMembers.length < FOUNDING_MEMBER_LIMIT) {
+        return {
+          eligible: true,
+          reason: 'auto_assign',
+          trialDays: founderConfig.trial_days,
+          slotsRemaining: FOUNDING_MEMBER_LIMIT - foundingMembers.length
+        };
+      } else {
+        return {
+          eligible: false,
+          reason: 'founding_slots_full',
+          totalFounders: foundingMembers.length
+        };
+      }
+    }
+
+    return {
+      eligible: false,
+      reason: 'not_eligible'
+    };
 
   } catch (error) {
-    console.error('Check Founding Member eligibility error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Error checking founding member eligibility:', error);
+    return { eligible: false, reason: 'error', error: error.message };
   }
-});
+}
+
+async function validateInviteCode(code) {
+  const codes = await base44.entities.FounderInviteCode.filter({ 
+    code: code.toUpperCase(),
+    is_active: true
+  });
+
+  if (codes.length === 0) {
+    return { valid: false, reason: 'invalid_code' };
+  }
+
+  const inviteCode = codes[0];
+
+  // Check expiration
+  if (inviteCode.expires_at && new Date(inviteCode.expires_at) < new Date()) {
+    return { valid: false, reason: 'code_expired' };
+  }
+
+  // Check redemption limit
+  if (inviteCode.current_redemptions >= inviteCode.max_redemptions) {
+    return { valid: false, reason: 'code_limit_reached' };
+  }
+
+  return {
+    valid: true,
+    trialDays: inviteCode.trial_days || 183,
+    codeId: inviteCode.id
+  };
+}

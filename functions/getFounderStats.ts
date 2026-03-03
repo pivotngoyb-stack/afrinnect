@@ -1,96 +1,127 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { base44 } from './base44Client.js';
 
-Deno.serve(async (req) => {
+/**
+ * Gets statistics about the Founding Member program for admin dashboard.
+ */
+export default async function getFounderStats(payload, context) {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Admin access required' }, { status: 403 });
-    }
+    // Get all founding members
+    const foundingMembers = await base44.entities.UserProfile.filter({ 
+      is_founding_member: true 
+    });
 
     const now = new Date();
 
-    // Get all founding members
-    const foundingMembers = await base44.asServiceRole.entities.UserProfile.filter({
-      is_founding_member: true
-    });
-
     // Calculate stats
-    const totalFounders = foundingMembers.length;
-    
-    let activeTrials = 0;
-    let expiredTrials = 0;
-    let converted = 0;
-    let churned = 0;
-    const trialEndingsSoon = [];
+    let activeCount = 0;
+    let expiredCount = 0;
+    let convertedCount = 0;
+    let sourceCounts = {
+      global_toggle: 0,
+      invite_code: 0,
+      manual_admin: 0
+    };
 
-    for (const profile of foundingMembers) {
-      const trialEnd = profile.founding_member_trial_ends_at ? new Date(profile.founding_member_trial_ends_at) : null;
-      
-      if (trialEnd) {
-        if (trialEnd > now) {
-          activeTrials++;
-          
-          // Check if ending in next 7 days
-          const daysUntilExpiry = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
-          if (daysUntilExpiry <= 7) {
-            trialEndingsSoon.push({
-              profile_id: profile.id,
-              display_name: profile.display_name,
-              email: profile.created_by,
-              days_remaining: daysUntilExpiry,
-              trial_ends_at: profile.founding_member_trial_ends_at
-            });
-          }
-        } else {
-          expiredTrials++;
-          
-          if (profile.founding_member_converted) {
-            converted++;
-          } else if (!profile.is_premium) {
-            churned++;
-          }
+    const recentFounders = [];
+    const expiringThisWeek = [];
+    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    for (const member of foundingMembers) {
+      const trialEnd = member.founding_member_trial_ends_at 
+        ? new Date(member.founding_member_trial_ends_at) 
+        : null;
+
+      // Count by status
+      if (trialEnd && trialEnd > now) {
+        activeCount++;
+        
+        // Check if expiring this week
+        if (trialEnd <= weekFromNow) {
+          expiringThisWeek.push({
+            id: member.id,
+            display_name: member.display_name,
+            email: member.created_by,
+            trial_ends_at: member.founding_member_trial_ends_at
+          });
         }
+      } else {
+        expiredCount++;
+      }
+
+      // Count conversions
+      if (member.founding_member_converted) {
+        convertedCount++;
+      }
+
+      // Count by source
+      const source = member.founding_member_source || 'global_toggle';
+      if (sourceCounts[source] !== undefined) {
+        sourceCounts[source]++;
+      }
+
+      // Get recent founders (last 7 days)
+      const grantedAt = member.founding_member_granted_at 
+        ? new Date(member.founding_member_granted_at)
+        : null;
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      
+      if (grantedAt && grantedAt > weekAgo) {
+        recentFounders.push({
+          id: member.id,
+          display_name: member.display_name,
+          email: member.created_by,
+          granted_at: member.founding_member_granted_at,
+          source: member.founding_member_source
+        });
       }
     }
 
-    // Get source breakdown
-    const sourceBreakdown = {
-      global_toggle: foundingMembers.filter(p => p.founding_member_source === 'global_toggle').length,
-      invite_code: foundingMembers.filter(p => p.founding_member_source === 'invite_code').length,
-      manual_admin: foundingMembers.filter(p => p.founding_member_source === 'manual_admin').length
-    };
-
     // Get invite code stats
-    const inviteCodes = await base44.asServiceRole.entities.FounderInviteCode.filter({});
+    const inviteCodes = await base44.entities.FounderInviteCode.list();
     const codeStats = inviteCodes.map(code => ({
+      id: code.id,
       code: code.code,
       redemptions: code.current_redemptions || 0,
-      max: code.max_redemptions,
+      max_redemptions: code.max_redemptions || 100,
       is_active: code.is_active,
-      expires_at: code.expires_at
+      expires_at: code.expires_at,
+      trial_days: code.trial_days
     }));
 
-    // Calculate conversion rate
-    const conversionRate = expiredTrials > 0 ? Math.round((converted / expiredTrials) * 100) : 0;
-    const churnRate = expiredTrials > 0 ? Math.round((churned / expiredTrials) * 100) : 0;
+    // Get founder program settings
+    const settings = await base44.entities.SystemSettings.filter({ key: 'founder_program' });
+    const founderConfig = settings[0]?.value || {
+      founders_mode_enabled: false,
+      auto_assign_new_users: false,
+      trial_days: 183
+    };
 
-    return Response.json({
-      total_founders: totalFounders,
-      active_trials: activeTrials,
-      expired_trials: expiredTrials,
-      converted: converted,
-      churned: churned,
-      conversion_rate: conversionRate,
-      churn_rate: churnRate,
-      source_breakdown: sourceBreakdown,
-      trial_ending_soon: trialEndingsSoon,
-      invite_codes: codeStats
-    });
+    // Calculate conversion rate
+    const conversionRate = expiredCount > 0 
+      ? Math.round((convertedCount / expiredCount) * 100) 
+      : 0;
+
+    return {
+      success: true,
+      data: {
+        summary: {
+          total: foundingMembers.length,
+          active: activeCount,
+          expired: expiredCount,
+          converted: convertedCount,
+          conversionRate,
+          slotsRemaining: Math.max(0, 1000 - foundingMembers.length)
+        },
+        sourceCounts,
+        recentFounders: recentFounders.slice(0, 10),
+        expiringThisWeek,
+        inviteCodes: codeStats,
+        config: founderConfig
+      }
+    };
 
   } catch (error) {
-    console.error('Get Founder Stats error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Error getting founder stats:', error);
+    return { success: false, error: error.message };
   }
-});
+}
