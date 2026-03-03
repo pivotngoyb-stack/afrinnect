@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Send, Sparkles } from 'lucide-react';
+import { ArrowLeft, Send } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -103,8 +103,8 @@ export default function VirtualGifts() {
   }, []);
 
   const handleSendGift = () => {
-    // Show coming soon message - payments will be via App Store/Play Store
-    alert('Virtual gifts coming soon! This feature will be available through in-app purchases.');
+    // Placeholder - will be implemented via in-app purchases
+    alert('Gift selected! Payment will be available soon.');
   };
 
   return (
@@ -121,21 +121,6 @@ export default function VirtualGifts() {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6">
-        {/* Coming Soon Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-4 mb-6 text-white"
-        >
-          <div className="flex items-center gap-3">
-            <Sparkles size={32} className="flex-shrink-0" />
-            <div className="flex-1">
-              <p className="font-bold">Coming Soon!</p>
-              <p className="text-sm text-white/80">Virtual gifts will be available via in-app purchases</p>
-            </div>
-          </div>
-        </motion.div>
-
         {/* Categories */}
         <div className="flex gap-2 overflow-x-auto pb-4 mb-2 scrollbar-hide">
           {CATEGORIES.map(cat => (
