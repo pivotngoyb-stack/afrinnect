@@ -20,6 +20,7 @@ import SafetyEducationModal from '@/components/safety/SafetyEducationModal';
 import { useConversionTracker, CONVERSION_EVENTS } from '@/components/shared/ConversionTracker';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import CelebrationModal from '@/components/shared/CelebrationModal';
+import FoundingMemberWelcome from '@/components/founding/FoundingMemberWelcome';
 
 const AFRICAN_COUNTRIES = [
   'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Egypt', 'Morocco',
@@ -49,6 +50,8 @@ export default function Onboarding() {
   const [step, setStep] = useState(0);
   const [user, setUser] = useState(null);
   const [showSafetyEducation, setShowSafetyEducation] = useState(false);
+  const [showFoundingWelcome, setShowFoundingWelcome] = useState(false);
+  const [createdProfile, setCreatedProfile] = useState(null);
   const [formData, setFormData] = useState(() => {
     // Check for referral code, founder code, and ambassador code in URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -250,11 +253,17 @@ export default function Onboarding() {
 
       return profile;
     },
-    onSuccess: () => {
+    onSuccess: (profile) => {
+      setCreatedProfile(profile);
       setShowCelebration(true);
       setTimeout(() => {
         setShowCelebration(false);
-        setShowSafetyEducation(true);
+        // If founding member, show special welcome first
+        if (profile?.is_founding_member) {
+          setShowFoundingWelcome(true);
+        } else {
+          setShowSafetyEducation(true);
+        }
       }, 3000);
     },
     onError: (error) => {
@@ -795,6 +804,16 @@ export default function Onboarding() {
         title="Welcome to Afrinnect!"
         message="Your profile is ready. Let's find your perfect match!"
         emoji="🎉"
+      />
+
+      {/* Founding Member Welcome Modal */}
+      <FoundingMemberWelcome
+        isOpen={showFoundingWelcome}
+        onClose={() => {
+          setShowFoundingWelcome(false);
+          setShowSafetyEducation(true);
+        }}
+        profile={createdProfile}
       />
 
       {/* Safety Education Modal */}
