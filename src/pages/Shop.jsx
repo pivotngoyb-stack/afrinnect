@@ -10,8 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import confetti from 'canvas-confetti';
-import StripePaymentModal from '@/components/payment/StripePaymentModal';
 
 const SHOP_ITEMS = [
   {
@@ -84,8 +82,6 @@ const SHOP_ITEMS = [
 
 export default function Shop() {
   const [myProfile, setMyProfile] = useState(null);
-  const [purchasing, setPurchasing] = useState(null);
-  const [purchaseSuccess, setPurchaseSuccess] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -102,98 +98,9 @@ export default function Shop() {
     fetchProfile();
   }, []);
 
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [clientSecret, setClientSecret] = useState(null);
-  const [stripeConfig, setStripeConfig] = useState(null);
-
-  // Fetch Stripe config on mount
-  useEffect(() => {
-    const getStripeConfig = async () => {
-      try {
-        const res = await base44.functions.invoke('getStripeConfig', {});
-        if (res.data?.publicKey) setStripeConfig(res.data);
-      } catch (e) {}
-    };
-    getStripeConfig();
-  }, []);
-
   const handlePurchase = async (item) => {
-    setPurchasing(item.id);
-    setSelectedItem(item);
-    
-    try {
-      // Create payment intent for ONE-TIME purchase
-      const response = await base44.functions.invoke('createStripePaymentIntent', {
-        amount: item.price,
-        currency: 'usd',
-        planType: `shop_${item.type}`,
-        billingPeriod: 'one_time',
-        itemType: item.type,
-        itemQuantity: item.quantity
-      });
-
-      if (response.data?.clientSecret) {
-        setClientSecret(response.data.clientSecret);
-        setShowPaymentModal(true);
-      } else {
-        throw new Error('Failed to create payment');
-      }
-    } catch (e) {
-      console.error('Purchase failed:', e);
-      alert('Failed to start purchase. Please try again.');
-      setSelectedItem(null);
-    }
-    
-    setPurchasing(null);
-  };
-
-  // Called ONLY after Stripe confirms payment success
-  const handlePaymentSuccess = async () => {
-    if (!selectedItem) return;
-    
-    try {
-      const updates = {};
-      
-      if (selectedItem.type === 'boost') {
-        updates.purchased_boosts = (myProfile.purchased_boosts || 0) + selectedItem.quantity;
-      } else if (selectedItem.type === 'super_likes') {
-        updates.purchased_super_likes = (myProfile.purchased_super_likes || 0) + selectedItem.quantity;
-      } else if (selectedItem.type === '24hr_unlock') {
-        updates.purchased_24hr_unlock = true;
-        updates.purchased_24hr_unlock_expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-      }
-
-      // Update profile via service role (should be done in webhook ideally)
-      await base44.entities.UserProfile.update(myProfile.id, updates);
-      
-      // Record purchase
-      await base44.entities.InAppPurchase.create({
-        user_profile_id: myProfile.id,
-        item_type: selectedItem.type,
-        item_quantity: selectedItem.quantity,
-        amount_usd: selectedItem.price,
-        payment_provider: 'stripe',
-        status: 'completed'
-      });
-
-      setMyProfile({ ...myProfile, ...updates });
-      setPurchaseSuccess(selectedItem);
-      
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-
-      setTimeout(() => setPurchaseSuccess(null), 3000);
-    } catch (e) {
-      console.error('Failed to apply purchase:', e);
-    }
-    
-    setShowPaymentModal(false);
-    setClientSecret(null);
-    setSelectedItem(null);
+    // Show coming soon message - payments will be via App Store/Play Store
+    alert('In-app purchases coming soon! This will be available through the App Store and Google Play.');
   };
 
   const tier = myProfile?.subscription_tier || 'free';
@@ -218,6 +125,21 @@ export default function Shop() {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6">
+        {/* Coming Soon Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-4 mb-6 text-white"
+        >
+          <div className="flex items-center gap-3">
+            <Sparkles size={32} className="flex-shrink-0" />
+            <div className="flex-1">
+              <p className="font-bold">Coming Soon!</p>
+              <p className="text-sm text-white/80">In-app purchases will be available via App Store & Google Play</p>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Premium Upsell Banner */}
         {!isPremium && (
           <Link to={createPageUrl('PricingPlans')}>
@@ -303,15 +225,10 @@ export default function Shop() {
                       </div>
                       <Button
                         onClick={() => handlePurchase(item)}
-                        disabled={purchasing === item.id}
                         size="sm"
                         className={`mt-1 bg-gradient-to-r ${item.color} hover:opacity-90`}
                       >
-                        {purchasing === item.id ? (
-                          <Loader2 size={16} className="animate-spin" />
-                        ) : (
-                          'Buy'
-                        )}
+                        Coming Soon
                       </Button>
                     </div>
                   </div>
@@ -327,55 +244,6 @@ export default function Shop() {
           <p className="mt-1">Questions? <Link to={createPageUrl('Support')} className="text-purple-600 hover:underline">Contact Support</Link></p>
         </div>
       </main>
-
-      {/* Stripe Payment Modal */}
-      {showPaymentModal && clientSecret && stripeConfig && (
-        <StripePaymentModal
-          isOpen={showPaymentModal}
-          onClose={() => {
-            setShowPaymentModal(false);
-            setClientSecret(null);
-            setSelectedItem(null);
-          }}
-          clientSecret={clientSecret}
-          amount={selectedItem?.price || 0}
-          planName={selectedItem?.name || 'Purchase'}
-          stripePublicKey={stripeConfig.publicKey}
-          onSuccess={handlePaymentSuccess}
-          isTrial={false}
-        />
-      )}
-
-      {/* Success Modal */}
-      {purchaseSuccess && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-        >
-          <motion.div
-            initial={{ scale: 0.8, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            className="bg-white rounded-2xl p-8 mx-4 text-center shadow-2xl max-w-sm"
-          >
-            <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${purchaseSuccess.color} flex items-center justify-center mx-auto mb-4`}>
-              <Gift size={40} className="text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Purchase Complete!</h2>
-            <p className="text-gray-600 mb-4">
-              {purchaseSuccess.quantity}x {purchaseSuccess.name} added to your account
-            </p>
-            <Button
-              onClick={() => setPurchaseSuccess(null)}
-              className={`w-full bg-gradient-to-r ${purchaseSuccess.color}`}
-            >
-              <Check size={18} className="mr-2" />
-              Got it!
-            </Button>
-          </motion.div>
-        </motion.div>
-      )}
     </div>
   );
 }

@@ -8,7 +8,6 @@ import {
   Check, Star, Infinity, Users, MessageCircle, Award, BadgeCheck as Verified, CircleHelp as HelpCircle, X
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { useConversionTracker, CONVERSION_EVENTS, trackRevenue } from '@/components/shared/ConversionTracker';
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
@@ -18,9 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import AfricanPattern from '@/components/shared/AfricanPattern';
-import StripePaymentModal from '@/components/payment/StripePaymentModal';
 import SocialProofPaywall from '@/components/monetization/SocialProofPaywall';
-import ExitIntentOffer from '@/components/monetization/ExitIntentOffer';
 
 const PRICING_TIERS = {
   premium: {
@@ -101,58 +98,18 @@ const PRICING_TIERS = {
 };
 
 export default function PricingPlans() {
-  const { trackEvent } = useConversionTracker();
   const [billingCycle, setBillingCycle] = useState('yearly');
   const [myProfile, setMyProfile] = useState(null);
-  const [showPayment, setShowPayment] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState(null); // { tier, price }
-  const [stripeConfig, setStripeConfig] = useState(null);
-  const [clientSecret, setClientSecret] = useState(null);
-  const [isTrial, setIsTrial] = useState(false);
-  const [pricingData, setPricingData] = useState(null);
 
   useEffect(() => {
     const init = async () => {
       try {
-        const [user, stripeRes, plans] = await Promise.all([
-          base44.auth.me().catch(() => null),
-          base44.functions.invoke('getStripeConfig', {}).catch(() => ({ data: {} })),
-          base44.entities.PricingPlan.filter({ is_active: true }).catch(() => [])
-        ]);
-
-        if (stripeRes.data?.publicKey) setStripeConfig(stripeRes.data);
+        const user = await base44.auth.me().catch(() => null);
         
         if (user) {
           const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
           if (profiles[0]) setMyProfile(profiles[0]);
         }
-
-        if (plans.length > 0) {
-            const dynamicPricing = {};
-            plans.forEach(plan => {
-              const { tier, billing_period: period, price_usd, discount_percentage } = plan;
-              if (!dynamicPricing[tier]) dynamicPricing[tier] = { prices: {} };
-              
-              let total = price_usd;
-              if (period === 'yearly') total = price_usd * 12;
-              if (period === 'quarterly') total = price_usd * 3;
-              if (period === '6months') total = price_usd * 6;
-              
-              // Map 6months to 'quarterly' key for the UI tabs logic if needed, or handle separately
-              // For simplicity, we map 6months to quarterly slot if quarterly is missing
-              const key = period === '6months' ? 'quarterly' : period;
-
-              dynamicPricing[tier].prices[key] = {
-                amount: price_usd,
-                period: 'month',
-                total,
-                save: discount_percentage ? `${discount_percentage}%` : null,
-                label: period === '6months' ? '6 Months' : null
-              };
-            });
-            setPricingData(dynamicPricing);
-        }
-
       } catch (e) {
         console.error("Init error", e);
       }
@@ -166,50 +123,9 @@ export default function PricingPlans() {
         return;
     }
     
-    // Get correct price object
-    const tier = PRICING_TIERS[tierKey];
-    const prices = pricingData?.[tierKey]?.prices || tier.prices;
-    const price = prices[billingCycle];
-
-    if (!price) return;
-
-    setSelectedPlan({ tier: tierKey, price, period: billingCycle });
-    
-    trackEvent(CONVERSION_EVENTS.PREMIUM_CLICK, {
-        tier: tierKey,
-        billing: billingCycle,
-        price: price.total
-    });
-    setShowPayment(true);
+    // Show coming soon message - payments will be via App Store/Play Store
+    alert('In-app purchases coming soon! Subscriptions will be available through the App Store and Google Play.');
   };
-
-  useEffect(() => {
-    const createIntent = async () => {
-        if (showPayment && selectedPlan && stripeConfig) {
-            try {
-                // Handle the 6months case for VIP if mapped from quarterly
-                let actualPeriod = selectedPlan.period;
-                if (selectedPlan.tier === 'vip' && selectedPlan.period === 'quarterly') {
-                    actualPeriod = '6months';
-                }
-
-                const response = await base44.functions.invoke('createStripePaymentIntent', {
-                    amount: selectedPlan.price.total,
-                    currency: 'usd',
-                    planType: `${selectedPlan.tier}_${actualPeriod}`,
-                    billingPeriod: actualPeriod
-                });
-                if (response.data?.clientSecret) {
-                    setClientSecret(response.data.clientSecret);
-                    setIsTrial(!!response.data.isTrial);
-                }
-            } catch (e) {
-                console.error("Payment intent error", e);
-            }
-        }
-    };
-    createIntent();
-  }, [showPayment, selectedPlan, stripeConfig]);
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -239,6 +155,10 @@ export default function PricingPlans() {
           <p className="text-xl text-gray-500 max-w-2xl mx-auto">
             Get better matches and more dates with our premium features.
           </p>
+          <div className="mt-4 inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-2">
+            <Sparkles className="w-4 h-4 text-amber-600" />
+            <span className="text-amber-800 text-sm font-medium">In-app purchases coming soon via App Store & Google Play</span>
+          </div>
         </div>
 
         {/* Billing Toggle */}
@@ -282,8 +202,7 @@ export default function PricingPlans() {
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-start">
           {Object.entries(PRICING_TIERS).map(([key, tier]) => {
-            const prices = pricingData?.[key]?.prices || tier.prices;
-            const price = prices[billingCycle];
+            const price = tier.prices[billingCycle];
             const isPopular = tier.popular;
 
             if (!price) return null;
@@ -347,16 +266,13 @@ export default function PricingPlans() {
                     onClick={() => handleSubscribe(key)}
                     className={`w-full py-6 text-base font-semibold rounded-xl shadow-lg transition-all active:scale-95 ${tier.buttonColor}`}
                   >
-                    {myProfile?.subscription_tier === key ? 'Current Plan' : 'Get Started'}
+                    {myProfile?.subscription_tier === key ? 'Current Plan' : 'Coming Soon'}
                   </Button>
                   <p className="text-center text-xs text-gray-400 mt-4">
                     {billingCycle === 'monthly' 
-                      ? `$${price.total}/month • Cancel anytime`
+                      ? `$${price.total}/month`
                       : `Billed ${billingCycle === 'yearly' ? 'annually' : (billingCycle === 'quarterly' ? 'every 3 months' : '')} at $${price.total}`
                     }
-                  </p>
-                  <p className="text-center text-xs text-gray-400">
-                    Auto-renews • Cancel anytime
                   </p>
                 </div>
               </div>
@@ -367,31 +283,6 @@ export default function PricingPlans() {
         {/* Social Proof Section */}
         <div className="mt-16 max-w-md mx-auto">
           <SocialProofPaywall />
-        </div>
-
-        {/* Upgrade/Downgrade Info Box */}
-        <div className="mt-12 max-w-2xl mx-auto bg-blue-50 border border-blue-200 rounded-2xl p-6">
-          <h4 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
-            <Zap size={18} />
-            Fair Billing - No Double Charges
-          </h4>
-          <div className="space-y-2 text-sm text-blue-800">
-            <p>⬆️ <strong>Upgrading?</strong> You get credit for unused time on your current plan - automatically applied to your new subscription.</p>
-            <p>⬇️ <strong>Downgrading?</strong> Keep all features until your current billing period ends. No refunds, but no extra charges either.</p>
-            <p>❌ <strong>Canceling?</strong> Cancel anytime. Keep your features until the end of your paid period.</p>
-          </div>
-        </div>
-
-        {/* Money-back guarantee */}
-        <div className="mt-8 text-center">
-          <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-6 py-3">
-            <Shield className="w-5 h-5 text-green-600" />
-            <span className="text-green-800 font-medium">3-day free trial on first subscription</span>
-          </div>
-          <p className="text-gray-500 mt-4 mb-2">Unsure which plan is right for you?</p>
-          <a href="#comparison" className="text-purple-600 font-semibold hover:underline">
-            View detailed feature comparison
-          </a>
         </div>
 
         {/* Feature Comparison Table */}
@@ -447,26 +338,6 @@ export default function PricingPlans() {
         </div>
 
       </main>
-
-      <StripePaymentModal
-        isOpen={showPayment}
-        onClose={() => { setShowPayment(false); setClientSecret(null); setIsTrial(false); }}
-        clientSecret={clientSecret}
-        isTrial={isTrial}
-        amount={selectedPlan?.price?.total || 0}
-        planName={`${PRICING_TIERS[selectedPlan?.tier]?.name || 'Plan'} (${selectedPlan?.period})`}
-        stripePublicKey={stripeConfig?.publicKey}
-        onSuccess={() => {
-            setShowPayment(false);
-            if (selectedPlan) {
-                trackRevenue(selectedPlan.price.total, 'USD', `${selectedPlan.tier}_subscription`, myProfile?.id);
-            }
-            window.location.href = createPageUrl('Home');
-        }}
-      />
-
-      {/* Exit Intent Offer */}
-      <ExitIntentOffer isOnPricingPage={true} discountPercent={20} />
     </div>
   );
 }

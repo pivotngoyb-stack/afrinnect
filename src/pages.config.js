@@ -53,6 +53,7 @@ import AdminBroadcast from './pages/AdminBroadcast';
 import AdminContent from './pages/AdminContent';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLaunchChecklist from './pages/AdminLaunchChecklist';
+import AdminManual from './pages/AdminManual';
 import AdminModeration from './pages/AdminModeration';
 import AdminSettings from './pages/AdminSettings';
 import AdminSubscriptions from './pages/AdminSubscriptions';
@@ -121,7 +122,6 @@ import VerifyPhoto from './pages/VerifyPhoto';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
-import AdminManual from './pages/AdminManual';
 import __Layout from './Layout.jsx';
 
 
@@ -132,6 +132,7 @@ export const PAGES = {
     "AdminContent": AdminContent,
     "AdminDashboard": AdminDashboard,
     "AdminLaunchChecklist": AdminLaunchChecklist,
+    "AdminManual": AdminManual,
     "AdminModeration": AdminModeration,
     "AdminSettings": AdminSettings,
     "AdminSubscriptions": AdminSubscriptions,
@@ -200,7 +201,6 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
     "WhoLikesYou": WhoLikesYou,
-    "AdminManual": AdminManual,
 }
 
 export const pagesConfig = {
