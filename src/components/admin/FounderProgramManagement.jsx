@@ -44,11 +44,29 @@ export default function FounderProgramManagement() {
     }
   });
 
-  // Fetch stats (without backend function - calculate locally)
+  // Fetch stats - try backend function first, fallback to local calculation
   const { data: stats, isLoading: loadingStats } = useQuery({
     queryKey: ['founder-stats'],
     queryFn: async () => {
-      // Calculate stats locally instead of using backend function
+      // Try backend function first (if available)
+      try {
+        const response = await base44.functions.invoke('getFounderStats', {});
+        if (response.success && response.data) {
+          return {
+            total_founders: response.data.summary?.total || 0,
+            active_trials: response.data.summary?.active || 0,
+            converted: response.data.summary?.converted || 0,
+            churned: response.data.summary?.expired || 0,
+            conversion_rate: response.data.summary?.conversionRate || 0,
+            trial_ending_soon: response.data.expiringThisWeek || [],
+            invite_codes: response.data.inviteCodes || []
+          };
+        }
+      } catch (e) {
+        console.log('Backend function unavailable, using local calculation');
+      }
+
+      // Fallback: Calculate stats locally
       const [founders, codes, redemptions] = await Promise.all([
         base44.entities.UserProfile.filter({ is_founding_member: true }),
         base44.entities.FounderInviteCode.list('-created_date', 50),
@@ -151,10 +169,42 @@ export default function FounderProgramManagement() {
     }
   });
 
-  // Manage user mutation (without backend function)
+  // Manage user mutation - try backend function first, fallback to local
   const manageUserMutation = useMutation({
     mutationFn: async (data) => {
-      // Find the user by email
+      // Try backend function first
+      try {
+        const actionMap = {
+          'grant': 'grant_status',
+          'revoke': 'revoke_status',
+          'extend': 'extend_trial'
+        };
+
+        // Find profile by email first
+        const profiles = await base44.entities.UserProfile.filter({ created_by: data.email });
+        if (profiles.length === 0) {
+          throw new Error('User not found');
+        }
+        const profile = profiles[0];
+
+        const response = await base44.functions.invoke('adminManageFounder', {
+          action: actionMap[data.action],
+          data: {
+            userProfileId: profile.id,
+            trialDays: data.trial_days,
+            additionalDays: data.extend_days
+          }
+        });
+
+        if (response.success) {
+          return { action: `${data.action} completed successfully` };
+        }
+        throw new Error(response.error || 'Action failed');
+      } catch (e) {
+        console.log('Backend function unavailable, using local update');
+      }
+
+      // Fallback: Local update
       const profiles = await base44.entities.UserProfile.filter({ created_by: data.email });
       if (profiles.length === 0) {
         throw new Error('User not found');
@@ -171,14 +221,19 @@ export default function FounderProgramManagement() {
           founding_member_trial_ends_at: trialEndsAt.toISOString(),
           founding_member_source: 'manual_admin',
           is_premium: true,
-          subscription_tier: 'premium'
+          subscription_tier: 'premium',
+          premium_until: trialEndsAt.toISOString(),
+          badges: [...(profile.badges || []).filter(b => b !== 'founding_member'), 'founding_member']
         });
         return { action: 'Founding member status granted' };
       } else if (data.action === 'revoke') {
         await base44.entities.UserProfile.update(profile.id, {
           is_founding_member: false,
+          founding_trial_consumed: true,
           is_premium: false,
-          subscription_tier: 'free'
+          subscription_tier: 'free',
+          premium_until: null,
+          badges: (profile.badges || []).filter(b => b !== 'founding_member')
         });
         return { action: 'Founding member status revoked' };
       } else if (data.action === 'extend') {
@@ -188,7 +243,8 @@ export default function FounderProgramManagement() {
         const newEnd = new Date(currentEnd.getTime() + (data.extend_days || 30) * 24 * 60 * 60 * 1000);
         
         await base44.entities.UserProfile.update(profile.id, {
-          founding_member_trial_ends_at: newEnd.toISOString()
+          founding_member_trial_ends_at: newEnd.toISOString(),
+          premium_until: newEnd.toISOString()
         });
         return { action: `Trial extended by ${data.extend_days} days` };
       }
