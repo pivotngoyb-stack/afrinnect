@@ -631,36 +631,14 @@ export default function Profile() {
               onBoostSuccess={() => window.location.reload()}
             />
 
-            {profile?.subscription_tier && profile?.subscription_tier !== 'free' ? (
-              <Button 
-                variant="outline"
-                className="w-full border-amber-200 text-amber-700 hover:bg-amber-50 h-12" 
-                onClick={async () => {
-                  if (confirm(t('admin.home.cancelWarning'))) {
-                    try {
-                      const res = await base44.functions.invoke('cancelSubscription', {});
-                      if (res.data.success) {
-                        alert(res.data.message);
-                        window.location.reload();
-                      } else {
-                        alert(res.data.error || 'Cancellation failed');
-                      }
-                    } catch(e) {
-                      alert('Error cancelling subscription');
-                    }
-                  }
-                }}
-              >
-                {t('admin.home.cancelSubscription')}
+            <Link to={createPageUrl('PricingPlans')}>
+              <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 h-14" size="lg">
+                <Crown size={20} className="mr-2" />
+                {profile?.subscription_tier && profile?.subscription_tier !== 'free' 
+                  ? t('admin.home.managePlan') 
+                  : t('profile.upgradePremium')}
               </Button>
-            ) : (
-              <Link to={createPageUrl('PricingPlans')}>
-                <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 h-14" size="lg">
-                  <Crown size={20} className="mr-2" />
-                  {t('profile.upgradePremium')}
-                </Button>
-              </Link>
-            )}
+            </Link>
 
             <Separator className="my-4" />
 
