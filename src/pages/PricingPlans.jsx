@@ -123,8 +123,8 @@ export default function PricingPlans() {
         return;
     }
     
-    // Show coming soon message - payments will be via App Store/Play Store
-    alert('In-app purchases coming soon! Subscriptions will be available through the App Store and Google Play.');
+    // Payments will be handled via native in-app purchases (iOS/Android)
+    console.log('Subscribe to:', tierKey, billingCycle);
   };
 
   return (
@@ -155,10 +155,7 @@ export default function PricingPlans() {
           <p className="text-xl text-gray-500 max-w-2xl mx-auto">
             Get better matches and more dates with our premium features.
           </p>
-          <div className="mt-4 inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-2">
-            <Sparkles className="w-4 h-4 text-amber-600" />
-            <span className="text-amber-800 text-sm font-medium">In-app purchases coming soon via App Store & Google Play</span>
-          </div>
+
         </div>
 
         {/* Billing Toggle */}
@@ -266,7 +263,7 @@ export default function PricingPlans() {
                     onClick={() => handleSubscribe(key)}
                     className={`w-full py-6 text-base font-semibold rounded-xl shadow-lg transition-all active:scale-95 ${tier.buttonColor}`}
                   >
-                    {myProfile?.subscription_tier === key ? 'Current Plan' : 'Coming Soon'}
+                    {myProfile?.subscription_tier === key ? 'Current Plan' : 'Subscribe'}
                   </Button>
                   <p className="text-center text-xs text-gray-400 mt-4">
                     {billingCycle === 'monthly' 
