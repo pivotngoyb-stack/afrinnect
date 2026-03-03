@@ -103,8 +103,8 @@ export default function VirtualGifts() {
   }, []);
 
   const handleSendGift = () => {
-    // Placeholder - will be implemented via in-app purchases
-    alert('Gift selected! Payment will be available soon.');
+    // Will be implemented via native in-app purchases (iOS/Android)
+    console.log('Sending gift:', selectedGift, 'with message:', message);
   };
 
   return (
