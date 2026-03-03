@@ -44,12 +44,63 @@ export default function FounderProgramManagement() {
     }
   });
 
-  // Fetch stats
+  // Fetch stats (without backend function - calculate locally)
   const { data: stats, isLoading: loadingStats } = useQuery({
     queryKey: ['founder-stats'],
     queryFn: async () => {
-      const response = await base44.functions.invoke('getFounderStats', {});
-      return response.data;
+      // Calculate stats locally instead of using backend function
+      const [founders, codes, redemptions] = await Promise.all([
+        base44.entities.UserProfile.filter({ is_founding_member: true }),
+        base44.entities.FounderInviteCode.list('-created_date', 50),
+        base44.entities.FounderCodeRedemption.list('-created_date', 100)
+      ]);
+
+      const now = new Date();
+      const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+      const activeTrials = founders.filter(f => {
+        const trialEnd = f.founding_member_trial_ends_at ? new Date(f.founding_member_trial_ends_at) : null;
+        return trialEnd && trialEnd > now;
+      });
+
+      const converted = founders.filter(f => f.founding_member_converted);
+      const churned = founders.filter(f => {
+        const trialEnd = f.founding_member_trial_ends_at ? new Date(f.founding_member_trial_ends_at) : null;
+        return trialEnd && trialEnd < now && !f.founding_member_converted;
+      });
+
+      const trialEndingSoon = founders.filter(f => {
+        const trialEnd = f.founding_member_trial_ends_at ? new Date(f.founding_member_trial_ends_at) : null;
+        return trialEnd && trialEnd > now && trialEnd < weekFromNow;
+      }).map(f => ({
+        profile_id: f.id,
+        display_name: f.display_name,
+        email: f.created_by,
+        trial_ends_at: f.founding_member_trial_ends_at,
+        days_remaining: Math.ceil((new Date(f.founding_member_trial_ends_at) - now) / (1000 * 60 * 60 * 24))
+      }));
+
+      const inviteCodes = codes.map(c => {
+        const codeRedemptions = redemptions.filter(r => r.code_id === c.id);
+        return {
+          code: c.code,
+          max: c.max_redemptions,
+          redemptions: codeRedemptions.length,
+          trial_days: c.trial_days,
+          is_active: c.is_active,
+          expires_at: c.expires_at
+        };
+      });
+
+      return {
+        total_founders: founders.length,
+        active_trials: activeTrials.length,
+        converted: converted.length,
+        churned: churned.length,
+        conversion_rate: founders.length > 0 ? Math.round((converted.length / founders.length) * 100) : 0,
+        trial_ending_soon: trialEndingSoon,
+        invite_codes: inviteCodes
+      };
     }
   });
 
@@ -100,11 +151,48 @@ export default function FounderProgramManagement() {
     }
   });
 
-  // Manage user mutation
+  // Manage user mutation (without backend function)
   const manageUserMutation = useMutation({
     mutationFn: async (data) => {
-      const response = await base44.functions.invoke('adminManageFounder', data);
-      return response.data;
+      // Find the user by email
+      const profiles = await base44.entities.UserProfile.filter({ created_by: data.email });
+      if (profiles.length === 0) {
+        throw new Error('User not found');
+      }
+      const profile = profiles[0];
+
+      if (data.action === 'grant') {
+        const trialDays = data.trial_days || 183;
+        const trialEndsAt = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
+        
+        await base44.entities.UserProfile.update(profile.id, {
+          is_founding_member: true,
+          founding_member_granted_at: new Date().toISOString(),
+          founding_member_trial_ends_at: trialEndsAt.toISOString(),
+          founding_member_source: 'manual_admin',
+          is_premium: true,
+          subscription_tier: 'premium'
+        });
+        return { action: 'Founding member status granted' };
+      } else if (data.action === 'revoke') {
+        await base44.entities.UserProfile.update(profile.id, {
+          is_founding_member: false,
+          is_premium: false,
+          subscription_tier: 'free'
+        });
+        return { action: 'Founding member status revoked' };
+      } else if (data.action === 'extend') {
+        const currentEnd = profile.founding_member_trial_ends_at 
+          ? new Date(profile.founding_member_trial_ends_at) 
+          : new Date();
+        const newEnd = new Date(currentEnd.getTime() + (data.extend_days || 30) * 24 * 60 * 60 * 1000);
+        
+        await base44.entities.UserProfile.update(profile.id, {
+          founding_member_trial_ends_at: newEnd.toISOString()
+        });
+        return { action: `Trial extended by ${data.extend_days} days` };
+      }
+      throw new Error('Invalid action');
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['founding-members'] });
