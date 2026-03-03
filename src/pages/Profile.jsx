@@ -23,6 +23,7 @@ import VerificationBadge from '@/components/shared/VerificationBadge';
 import CountryFlag from '@/components/shared/CountryFlag';
 import AfricanPattern from '@/components/shared/AfricanPattern';
 import FoundingMemberBadge from '@/components/profile/FoundingMemberBadge';
+import FoundingMemberStatus from '@/components/subscription/FoundingMemberStatus';
 import MobilePhotoGallery from '@/components/shared/MobilePhotoGallery';
 import StreakBadge from '@/components/shared/StreakBadge';
 import SocialProofBanner from '@/components/shared/SocialProofBanner';
@@ -356,6 +357,13 @@ export default function Profile() {
               </Link>
             </CardContent>
           </Card>
+        )}
+
+        {/* Founding Member Status Card (Own profile only) */}
+        {isOwnProfile && profile?.is_founding_member && (
+          <div className="mb-6">
+            <FoundingMemberStatus profile={profile} />
+          </div>
         )}
 
         {/* AI Profile Suggestions (Own profile only) */}
