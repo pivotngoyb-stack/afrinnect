@@ -4,13 +4,11 @@ import { useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, Sparkles } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import StripePaymentModal from '@/components/payment/StripePaymentModal';
-import { useQuery } from '@tanstack/react-query';
 
 const GIFTS = [
   // Classics
@@ -87,19 +85,8 @@ export default function VirtualGifts() {
   const [myProfile, setMyProfile] = useState(null);
   const [selectedGift, setSelectedGift] = useState(null);
   const [message, setMessage] = useState('');
-  const [showPayment, setShowPayment] = useState(false);
-  const [clientSecret, setClientSecret] = useState(null);
   const urlParams = new URLSearchParams(window.location.search);
   const profileId = urlParams.get('profileId');
-
-  const { data: stripeConfig } = useQuery({
-    queryKey: ['stripeConfig'],
-    queryFn: async () => {
-        const response = await base44.functions.invoke('getStripeConfig', {});
-        return response.data;
-    },
-    staleTime: Infinity
-  });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -107,55 +94,17 @@ export default function VirtualGifts() {
         const user = await base44.auth.me();
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
         if (profiles.length > 0) {
-        const profile = profiles[0];
-        setMyProfile(profile);
+          const profile = profiles[0];
+          setMyProfile(profile);
         }
       } catch (e) {}
     };
     fetchProfile();
   }, []);
 
-  const sendGiftMutation = useMutation({
-    mutationFn: async () => {
-      // Use backend function to handle all logic (finding match, notification, etc.)
-      const response = await base44.functions.invoke('sendVirtualGift', {
-        receiver_profile_id: profileId,
-        gift_type: selectedGift.type,
-        gift_emoji: selectedGift.emoji,
-        message: message
-      });
-      
-      if (response.data?.error) {
-        throw new Error(response.data.error);
-      }
-    },
-    onSuccess: () => {
-      setShowPayment(false);
-      alert('Gift sent! 🎁');
-      window.location.href = createPageUrl('Home');
-    }
-  });
-
-  const handleInitiatePayment = async () => {
-      if (!selectedGift) return;
-      
-      try {
-          const response = await base44.functions.invoke('createStripePaymentIntent', {
-              amount: selectedGift.price,
-              currency: 'usd',
-              planType: 'virtual_gift',
-              billingPeriod: 'one_time',
-              giftType: selectedGift.type
-          });
-          
-          if (response.data?.clientSecret) {
-              setClientSecret(response.data.clientSecret);
-              setShowPayment(true);
-          }
-      } catch (error) {
-          console.error("Payment init failed", error);
-          alert("Failed to initialize payment");
-      }
+  const handleSendGift = () => {
+    // Show coming soon message - payments will be via App Store/Play Store
+    alert('Virtual gifts coming soon! This feature will be available through in-app purchases.');
   };
 
   return (
@@ -172,6 +121,21 @@ export default function VirtualGifts() {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6">
+        {/* Coming Soon Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-4 mb-6 text-white"
+        >
+          <div className="flex items-center gap-3">
+            <Sparkles size={32} className="flex-shrink-0" />
+            <div className="flex-1">
+              <p className="font-bold">Coming Soon!</p>
+              <p className="text-sm text-white/80">Virtual gifts will be available via in-app purchases</p>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Categories */}
         <div className="flex gap-2 overflow-x-auto pb-4 mb-2 scrollbar-hide">
           {CATEGORIES.map(cat => (
@@ -247,8 +211,7 @@ export default function VirtualGifts() {
             </Card>
 
             <Button
-              onClick={handleInitiatePayment}
-              disabled={sendGiftMutation.isPending}
+              onClick={handleSendGift}
               className="w-full py-6 text-lg bg-gradient-to-r from-pink-600 to-purple-600"
             >
               <Send size={20} className="mr-2" />
@@ -257,16 +220,6 @@ export default function VirtualGifts() {
           </motion.div>
         )}
       </main>
-
-      <StripePaymentModal 
-          isOpen={showPayment}
-          onClose={() => setShowPayment(false)}
-          clientSecret={clientSecret}
-          amount={selectedGift?.price}
-          planName={`Virtual Gift: ${selectedGift?.name}`}
-          stripePublicKey={stripeConfig?.publicKey}
-          onSuccess={() => sendGiftMutation.mutate()}
-      />
     </div>
   );
 }
