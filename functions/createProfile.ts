@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
@@ -48,8 +48,7 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Too many accounts from this device. Please contact support if you believe this is an error.' }, { status: 400 });
     }
 
-    // 3. Prepare Secure Data
-    const deviceId = formData.device_id || `web_${Date.now()}`;
+    // 3. Prepare Secure Data (deviceId already defined above)
     
     // Check Founding Member Program Settings
     let isFoundingMember = false;

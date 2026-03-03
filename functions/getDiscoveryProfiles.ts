@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 // Helper to calculate distance (Haversine)
 function calculateDistance(lat1, lon1, lat2, lon2) {
