@@ -6,13 +6,11 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Loader2, Lock, Star, Check, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import StripePaymentModal from '@/components/payment/StripePaymentModal';
+
 
 export default function CouplesComparison({ isOpen, onClose }) {
   const [step, setStep] = useState('select_match'); // select_match, payment, results
   const [selectedMatch, setSelectedMatch] = useState(null);
-  const [clientSecret, setClientSecret] = useState(null);
-  const [stripeConfig, setStripeConfig] = useState(null);
   const [comparisonResult, setComparisonResult] = useState(null);
   const [myProfile, setMyProfile] = useState(null);
   const queryClient = useQueryClient();
@@ -26,18 +24,6 @@ export default function CouplesComparison({ isOpen, onClose }) {
       } catch (e) { console.error(e); }
     };
     fetchMe();
-
-    const fetchStripeConfig = async () => {
-        try {
-            const response = await base44.functions.invoke('getStripeConfig', {});
-            if (response.data?.publicKey) {
-                setStripeConfig(response.data);
-            }
-        } catch (error) {
-            console.error('Failed to fetch Stripe config:', error);
-        }
-    };
-    fetchStripeConfig();
   }, []);
 
   const { data: matches, isLoading: loadingMatches } = useQuery({
@@ -62,23 +48,7 @@ export default function CouplesComparison({ isOpen, onClose }) {
 
   const handleMatchSelect = async (match) => {
     setSelectedMatch(match);
-    
-    // Create payment intent
-    try {
-        const response = await base44.functions.invoke('createStripePaymentIntent', {
-            amount: 2.00,
-            currency: 'usd',
-            planType: 'couples_comparison',
-            billingPeriod: 'one_time'
-        });
-        if (response.data?.clientSecret) {
-            setClientSecret(response.data.clientSecret);
-            setStep('payment');
-        }
-    } catch (e) {
-        console.error("Failed to init payment", e);
-        alert("Failed to initialize payment");
-    }
+    setStep('payment');
   };
 
   const handlePaymentSuccess = async () => {
@@ -146,29 +116,16 @@ export default function CouplesComparison({ isOpen, onClose }) {
              
              <Button 
                 className="w-full bg-purple-600 hover:bg-purple-700 mb-2"
-                onClick={() => setStep('payment_modal')}
+                onClick={() => {
+                  alert('Payment will be available via in-app purchases.');
+                }}
              >
                 Proceed to Payment ($2.00)
              </Button>
 
              <Button variant="ghost" onClick={() => setStep('select_match')} className="w-full mt-2">Back</Button>
-             
-             <StripePaymentModal
-                isOpen={step === 'payment_modal'}
-                onClose={() => setStep('payment')}
-                clientSecret={clientSecret}
-                amount={2.00}
-                planName="Couples Comparison"
-                stripePublicKey={stripeConfig?.publicKey}
-                onSuccess={() => {
-                    setStep('payment'); // Close modal
-                    handlePaymentSuccess();
-                }}
-             />
           </div>
         )}
-        
-        {step === 'payment_modal' && null /* Modal handles its own visibility */}
 
         {step === 'analyzing' && (
           <div className="text-center py-8">
