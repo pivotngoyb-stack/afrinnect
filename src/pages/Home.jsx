@@ -45,6 +45,7 @@ import WeeklyTopPicks from '@/components/monetization/WeeklyTopPicks';
 import PremiumBadgeOnProfile from '@/components/monetization/PremiumBadgeOnProfile';
 import MatchMilestones from '@/components/monetization/MatchMilestones';
 import VIPEventsPromo from '@/components/monetization/VIPEventsPromo.jsx';
+import FoundingMemberBanner from '@/components/founding/FoundingMemberBanner';
 
 export default function Home() {
   usePerformanceMonitor('Home');
@@ -927,6 +928,9 @@ export default function Home() {
               </div>
               </div>
               </header>
+
+      {/* Founding Member Banner */}
+      <FoundingMemberBanner profile={myProfile} />
 
       <main className="flex-1 flex flex-col overflow-hidden px-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {/* Activity Summary Banner */}

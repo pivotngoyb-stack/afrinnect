@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import TierConfigurationManager from "@/components/admin/TierConfigurationManager";
 import OnboardingSettings from "@/components/admin/OnboardingSettings";
+import FounderProgramManagement from "@/components/admin/FounderProgramManagement";
 import { toast } from "sonner";
 
 export default function AdminSettings() {
@@ -445,54 +446,7 @@ export default function AdminSettings() {
 
             {/* Founder Program */}
             <TabsContent value="founder" className="space-y-6">
-              <Card className="bg-slate-900 border-slate-800">
-                <CardHeader>
-                  <CardTitle className="text-white">Founding Member Program</CardTitle>
-                  <CardDescription className="text-slate-400">
-                    Configure the founding member trial program
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between p-4 bg-slate-800 rounded-lg">
-                    <div>
-                      <p className="text-white font-medium">Founders Mode</p>
-                      <p className="text-slate-400 text-sm">Enable founding member program</p>
-                    </div>
-                    <Switch
-                      checked={founderProgram.founders_mode_enabled}
-                      onCheckedChange={(checked) => updateSetting('founder_program', {
-                        ...founderProgram,
-                        founders_mode_enabled: checked
-                      })}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-slate-800 rounded-lg">
-                    <div>
-                      <p className="text-white font-medium">Auto-Assign New Users</p>
-                      <p className="text-slate-400 text-sm">Automatically grant founding status to new signups</p>
-                    </div>
-                    <Switch
-                      checked={founderProgram.auto_assign_new_users}
-                      onCheckedChange={(checked) => updateSetting('founder_program', {
-                        ...founderProgram,
-                        auto_assign_new_users: checked
-                      })}
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-slate-300">Trial Duration (days)</Label>
-                    <Input
-                      type="number"
-                      value={founderProgram.trial_days}
-                      onChange={(e) => updateSetting('founder_program', {
-                        ...founderProgram,
-                        trial_days: parseInt(e.target.value)
-                      })}
-                      className="mt-2 w-32 bg-slate-800 border-slate-700 text-white"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+              <FounderProgramManagement />
             </TabsContent>
           </Tabs>
         </div>
