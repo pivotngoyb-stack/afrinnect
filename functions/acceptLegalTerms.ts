@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
@@ -9,10 +9,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get request data (IP and UA come from headers)
+    // Get request data
     const ip = req.headers.get("x-forwarded-for") || "unknown";
-    const userAgent = req.headers.get("user-agent") || "unknown";
-    const { terms_version = "1.0", privacy_version = "1.0", guidelines_version = "1.0" } = await req.json();
+    await req.json(); // consume body
 
     // Check if already accepted
     const existing = await base44.asServiceRole.entities.LegalAcceptance.filter({ user_id: user.id });
@@ -23,9 +22,7 @@ Deno.serve(async (req) => {
             privacy_accepted: true,
             guidelines_accepted: true,
             accepted_at: new Date().toISOString(),
-            ip_address: ip,
-            user_agent: userAgent,
-            versions: { terms: terms_version, privacy: privacy_version, guidelines: guidelines_version }
+            ip_address: ip
         });
     } else {
         // Create new record
