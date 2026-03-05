@@ -122,6 +122,7 @@ import VerifyPhoto from './pages/VerifyPhoto';
 import VirtualGifts from './pages/VirtualGifts';
 import Waitlist from './pages/Waitlist';
 import WhoLikesYou from './pages/WhoLikesYou';
+import MigrationDocument from './pages/MigrationDocument';
 import __Layout from './Layout.jsx';
 
 
@@ -201,6 +202,7 @@ export const PAGES = {
     "VirtualGifts": VirtualGifts,
     "Waitlist": Waitlist,
     "WhoLikesYou": WhoLikesYou,
+    "MigrationDocument": MigrationDocument,
 }
 
 export const pagesConfig = {
