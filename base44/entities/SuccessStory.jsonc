@@ -1,0 +1,55 @@
+{
+  "name": "SuccessStory",
+  "type": "object",
+  "properties": {
+    "user1_profile_id": {
+      "type": "string",
+      "description": "First person"
+    },
+    "user2_profile_id": {
+      "type": "string",
+      "description": "Second person"
+    },
+    "couple_photo_url": {
+      "type": "string",
+      "description": "Photo together"
+    },
+    "story_text": {
+      "type": "string",
+      "description": "Their story"
+    },
+    "match_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When they matched"
+    },
+    "relationship_status": {
+      "type": "string",
+      "enum": [
+        "dating",
+        "engaged",
+        "married"
+      ],
+      "description": "Current status"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Featured story"
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admin approved"
+    },
+    "likes_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Story likes"
+    }
+  },
+  "required": [
+    "user1_profile_id",
+    "story_text"
+  ]
+}

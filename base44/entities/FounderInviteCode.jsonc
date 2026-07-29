@@ -1,0 +1,67 @@
+{
+  "name": "FounderInviteCode",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Invite code string",
+      "indexed": true,
+      "unique": true
+    },
+    "max_redemptions": {
+      "type": "number",
+      "description": "Maximum number of times this code can be used",
+      "default": 100
+    },
+    "current_redemptions": {
+      "type": "number",
+      "description": "Current number of redemptions",
+      "default": 0
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "Whether code is currently active",
+      "default": true,
+      "indexed": true
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this code expires"
+    },
+    "trial_days": {
+      "type": "number",
+      "description": "Custom trial days for this code (overrides default)",
+      "default": 183
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Admin who created this code"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin notes about this code"
+    }
+  },
+  "required": [
+    "code"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

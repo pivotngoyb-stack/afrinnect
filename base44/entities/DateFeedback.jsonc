@@ -1,0 +1,45 @@
+{
+  "name": "DateFeedback",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string",
+      "description": "Match this date was from"
+    },
+    "reviewer_profile_id": {
+      "type": "string",
+      "description": "Person giving feedback"
+    },
+    "reviewed_profile_id": {
+      "type": "string",
+      "description": "Person being reviewed"
+    },
+    "rating": {
+      "type": "number",
+      "description": "1-5 stars"
+    },
+    "met_in_person": {
+      "type": "boolean",
+      "description": "Did they meet"
+    },
+    "would_date_again": {
+      "type": "boolean",
+      "description": "Second date interest"
+    },
+    "safety_concerns": {
+      "type": "boolean",
+      "default": false,
+      "description": "Any safety issues"
+    },
+    "feedback_notes": {
+      "type": "string",
+      "description": "Private notes"
+    }
+  },
+  "required": [
+    "match_id",
+    "reviewer_profile_id",
+    "reviewed_profile_id",
+    "rating"
+  ]
+}

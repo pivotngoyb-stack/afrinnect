@@ -1,0 +1,114 @@
+{
+  "name": "VIPEvent",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Event title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Event description"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "speed_dating",
+        "mixer",
+        "workshop",
+        "exclusive_party",
+        "webinar"
+      ],
+      "description": "Type of VIP event",
+      "indexed": true
+    },
+    "scheduled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the event starts",
+      "indexed": true
+    },
+    "duration_minutes": {
+      "type": "number",
+      "default": 60,
+      "description": "Event duration in minutes"
+    },
+    "max_participants": {
+      "type": "number",
+      "default": 20,
+      "description": "Maximum number of participants"
+    },
+    "current_participants": {
+      "type": "number",
+      "default": 0,
+      "description": "Current registered participants"
+    },
+    "cover_image_url": {
+      "type": "string",
+      "description": "Event cover image"
+    },
+    "host_name": {
+      "type": "string",
+      "description": "Name of the host"
+    },
+    "host_image_url": {
+      "type": "string",
+      "description": "Host profile image"
+    },
+    "meeting_link": {
+      "type": "string",
+      "description": "Video call link for the event"
+    },
+    "tier_required": {
+      "type": "string",
+      "enum": [
+        "elite",
+        "vip"
+      ],
+      "default": "vip",
+      "description": "Minimum tier required",
+      "indexed": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "live",
+        "completed",
+        "cancelled"
+      ],
+      "default": "upcoming",
+      "indexed": true
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Event tags for filtering"
+    }
+  },
+  "required": [
+    "title",
+    "event_type",
+    "scheduled_at"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

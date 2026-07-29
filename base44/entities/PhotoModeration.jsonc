@@ -1,0 +1,43 @@
+{
+  "name": "PhotoModeration",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "Profile the photo belongs to"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "Photo being moderated"
+    },
+    "moderation_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Moderation result"
+    },
+    "ai_analysis": {
+      "type": "object",
+      "description": "AI moderation results"
+    },
+    "rejection_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Why photo was rejected"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Admin who reviewed (if manual)"
+    }
+  },
+  "required": [
+    "user_profile_id",
+    "photo_url"
+  ]
+}

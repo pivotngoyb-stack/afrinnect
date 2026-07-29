@@ -1,0 +1,70 @@
+{
+  "name": "Story",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "Profile who posted story",
+      "indexed": true
+    },
+    "media_url": {
+      "type": "string",
+      "description": "Photo or video URL"
+    },
+    "media_type": {
+      "type": "string",
+      "enum": [
+        "photo",
+        "video"
+      ],
+      "default": "photo",
+      "description": "Type of media"
+    },
+    "caption": {
+      "type": "string",
+      "description": "Optional caption"
+    },
+    "views": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Profile IDs who viewed"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "24hr expiry",
+      "indexed": true
+    },
+    "is_expired": {
+      "type": "boolean",
+      "default": false,
+      "description": "Has expired",
+      "indexed": true
+    }
+  },
+  "required": [
+    "user_profile_id",
+    "media_url",
+    "media_type"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {},
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

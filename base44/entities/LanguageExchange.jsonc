@@ -1,0 +1,42 @@
+{
+  "name": "LanguageExchange",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "User profile"
+    },
+    "teaching_languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Languages they can teach"
+    },
+    "learning_languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Languages they want to learn"
+    },
+    "proficiency_level": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced",
+        "native"
+      ],
+      "description": "Teaching proficiency"
+    },
+    "available_for_exchange": {
+      "type": "boolean",
+      "default": true,
+      "description": "Open to language partners"
+    }
+  },
+  "required": [
+    "user_profile_id"
+  ]
+}

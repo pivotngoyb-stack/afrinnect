@@ -1,0 +1,95 @@
+{
+  "name": "WeddingVendor",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the wedding vendor"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Venue",
+        "Caterer",
+        "Photographer",
+        "Decorator",
+        "Planner",
+        "Music/DJ",
+        "Attire",
+        "Tailor",
+        "Makeup Artist",
+        "Hair Stylist",
+        "Officiant",
+        "Rentals",
+        "Baker",
+        "Florist",
+        "Henna Artist",
+        "Traditional Dancers",
+        "Other"
+      ],
+      "description": "Category of service provided"
+    },
+    "location": {
+      "type": "string",
+      "description": "Geographic location or service area"
+    },
+    "state": {
+      "type": "string",
+      "description": "US State or Canadian Province"
+    },
+    "country": {
+      "type": "string",
+      "enum": [
+        "USA",
+        "Canada"
+      ],
+      "description": "Country"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone number"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Contact email address"
+    },
+    "website": {
+      "type": "string",
+      "format": "url",
+      "description": "Vendor website URL"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of services"
+    },
+    "image_url": {
+      "type": "string",
+      "format": "url",
+      "description": "URL to vendor's main image/logo"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the vendor is featured in the marketplace"
+    },
+    "contact_person": {
+      "type": "string",
+      "description": "Name of the primary contact person at the vendor"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Special services or cultural traditions they specialize in"
+    }
+  },
+  "required": [
+    "name",
+    "category",
+    "location",
+    "country",
+    "email"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "MessageTranslation",
+  "type": "object",
+  "properties": {
+    "message_id": {
+      "type": "string",
+      "description": "Reference to original message"
+    },
+    "original_language": {
+      "type": "string",
+      "description": "Detected language of original"
+    },
+    "translated_text": {
+      "type": "object",
+      "description": "Translations by language code"
+    },
+    "translation_requested_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User IDs who requested translation"
+    }
+  },
+  "required": [
+    "message_id",
+    "original_language"
+  ]
+}

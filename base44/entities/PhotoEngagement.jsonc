@@ -1,0 +1,37 @@
+{
+  "name": "PhotoEngagement",
+  "type": "object",
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "description": "Profile whose photo was engaged with"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "URL of the photo"
+    },
+    "viewer_profile_id": {
+      "type": "string",
+      "description": "Who viewed/engaged"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "view",
+        "like",
+        "pass"
+      ],
+      "description": "Type of engagement"
+    },
+    "photo_index": {
+      "type": "number",
+      "description": "Position in photos array"
+    }
+  },
+  "required": [
+    "profile_id",
+    "photo_url",
+    "viewer_profile_id",
+    "action"
+  ]
+}

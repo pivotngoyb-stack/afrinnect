@@ -1,0 +1,77 @@
+{
+  "name": "ProfileBoost",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "Profile being boosted"
+    },
+    "boost_type": {
+      "type": "string",
+      "enum": [
+        "1_hour",
+        "3_hours",
+        "24_hours"
+      ],
+      "description": "Boost duration"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Boost start time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Boost expiry"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Boost currently active"
+    },
+    "views_gained": {
+      "type": "number",
+      "default": 0,
+      "description": "Profile views during boost"
+    },
+    "likes_gained": {
+      "type": "number",
+      "default": 0,
+      "description": "Likes received during boost"
+    }
+  },
+  "required": [
+    "user_profile_id",
+    "boost_type",
+    "started_at",
+    "expires_at"
+  ],
+  "rls": {
+    "create": {
+      "user_profile_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "user_profile_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

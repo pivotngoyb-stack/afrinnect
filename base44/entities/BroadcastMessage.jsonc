@@ -1,0 +1,67 @@
+{
+  "name": "BroadcastMessage",
+  "type": "object",
+  "properties": {
+    "created_by": {
+      "type": "string",
+      "description": "Admin who created broadcast"
+    },
+    "title": {
+      "type": "string",
+      "description": "Message title"
+    },
+    "body": {
+      "type": "string",
+      "description": "Message content"
+    },
+    "target_audience": {
+      "type": "string",
+      "enum": [
+        "all",
+        "premium",
+        "free",
+        "active",
+        "inactive",
+        "custom"
+      ],
+      "description": "Who receives this"
+    },
+    "custom_filter": {
+      "type": "object",
+      "description": "Custom targeting filters"
+    },
+    "send_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When to send (null for immediate)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "scheduled",
+        "sending",
+        "sent",
+        "failed"
+      ],
+      "default": "draft",
+      "description": "Broadcast status"
+    },
+    "sent_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number sent"
+    },
+    "open_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number opened"
+    }
+  },
+  "required": [
+    "created_by",
+    "title",
+    "body",
+    "target_audience"
+  ]
+}

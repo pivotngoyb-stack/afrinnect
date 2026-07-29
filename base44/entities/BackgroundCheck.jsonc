@@ -1,0 +1,55 @@
+{
+  "name": "BackgroundCheck",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "User requesting check"
+    },
+    "check_type": {
+      "type": "string",
+      "enum": [
+        "basic",
+        "comprehensive"
+      ],
+      "description": "Level of check"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Check status"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "clear",
+        "flagged",
+        "inconclusive"
+      ],
+      "description": "Check result"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When completed"
+    },
+    "amount_paid": {
+      "type": "number",
+      "description": "Cost of check"
+    },
+    "report_url": {
+      "type": "string",
+      "description": "Private report link"
+    }
+  },
+  "required": [
+    "user_profile_id",
+    "check_type"
+  ]
+}

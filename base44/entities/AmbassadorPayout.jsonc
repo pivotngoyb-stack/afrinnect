@@ -1,0 +1,101 @@
+{
+  "name": "AmbassadorPayout",
+  "type": "object",
+  "properties": {
+    "ambassador_id": {
+      "type": "string",
+      "indexed": true
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "total_amount": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "commission_count": {
+      "type": "number",
+      "description": "Number of commissions included"
+    },
+    "commission_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of included commissions"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "paid",
+        "failed",
+        "cancelled"
+      ],
+      "default": "pending",
+      "indexed": true
+    },
+    "payout_method": {
+      "type": "string",
+      "enum": [
+        "paypal",
+        "bank_transfer",
+        "mobile_money",
+        "crypto"
+      ]
+    },
+    "payout_details": {
+      "type": "object",
+      "description": "Snapshot of payout destination"
+    },
+    "transaction_id": {
+      "type": "string",
+      "description": "External payment processor transaction ID"
+    },
+    "paid_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "failed_reason": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "ambassador_id",
+    "total_amount"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

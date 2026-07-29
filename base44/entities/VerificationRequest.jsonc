@@ -1,0 +1,58 @@
+{
+  "name": "VerificationRequest",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "Profile requesting verification",
+      "indexed": true
+    },
+    "verification_type": {
+      "type": "string",
+      "enum": [
+        "photo",
+        "id",
+        "elite",
+        "vip"
+      ],
+      "description": "Type of verification",
+      "indexed": true
+    },
+    "submitted_photo_url": {
+      "type": "string",
+      "description": "Photo submitted for verification"
+    },
+    "submitted_id_url": {
+      "type": "string",
+      "description": "ID document URL if applicable"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Verification status",
+      "indexed": true
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Admin who reviewed"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "description": "Reason if rejected"
+    },
+    "ai_confidence_score": {
+      "type": "number",
+      "description": "AI verification confidence 0-100"
+    }
+  },
+  "required": [
+    "user_profile_id",
+    "verification_type",
+    "status"
+  ]
+}

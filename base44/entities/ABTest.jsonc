@@ -1,0 +1,96 @@
+{
+  "name": "ABTest",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User assigned to test"
+    },
+    "test_name": {
+      "type": "string",
+      "description": "Test identifier"
+    },
+    "variant": {
+      "type": "string",
+      "description": "Assigned variant (A, B, etc)"
+    },
+    "assigned_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When variant was assigned"
+    },
+    "test_type": {
+      "type": "string",
+      "enum": [
+        "pricing",
+        "paywall_copy",
+        "cta_placement",
+        "feature"
+      ],
+      "description": "What's being tested"
+    },
+    "variant_a": {
+      "type": "object",
+      "description": "Control variant"
+    },
+    "variant_b": {
+      "type": "object",
+      "description": "Test variant"
+    },
+    "traffic_split": {
+      "type": "number",
+      "default": 50,
+      "description": "% of users seeing variant B"
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "variant_a_conversions": {
+          "type": "number",
+          "default": 0
+        },
+        "variant_a_views": {
+          "type": "number",
+          "default": 0
+        },
+        "variant_b_conversions": {
+          "type": "number",
+          "default": 0
+        },
+        "variant_b_views": {
+          "type": "number",
+          "default": 0
+        }
+      }
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Test running"
+    },
+    "winner": {
+      "type": "string",
+      "enum": [
+        "variant_a",
+        "variant_b",
+        "no_winner"
+      ],
+      "description": "Winning variant"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Test start date"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Test end date"
+    }
+  },
+  "required": [
+    "user_id",
+    "test_name",
+    "variant"
+  ]
+}

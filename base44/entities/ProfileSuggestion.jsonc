@@ -1,0 +1,65 @@
+{
+  "name": "ProfileSuggestion",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User this suggestion is for",
+      "indexed": true
+    },
+    "suggestion_type": {
+      "type": "string",
+      "enum": [
+        "photo",
+        "bio",
+        "interests",
+        "prompts",
+        "verification",
+        "activity"
+      ],
+      "description": "Category of suggestion",
+      "indexed": true
+    },
+    "title": {
+      "type": "string",
+      "description": "Short title for the suggestion"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed suggestion text"
+    },
+    "priority": {
+      "type": "number",
+      "description": "Priority score 1-10, higher is more important"
+    },
+    "potential_impact": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Expected impact on match rate"
+    },
+    "action_link": {
+      "type": "string",
+      "description": "Page to navigate to for this action"
+    },
+    "is_dismissed": {
+      "type": "boolean",
+      "default": false,
+      "indexed": true
+    },
+    "is_completed": {
+      "type": "boolean",
+      "default": false,
+      "indexed": true
+    }
+  },
+  "required": [
+    "user_id",
+    "suggestion_type",
+    "title",
+    "description"
+  ]
+}

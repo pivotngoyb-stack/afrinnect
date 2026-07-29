@@ -1,0 +1,80 @@
+{
+  "name": "Like",
+  "type": "object",
+  "properties": {
+    "liker_id": {
+      "type": "string",
+      "description": "Profile ID of the person who liked",
+      "indexed": true
+    },
+    "liked_id": {
+      "type": "string",
+      "description": "Profile ID of the person being liked",
+      "indexed": true
+    },
+    "liker_user_id": {
+      "type": "string",
+      "description": "Auth User ID of liker",
+      "indexed": true
+    },
+    "liked_user_id": {
+      "type": "string",
+      "description": "Auth User ID of liked person",
+      "indexed": true
+    },
+    "is_super_like": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a super like"
+    },
+    "is_seen": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the liked person has seen this like",
+      "indexed": true
+    },
+    "is_priority": {
+      "type": "boolean",
+      "default": false,
+      "description": "Priority like (Elite/VIP) - shown first",
+      "indexed": true
+    },
+    "priority_boost_expires": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When priority boost expires"
+    }
+  },
+  "required": [
+    "liker_id",
+    "liked_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "liker_user_id": "{{user.id}}"
+        },
+        {
+          "liked_user_id": "{{user.id}}"
+        }
+      ]
+    },
+    "create": {
+      "liker_user_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "liker_user_id": "{{user.id}}"
+        },
+        {
+          "liked_user_id": "{{user.id}}"
+        }
+      ]
+    },
+    "delete": {
+      "liker_user_id": "{{user.id}}"
+    }
+  }
+}

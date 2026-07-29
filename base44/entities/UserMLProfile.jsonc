@@ -1,0 +1,149 @@
+{
+  "name": "UserMLProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to user",
+      "indexed": true,
+      "unique": true
+    },
+    "preference_weights": {
+      "type": "object",
+      "properties": {
+        "cultural_background": {
+          "type": "number",
+          "default": 1.0
+        },
+        "religion": {
+          "type": "number",
+          "default": 1.0
+        },
+        "interests": {
+          "type": "number",
+          "default": 1.0
+        },
+        "location": {
+          "type": "number",
+          "default": 1.0
+        },
+        "education": {
+          "type": "number",
+          "default": 1.0
+        },
+        "lifestyle": {
+          "type": "number",
+          "default": 1.0
+        },
+        "relationship_goal": {
+          "type": "number",
+          "default": 1.0
+        },
+        "age_proximity": {
+          "type": "number",
+          "default": 1.0
+        }
+      },
+      "description": "Dynamic weights learned from user behavior"
+    },
+    "liked_patterns": {
+      "type": "object",
+      "properties": {
+        "countries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "religions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "interests": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "professions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "age_range": {
+          "type": "object",
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "description": "Patterns from profiles user has liked"
+    },
+    "passed_patterns": {
+      "type": "object",
+      "properties": {
+        "countries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "religions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "interests": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Patterns from profiles user has passed"
+    },
+    "engagement_stats": {
+      "type": "object",
+      "properties": {
+        "avg_time_on_liked": {
+          "type": "number"
+        },
+        "avg_time_on_passed": {
+          "type": "number"
+        },
+        "total_likes": {
+          "type": "number"
+        },
+        "total_passes": {
+          "type": "number"
+        },
+        "total_matches": {
+          "type": "number"
+        },
+        "total_conversations": {
+          "type": "number"
+        },
+        "avg_messages_per_match": {
+          "type": "number"
+        }
+      }
+    },
+    "last_model_update": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When weights were last recalculated"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

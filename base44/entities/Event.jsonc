@@ -1,0 +1,162 @@
+{
+  "name": "Event",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Event title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Event description"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "cultural_festival",
+        "meetup",
+        "speed_dating",
+        "networking",
+        "concert",
+        "food_festival",
+        "art_exhibition",
+        "community_gathering",
+        "afrobeat_party",
+        "dance_party",
+        "cultural_night",
+        "music_festival"
+      ],
+      "description": "Type of event",
+      "indexed": true
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Event cover image"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event start time",
+      "indexed": true
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event end time"
+    },
+    "location_name": {
+      "type": "string",
+      "description": "Venue name"
+    },
+    "location_address": {
+      "type": "string",
+      "description": "Full address"
+    },
+    "city": {
+      "type": "string",
+      "description": "City",
+      "indexed": true
+    },
+    "state": {
+      "type": "string",
+      "description": "State/Province",
+      "indexed": true
+    },
+    "country": {
+      "type": "string",
+      "description": "Country",
+      "indexed": true
+    },
+    "is_virtual": {
+      "type": "boolean",
+      "description": "Online event"
+    },
+    "virtual_link": {
+      "type": "string",
+      "description": "Virtual event link"
+    },
+    "organizer_id": {
+      "type": "string",
+      "description": "Organizer profile ID",
+      "indexed": true
+    },
+    "attendees": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Attendee profile IDs"
+    },
+    "max_attendees": {
+      "type": "number",
+      "description": "Maximum capacity"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "description": "Featured event",
+      "indexed": true
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Event tags"
+    },
+    "price": {
+      "type": "number",
+      "description": "Ticket price (0 for free)"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Price currency"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "event_type",
+    "start_date",
+    "city",
+    "country"
+  ],
+  "rls": {
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "organizer_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "organizer_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "write": {
+      "$or": [
+        {
+          "organizer_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

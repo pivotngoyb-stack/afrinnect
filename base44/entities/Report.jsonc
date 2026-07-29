@@ -1,0 +1,109 @@
+{
+  "name": "Report",
+  "type": "object",
+  "properties": {
+    "reporter_id": {
+      "type": "string",
+      "description": "Profile ID of reporter",
+      "indexed": true
+    },
+    "reported_id": {
+      "type": "string",
+      "description": "Profile ID of reported user",
+      "indexed": true
+    },
+    "report_type": {
+      "type": "string",
+      "enum": [
+        "fake_profile",
+        "harassment",
+        "inappropriate_content",
+        "scam",
+        "underage",
+        "spam",
+        "hate_speech",
+        "other"
+      ],
+      "description": "Type of report",
+      "indexed": true
+    },
+    "description": {
+      "type": "string",
+      "description": "Report details"
+    },
+    "evidence_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Screenshot evidence"
+    },
+    "message_id": {
+      "type": "string",
+      "description": "Related message if applicable"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "under_review",
+        "resolved",
+        "dismissed"
+      ],
+      "description": "Report status",
+      "indexed": true
+    },
+    "moderator_notes": {
+      "type": "string",
+      "description": "Notes from moderator"
+    },
+    "action_taken": {
+      "type": "string",
+      "enum": [
+        "none",
+        "warning",
+        "temporary_ban",
+        "permanent_ban",
+        "content_removed"
+      ],
+      "description": "Action taken"
+    },
+    "resolved_by": {
+      "type": "string",
+      "description": "Moderator who resolved"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Resolution time"
+    }
+  },
+  "required": [
+    "reporter_id",
+    "reported_id",
+    "report_type",
+    "description"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "user"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

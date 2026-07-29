@@ -1,0 +1,53 @@
+{
+  "name": "DeletedAccount",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of deleted user"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID of deleted user"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Display name at time of deletion"
+    },
+    "deletion_reason": {
+      "type": "string",
+      "description": "Reason for account deletion"
+    },
+    "deleted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When account was deleted"
+    }
+  },
+  "required": [
+    "user_email",
+    "deleted_at"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

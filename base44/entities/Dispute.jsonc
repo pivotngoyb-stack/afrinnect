@@ -1,0 +1,101 @@
+{
+  "name": "Dispute",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of user filing dispute",
+      "indexed": true
+    },
+    "user_profile_id": {
+      "type": "string",
+      "description": "Profile ID if available",
+      "indexed": true
+    },
+    "dispute_type": {
+      "type": "string",
+      "enum": [
+        "ban_appeal",
+        "rate_limit_appeal",
+        "false_positive",
+        "suspension_appeal"
+      ],
+      "description": "Type of dispute",
+      "indexed": true
+    },
+    "reason": {
+      "type": "string",
+      "description": "User's explanation"
+    },
+    "original_ban_reason": {
+      "type": "string",
+      "description": "Why they were banned"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "under_review",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Dispute status",
+      "indexed": true
+    },
+    "admin_response": {
+      "type": "string",
+      "description": "Admin's decision explanation"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Admin who reviewed"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When reviewed"
+    },
+    "evidence_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Screenshots or proof from user"
+    }
+  },
+  "required": [
+    "user_email",
+    "dispute_type",
+    "reason"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "user"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

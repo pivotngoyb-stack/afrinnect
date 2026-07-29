@@ -1,0 +1,39 @@
+{
+  "name": "WaitlistEntry",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "User's email address"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "User's full name"
+    },
+    "location": {
+      "type": "string",
+      "description": "Where the user lives (City, Country)"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Why they want to join (optional)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "invited",
+        "joined"
+      ],
+      "default": "pending"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "User's IP address"
+    }
+  },
+  "required": [
+    "email"
+  ]
+}

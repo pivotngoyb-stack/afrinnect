@@ -1,0 +1,592 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the user",
+      "unique": true,
+      "indexed": true
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe Customer ID for recurring billing"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Display name or nickname"
+    },
+    "ethnicity": {
+      "type": "string",
+      "enum": [
+        "african",
+        "african_descent",
+        "non_african_interested"
+      ],
+      "description": "User's ethnicity category"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of birth"
+    },
+    "gender": {
+      "type": "string",
+      "enum": [
+        "man",
+        "woman",
+        "non_binary",
+        "other"
+      ],
+      "description": "Gender identity",
+      "indexed": true
+    },
+    "looking_for": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Genders interested in"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Profile photo URLs"
+    },
+    "primary_photo": {
+      "type": "string",
+      "description": "Main profile photo URL"
+    },
+    "bio": {
+      "type": "string",
+      "description": "About me text"
+    },
+    "country_of_origin": {
+      "type": "string",
+      "description": "Country of heritage",
+      "indexed": true
+    },
+    "current_country": {
+      "type": "string",
+      "description": "Current country of residence",
+      "indexed": true
+    },
+    "current_state": {
+      "type": "string",
+      "description": "Current US state (if in USA)",
+      "indexed": true
+    },
+    "current_city": {
+      "type": "string",
+      "description": "Current city"
+    },
+    "tribe_ethnicity": {
+      "type": "string",
+      "description": "Tribe or ethnicity (optional)"
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Languages spoken"
+    },
+    "preferred_language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "fr"
+      ],
+      "default": "en",
+      "description": "User's preferred app language"
+    },
+    "religion": {
+      "type": "string",
+      "enum": [
+        "christianity",
+        "islam",
+        "traditional_african",
+        "judaism",
+        "buddhism",
+        "hindu",
+        "spiritual",
+        "agnostic",
+        "atheist",
+        "other",
+        "prefer_not_say"
+      ],
+      "description": "Religious belief",
+      "indexed": true
+    },
+    "education": {
+      "type": "string",
+      "enum": [
+        "high_school",
+        "some_college",
+        "bachelors",
+        "masters",
+        "doctorate",
+        "trade_school",
+        "other"
+      ],
+      "description": "Education level"
+    },
+    "profession": {
+      "type": "string",
+      "description": "Job or profession"
+    },
+    "relationship_goal": {
+      "type": "string",
+      "enum": [
+        "dating",
+        "serious_relationship",
+        "marriage",
+        "friendship_community",
+        "networking"
+      ],
+      "description": "What they're looking for",
+      "indexed": true
+    },
+    "height_cm": {
+      "type": "number",
+      "description": "Height in centimeters"
+    },
+    "lifestyle": {
+      "type": "object",
+      "properties": {
+        "smoking": {
+          "type": "string",
+          "enum": [
+            "never",
+            "sometimes",
+            "regularly"
+          ]
+        },
+        "drinking": {
+          "type": "string",
+          "enum": [
+            "never",
+            "socially",
+            "regularly"
+          ]
+        },
+        "fitness": {
+          "type": "string",
+          "enum": [
+            "never",
+            "sometimes",
+            "active",
+            "very_active"
+          ]
+        },
+        "diet": {
+          "type": "string",
+          "enum": [
+            "no_preference",
+            "halal",
+            "kosher",
+            "vegetarian",
+            "vegan"
+          ]
+        },
+        "children": {
+          "type": "string",
+          "enum": [
+            "have_want_more",
+            "have_dont_want_more",
+            "dont_have_want",
+            "dont_have_dont_want",
+            "undecided"
+          ]
+        }
+      }
+    },
+    "cultural_values": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Important cultural values"
+    },
+    "interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Hobbies and interests"
+    },
+    "prompts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Profile prompts and answers"
+    },
+    "verification_status": {
+      "type": "object",
+      "properties": {
+        "email_verified": {
+          "type": "boolean"
+        },
+        "phone_verified": {
+          "type": "boolean"
+        },
+        "photo_verified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "is_premium": {
+      "type": "boolean",
+      "description": "Premium subscription status",
+      "indexed": true
+    },
+    "subscription_tier": {
+      "type": "string",
+      "enum": [
+        "free",
+        "premium",
+        "elite",
+        "vip"
+      ],
+      "default": "free",
+      "description": "Current subscription tier",
+      "indexed": true
+    },
+    "premium_until": {
+      "type": "string",
+      "format": "date",
+      "description": "Premium expiry date"
+    },
+    "is_founding_member": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user is a Founding Member",
+      "indexed": true
+    },
+    "founding_member_granted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When Founding Member status was granted"
+    },
+    "founding_member_trial_ends_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When Founding Member trial expires"
+    },
+    "founding_member_source": {
+      "type": "string",
+      "enum": [
+        "global_toggle",
+        "invite_code",
+        "manual_admin"
+      ],
+      "description": "How Founding Member status was granted"
+    },
+    "founding_member_code_used": {
+      "type": "string",
+      "description": "Invite code used if applicable"
+    },
+    "founding_member_eligible": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether user is eligible for Founding Member"
+    },
+    "founding_trial_consumed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Founding trial has been used"
+    },
+    "founding_member_converted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user converted to paid after trial"
+    },
+    "founding_member_converted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When user converted to paid subscription"
+    },
+    "profile_boost_active": {
+      "type": "boolean",
+      "description": "Profile boost status"
+    },
+    "boost_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When boost expires"
+    },
+    "incognito_mode": {
+      "type": "boolean",
+      "default": false,
+      "description": "Browse profiles invisibly (Elite/VIP only)"
+    },
+    "total_matches_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of matches ever"
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "Account active status",
+      "indexed": true
+    },
+    "last_active": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last activity timestamp",
+      "indexed": true
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        }
+      }
+    },
+    "filters": {
+      "type": "object",
+      "properties": {
+        "age_min": {
+          "type": "number"
+        },
+        "age_max": {
+          "type": "number"
+        },
+        "distance_km": {
+          "type": "number"
+        },
+        "countries_of_origin": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "religions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "relationship_goals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "blocked_users": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of blocked user IDs"
+    },
+    "daily_likes_count": {
+      "type": "number",
+      "description": "Number of likes used today"
+    },
+    "daily_likes_reset_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When daily likes reset"
+    },
+    "login_streak": {
+      "type": "number",
+      "default": 0,
+      "description": "Consecutive days logged in"
+    },
+    "last_login_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Last login date for streak tracking"
+    },
+    "ai_safety_score": {
+      "type": "number",
+      "description": "AI-calculated safety score 0-100"
+    },
+    "verification_selfie_url": {
+      "type": "string",
+      "description": "Selfie for photo verification"
+    },
+    "tutorial_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "If user completed tutorial"
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Profile badges: recently_active, popular, new_here, verified, founding_member"
+    },
+    "violation_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total violations received"
+    },
+    "warning_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total warnings issued"
+    },
+    "is_banned": {
+      "type": "boolean",
+      "default": false,
+      "description": "User is permanently banned",
+      "indexed": true
+    },
+    "is_suspended": {
+      "type": "boolean",
+      "default": false,
+      "description": "User is temporarily suspended",
+      "indexed": true
+    },
+    "suspension_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When suspension ends"
+    },
+    "suspension_reason": {
+      "type": "string",
+      "description": "Reason for current suspension"
+    },
+    "ban_reason": {
+      "type": "string",
+      "description": "Reason for permanent ban"
+    },
+    "has_matched_before": {
+      "type": "boolean",
+      "default": false,
+      "description": "If user has ever had a match"
+    },
+    "push_token": {
+      "type": "string",
+      "description": "Firebase Cloud Messaging token"
+    },
+    "phone_number": {
+      "type": "string",
+      "description": "User's phone number (unique)"
+    },
+    "device_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "List of device IDs (max 4 allowed)"
+    },
+    "device_info": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string"
+          },
+          "device_name": {
+            "type": "string"
+          },
+          "last_login": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "description": "Device tracking info"
+    },
+    "is_test_user": {
+      "type": "boolean",
+      "default": false,
+      "description": "Flag for internal test accounts",
+      "indexed": true
+    },
+    "purchased_boosts": {
+      "type": "number",
+      "default": 0,
+      "description": "Purchased boosts available"
+    },
+    "purchased_super_likes": {
+      "type": "number",
+      "default": 0,
+      "description": "Purchased super likes available"
+    },
+    "purchased_24hr_unlock": {
+      "type": "boolean",
+      "default": false,
+      "description": "Active 24hr unlock to see who likes"
+    },
+    "purchased_24hr_unlock_expires": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When 24hr unlock expires"
+    },
+    "monthly_gifts_remaining": {
+      "type": "number",
+      "default": 0,
+      "description": "Free virtual gifts remaining this month (VIP perk)"
+    },
+    "monthly_gifts_reset_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When monthly gift allowance resets"
+    },
+    "priority_dm_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether priority DM feature is active (VIP only)"
+    }
+  },
+  "required": [
+    "user_id",
+    "display_name",
+    "gender",
+    "looking_for",
+    "country_of_origin",
+    "current_country"
+  ],
+  "rls": {
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_id": "{{user.id}}"
+    },
+    "write": {
+      "user_id": "{{user.id}}"
+    }
+  }
+}

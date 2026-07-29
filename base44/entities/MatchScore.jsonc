@@ -1,0 +1,83 @@
+{
+  "name": "MatchScore",
+  "type": "object",
+  "properties": {
+    "user1_id": {
+      "type": "string",
+      "description": "First user profile ID"
+    },
+    "user2_id": {
+      "type": "string",
+      "description": "Second user profile ID"
+    },
+    "total_score": {
+      "type": "number",
+      "description": "Overall compatibility score 0-100"
+    },
+    "cultural_compatibility": {
+      "type": "number",
+      "description": "Cultural match score 0-100"
+    },
+    "values_alignment": {
+      "type": "number",
+      "description": "Values match score 0-100"
+    },
+    "location_proximity": {
+      "type": "number",
+      "description": "Distance score 0-100"
+    },
+    "preference_match": {
+      "type": "number",
+      "description": "Preferences match score 0-100"
+    },
+    "match_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Why they match well"
+    },
+    "last_calculated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When score was calculated"
+    }
+  },
+  "required": [
+    "user1_id",
+    "user2_id",
+    "total_score"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "user1_id": "{{user.id}}"
+        },
+        {
+          "user2_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

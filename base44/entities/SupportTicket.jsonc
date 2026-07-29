@@ -1,0 +1,84 @@
+{
+  "name": "SupportTicket",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who created ticket",
+      "indexed": true
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "technical",
+        "account",
+        "billing",
+        "safety",
+        "feature_request",
+        "other"
+      ],
+      "description": "Ticket category",
+      "indexed": true
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "default": "medium",
+      "description": "Ticket priority",
+      "indexed": true
+    },
+    "subject": {
+      "type": "string",
+      "description": "Ticket subject"
+    },
+    "description": {
+      "type": "string",
+      "description": "Issue description"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "in_progress",
+        "waiting",
+        "resolved",
+        "closed"
+      ],
+      "default": "open",
+      "description": "Ticket status",
+      "indexed": true
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "Admin assigned to ticket",
+      "indexed": true
+    },
+    "resolution_notes": {
+      "type": "string",
+      "description": "Resolution details"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Attachment URLs"
+    }
+  },
+  "required": [
+    "user_id",
+    "user_email",
+    "category",
+    "subject",
+    "description"
+  ]
+}

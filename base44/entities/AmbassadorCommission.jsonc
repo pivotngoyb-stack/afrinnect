@@ -1,0 +1,121 @@
+{
+  "name": "AmbassadorCommission",
+  "type": "object",
+  "properties": {
+    "ambassador_id": {
+      "type": "string",
+      "indexed": true
+    },
+    "referral_id": {
+      "type": "string",
+      "description": "Reference to AmbassadorReferral",
+      "indexed": true
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Referred user who generated this commission"
+    },
+    "subscription_id": {
+      "type": "string",
+      "description": "Related subscription"
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Reference to triggering event"
+    },
+    "commission_type": {
+      "type": "string",
+      "enum": [
+        "signup_bonus",
+        "activation_bonus",
+        "cpa",
+        "revenue_share",
+        "recurring_share",
+        "milestone_bonus",
+        "campaign_bonus"
+      ],
+      "indexed": true
+    },
+    "amount": {
+      "type": "number",
+      "description": "Commission amount"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "tier_multiplier": {
+      "type": "number",
+      "default": 1,
+      "description": "Multiplier applied based on ambassador tier"
+    },
+    "original_amount": {
+      "type": "number",
+      "description": "Amount before tier multiplier"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "paid",
+        "reversed",
+        "cancelled"
+      ],
+      "default": "pending",
+      "indexed": true
+    },
+    "hold_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date when commission can be approved (after hold period)"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "paid_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payout_id": {
+      "type": "string",
+      "description": "Reference to payout record",
+      "indexed": true
+    },
+    "reversal_reason": {
+      "type": "string",
+      "description": "Reason if reversed (refund, chargeback, fraud)"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "ambassador_id",
+    "commission_type",
+    "amount"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

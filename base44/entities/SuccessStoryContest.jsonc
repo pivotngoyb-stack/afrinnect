@@ -1,0 +1,57 @@
+{
+  "name": "SuccessStoryContest",
+  "type": "object",
+  "properties": {
+    "user1_id": {
+      "type": "string",
+      "description": "First partner"
+    },
+    "user2_id": {
+      "type": "string",
+      "description": "Second partner"
+    },
+    "story_title": {
+      "type": "string",
+      "description": "Story headline"
+    },
+    "story_text": {
+      "type": "string",
+      "description": "Full story"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Couple photos"
+    },
+    "contest_month": {
+      "type": "string",
+      "description": "Contest period (YYYY-MM)"
+    },
+    "votes": {
+      "type": "number",
+      "default": 0,
+      "description": "Community votes"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "winner",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "prize_awarded": {
+      "type": "string",
+      "description": "Prize description"
+    }
+  },
+  "required": [
+    "user1_id",
+    "story_title",
+    "story_text"
+  ]
+}

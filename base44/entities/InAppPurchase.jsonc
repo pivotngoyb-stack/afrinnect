@@ -1,0 +1,91 @@
+{
+  "name": "InAppPurchase",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "User making purchase",
+      "indexed": true
+    },
+    "item_type": {
+      "type": "string",
+      "enum": [
+        "boost",
+        "super_likes",
+        "rewind",
+        "spotlight",
+        "24hr_unlock"
+      ],
+      "description": "What was purchased",
+      "indexed": true
+    },
+    "item_quantity": {
+      "type": "number",
+      "description": "Quantity purchased"
+    },
+    "amount_usd": {
+      "type": "number",
+      "description": "Price paid"
+    },
+    "payment_provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "apple",
+        "google"
+      ],
+      "description": "Payment method"
+    },
+    "transaction_id": {
+      "type": "string",
+      "description": "External transaction ID"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed",
+        "refunded"
+      ],
+      "default": "pending",
+      "description": "Purchase status",
+      "indexed": true
+    }
+  },
+  "required": [
+    "user_profile_id",
+    "item_type",
+    "item_quantity",
+    "amount_usd"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_profile_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "user"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

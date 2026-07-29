@@ -1,0 +1,96 @@
+{
+  "name": "Advertisement",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Ad title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Ad description"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Ad image"
+    },
+    "link_url": {
+      "type": "string",
+      "description": "Click destination"
+    },
+    "placement": {
+      "type": "string",
+      "enum": [
+        "discovery",
+        "matches",
+        "events",
+        "profile"
+      ],
+      "description": "Where ad appears"
+    },
+    "target_audience": {
+      "type": "string",
+      "enum": [
+        "all",
+        "free_users",
+        "premium_users",
+        "specific_country"
+      ],
+      "description": "Who sees the ad"
+    },
+    "target_country": {
+      "type": "string",
+      "description": "Specific country targeting"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Ad enabled"
+    },
+    "impressions": {
+      "type": "number",
+      "default": 0,
+      "description": "Times shown"
+    },
+    "clicks": {
+      "type": "number",
+      "default": 0,
+      "description": "Times clicked"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Campaign start"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Campaign end"
+    }
+  },
+  "required": [
+    "title",
+    "image_url",
+    "link_url",
+    "placement",
+    "target_audience"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

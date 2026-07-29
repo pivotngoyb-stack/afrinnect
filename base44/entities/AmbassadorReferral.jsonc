@@ -1,0 +1,157 @@
+{
+  "name": "AmbassadorReferral",
+  "type": "object",
+  "properties": {
+    "ambassador_id": {
+      "type": "string",
+      "description": "Ambassador who referred",
+      "indexed": true
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Referred user ID",
+      "indexed": true,
+      "unique": true
+    },
+    "user_profile_id": {
+      "type": "string",
+      "description": "Referred user's profile ID",
+      "indexed": true
+    },
+    "attribution_source": {
+      "type": "string",
+      "enum": [
+        "link",
+        "code",
+        "manual"
+      ],
+      "description": "How attribution happened"
+    },
+    "referral_code_used": {
+      "type": "string",
+      "description": "The code that was used"
+    },
+    "first_click_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When user first clicked referral link"
+    },
+    "attributed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When attribution was finalized"
+    },
+    "attribution_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Attribution window expiry"
+    },
+    "referral_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ambassador_id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "description": "Full history of referral touches for auditing"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "signed_up",
+        "activated",
+        "subscribed",
+        "churned"
+      ],
+      "default": "pending",
+      "indexed": true
+    },
+    "is_founding_member": {
+      "type": "boolean",
+      "default": false,
+      "description": "User is in founding member free period"
+    },
+    "founding_trial_ends_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "signup_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "first_subscription_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "total_revenue": {
+      "type": "number",
+      "default": 0,
+      "description": "Total revenue from this user"
+    },
+    "total_commissions": {
+      "type": "number",
+      "default": 0,
+      "description": "Total commissions earned from this user"
+    },
+    "device_id": {
+      "type": "string",
+      "description": "Device fingerprint at signup"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP at signup"
+    },
+    "fraud_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_suspicious": {
+      "type": "boolean",
+      "default": false,
+      "indexed": true
+    }
+  },
+  "required": [
+    "ambassador_id",
+    "user_id"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "user"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

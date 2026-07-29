@@ -1,0 +1,62 @@
+{
+  "name": "ProfileAnalytics",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "Profile being analyzed",
+      "indexed": true
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Type of event tracked",
+      "indexed": true
+    },
+    "event_data": {
+      "type": "object",
+      "description": "Additional event metadata"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Analytics date",
+      "indexed": true
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event timestamp"
+    },
+    "views_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Profile views"
+    },
+    "likes_received": {
+      "type": "number",
+      "default": 0,
+      "description": "Likes received"
+    },
+    "matches_count": {
+      "type": "number",
+      "default": 0,
+      "description": "New matches"
+    },
+    "messages_sent": {
+      "type": "number",
+      "default": 0,
+      "description": "Messages sent"
+    },
+    "response_rate": {
+      "type": "number",
+      "description": "Response rate %"
+    },
+    "profile_completion": {
+      "type": "number",
+      "description": "Profile completion %"
+    }
+  },
+  "required": [
+    "user_profile_id"
+  ]
+}

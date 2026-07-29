@@ -1,0 +1,118 @@
+{
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string",
+      "description": "Reference to the match",
+      "indexed": true
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "Sender profile ID",
+      "indexed": true
+    },
+    "receiver_id": {
+      "type": "string",
+      "description": "Receiver profile ID",
+      "indexed": true
+    },
+    "sender_user_id": {
+      "type": "string",
+      "description": "Auth User ID of sender",
+      "indexed": true
+    },
+    "receiver_user_id": {
+      "type": "string",
+      "description": "Auth User ID of receiver",
+      "indexed": true
+    },
+    "sequence_number": {
+      "type": "number",
+      "description": "Message sequence number for ordering within match",
+      "indexed": true
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Client-provided key to prevent duplicate messages",
+      "indexed": true,
+      "unique": true
+    },
+    "content": {
+      "type": "string",
+      "description": "Message content"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "voice_note",
+        "image",
+        "ice_breaker",
+        "gif"
+      ],
+      "description": "Type of message"
+    },
+    "media_url": {
+      "type": "string",
+      "description": "URL for media content"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Message read status",
+      "indexed": true
+    },
+    "read_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When message was read"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "description": "Soft delete flag"
+    },
+    "is_flagged": {
+      "type": "boolean",
+      "description": "Flagged for moderation",
+      "indexed": true
+    },
+    "is_translated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Has been translated"
+    },
+    "like_note": {
+      "type": "string",
+      "description": "Message sent with like"
+    }
+  },
+  "required": [
+    "match_id",
+    "sender_id",
+    "receiver_id",
+    "content",
+    "message_type"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "sender_user_id": "{{user.id}}"
+        },
+        {
+          "receiver_user_id": "{{user.id}}"
+        }
+      ]
+    },
+    "create": {
+      "sender_user_id": "{{user.id}}"
+    },
+    "update": {
+      "sender_user_id": "{{user.id}}"
+    },
+    "delete": {
+      "sender_user_id": "{{user.id}}"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "ChatGame",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string",
+      "description": "Match conversation"
+    },
+    "question": {
+      "type": "string",
+      "description": "Game question"
+    },
+    "user1_answer": {
+      "type": "string",
+      "description": "First user's answer"
+    },
+    "user2_answer": {
+      "type": "string",
+      "description": "Second user's answer"
+    },
+    "is_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Both answered"
+    }
+  },
+  "required": [
+    "match_id",
+    "question"
+  ]
+}

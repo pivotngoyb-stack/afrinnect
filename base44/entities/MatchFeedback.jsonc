@@ -1,0 +1,59 @@
+{
+  "name": "MatchFeedback",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who provided feedback",
+      "indexed": true
+    },
+    "target_profile_id": {
+      "type": "string",
+      "description": "Profile the feedback is about",
+      "indexed": true
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "like",
+        "pass",
+        "unmatch",
+        "block"
+      ],
+      "description": "What action triggered this feedback",
+      "indexed": true
+    },
+    "feedback_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Selected reasons for the action"
+    },
+    "custom_feedback": {
+      "type": "string",
+      "description": "Optional custom text feedback"
+    },
+    "match_id": {
+      "type": "string",
+      "description": "Related match ID if applicable"
+    },
+    "time_spent_on_profile_ms": {
+      "type": "number",
+      "description": "How long user viewed the profile before acting"
+    },
+    "photos_viewed_count": {
+      "type": "number",
+      "description": "Number of photos user scrolled through"
+    },
+    "bio_expanded": {
+      "type": "boolean",
+      "description": "Whether user expanded/read full bio"
+    }
+  },
+  "required": [
+    "user_id",
+    "target_profile_id",
+    "action_type"
+  ]
+}

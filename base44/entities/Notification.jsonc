@@ -1,0 +1,77 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "User receiving notification",
+      "indexed": true
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Auth User ID of recipient",
+      "indexed": true
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "match",
+        "like",
+        "message",
+        "admin_message",
+        "super_like"
+      ],
+      "description": "Notification type",
+      "indexed": true
+    },
+    "title": {
+      "type": "string",
+      "description": "Notification title"
+    },
+    "message": {
+      "type": "string",
+      "description": "Notification message"
+    },
+    "from_profile_id": {
+      "type": "string",
+      "description": "Profile that triggered notification"
+    },
+    "link_to": {
+      "type": "string",
+      "description": "Page to navigate to"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Read status",
+      "indexed": true
+    },
+    "is_admin": {
+      "type": "boolean",
+      "default": false,
+      "description": "From admin"
+    }
+  },
+  "required": [
+    "user_profile_id",
+    "type",
+    "title",
+    "message"
+  ],
+  "rls": {
+    "read": {
+      "user_id": "{{user.id}}"
+    },
+    "create": {
+      "user_condition": {
+        "role": "user"
+      }
+    },
+    "update": {
+      "user_id": "{{user.id}}"
+    },
+    "delete": {
+      "user_id": "{{user.id}}"
+    }
+  }
+}

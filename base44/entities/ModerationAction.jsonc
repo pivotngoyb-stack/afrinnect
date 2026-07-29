@@ -1,0 +1,53 @@
+{
+  "name": "ModerationAction",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "User being moderated"
+    },
+    "moderator_id": {
+      "type": "string",
+      "description": "Admin who took action"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "warning",
+        "content_removed",
+        "temporary_mute",
+        "temporary_ban",
+        "permanent_ban"
+      ],
+      "description": "Action taken"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Reason for action"
+    },
+    "related_report_id": {
+      "type": "string",
+      "description": "Report that triggered this"
+    },
+    "duration_hours": {
+      "type": "number",
+      "description": "Duration for temp actions"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When temp action expires"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Action still in effect"
+    }
+  },
+  "required": [
+    "user_profile_id",
+    "moderator_id",
+    "action_type",
+    "reason"
+  ]
+}

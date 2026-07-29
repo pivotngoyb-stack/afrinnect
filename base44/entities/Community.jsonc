@@ -1,0 +1,70 @@
+{
+  "name": "Community",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Community name"
+    },
+    "description": {
+      "type": "string",
+      "description": "What it's about"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "interests",
+        "location",
+        "culture",
+        "profession",
+        "lifestyle"
+      ],
+      "description": "Community type"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Emoji icon"
+    },
+    "cover_image": {
+      "type": "string",
+      "description": "Cover photo"
+    },
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Member profile IDs"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Featured community"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "category",
+    "icon"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "LegalAcceptance",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who accepted"
+    },
+    "terms_accepted": {
+      "type": "boolean",
+      "description": "Accepted terms of service"
+    },
+    "privacy_accepted": {
+      "type": "boolean",
+      "description": "Accepted privacy policy"
+    },
+    "guidelines_accepted": {
+      "type": "boolean",
+      "description": "Accepted community guidelines"
+    },
+    "accepted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When accepted"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address at acceptance"
+    }
+  },
+  "required": [
+    "user_id",
+    "terms_accepted",
+    "privacy_accepted",
+    "guidelines_accepted"
+  ]
+}

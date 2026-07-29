@@ -1,0 +1,96 @@
+{
+  "name": "ErrorLog",
+  "type": "object",
+  "properties": {
+    "message": {
+      "type": "string"
+    },
+    "stack": {
+      "type": "string"
+    },
+    "component_stack": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "error",
+        "unhandled_rejection",
+        "boundary",
+        "console_error"
+      ]
+    },
+    "url": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "browser": {
+      "type": "string"
+    },
+    "os": {
+      "type": "string"
+    },
+    "device": {
+      "type": "string"
+    },
+    "breadcrumbs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "User actions leading up to error"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "investigating",
+        "resolved",
+        "ignored"
+      ],
+      "default": "new"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "ai_analysis": {
+      "type": "object",
+      "description": "AI diagnosis and fix suggestion",
+      "properties": {
+        "diagnosis": {
+          "type": "string"
+        },
+        "fix_suggestion": {
+          "type": "string"
+        },
+        "severity_assessment": {
+          "type": "string"
+        }
+      }
+    },
+    "resolved_by": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "message",
+    "type",
+    "url"
+  ]
+}

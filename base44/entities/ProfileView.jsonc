@@ -1,0 +1,36 @@
+{
+  "name": "ProfileView",
+  "type": "object",
+  "properties": {
+    "viewer_profile_id": {
+      "type": "string",
+      "description": "Profile ID of person viewing",
+      "indexed": true
+    },
+    "viewed_profile_id": {
+      "type": "string",
+      "description": "Profile ID being viewed",
+      "indexed": true
+    },
+    "view_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When profile was viewed",
+      "indexed": true
+    },
+    "view_source": {
+      "type": "string",
+      "enum": [
+        "discovery",
+        "match",
+        "search",
+        "profile_link"
+      ],
+      "description": "Where the view came from"
+    }
+  },
+  "required": [
+    "viewer_profile_id",
+    "viewed_profile_id"
+  ]
+}

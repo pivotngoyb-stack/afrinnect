@@ -1,0 +1,86 @@
+{
+  "name": "AmbassadorReferralEvent",
+  "type": "object",
+  "properties": {
+    "ambassador_id": {
+      "type": "string",
+      "indexed": true
+    },
+    "user_id": {
+      "type": "string",
+      "indexed": true
+    },
+    "referral_id": {
+      "type": "string",
+      "description": "Reference to AmbassadorReferral",
+      "indexed": true
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "click",
+        "signup",
+        "activate",
+        "subscribe",
+        "renew",
+        "upgrade",
+        "downgrade",
+        "cancel",
+        "refund",
+        "chargeback"
+      ],
+      "indexed": true
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional event data (subscription_id, amount, etc.)"
+    },
+    "revenue_amount": {
+      "type": "number",
+      "description": "Revenue associated with this event"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "subscription_id": {
+      "type": "string",
+      "description": "Related subscription if applicable"
+    },
+    "device_id": {
+      "type": "string"
+    },
+    "ip_address": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "ambassador_id",
+    "event_type"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "user"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

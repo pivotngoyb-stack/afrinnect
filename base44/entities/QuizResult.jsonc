@@ -1,0 +1,73 @@
+{
+  "name": "QuizResult",
+  "type": "object",
+  "properties": {
+    "quiz_id": {
+      "type": "string",
+      "description": "Reference to the CompatibilityQuiz"
+    },
+    "user_profile_id": {
+      "type": "string",
+      "description": "User who took the quiz"
+    },
+    "answers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question_index": {
+            "type": "number"
+          },
+          "selected_option_index": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "question_index",
+          "selected_option_index"
+        ]
+      }
+    },
+    "compatibility_score": {
+      "type": "object",
+      "description": "Score for each compatibility type",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "result_type": {
+      "type": "string",
+      "description": "The dominant compatibility type for the user"
+    }
+  },
+  "required": [
+    "quiz_id",
+    "user_profile_id",
+    "answers",
+    "compatibility_score",
+    "result_type"
+  ],
+  "rls": {
+    "create": {
+      "user_profile_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "user_profile_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_profile_id": "{{user.id}}"
+    },
+    "delete": {
+      "user_profile_id": "{{user.id}}"
+    }
+  }
+}

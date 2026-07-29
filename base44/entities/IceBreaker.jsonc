@@ -1,0 +1,42 @@
+{
+  "name": "IceBreaker",
+  "type": "object",
+  "properties": {
+    "question": {
+      "type": "string",
+      "description": "Ice breaker question"
+    },
+    "cultural_context": {
+      "type": "string",
+      "enum": [
+        "african_general",
+        "diaspora",
+        "traditional",
+        "modern",
+        "universal"
+      ],
+      "description": "Cultural relevance"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "values",
+        "lifestyle",
+        "culture",
+        "fun",
+        "deep"
+      ],
+      "description": "Question category"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Question enabled"
+    }
+  },
+  "required": [
+    "question",
+    "cultural_context",
+    "category"
+  ]
+}

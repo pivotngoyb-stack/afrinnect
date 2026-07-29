@@ -1,0 +1,84 @@
+{
+  "name": "CompatibilityQuiz",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the quiz"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short description of the quiz"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "URL of the quiz cover image"
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question_text": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "option_text": {
+                  "type": "string"
+                },
+                "score_modifier": {
+                  "type": "object",
+                  "description": "Modifiers for different compatibility types",
+                  "additionalProperties": {
+                    "type": "number"
+                  }
+                }
+              },
+              "required": [
+                "option_text",
+                "score_modifier"
+              ]
+            }
+          }
+        },
+        "required": [
+          "question_text",
+          "options"
+        ]
+      }
+    },
+    "compatibility_types": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type_name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type_name",
+          "description"
+        ]
+      },
+      "description": "Defined compatibility types with descriptions"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "questions",
+    "compatibility_types"
+  ]
+}

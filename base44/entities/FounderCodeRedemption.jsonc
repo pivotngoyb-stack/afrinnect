@@ -1,0 +1,60 @@
+{
+  "name": "FounderCodeRedemption",
+  "type": "object",
+  "properties": {
+    "code_id": {
+      "type": "string",
+      "description": "Reference to FounderInviteCode",
+      "indexed": true
+    },
+    "code": {
+      "type": "string",
+      "description": "The code that was redeemed",
+      "indexed": true
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User who redeemed",
+      "indexed": true
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of user who redeemed"
+    },
+    "device_id": {
+      "type": "string",
+      "description": "Device fingerprint at redemption",
+      "indexed": true
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address at redemption"
+    }
+  },
+  "required": [
+    "code_id",
+    "user_id"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "user"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "name": "Pass",
+  "type": "object",
+  "properties": {
+    "passer_id": {
+      "type": "string",
+      "description": "Profile ID of person who passed",
+      "indexed": true
+    },
+    "passed_id": {
+      "type": "string",
+      "description": "Profile ID of person being passed",
+      "indexed": true
+    },
+    "passer_user_id": {
+      "type": "string",
+      "description": "Auth User ID of passer",
+      "indexed": true
+    },
+    "is_rewindable": {
+      "type": "boolean",
+      "default": true,
+      "description": "Can this pass be rewound"
+    }
+  },
+  "required": [
+    "passer_id",
+    "passed_id"
+  ],
+  "rls": {
+    "read": {
+      "passer_user_id": "{{user.id}}"
+    },
+    "create": {
+      "passer_user_id": "{{user.id}}"
+    },
+    "delete": {
+      "passer_user_id": "{{user.id}}"
+    }
+  }
+}

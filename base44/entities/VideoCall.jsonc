@@ -1,0 +1,190 @@
+{
+  "name": "VideoCall",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string",
+      "description": "Reference to match",
+      "indexed": true
+    },
+    "caller_profile_id": {
+      "type": "string",
+      "description": "Profile ID of caller",
+      "indexed": true
+    },
+    "caller_user_id": {
+      "type": "string",
+      "description": "Auth user ID of caller",
+      "indexed": true
+    },
+    "receiver_profile_id": {
+      "type": "string",
+      "description": "Profile ID of receiver",
+      "indexed": true
+    },
+    "receiver_user_id": {
+      "type": "string",
+      "description": "Auth user ID of receiver",
+      "indexed": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "initiated",
+        "ringing",
+        "connecting",
+        "connected",
+        "reconnecting",
+        "ended",
+        "missed",
+        "declined",
+        "busy",
+        "failed"
+      ],
+      "default": "initiated",
+      "description": "Call status",
+      "indexed": true
+    },
+    "call_type": {
+      "type": "string",
+      "enum": [
+        "video",
+        "audio"
+      ],
+      "default": "video",
+      "description": "Type of call"
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When call was initiated"
+    },
+    "answered_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When call was answered"
+    },
+    "end_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When call ended"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "description": "Call duration in seconds"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Video room identifier",
+      "indexed": true
+    },
+    "call_quality": {
+      "type": "string",
+      "enum": [
+        "excellent",
+        "good",
+        "fair",
+        "poor"
+      ],
+      "description": "Reported call quality"
+    },
+    "end_reason": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "timeout",
+        "declined",
+        "busy",
+        "blocked",
+        "network_error",
+        "user_left",
+        "backgrounded"
+      ],
+      "description": "Reason call ended"
+    },
+    "caller_ice_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "ICE candidates from caller"
+    },
+    "receiver_ice_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "ICE candidates from receiver"
+    },
+    "caller_sdp": {
+      "type": "object",
+      "description": "SDP offer from caller"
+    },
+    "receiver_sdp": {
+      "type": "object",
+      "description": "SDP answer from receiver"
+    },
+    "network_stats": {
+      "type": "object",
+      "properties": {
+        "avg_bitrate": {
+          "type": "number"
+        },
+        "packet_loss": {
+          "type": "number"
+        },
+        "latency_ms": {
+          "type": "number"
+        },
+        "reconnect_count": {
+          "type": "number"
+        }
+      }
+    },
+    "reported": {
+      "type": "boolean",
+      "default": false,
+      "description": "Call was reported for abuse"
+    },
+    "blocked_during_call": {
+      "type": "boolean",
+      "default": false,
+      "description": "User was blocked during call"
+    }
+  },
+  "required": [
+    "match_id",
+    "caller_profile_id",
+    "receiver_profile_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "caller_user_id": "{{user.id}}"
+        },
+        {
+          "receiver_user_id": "{{user.id}}"
+        }
+      ]
+    },
+    "create": {
+      "caller_user_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "caller_user_id": "{{user.id}}"
+        },
+        {
+          "receiver_user_id": "{{user.id}}"
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

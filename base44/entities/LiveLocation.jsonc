@@ -1,0 +1,45 @@
+{
+  "name": "LiveLocation",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string",
+      "description": "Match sharing location"
+    },
+    "sharer_profile_id": {
+      "type": "string",
+      "description": "Who is sharing"
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        }
+      }
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "How long to share"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When sharing stops"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Still sharing"
+    }
+  },
+  "required": [
+    "match_id",
+    "sharer_profile_id",
+    "location",
+    "expires_at"
+  ]
+}

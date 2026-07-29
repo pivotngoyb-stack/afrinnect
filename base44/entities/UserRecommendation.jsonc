@@ -1,0 +1,55 @@
+{
+  "name": "UserRecommendation",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User receiving the recommendation"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "feature",
+        "event",
+        "match_tip",
+        "safety_alert"
+      ],
+      "description": "Type of recommendation"
+    },
+    "title": {
+      "type": "string",
+      "description": "Short title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed recommendation"
+    },
+    "action_link": {
+      "type": "string",
+      "description": "Link to the feature/event"
+    },
+    "is_dismissed": {
+      "type": "boolean",
+      "default": false
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium"
+    },
+    "trigger_reason": {
+      "type": "string",
+      "description": "Why this was recommended (e.g. 'high_engagement', 'risky_behavior')"
+    }
+  },
+  "required": [
+    "user_id",
+    "type",
+    "title",
+    "description"
+  ]
+}

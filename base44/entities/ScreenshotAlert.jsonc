@@ -1,0 +1,33 @@
+{
+  "name": "ScreenshotAlert",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "User who took screenshot"
+    },
+    "screenshot_of_profile_id": {
+      "type": "string",
+      "description": "Profile being screenshotted"
+    },
+    "screenshot_location": {
+      "type": "string",
+      "enum": [
+        "profile",
+        "chat",
+        "photo"
+      ],
+      "description": "Where screenshot was taken"
+    },
+    "alert_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Alert sent to victim"
+    }
+  },
+  "required": [
+    "user_profile_id",
+    "screenshot_of_profile_id",
+    "screenshot_location"
+  ]
+}

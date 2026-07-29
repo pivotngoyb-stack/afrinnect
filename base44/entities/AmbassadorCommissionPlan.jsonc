@@ -1,0 +1,132 @@
+{
+  "name": "AmbassadorCommissionPlan",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Plan name (e.g., Standard, Premium Creator)"
+    },
+    "plan_type": {
+      "type": "string",
+      "enum": [
+        "cpa",
+        "revenue_share",
+        "recurring_share",
+        "hybrid"
+      ],
+      "description": "Commission structure type",
+      "indexed": true
+    },
+    "cpa_amount": {
+      "type": "number",
+      "description": "Fixed amount per new subscriber (CPA)"
+    },
+    "revenue_share_pct": {
+      "type": "number",
+      "description": "Percentage of first payment"
+    },
+    "recurring_share_pct": {
+      "type": "number",
+      "description": "Percentage of recurring payments"
+    },
+    "recurring_months": {
+      "type": "number",
+      "default": 6,
+      "description": "How many months to pay recurring share"
+    },
+    "activation_bonus": {
+      "type": "number",
+      "default": 0,
+      "description": "Bonus for user activation (profile+message)"
+    },
+    "signup_bonus": {
+      "type": "number",
+      "default": 0,
+      "description": "Bonus per signup (even without subscription)"
+    },
+    "milestone_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "signups",
+              "subscribers",
+              "revenue"
+            ]
+          },
+          "threshold": {
+            "type": "number"
+          },
+          "bonus_amount": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Milestone bonus rules"
+    },
+    "tier_multipliers": {
+      "type": "object",
+      "properties": {
+        "bronze": {
+          "type": "number",
+          "default": 1
+        },
+        "silver": {
+          "type": "number",
+          "default": 1.1
+        },
+        "gold": {
+          "type": "number",
+          "default": 1.25
+        },
+        "platinum": {
+          "type": "number",
+          "default": 1.5
+        }
+      }
+    },
+    "is_default": {
+      "type": "boolean",
+      "default": false,
+      "indexed": true
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "indexed": true
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_until": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "name",
+    "plan_type"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

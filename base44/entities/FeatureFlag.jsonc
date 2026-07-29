@@ -1,0 +1,55 @@
+{
+  "name": "FeatureFlag",
+  "type": "object",
+  "properties": {
+    "feature_name": {
+      "type": "string",
+      "description": "Feature identifier"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Human readable name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Feature description"
+    },
+    "is_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Feature enabled globally"
+    },
+    "enabled_for_premium": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enabled for premium users"
+    },
+    "rollout_percentage": {
+      "type": "number",
+      "default": 0,
+      "description": "Percentage of users to enable for (0-100)"
+    }
+  },
+  "required": [
+    "feature_name",
+    "display_name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

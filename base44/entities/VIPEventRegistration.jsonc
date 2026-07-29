@@ -1,0 +1,82 @@
+{
+  "name": "VIPEventRegistration",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Reference to VIPEvent",
+      "indexed": true
+    },
+    "user_profile_id": {
+      "type": "string",
+      "description": "User who registered",
+      "indexed": true
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Auth user ID",
+      "indexed": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "registered",
+        "attended",
+        "no_show",
+        "cancelled"
+      ],
+      "default": "registered",
+      "indexed": true
+    },
+    "reminder_sent": {
+      "type": "boolean",
+      "default": false
+    },
+    "feedback_rating": {
+      "type": "number",
+      "description": "1-5 star rating after event"
+    },
+    "feedback_text": {
+      "type": "string",
+      "description": "Optional feedback text"
+    }
+  },
+  "required": [
+    "event_id",
+    "user_profile_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

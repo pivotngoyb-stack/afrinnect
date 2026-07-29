@@ -1,0 +1,129 @@
+{
+  "name": "AmbassadorCampaign",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Campaign name (e.g., Launch Week Bonus)"
+    },
+    "description": {
+      "type": "string"
+    },
+    "campaign_type": {
+      "type": "string",
+      "enum": [
+        "bonus_multiplier",
+        "flat_bonus",
+        "challenge",
+        "milestone_race"
+      ],
+      "indexed": true
+    },
+    "bonus_multiplier": {
+      "type": "number",
+      "description": "Multiplier for commissions during campaign (e.g., 2x)"
+    },
+    "flat_bonus_amount": {
+      "type": "number",
+      "description": "Flat bonus per conversion"
+    },
+    "challenge_rules": {
+      "type": "object",
+      "properties": {
+        "goal_type": {
+          "type": "string",
+          "enum": [
+            "signups",
+            "subscribers",
+            "revenue"
+          ]
+        },
+        "goal_amount": {
+          "type": "number"
+        },
+        "reward_type": {
+          "type": "string",
+          "enum": [
+            "cash",
+            "badge",
+            "feature",
+            "tier_upgrade"
+          ]
+        },
+        "reward_value": {
+          "type": "number"
+        }
+      }
+    },
+    "eligible_tiers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Which ambassador tiers can participate"
+    },
+    "eligible_ambassador_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Specific ambassadors (empty = all eligible)"
+    },
+    "starts_at": {
+      "type": "string",
+      "format": "date-time",
+      "indexed": true
+    },
+    "ends_at": {
+      "type": "string",
+      "format": "date-time",
+      "indexed": true
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "indexed": true
+    },
+    "leaderboard": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ambassador_id": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number"
+          },
+          "rank": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "name",
+    "campaign_type",
+    "starts_at",
+    "ends_at"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

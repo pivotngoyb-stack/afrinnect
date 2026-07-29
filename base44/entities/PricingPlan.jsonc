@@ -1,0 +1,66 @@
+{
+  "name": "PricingPlan",
+  "type": "object",
+  "properties": {
+    "plan_id": {
+      "type": "string",
+      "description": "Unique plan identifier"
+    },
+    "name": {
+      "type": "string",
+      "description": "Plan name"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "free",
+        "premium",
+        "elite",
+        "vip"
+      ],
+      "description": "Plan tier"
+    },
+    "billing_period": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "quarterly",
+        "yearly",
+        "6months"
+      ],
+      "description": "Billing frequency"
+    },
+    "price_usd": {
+      "type": "number",
+      "description": "Price in USD"
+    },
+    "regional_discounts": {
+      "type": "object",
+      "description": "Country-specific discounts"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Features included"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Plan available for purchase"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Featured plan"
+    }
+  },
+  "required": [
+    "plan_id",
+    "name",
+    "tier",
+    "billing_period",
+    "price_usd"
+  ]
+}

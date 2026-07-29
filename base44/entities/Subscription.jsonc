@@ -1,0 +1,126 @@
+{
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "User profile ID",
+      "indexed": true
+    },
+    "plan_type": {
+      "type": "string",
+      "enum": [
+        "free",
+        "premium_monthly",
+        "premium_quarterly",
+        "premium_yearly",
+        "elite_monthly",
+        "elite_quarterly",
+        "vip_monthly",
+        "vip_6months"
+      ],
+      "description": "Subscription plan",
+      "indexed": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "cancelled",
+        "expired",
+        "paused"
+      ],
+      "description": "Subscription status",
+      "indexed": true
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Subscription start"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Subscription end",
+      "indexed": true
+    },
+    "payment_provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "apple",
+        "google",
+        "manual"
+      ],
+      "description": "Payment provider"
+    },
+    "external_id": {
+      "type": "string",
+      "description": "External subscription ID",
+      "indexed": true
+    },
+    "amount_paid": {
+      "type": "number",
+      "description": "Amount paid"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Currency code"
+    },
+    "boosts_remaining": {
+      "type": "number",
+      "description": "Profile boosts left"
+    },
+    "super_likes_remaining": {
+      "type": "number",
+      "description": "Super likes left"
+    },
+    "auto_renew": {
+      "type": "boolean",
+      "description": "Auto-renewal enabled"
+    },
+    "regional_pricing": {
+      "type": "boolean",
+      "description": "Using regional discount"
+    }
+  },
+  "required": [
+    "user_profile_id",
+    "plan_type",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_profile_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "user"
+      }
+    }
+  }
+}

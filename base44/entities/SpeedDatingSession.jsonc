@@ -1,0 +1,92 @@
+{
+  "name": "SpeedDatingSession",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Reference to VIPEvent",
+      "indexed": true
+    },
+    "round_number": {
+      "type": "number",
+      "description": "Which round of the session"
+    },
+    "user1_profile_id": {
+      "type": "string",
+      "indexed": true
+    },
+    "user2_profile_id": {
+      "type": "string",
+      "indexed": true
+    },
+    "user1_interested": {
+      "type": "boolean",
+      "description": "User 1 marked interested"
+    },
+    "user2_interested": {
+      "type": "boolean",
+      "description": "User 2 marked interested"
+    },
+    "is_match": {
+      "type": "boolean",
+      "default": false,
+      "description": "Both users interested",
+      "indexed": true
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Video room for this pair"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "default": 180,
+      "description": "Time per round (3 min default)"
+    }
+  },
+  "required": [
+    "event_id",
+    "round_number",
+    "user1_profile_id",
+    "user2_profile_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user1_profile_id": "{{user.id}}"
+        },
+        {
+          "user2_profile_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

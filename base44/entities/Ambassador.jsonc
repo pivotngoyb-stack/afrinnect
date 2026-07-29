@@ -1,0 +1,236 @@
+{
+  "name": "Ambassador",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Linked user account ID",
+      "indexed": true
+    },
+    "handle": {
+      "type": "string",
+      "description": "Unique ambassador handle (e.g., joelle)",
+      "indexed": true,
+      "unique": true
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Public display name"
+    },
+    "email": {
+      "type": "string",
+      "description": "Contact email",
+      "indexed": true
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone"
+    },
+    "country": {
+      "type": "string",
+      "description": "Country of residence"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Ambassador bio/description"
+    },
+    "social_links": {
+      "type": "object",
+      "properties": {
+        "instagram": {
+          "type": "string"
+        },
+        "tiktok": {
+          "type": "string"
+        },
+        "youtube": {
+          "type": "string"
+        },
+        "twitter": {
+          "type": "string"
+        },
+        "linkedin": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        }
+      }
+    },
+    "profile_image_url": {
+      "type": "string",
+      "description": "Ambassador profile photo"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "suspended",
+        "terminated"
+      ],
+      "default": "pending",
+      "indexed": true
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "bronze",
+        "silver",
+        "gold",
+        "platinum"
+      ],
+      "default": "bronze",
+      "indexed": true
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "Unique referral code (e.g., AMBA_JOELLE)",
+      "indexed": true,
+      "unique": true
+    },
+    "referral_link": {
+      "type": "string",
+      "description": "Full referral URL"
+    },
+    "qr_code_url": {
+      "type": "string",
+      "description": "QR code image URL"
+    },
+    "commission_plan_id": {
+      "type": "string",
+      "description": "Current commission plan ID",
+      "indexed": true
+    },
+    "payout_method": {
+      "type": "string",
+      "enum": [
+        "paypal",
+        "bank_transfer",
+        "mobile_money",
+        "crypto"
+      ],
+      "description": "Preferred payout method"
+    },
+    "payout_details": {
+      "type": "object",
+      "description": "Encrypted payout info (email, account, etc.)"
+    },
+    "payout_threshold": {
+      "type": "number",
+      "default": 50,
+      "description": "Minimum balance for payout"
+    },
+    "tax_form_status": {
+      "type": "string",
+      "enum": [
+        "not_submitted",
+        "pending_review",
+        "approved",
+        "rejected"
+      ],
+      "default": "not_submitted"
+    },
+    "terms_accepted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Ambassador agreement accepted"
+    },
+    "terms_accepted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin notes"
+    },
+    "stats": {
+      "type": "object",
+      "properties": {
+        "total_clicks": {
+          "type": "number",
+          "default": 0
+        },
+        "total_signups": {
+          "type": "number",
+          "default": 0
+        },
+        "total_activations": {
+          "type": "number",
+          "default": 0
+        },
+        "total_subscribers": {
+          "type": "number",
+          "default": 0
+        },
+        "total_revenue_generated": {
+          "type": "number",
+          "default": 0
+        },
+        "total_commissions_earned": {
+          "type": "number",
+          "default": 0
+        },
+        "total_commissions_paid": {
+          "type": "number",
+          "default": 0
+        }
+      }
+    },
+    "fraud_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Any fraud warning flags"
+    },
+    "suspended_reason": {
+      "type": "string"
+    },
+    "suspended_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "handle",
+    "email",
+    "referral_code"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "$or": [
+        {
+          "user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

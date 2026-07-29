@@ -1,0 +1,84 @@
+{
+  "name": "ScamAnalysis",
+  "type": "object",
+  "properties": {
+    "message_id": {
+      "type": "string",
+      "description": "ID of the analyzed message"
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "User who sent the message"
+    },
+    "risk_score": {
+      "type": "number",
+      "description": "0-100 risk score"
+    },
+    "scam_type": {
+      "type": "string",
+      "enum": [
+        "money_request",
+        "crypto",
+        "phishing",
+        "romance_scam",
+        "off_platform",
+        "harassment",
+        "none"
+      ],
+      "default": "none"
+    },
+    "ai_analysis": {
+      "type": "object",
+      "properties": {
+        "is_suspicious": {
+          "type": "boolean"
+        },
+        "confidence": {
+          "type": "number"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "action_taken": {
+      "type": "string",
+      "enum": [
+        "none",
+        "flagged",
+        "hidden",
+        "blocked_user"
+      ],
+      "default": "none"
+    }
+  },
+  "required": [
+    "message_id",
+    "risk_score"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

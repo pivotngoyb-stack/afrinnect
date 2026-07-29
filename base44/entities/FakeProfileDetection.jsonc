@@ -1,0 +1,51 @@
+{
+  "name": "FakeProfileDetection",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "Profile being analyzed"
+    },
+    "risk_score": {
+      "type": "number",
+      "description": "AI-calculated risk score 0-100"
+    },
+    "risk_factors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Detected risk indicators"
+    },
+    "ai_analysis": {
+      "type": "object",
+      "description": "Detailed AI analysis results"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "safe",
+        "suspicious",
+        "flagged",
+        "banned"
+      ],
+      "default": "safe",
+      "description": "Profile safety status"
+    },
+    "reviewed_by_human": {
+      "type": "boolean",
+      "default": false,
+      "description": "Human moderator reviewed"
+    },
+    "last_checked": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last scan timestamp"
+    }
+  },
+  "required": [
+    "user_profile_id",
+    "risk_score",
+    "status"
+  ]
+}

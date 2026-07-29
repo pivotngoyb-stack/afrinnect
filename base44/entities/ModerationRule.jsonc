@@ -1,0 +1,77 @@
+{
+  "name": "ModerationRule",
+  "type": "object",
+  "properties": {
+    "rule_type": {
+      "type": "string",
+      "enum": [
+        "blocked_keyword",
+        "spam_pattern",
+        "inappropriate_content",
+        "rate_limit"
+      ],
+      "description": "Type of moderation rule"
+    },
+    "pattern": {
+      "type": "string",
+      "description": "Keyword or regex pattern"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "flag",
+        "auto_delete",
+        "shadow_ban",
+        "notify_admin"
+      ],
+      "description": "Action to take"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "description": "Rule severity"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Rule enabled status"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Admin who created rule"
+    }
+  },
+  "required": [
+    "rule_type",
+    "pattern",
+    "action",
+    "severity"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

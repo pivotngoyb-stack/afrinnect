@@ -1,0 +1,75 @@
+{
+  "name": "Promotion",
+  "type": "object",
+  "properties": {
+    "promo_code": {
+      "type": "string",
+      "description": "Unique promo code"
+    },
+    "promo_type": {
+      "type": "string",
+      "enum": [
+        "discount",
+        "free_trial",
+        "free_boost",
+        "free_super_likes"
+      ],
+      "description": "Type of promotion"
+    },
+    "discount_percentage": {
+      "type": "number",
+      "description": "Discount % (if applicable)"
+    },
+    "trial_days": {
+      "type": "number",
+      "description": "Free trial days (if applicable)"
+    },
+    "free_boosts": {
+      "type": "number",
+      "description": "Number of free boosts"
+    },
+    "free_super_likes": {
+      "type": "number",
+      "description": "Number of free super likes"
+    },
+    "valid_from": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Promotion start date"
+    },
+    "valid_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Promotion end date"
+    },
+    "max_uses": {
+      "type": "number",
+      "description": "Max redemptions allowed"
+    },
+    "current_uses": {
+      "type": "number",
+      "default": 0,
+      "description": "Times redeemed"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Promotion enabled"
+    },
+    "target_audience": {
+      "type": "string",
+      "enum": [
+        "all",
+        "new_users",
+        "churned_users",
+        "free_users"
+      ],
+      "default": "all",
+      "description": "Who can use this promo"
+    }
+  },
+  "required": [
+    "promo_code",
+    "promo_type"
+  ]
+}

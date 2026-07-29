@@ -1,0 +1,52 @@
+{
+  "name": "DailyMatch",
+  "type": "object",
+  "properties": {
+    "user_profile_id": {
+      "type": "string",
+      "description": "User receiving matches"
+    },
+    "suggested_profile_id": {
+      "type": "string",
+      "description": "Curated match"
+    },
+    "match_score": {
+      "type": "number",
+      "description": "AI compatibility score"
+    },
+    "match_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Why they match"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Match date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "viewed",
+        "liked",
+        "passed"
+      ],
+      "default": "pending",
+      "description": "User action"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "24hr expiry"
+    }
+  },
+  "required": [
+    "user_profile_id",
+    "suggested_profile_id",
+    "match_score",
+    "date"
+  ]
+}

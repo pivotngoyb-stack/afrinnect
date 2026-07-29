@@ -1,0 +1,57 @@
+{
+  "name": "ContestPeriod",
+  "type": "object",
+  "properties": {
+    "month": {
+      "type": "string",
+      "description": "Contest month (YYYY-MM)"
+    },
+    "theme": {
+      "type": "string",
+      "description": "Theme for the contest",
+      "default": "Love Stories"
+    },
+    "prizes": {
+      "type": "object",
+      "properties": {
+        "first": {
+          "type": "string"
+        },
+        "second": {
+          "type": "string"
+        },
+        "third": {
+          "type": "string"
+        }
+      },
+      "description": "Prizes for 1st, 2nd, and 3rd place"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Is this the currently active contest?"
+    }
+  },
+  "required": [
+    "month",
+    "prizes"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

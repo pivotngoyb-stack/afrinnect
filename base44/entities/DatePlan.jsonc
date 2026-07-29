@@ -1,0 +1,106 @@
+{
+  "name": "DatePlan",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string",
+      "description": "Match planning date"
+    },
+    "suggested_by": {
+      "type": "string",
+      "enum": [
+        "ai",
+        "user"
+      ],
+      "description": "Who suggested"
+    },
+    "venue_name": {
+      "type": "string",
+      "description": "Restaurant/location"
+    },
+    "venue_address": {
+      "type": "string",
+      "description": "Address"
+    },
+    "date_type": {
+      "type": "string",
+      "enum": [
+        "dinner",
+        "coffee",
+        "activity",
+        "cultural_event",
+        "virtual"
+      ],
+      "description": "Type of date"
+    },
+    "proposed_datetime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Proposed time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "accepted",
+        "declined",
+        "completed"
+      ],
+      "default": "proposed",
+      "description": "Plan status"
+    },
+    "budget_estimate": {
+      "type": "number",
+      "description": "Estimated cost"
+    },
+    "booking_link": {
+      "type": "string",
+      "description": "Reservation link"
+    }
+  },
+  "required": [
+    "match_id",
+    "venue_name"
+  ],
+  "rls": {
+    "create": {
+      "created_by_profile": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_profile": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_profile": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_profile": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

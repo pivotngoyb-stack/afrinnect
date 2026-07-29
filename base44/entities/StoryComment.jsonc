@@ -1,0 +1,23 @@
+{
+  "name": "StoryComment",
+  "type": "object",
+  "properties": {
+    "story_id": {
+      "type": "string",
+      "description": "Reference to the Story"
+    },
+    "user_profile_id": {
+      "type": "string",
+      "description": "User who commented"
+    },
+    "content": {
+      "type": "string",
+      "description": "Comment text"
+    }
+  },
+  "required": [
+    "story_id",
+    "user_profile_id",
+    "content"
+  ]
+}

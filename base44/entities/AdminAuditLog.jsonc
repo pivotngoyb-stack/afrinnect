@@ -1,0 +1,74 @@
+{
+  "name": "AdminAuditLog",
+  "type": "object",
+  "properties": {
+    "admin_user_id": {
+      "type": "string",
+      "description": "Admin who performed the action"
+    },
+    "admin_email": {
+      "type": "string",
+      "description": "Admin email"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "user_ban",
+        "user_delete",
+        "user_unban",
+        "report_resolved",
+        "subscription_cancelled",
+        "admin_granted",
+        "admin_revoked",
+        "message_sent",
+        "user_edited",
+        "verification_approved",
+        "verification_rejected"
+      ],
+      "description": "Type of action performed"
+    },
+    "target_user_id": {
+      "type": "string",
+      "description": "User affected by action"
+    },
+    "details": {
+      "type": "object",
+      "description": "Additional action details"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address of admin"
+    },
+    "user_agent": {
+      "type": "string",
+      "description": "Browser/device info"
+    }
+  },
+  "required": [
+    "admin_user_id",
+    "admin_email",
+    "action_type"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

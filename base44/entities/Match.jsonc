@@ -1,0 +1,146 @@
+{
+  "name": "Match",
+  "type": "object",
+  "properties": {
+    "user1_id": {
+      "type": "string",
+      "description": "First user profile ID",
+      "indexed": true
+    },
+    "user2_id": {
+      "type": "string",
+      "description": "Second user profile ID",
+      "indexed": true
+    },
+    "user1_user_id": {
+      "type": "string",
+      "description": "Auth User ID of user 1",
+      "indexed": true
+    },
+    "user2_user_id": {
+      "type": "string",
+      "description": "Auth User ID of user 2",
+      "indexed": true
+    },
+    "user1_liked": {
+      "type": "boolean",
+      "description": "User 1 liked user 2"
+    },
+    "user2_liked": {
+      "type": "boolean",
+      "description": "User 2 liked user 1"
+    },
+    "is_match": {
+      "type": "boolean",
+      "description": "Both users liked each other",
+      "indexed": true
+    },
+    "matched_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When match occurred"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "24hr expiry if no message sent",
+      "indexed": true
+    },
+    "is_expired": {
+      "type": "boolean",
+      "default": false,
+      "description": "Match expired",
+      "indexed": true
+    },
+    "last_chance_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether last chance notification was sent"
+    },
+    "compatibility_score": {
+      "type": "number",
+      "description": "AI compatibility score 0-100"
+    },
+    "compatibility_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Why they're compatible"
+    },
+    "is_super_like": {
+      "type": "boolean",
+      "description": "If it was a super like"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "unmatched",
+        "blocked",
+        "expired"
+      ],
+      "description": "Match status",
+      "indexed": true
+    },
+    "has_nudged": {
+      "type": "boolean",
+      "default": false,
+      "description": "If users have been nudged to chat"
+    },
+    "typing_user_id": {
+      "type": "string",
+      "description": "User ID currently typing (for real-time indicator)"
+    },
+    "first_message_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether first message has been sent"
+    },
+    "first_message_sent_by": {
+      "type": "string",
+      "description": "Profile ID of who sent the first message"
+    },
+    "first_message_sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When first message was sent"
+    }
+  },
+  "required": [
+    "user1_id",
+    "user2_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user1_user_id": "{{user.id}}"
+        },
+        {
+          "user2_user_id": "{{user.id}}"
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "user"
+      }
+    },
+    "update": {
+      "$or": [
+        {
+          "user1_user_id": "{{user.id}}"
+        },
+        {
+          "user2_user_id": "{{user.id}}"
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
